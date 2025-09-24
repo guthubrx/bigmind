@@ -1,0 +1,44 @@
+name: security
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies (no scripts)
+        run: npm ci --ignore-scripts
+
+      - name: Install trufflehog
+        run: |
+          pipx install trufflehog || pipx reinstall trufflehog || true
+          trufflehog --version
+
+      - name: Run trufflehog
+        run: trufflehog filesystem --only-verified .
+
+      - name: npm audit (prod)
+        run: npm audit --omit=dev
+
+      - name: Suspect scripts scan
+        run: node security/suspects-scan.cjs
+
+
