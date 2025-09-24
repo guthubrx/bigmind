@@ -1,5 +1,124 @@
 html, body, #root { height: 100%; margin: 0; }
 * { box-sizing: border-box; }
-body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+
+:root {
+  --bg: #f8fafc;
+  --fg: #0f172a;
+  --panel: #ffffff;
+  --muted: #e5e7eb;
+  --muted-2: #d1d5db;
+  --accent: #3b82f6;
+  --accent-600: #2563eb;
+  --ring: rgba(59,130,246,.35);
+}
+
+.toolbar {
+  background: var(--panel);
+  border-bottom: 1px solid var(--muted);
+}
+
+.btn {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--muted);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--fg);
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, transform .05s ease;
+}
+.btn:hover { background: #f9fafb; border-color: var(--muted-2); }
+.btn:active { transform: translateY(1px); }
+
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.btn.primary:hover { background: var(--accent); filter: brightness(0.9); border-color: var(--accent); }
+
+.icon-btn {
+  width: 32px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--muted);
+  border-radius: 8px; background: #fff; cursor: pointer;
+}
+.icon-btn:hover { background: #f9fafb; }
+.icon-btn:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.icon-btn:active { transform: translateY(1px); }
+
+.icon { width: 16px; height: 16px; display: inline-block; }
+
+/* Resizer handles */
+.resizer-handle {
+  background: linear-gradient(90deg, transparent 0, rgba(0,0,0,.08) 50%, transparent 100%);
+  display: flex; align-items: center; justify-content: center;
+  opacity: .5;
+  transition: opacity .15s ease;
+}
+.resizer-handle:hover { background: linear-gradient(90deg, transparent 0, rgba(0,0,0,.18) 50%, transparent 100%); opacity: .9; }
+
+.sidebar-toggle {
+  width: 26px; height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--muted);
+  border-radius: 10px; background: var(--panel);
+  color: #6b7280;
+  box-shadow: 0 1px 2px rgba(0,0,0,.06);
+}
+.sidebar-toggle:hover { background: #f3f4f6; color: #374151; box-shadow: 0 2px 6px rgba(0,0,0,.1); }
+.sidebar-toggle .icon { width: 14px; height: 14px; }
+
+/* Asymmetric corners: squared on the column side, rounded toward the map */
+.sidebar-toggle.left { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+.sidebar-toggle.right { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+
+.tabs {
+  background: var(--panel);
+  border-bottom: 1px solid var(--muted);
+  padding: 0 6px 0 0; display: flex; gap: 0; align-items: center;
+  overflow-x: auto; overscroll-behavior-inline: contain;
+}
+.tab {
+  height: 36px; padding: 8px 12px; border-radius: 0;
+  background: transparent; cursor: pointer; display: inline-flex; gap: 8px; align-items: center;
+  border: 1px solid var(--muted); border-bottom-color: transparent; color: #6b7280; position: relative;
+}
+.tab:hover { background: #f3f4f6; color: var(--fg); }
+.tab.active {
+  background: linear-gradient(rgba(0,0,0,.08), rgba(0,0,0,.08)), var(--panel);
+  color: var(--fg);
+  border-color: var(--muted);
+  border-bottom-color: transparent;
+  box-shadow: 0 1px 0 0 var(--panel) inset;
+  border-top-width: 0;
+}
+.tab .tab-close { opacity: 0; transition: opacity .12s ease; border: 1px solid transparent; background: transparent; }
+.tab:hover .tab-close, .tab.active .tab-close { opacity: .7; }
+.tab .tab-close:hover { opacity: 1; }
+
+/* subtle top accent for active tab like Cursor */
+/* remove previous blue active indicator */
+
+/* Visual drop indicator for tab reordering */
+.tab-drop {
+  width: 2px; height: 18px; background: var(--accent);
+  border-radius: 1px; align-self: center;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--muted);
+  border-radius: 12px;
+}
+
+.sidebar {
+  width: 260px; border-right: 1px solid var(--muted); background: var(--panel);
+}
+
+.outline-header { padding: 10px 12px; font-weight: 600; color: var(--fg); }
+
+.tag-muted { color: #6b7280; }
 
 
