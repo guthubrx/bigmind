@@ -5,6 +5,10 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+concurrency:
+  group: hello-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   say_hello:
     runs-on: ubuntu-latest
