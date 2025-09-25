@@ -14,6 +14,9 @@ export type Topic = {
   y?: number
   w?: number
   h?: number
+  // root-only flags to hide all children on a side
+  hideLeft?: boolean
+  hideRight?: boolean
 }
 
 export type MindMapState = {
@@ -31,6 +34,7 @@ export type MindMapState = {
   addSibling: (id: string) => void
   addChild: (id: string) => void
   toggleCollapse: (id: string) => void
+  collapseSide: (side: 'left' | 'right', collapsed: boolean) => void
   rename: (id: string, label: string) => void
   moveAsChild: (nodeId: string, newParentId: string) => void
   moveBefore: (nodeId: string, targetId: string) => void
@@ -55,10 +59,7 @@ export const useMindMap = create<MindMapState>((set, get) => ({
   root: {
     id: 'root',
     label: 'Idée principale',
-    children: [
-      { id: 'a', label: 'A' },
-      { id: 'b', label: 'B' },
-    ],
+    children: [],
   },
   past: [],
   future: [],
@@ -130,6 +131,8 @@ export const useMindMap = create<MindMapState>((set, get) => ({
       if (node.id === id) {
         node.children = node.children || []
         node.children.push({ id: uid(), label: 'Nouveau fils' })
+        // S'assurer que le parent est déplié pour voir immédiatement le nouvel enfant
+        node.collapsed = false
         return true
       }
       return (node.children || []).some(addTo)
@@ -143,6 +146,13 @@ export const useMindMap = create<MindMapState>((set, get) => ({
     const next = structuredClone(state.root)
     const t = findAnd(next, (n) => n.id === id)
     if (t) t.collapsed = !t.collapsed
+    return { root: next, past: pushPast(), future: [] }
+  }),
+  collapseSide: (side, collapsed) => set((state) => {
+    const pushPast = () => state.past.concat([structuredClone(state.root)])
+    const next = structuredClone(state.root)
+    if (side === 'left') (next as any).hideLeft = collapsed
+    else (next as any).hideRight = collapsed
     return { root: next, past: pushPast(), future: [] }
   }),
   rename: (id, label) => set((state) => {

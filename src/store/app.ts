@@ -1,9 +1,17 @@
+/*
+  Store useApp – état global de l'application
+  - Onglets (mindmap, settings, welcome) + tab actif
+  - Préférences (langue, thème, zoom, gaps, etc.)
+  - Fichiers récents (masqués en Web pur)
+  Les actions exposées servent d'API simple et centralisée pour le reste du code.
+*/
 import { create } from 'zustand'
+import { isWeb } from '../utils/env'
 import i18n from '../i18n'
 import { loadPrefsFromFs, loadPrefsSync, savePrefsToFs, savePrefsToLocalStorage } from '../utils/config'
 import type { Topic } from './mindmap'
 
-export type TabType = 'mindmap' | 'settings'
+export type TabType = 'welcome' | 'mindmap' | 'settings'
 
 export type Tab = {
   id: string
@@ -17,6 +25,8 @@ export type Tab = {
 export type AppState = {
   tabs: Tab[]
   activeTabId: string
+  recentFiles: Array<{ path: string; title: string; openedAt: number; thumbnailDataUrl?: string }>
+  addRecentFile: (file: { path: string; title: string; thumbnailDataUrl?: string }) => void
   openSettings: () => void
   openMindmap: (title?: string) => string
   closeTab: (id: string) => void
@@ -97,8 +107,16 @@ export const useApp = create<AppState>((set, get) => {
     }
   })()
   return {
-    tabs: [{ id: initialMindmapId, type: 'mindmap', title: 'MindMap 1' }],
+    tabs: [{ id: initialMindmapId, type: 'welcome', title: 'Accueil' }],
     activeTabId: initialMindmapId,
+    recentFiles: isWeb() ? [] : ((loadPrefs().recentFiles as any[]) || []),
+    addRecentFile: (file) => set(() => {
+      const list = ([file, ...get().recentFiles]
+        .filter((v, i, a) => a.findIndex(x => x.path === v.path) === i)
+        .slice(0, 10))
+      savePrefs({ recentFiles: list as any })
+      return { recentFiles: list }
+    }),
     openSettings: () => {
       const existing = get().tabs.find((t) => t.type === 'settings')
       if (existing) return set({ activeTabId: existing.id })
@@ -138,7 +156,15 @@ export const useApp = create<AppState>((set, get) => {
     nodeWidthPx: typeof (prefs as any).nodeWidthPx === 'number' ? (prefs as any).nodeWidthPx : 200,
     setNodeWidthPx: (px: number) => { const v = Math.max(80, Math.min(600, Math.floor(px))); savePrefs({ nodeWidthPx: v }); set({ nodeWidthPx: v } as any) },
     genGapPx: typeof (prefs as any).genGapPx === 'number' ? (prefs as any).genGapPx : 40,
-    setGenGapPx: (px: number) => { const v = Math.max(8, Math.min(200, Math.floor(px))); savePrefs({ genGapPx: v }); set({ genGapPx: v } as any) },
+    setGenGapPx: (px: number) => {
+      // Diamètre pastille = 24, minimum requis = 24 * 1.2 = 28.8 ~ 29px
+      const minForBadge = Math.ceil(24 * 1.2)
+      const v = Math.max(minForBadge, Math.min(200, Math.floor(px)))
+      if (px < minForBadge) {
+        try { alert(`Écart horizontal minimal: ${minForBadge}px (pour laisser 20% autour de la pastille).`) } catch {}
+      }
+      savePrefs({ genGapPx: v }); set({ genGapPx: v } as any)
+    },
     vGapPx: typeof (prefs as any).vGapPx === 'number' ? (prefs as any).vGapPx : 28,
     setVGapPx: (px: number) => { const v = Math.max(4, Math.min(200, Math.floor(px))); savePrefs({ vGapPx: v }); set({ vGapPx: v } as any) },
     loadPrefsExternal: async (incoming: any) => {

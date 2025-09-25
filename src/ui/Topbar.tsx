@@ -1,3 +1,8 @@
+/*
+  Topbar – Barre supérieure
+  - Boutons rapides: ajouter un enfant/frère au nœud sélectionné
+  - Nouveau MindMap et accès aux paramètres
+*/
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMindMap } from '../store/mindmap'
