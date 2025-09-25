@@ -1257,45 +1257,9 @@ const MindMap: React.FC = () => {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Topbar />
       <MenuBar />
-      {/* Tabs bar */}
-      <div className="tabs" style={{ ['--accent' as any]: accentColor }}>
-        {tabs.map((t, idx) => (
-          <div key={t.id}
-            draggable
-            onDragStart={(e) => { e.dataTransfer.setData('text/tab-index', String(idx)) }}
-            onDragOver={(e) => { e.preventDefault(); (e.currentTarget.previousSibling as HTMLElement | null)?.classList.remove('show-drop'); }}
-            onDragEnter={(e) => { e.preventDefault(); }}
-            onDrop={(e) => { const from = Number(e.dataTransfer.getData('text/tab-index')); if (!Number.isNaN(from)) useApp.getState().moveTab(from, idx); (e.currentTarget.querySelector('.tab-drop') as HTMLElement | null)?.remove?.(); }}
-            onDragLeave={(e) => { (e.currentTarget.querySelector('.tab-drop') as HTMLElement | null)?.remove?.(); }}
-            onDragOverCapture={(e) => {
-              // Show visual indicator before current tab
-              const el = e.currentTarget as HTMLElement
-              if (!el.querySelector('.tab-drop')) {
-                const marker = document.createElement('div')
-                marker.className = 'tab-drop'
-                el.prepend(marker)
-              }
-            }}
-            onAuxClick={(e) => { if (e.button === 1) closeTab(t.id) }}
-            onClick={() => activate(t.id)}
-            className={`tab ${activeTabId === t.id ? 'active' : ''}`}>
-            <span>{t.title}</span>
-            {/* dirty indicator placeholder */}
-            <button className="tab-close" onClick={(e) => { e.stopPropagation(); closeTab(t.id) }} title={t.dirty ? 'Unsaved changes' : 'Close'}>
-              {t.dirty ? (
-                <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 999, background: 'var(--accent)' }} />
-              ) : (
-                '×'
-              )}
-            </button>
-                  </div>
-        ))}
-        <button onClick={() => { useApp.getState().openMindmap(); resetEmpty(); }} title="New tab" style={{
-          width: 32, height: 32, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--accent)'
-        }}>+
-        </button>
-                  </div>
+      {/* FR: (déplacé) Barre d’onglets → voir plus bas juste au-dessus de la barre de statut
+          
+          EN: (moved) Tabs bar → see below just above the status bar */}
       <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
         {/* Left sidebar only for mindmap tabs */}
         {tabs.find(t => t.id === activeTabId)?.type === 'mindmap' && (
@@ -1440,6 +1404,52 @@ const MindMap: React.FC = () => {
             </div>
         )}
           </div>
+      {/* FR: Barre d’onglets en bas (déplacée depuis le haut)
+          
+          EN: Bottom tabs bar (moved from the top) */}
+      <div className="tabs" style={{ ['--accent' as any]: accentColor, borderTop: '1px solid var(--muted)' }}>
+        {tabs.map((t, idx) => (
+          <div key={t.id}
+            draggable
+            onDragStart={(e) => { e.dataTransfer.setData('text/tab-index', String(idx)) }}
+            onDragOver={(e) => { e.preventDefault(); (e.currentTarget.previousSibling as HTMLElement | null)?.classList.remove('show-drop'); }}
+            onDragEnter={(e) => { e.preventDefault(); }}
+            onDrop={(e) => { const from = Number(e.dataTransfer.getData('text/tab-index')); if (!Number.isNaN(from)) useApp.getState().moveTab(from, idx); (e.currentTarget.querySelector('.tab-drop') as HTMLElement | null)?.remove?.(); }}
+            onDragLeave={(e) => { (e.currentTarget.querySelector('.tab-drop') as HTMLElement | null)?.remove?.(); }}
+            onDragOverCapture={(e) => {
+              // FR: Afficher un marqueur visuel avant l’onglet courant
+              //
+              // EN: Show a visual marker before the current tab
+              const el = e.currentTarget as HTMLElement
+              if (!el.querySelector('.tab-drop')) {
+                const marker = document.createElement('div')
+                marker.className = 'tab-drop'
+                el.prepend(marker)
+              }
+            }}
+            onAuxClick={(e) => { if (e.button === 1) closeTab(t.id) }}
+            onClick={() => activate(t.id)}
+            className={`tab ${activeTabId === t.id ? 'active' : ''}`}>
+            <span>{t.title}</span>
+            {/* FR: Indicateur “dirty” si l’onglet a des modifications non enregistrées
+                
+                EN: “Dirty” indicator if the tab has unsaved changes */}
+            <button className="tab-close" onClick={(e) => { e.stopPropagation(); closeTab(t.id) }} title={t.dirty ? 'Unsaved changes' : 'Close'}>
+              {t.dirty ? (
+                <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 999, background: 'var(--accent)' }} />
+              ) : (
+                '×'
+              )}
+            </button>
+          </div>
+        ))}
+        <button onClick={() => { useApp.getState().openMindmap(); resetEmpty(); }} title="New tab" style={{
+          width: 32, height: 32, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--accent)'
+        }}>+
+        </button>
+      </div>
+
       {/* Status bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', borderTop: '1px solid var(--muted)', background: 'var(--panel)', color: 'var(--fg)' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12 }}>
