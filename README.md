@@ -1,6 +1,10 @@
 BigMind
 =======
 
+L'objectif de cette application et de partager une application que je développe pour moi. Juste que tu utiliser des cartes mentales et les meilleures applications de carte mentale ou aujourd'hui des politiques de licensing, qui me conviennent pas. Je ne souhaite pas payer un abonnement, je veux que le logiciel m'appartienne (MErci Louis Rossman pour vos vidéo ✌️ ). 
+
+Ce fichier readme sursera complété avant l'ouverture publique du repos.
+
 Développement
 -------------
 
