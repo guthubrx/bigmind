@@ -20,20 +20,28 @@ export type Tab = {
   map?: Topic
   savedMap?: Topic
   dirty?: boolean
+  fileId?: string // FR: identifiant du fichier auquel appartient l'onglet; EN: file group identifier for this tab
 }
 
 export type AppState = {
   tabs: Tab[]
   activeTabId: string
+  // FR: Fichiers ouverts (groupes) et fichier actif
+  // EN: Open files (groups) and active file
+  files: Array<{ id: string; title: string; path?: string }>
+  activeFileId: string | null
   recentFiles: Array<{ path: string; title: string; openedAt: number; thumbnailDataUrl?: string }>
   addRecentFile: (file: { path: string; title: string; thumbnailDataUrl?: string }) => void
   openSettings: () => void
-  openMindmap: (title?: string) => string
+  openMindmap: (title?: string, fileId?: string) => string
   closeTab: (id: string) => void
   activate: (id: string) => void
   moveTab: (fromIdx: number, toIdx: number) => void
   updateTabMap: (id: string, map: Topic) => void
   setTabSaved: (id: string, map: Topic) => void
+  // FR: Gestion des fichiers (groupes) / EN: File (group) management
+  ensureFile: (file: { id?: string; title: string; path?: string }) => string
+  setActiveFile: (fileId: string) => void
   // preferences
   language: string
   theme: string
@@ -109,6 +117,8 @@ export const useApp = create<AppState>((set, get) => {
   return {
     tabs: [{ id: initialMindmapId, type: 'welcome', title: 'Accueil' }],
     activeTabId: initialMindmapId,
+    files: [],
+    activeFileId: null,
     recentFiles: isWeb() ? [] : ((loadPrefs().recentFiles as any[]) || []),
     addRecentFile: (file) => set(() => {
       const list = ([file, ...get().recentFiles]
@@ -123,9 +133,17 @@ export const useApp = create<AppState>((set, get) => {
       const id = uid()
       set({ tabs: [...get().tabs, { id, type: 'settings', title: 'Settings' }], activeTabId: id })
     },
-    openMindmap: (title?: string) => {
+    openMindmap: (title?: string, fileId?: string) => {
       const id = uid()
-      set({ tabs: [...get().tabs, { id, type: 'mindmap', title: title || `MindMap ${get().tabs.length + 1}`, map: undefined, savedMap: undefined, dirty: false }], activeTabId: id })
+      let targetFileId = fileId || get().activeFileId || null
+      if (!targetFileId) {
+        // FR: Créer un groupe fichier si aucun n'est actif
+        // EN: Create a file group if none is active
+        const createdId = get().ensureFile({ title: title || 'Untitled' })
+        targetFileId = createdId
+      }
+      const nextTab: Tab = { id, type: 'mindmap', title: title || `MindMap ${get().tabs.length + 1}`, map: undefined, savedMap: undefined, dirty: false, fileId: targetFileId || undefined }
+      set({ tabs: [...get().tabs, nextTab], activeTabId: id, activeFileId: targetFileId })
       return id
     },
     closeTab: (id: string) => {
@@ -134,7 +152,11 @@ export const useApp = create<AppState>((set, get) => {
       if (active === id && tabs.length) active = tabs[tabs.length - 1].id
       set({ tabs, activeTabId: active })
     },
-    activate: (id: string) => set({ activeTabId: id }),
+    activate: (id: string) => set((state) => {
+      const t = state.tabs.find(x => x.id === id)
+      const nextActiveFileId = t && t.fileId ? t.fileId : state.activeFileId
+      return { activeTabId: id, activeFileId: nextActiveFileId || null }
+    }),
     updateTabMap: (id: string, map) => set((state) => {
       const existing = state.tabs.find(t => t.id === id)?.map
       try {
@@ -149,6 +171,16 @@ export const useApp = create<AppState>((set, get) => {
     setTabSaved: (id: string, map) => set((state) => ({
       tabs: state.tabs.map(t => t.id === id ? { ...t, savedMap: map, dirty: false } : t)
     })),
+    // FR: Assurer la présence d'un fichier (groupe) et retourner son id
+    // EN: Ensure a file (group) exists and return its id
+    ensureFile: (file) => {
+      const existing = get().files.find(f => (file.id && f.id === file.id) || (!!file.path && f.path === file.path) || f.title === file.title)
+      if (existing) return existing.id
+      const id = file.id || uid()
+      set({ files: [...get().files, { id, title: file.title, path: file.path }] })
+      return id
+    },
+    setActiveFile: (fileId: string) => set({ activeFileId: fileId }),
     accentColor: prefs.accentColor || '#3b82f6',
     setAccentColor: (hex: string) => { savePrefs({ accentColor: hex }); set({ accentColor: hex }) },
     dropTolerancePx: typeof prefs.dropTolerancePx === 'number' ? prefs.dropTolerancePx : 18,
