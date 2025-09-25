@@ -45,7 +45,7 @@ jobs:
           path: .
           base: ''
           head: ${{ github.sha }}
-          extra_args: --only-verified --no-update
+          extra_args: --only-verified
 
       # FR: Audit npm (prod uniquement). N'échoue pas le job, on consigne en annotations.
       # EN: npm audit (prod only). Do not fail the job; we just log.
