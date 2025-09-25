@@ -2,6 +2,65 @@ name: security
 
 on:
   push:
+    branches: [ main, feature/**, bugfix/** ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 3 * * *'
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install dependencies (no scripts)
+        run: npm ci --ignore-scripts
+
+      # FR: Utiliser l'action officielle TruffleHog (évite l'installation locale fragile)
+      # EN: Use official TruffleHog action (avoids brittle local installs)
+      - name: TruffleHog secret scan
+        uses: trufflesecurity/trufflehog@v3
+        with:
+          path: .
+          base: ''
+          head: ${{ github.sha }}
+          extra_args: --only-verified --no-update
+
+      # FR: Audit npm (prod uniquement). N'échoue pas le job, on consigne en annotations.
+      # EN: npm audit (prod only). Do not fail the job; we just log.
+      - name: npm audit (prod)
+        run: |
+          npm audit --omit=dev || true
+
+      # FR: Scan simple des scripts suspects (repo local utilitaire)
+      # EN: Simple suspect script scan (local repo utility)
+      - name: Suspect scripts scan
+        run: node security/suspects-scan.cjs || true
+
+name: security
+
+on:
+  push:
   pull_request:
 
 jobs:
