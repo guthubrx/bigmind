@@ -18,6 +18,8 @@ const MenuBar: React.FC = () => {
   const activeTabId = useApp((s) => s.activeTabId)
   const updateTabMap = useApp((s) => s.updateTabMap)
   const setTabSaved = useApp((s) => s.setTabSaved)
+  const closeTab = useApp((s) => s.closeTab)
+  const tabsState = useApp((s) => s.tabs)
   const tabs = useApp((s) => s.tabs)
   const resetEmpty = useMindMap((s) => s.resetEmpty)
   const loadPrefsExternal = useApp((s) => s.loadPrefsExternal)
@@ -90,6 +92,13 @@ const MenuBar: React.FC = () => {
           setTabSaved(activeTabId, root)
         }}>{t('menu.saveAs') || 'Enregistrer sous…'}</Item>
         <Item onClick={async () => {
+          /*
+            FR: Ouvrir un fichier depuis le menu Fichier. On crée les onglets, on charge
+            la première feuille, puis on ferme l'onglet d'accueil s'il est présent.
+
+            EN: Open a file from the File menu. Create tabs, load the first sheet,
+            then close the welcome tab if present.
+          */
           const result = await openFile()
           if (!result) return
           const { sheets, fileName } = result
@@ -108,6 +117,9 @@ const MenuBar: React.FC = () => {
           if (active && sheet0) {
             useMindMap.setState({ root: sheet0.root, past: [], future: [], selectedId: null })
           }
+          // Close welcome tab if present
+          const welcome = (tabsState || useApp.getState().tabs).find(t => t.type === 'welcome')
+          if (welcome) closeTab(welcome.id)
         }}>{t('menu.open')}…</Item>
         <Item onClick={exportSettings}>Exporter réglages…</Item>
         <Item onClick={importSettings}>Importer réglages…</Item>

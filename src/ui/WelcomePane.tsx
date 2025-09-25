@@ -19,6 +19,8 @@ const WelcomePane: React.FC = () => {
   const recents = useApp((s) => s.recentFiles)
   const updateTabMap = useApp((s) => s.updateTabMap)
   const setTabSaved = useApp((s) => s.setTabSaved)
+  const closeTab = useApp((s) => s.closeTab)
+  const tabs = useApp((s) => s.tabs)
   const addRecentFile = useApp((s) => s.addRecentFile)
   return (
     <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -27,6 +29,13 @@ const WelcomePane: React.FC = () => {
         <div style={{ display: 'flex', gap: 12 }}>
           <button onClick={() => openMindmap()} style={commonStyles.button}>{t('Nouvelle carte')}</button>
           <button onClick={async () => {
+            /*
+              FR: Ouverture d'un fichier depuis l'écran d'accueil: créer un onglet par feuille,
+              charger la première dans le store, puis fermer l'onglet "welcome".
+
+              EN: Opening a file from the welcome screen: create one tab per sheet,
+              load the first into the store, then close the "welcome" tab.
+            */
             const result = await openFile()
             if (!result) return
             const { sheets, fileName } = result
@@ -45,6 +54,9 @@ const WelcomePane: React.FC = () => {
             if (active && sheet0) {
               useMindMap.setState({ root: sheet0.root, past: [], future: [], selectedId: null })
             }
+            // Close welcome tab if present
+            const welcome = (tabs || useApp.getState().tabs).find(t => t.type === 'welcome')
+            if (welcome) closeTab(welcome.id)
           }} style={commonStyles.button}>{t('Ouvrir une carte')}</button>
           <button onClick={() => openSettings()} style={commonStyles.button}>{t('Paramètres')}</button>
         </div>
@@ -58,6 +70,13 @@ const WelcomePane: React.FC = () => {
                   style={{ ...commonStyles.recentFileItem, cursor: 'pointer' }}
                   title={f.path}
                   onClick={async () => {
+                    /*
+                      FR: Ouverture d'un fichier récent: même logique que ci-dessus, puis
+                      fermeture de l'onglet "welcome" s'il est présent.
+
+                      EN: Opening a recent file: same logic as above, then close the
+                      "welcome" tab if present.
+                    */
                     const result = await openRecentByPath(f.path)
                     if (!result) return
                     const { sheets, fileName } = result
@@ -74,6 +93,9 @@ const WelcomePane: React.FC = () => {
                     if (active && sheet0) {
                       useMindMap.setState({ root: sheet0.root, past: [], future: [], selectedId: null })
                     }
+                    // Close welcome tab if present
+                    const welcome = (tabs || useApp.getState().tabs).find(t => t.type === 'welcome')
+                    if (welcome) closeTab(welcome.id)
                   }}
                 >
                   {f.thumbnailDataUrl ? 
