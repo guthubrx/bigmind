@@ -40,7 +40,7 @@ jobs:
       # FR: Utiliser l'action officielle TruffleHog (évite l'installation locale fragile)
       # EN: Use official TruffleHog action (avoids brittle local installs)
       - name: TruffleHog secret scan
-        uses: trufflesecurity/trufflehog@v3
+        uses: trufflesecurity/trufflehog@v3.90.8
         with:
           path: .
           base: ''
