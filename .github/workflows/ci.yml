@@ -1,0 +1,33 @@
+name: CI Full
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # FR: Étape placeholder pour lints/tests si on les ajoute plus tard
+      #
+      # EN: Placeholder step for lints/tests if added later
+
+

@@ -20,20 +20,28 @@ export type Tab = {
   map?: Topic
   savedMap?: Topic
   dirty?: boolean
+  fileId?: string // FR: identifiant du fichier auquel appartient l'onglet; EN: file group identifier for this tab
 }
 
 export type AppState = {
   tabs: Tab[]
   activeTabId: string
+  // FR: Fichiers ouverts (groupes) et fichier actif
+  // EN: Open files (groups) and active file
+  files: Array<{ id: string; title: string; path?: string }>
+  activeFileId: string | null
   recentFiles: Array<{ path: string; title: string; openedAt: number; thumbnailDataUrl?: string }>
   addRecentFile: (file: { path: string; title: string; thumbnailDataUrl?: string }) => void
   openSettings: () => void
-  openMindmap: (title?: string) => string
+  openMindmap: (title?: string, fileId?: string) => string
   closeTab: (id: string) => void
   activate: (id: string) => void
   moveTab: (fromIdx: number, toIdx: number) => void
   updateTabMap: (id: string, map: Topic) => void
   setTabSaved: (id: string, map: Topic) => void
+  // FR: Gestion des fichiers (groupes) / EN: File (group) management
+  ensureFile: (file: { id?: string; title: string; path?: string }) => string
+  setActiveFile: (fileId: string) => void
   // preferences
   language: string
   theme: string
@@ -63,6 +71,20 @@ export type AppState = {
   setGenGapPx?: (px: number) => void
   vGapPx?: number
   setVGapPx?: (px: number) => void
+  // FR: Couleurs des onglets - EN: Tab colors
+  tabActiveColor: string
+  setTabActiveColor: (color: string) => void
+  tabInactiveColor: string
+  setTabInactiveColor: (color: string) => void
+  tabBarBackgroundColor: string
+  setTabBarBackgroundColor: (color: string) => void
+  // FR: Mémorisation du zoom par onglet - EN: Per-tab zoom memory
+  tabZooms?: Record<string, { k: number; x: number; y: number }>
+  setTabZoom: (tabId: string, t: { k: number; x: number; y: number }) => void
+  getTabZoom: (tabId: string) => { k: number; x: number; y: number } | undefined
+  // FR: Confidentialité – vérifier les mises à jour en ligne - EN: Privacy – check updates online
+  checkUpdates: boolean
+  setCheckUpdates: (enabled: boolean) => void
   loadPrefsExternal: (prefs: any) => Promise<void>
 }
 
@@ -71,7 +93,7 @@ const uid = () => Math.random().toString(36).slice(2, 10)
 export const useApp = create<AppState>((set, get) => {
   const initialMindmapId = uid()
   const loadPrefs = () => loadPrefsSync() || {}
-  const savePrefs = async (overrides: Partial<{ language: string; theme: string; leftSidebarOpen: boolean; rightSidebarOpen: boolean; zoom: number; leftSidebarWidth: number; rightSidebarWidth: number; collapseDurationMs: number; showSidebarToggles: boolean; accentColor: string; dropTolerancePx: number; nodeWidthPx: number; genGapPx: number; vGapPx: number }>) => {
+  const savePrefs = async (overrides: Partial<{ language: string; theme: string; leftSidebarOpen: boolean; rightSidebarOpen: boolean; zoom: number; leftSidebarWidth: number; rightSidebarWidth: number; collapseDurationMs: number; showSidebarToggles: boolean; accentColor: string; dropTolerancePx: number; nodeWidthPx: number; genGapPx: number; vGapPx: number; tabZooms: Record<string, { k: number; x: number; y: number }>; checkUpdates: boolean }>) => {
     const current = loadPrefs() || {}
     const next = { ...current, ...overrides }
     savePrefsToLocalStorage(next)
@@ -102,6 +124,11 @@ export const useApp = create<AppState>((set, get) => {
         nodeWidthPx: typeof next.nodeWidthPx === 'number' ? next.nodeWidthPx : 200,
         genGapPx: typeof next.genGapPx === 'number' ? next.genGapPx : 40,
         vGapPx: typeof next.vGapPx === 'number' ? next.vGapPx : 28,
+        tabActiveColor: next.tabActiveColor || 'var(--bg)',
+        tabInactiveColor: next.tabInactiveColor || 'var(--muted)',
+        tabBarBackgroundColor: next.tabBarBackgroundColor || '#2a2a2a',
+        tabZooms: next.tabZooms || {},
+        checkUpdates: next.checkUpdates ?? false
       })
       if (next.language) i18n.changeLanguage(next.language)
     }
@@ -109,6 +136,8 @@ export const useApp = create<AppState>((set, get) => {
   return {
     tabs: [{ id: initialMindmapId, type: 'welcome', title: 'Accueil' }],
     activeTabId: initialMindmapId,
+    files: [],
+    activeFileId: null,
     recentFiles: isWeb() ? [] : ((loadPrefs().recentFiles as any[]) || []),
     addRecentFile: (file) => set(() => {
       const list = ([file, ...get().recentFiles]
@@ -123,9 +152,17 @@ export const useApp = create<AppState>((set, get) => {
       const id = uid()
       set({ tabs: [...get().tabs, { id, type: 'settings', title: 'Settings' }], activeTabId: id })
     },
-    openMindmap: (title?: string) => {
+    openMindmap: (title?: string, fileId?: string) => {
       const id = uid()
-      set({ tabs: [...get().tabs, { id, type: 'mindmap', title: title || `MindMap ${get().tabs.length + 1}`, map: undefined, savedMap: undefined, dirty: false }], activeTabId: id })
+      let targetFileId = fileId || get().activeFileId || null
+      if (!targetFileId) {
+        // FR: Créer un groupe fichier si aucun n'est actif
+        // EN: Create a file group if none is active
+        const createdId = get().ensureFile({ title: title || 'Untitled' })
+        targetFileId = createdId
+      }
+      const nextTab: Tab = { id, type: 'mindmap', title: title || `MindMap ${get().tabs.length + 1}`, map: undefined, savedMap: undefined, dirty: false, fileId: targetFileId || undefined }
+      set({ tabs: [...get().tabs, nextTab], activeTabId: id, activeFileId: targetFileId })
       return id
     },
     closeTab: (id: string) => {
@@ -134,7 +171,11 @@ export const useApp = create<AppState>((set, get) => {
       if (active === id && tabs.length) active = tabs[tabs.length - 1].id
       set({ tabs, activeTabId: active })
     },
-    activate: (id: string) => set({ activeTabId: id }),
+    activate: (id: string) => set((state) => {
+      const t = state.tabs.find(x => x.id === id)
+      const nextActiveFileId = t && t.fileId ? t.fileId : state.activeFileId
+      return { activeTabId: id, activeFileId: nextActiveFileId || null }
+    }),
     updateTabMap: (id: string, map) => set((state) => {
       const existing = state.tabs.find(t => t.id === id)?.map
       try {
@@ -149,6 +190,16 @@ export const useApp = create<AppState>((set, get) => {
     setTabSaved: (id: string, map) => set((state) => ({
       tabs: state.tabs.map(t => t.id === id ? { ...t, savedMap: map, dirty: false } : t)
     })),
+    // FR: Assurer la présence d'un fichier (groupe) et retourner son id
+    // EN: Ensure a file (group) exists and return its id
+    ensureFile: (file) => {
+      const existing = get().files.find(f => (file.id && f.id === file.id) || (!!file.path && f.path === file.path) || f.title === file.title)
+      if (existing) return existing.id
+      const id = file.id || uid()
+      set({ files: [...get().files, { id, title: file.title, path: file.path }] })
+      return id
+    },
+    setActiveFile: (fileId: string) => set({ activeFileId: fileId }),
     accentColor: prefs.accentColor || '#3b82f6',
     setAccentColor: (hex: string) => { savePrefs({ accentColor: hex }); set({ accentColor: hex }) },
     dropTolerancePx: typeof prefs.dropTolerancePx === 'number' ? prefs.dropTolerancePx : 18,
@@ -209,6 +260,22 @@ export const useApp = create<AppState>((set, get) => {
     setCollapseDurationMs: (ms: number) => { savePrefs({ collapseDurationMs: ms }); set({ collapseDurationMs: ms }) },
     showSidebarToggles: prefs.showSidebarToggles ?? true,
     setShowSidebarToggles: (show: boolean) => { savePrefs({ showSidebarToggles: show }); set({ showSidebarToggles: show }) },
+    // FR: Couleurs des onglets - EN: Tab colors
+    tabActiveColor: prefs.tabActiveColor || 'var(--bg)',
+    setTabActiveColor: (color: string) => { savePrefs({ tabActiveColor: color }); set({ tabActiveColor: color }) },
+    tabInactiveColor: prefs.tabInactiveColor || 'var(--muted)',
+    setTabInactiveColor: (color: string) => { savePrefs({ tabInactiveColor: color }); set({ tabInactiveColor: color }) },
+    tabBarBackgroundColor: prefs.tabBarBackgroundColor || '#2a2a2a',
+    setTabBarBackgroundColor: (color: string) => { savePrefs({ tabBarBackgroundColor: color }); set({ tabBarBackgroundColor: color }) },
+    tabZooms: (loadPrefs() || {}).tabZooms || {},
+    setTabZoom: (tabId, t) => set((state) => {
+      const next = { ...(state.tabZooms || {}), [tabId]: t }
+      savePrefs({ tabZooms: next })
+      return { tabZooms: next }
+    }),
+    getTabZoom: (tabId) => (get().tabZooms || {})[tabId],
+    checkUpdates: (loadPrefs() || {}).checkUpdates ?? false,
+    setCheckUpdates: (enabled: boolean) => { savePrefs({ checkUpdates: enabled }); set({ checkUpdates: enabled }) },
   }
 })
 

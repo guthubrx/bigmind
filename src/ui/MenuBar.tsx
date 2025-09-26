@@ -49,8 +49,9 @@ const MenuBar: React.FC = () => {
   )
 
   return (
-    <div style={{ display: 'flex', gap: 6, padding: '4px 8px', borderBottom: '1px solid var(--muted)', background: 'var(--panel)' }}>
-      <Menu title={t('menu.file')}>
+    <div style={{ display: 'flex', gap: 6, padding: '4px 8px', borderBottom: '1px solid var(--muted)', background: 'var(--panel)', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', gap: 6 }}>
+        <Menu title={t('menu.file')}>
         <Item onClick={() => openMindmap()}>{t('menu.newTab')}</Item>
         <Item onClick={async () => {
           // Save As… current map to FreeMind .mm
@@ -102,10 +103,14 @@ const MenuBar: React.FC = () => {
           const result = await openFile()
           if (!result) return
           const { sheets, fileName } = result
+          // FR: Créer un fichier dans le store pour ce fichier ouvert
+          // EN: Create a file in the store for this opened file
+          const fileId = useApp.getState().ensureFile({ title: fileName, path: fileName })
+          useApp.getState().setActiveFile(fileId)
           // Open one tab per sheet
           let firstId: string | null = null
           for (const s of sheets) {
-            const id = openMindmap(s.title)
+            const id = openMindmap(s.title, fileId)
             if (!firstId) firstId = id
             updateTabMap(id, s.root)
             useApp.getState().setTabSaved(id, s.root)
@@ -139,6 +144,39 @@ const MenuBar: React.FC = () => {
       <Menu title={t('menu.help')}>
         <Item disabled>{t('menu.about')}</Item>
       </Menu>
+      </div>
+      
+      {/* FR: Bouton fermer paramètres - EN: Close settings button */}
+      {activeTabId && tabs.find(t => t.id === activeTabId)?.type === 'settings' && (
+        <button
+          onClick={() => {
+            const settingsTab = tabs.find(t => t.id === activeTabId)
+            if (settingsTab) {
+              closeTab(settingsTab.id)
+            }
+          }}
+          style={{
+            background: 'transparent',
+            border: '1px solid var(--border)',
+            borderRadius: '4px',
+            padding: '4px 8px',
+            cursor: 'pointer',
+            color: 'var(--fg)',
+            fontSize: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'var(--muted)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent'
+          }}
+        >
+          ✕ Fermer
+        </button>
+      )}
     </div>
   )
 }

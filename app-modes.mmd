@@ -1,0 +1,38 @@
+flowchart TD
+    Start([Application BigMind]) --> Topbar[TOPBAR]
+    Topbar --> Menubar[MENUBAR]
+    Menubar --> CheckTab{Type d'onglet actif?}
+    
+    CheckTab -->|Settings| SettingsMode[Mode Paramètres]
+    CheckTab -->|Mindmap| MindmapMode[Mode Carte Mentale]
+    CheckTab -->|Aucun| WelcomeMode[Mode Accueil]
+    
+    subgraph "Mode Paramètres"
+        SettingsMode --> HideOpenFiles[❌ Masquer Open Files]
+        SettingsMode --> HideProperties[❌ Masquer Propriétés]
+        SettingsMode --> ShowSettings[✅ Afficher SettingsPane]
+        SettingsMode --> AlignTabsLeft[Barre onglets alignée à gauche]
+    end
+    
+    subgraph "Mode Carte Mentale"
+        MindmapMode --> ShowOpenFiles[✅ Afficher Open Files]
+        MindmapMode --> ShowProperties[✅ Afficher Propriétés]
+        MindmapMode --> ShowSVG[✅ Afficher SVG Mind Map]
+        MindmapMode --> AlignTabsRight[Barre onglets alignée à droite]
+    end
+    
+    subgraph "Mode Accueil"
+        WelcomeMode --> ShowOpenFiles2[✅ Afficher Open Files]
+        WelcomeMode --> ShowProperties2[✅ Afficher Propriétés]
+        WelcomeMode --> ShowWelcome[✅ Afficher WelcomePane]
+        WelcomeMode --> AlignTabsRight2[Barre onglets alignée à droite]
+    end
+    
+    %% Styles
+    classDef mode fill:#e8f5e8,stroke:#4caf50,stroke-width:2px
+    classDef action fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+    classDef decision fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
+    
+    class SettingsMode,MindmapMode,WelcomeMode mode
+    class HideOpenFiles,HideProperties,ShowSettings,AlignTabsLeft,ShowOpenFiles,ShowProperties,ShowSVG,AlignTabsRight,ShowOpenFiles2,ShowProperties2,ShowWelcome,AlignTabsRight2 action
+    class CheckTab decision

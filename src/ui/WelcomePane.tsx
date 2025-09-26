@@ -22,6 +22,8 @@ const WelcomePane: React.FC = () => {
   const closeTab = useApp((s) => s.closeTab)
   const tabs = useApp((s) => s.tabs)
   const addRecentFile = useApp((s) => s.addRecentFile)
+  const ensureFile = useApp((s) => s.ensureFile)
+  const setActiveFile = useApp((s) => s.setActiveFile)
   return (
     <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ ...commonStyles.card, display: 'grid', gap: 16 }}>
@@ -39,10 +41,14 @@ const WelcomePane: React.FC = () => {
             const result = await openFile()
             if (!result) return
             const { sheets, fileName } = result
+            // FR: Créer un fichier dans le store pour ce fichier ouvert
+            // EN: Create a file in the store for this opened file
+            const fileId = ensureFile({ title: fileName, path: fileName })
+            setActiveFile(fileId)
             // Open one tab per sheet
             let firstId: string | null = null
             for (const s of sheets) {
-              const id = openMindmap(s.title)
+              const id = openMindmap(s.title, fileId)
               if (!firstId) firstId = id
               updateTabMap(id, s.root)
               setTabSaved(id, s.root)

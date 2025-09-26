@@ -1,6 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Topic, useMindMap } from '../store/mindmap'
+import { useApp } from '../store/app'
 
 const OutlineNode: React.FC<{ node: Topic; level?: number }> = ({ node, level = 0 }) => {
   const { t } = useTranslation()
@@ -197,13 +198,116 @@ const OutlineNode: React.FC<{ node: Topic; level?: number }> = ({ node, level = 
   )
 }
 
+/*
+  FR: Panneau gauche – Fichiers ouverts + Plan (outline)
+  Affiche d'abord la liste des onglets de type "mindmap" pour naviguer rapidement
+  entre les fichiers ouverts, puis le plan hiérarchique de la carte active.
+
+  EN: Left panel – Open files + Outline
+  Shows first the list of open tabs of type "mindmap" to quickly switch between
+  open files, then the hierarchical outline of the active map.
+*/
 const SidebarLeft: React.FC = () => {
   const { t } = useTranslation()
   const root = useMindMap((s) => s.root)
+  const tabs = useApp((s) => s.tabs)
+  const activeTabId = useApp((s) => s.activeTabId)
+  const activate = useApp((s) => s.activate)
+  const files = useApp((s) => s.files)
+  const activeFileId = useApp((s) => s.activeFileId)
+  const setActiveFile = useApp((s) => s.setActiveFile)
+
+  const mindmapTabs = React.useMemo(() => tabs.filter(t => t.type === 'mindmap'), [tabs])
+  const mindmapTabsByFile = React.useMemo(() => {
+    const by: Record<string, typeof mindmapTabs> = {}
+    mindmapTabs.forEach(t => {
+      const fid = t.fileId || 'unassigned'
+      if (!by[fid]) by[fid] = [] as any
+      ;(by[fid] as any).push(t)
+    })
+    return by
+  }, [mindmapTabs])
+
   return (
-    <div style={{ height: '100%', overflow: 'auto' }}>
-      <div style={{ padding: 8, fontWeight: 600 }}>{t('Outline')}</div>
-      <OutlineNode node={root} />
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'row', minWidth: 0 }}>
+      {/*
+        FR: Colonne 1 – Fichiers ouverts (liste verticale fixe, scroll indépendant)
+
+        EN: Column 1 – Open files (fixed vertical list, independent scroll)
+      */}
+      <div style={{ 
+        width: 200, 
+        borderRight: '1px solid #e5e7eb', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        minWidth: 160,
+        height: 'calc(100% + 40px)', // FR: Hauteur totale + barre d'onglets - EN: Full height + tabs bar
+        backgroundColor: 'var(--panel)', // FR: Utiliser le fond du thème (fin debug) - EN: Use themed panel background (end of debug)
+        color: 'var(--fg)' // FR: Forcer la couleur du texte pour garantir la lisibilité - EN: Force text color to ensure readability
+      }}>
+        <div style={{ padding: '8px 8px 4px', fontWeight: 600 }}>{t('Open files')}</div>
+        <div style={{ padding: '0 4px 8px', overflow: 'auto' }}>
+          {files.length === 0 ? (
+            <div style={{ opacity: .7, padding: '4px 8px' }}>{t('No open files')}</div>
+          ) : (
+            files.map((file) => {
+              const tabsForFile = mindmapTabsByFile[file.id] || []
+              const isActive = file.id === activeFileId
+              const displayName = ((): string => {
+                if (file.path && typeof file.path === 'string') {
+                  const p = file.path.replace(/\\/g, '/')
+                  return p.split('/').filter(Boolean).pop() || file.title
+                }
+                return file.title || 'Sans titre' // FR: Secours si titre absent - EN: Fallback when title missing
+              })()
+              return (
+                <button
+                  key={file.id}
+                  onClick={() => {
+                    setActiveFile(file.id)
+                    // FR: Activer un onglet de ce fichier si possible
+                    // EN: Activate a tab of this file if possible
+                    const first = tabsForFile[0]
+                    if (first) activate(first.id)
+                  }}
+                  title={file.path || file.title}
+                  style={{
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '6px 8px',
+                    border: 'none',
+                    borderRadius: 6,
+                    background: isActive ? '#fff' : 'transparent',
+                    color: 'var(--fg)', // FR: Couleur explicite pour éviter l'héritage problématique - EN: Explicit color to avoid inheritance issues
+                    cursor: 'pointer',
+                    boxShadow: isActive ? 'inset 0 0 0 1px var(--muted)' : 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    margin: '2px 0'
+                  }}
+                >
+                  <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{displayName}</span>
+                  {/* FR: Compteur d’onglets (feuilles) / EN: Tabs (sheets) counter */}
+                  <span style={{ fontSize: 11, opacity: .7 }}>{tabsForFile.length}</span>
+                </button>
+              )
+            })
+          )}
+        </div>
+      </div>
+
+      {/*
+        FR: Colonne 2 – Plan (outline) de la carte active, avec son propre scroll
+
+        EN: Column 2 – Active map outline, with its own scroll
+      */}
+      <div style={{ flex: 1, minWidth: 0, overflow: 'auto' }}>
+        <div style={{ padding: 8, fontWeight: 600 }}>{t('Outline')}</div>
+        <div style={{ paddingBottom: 8 }}>
+          <OutlineNode node={root} />
+        </div>
+      </div>
     </div>
   )
 }

@@ -1,0 +1,41 @@
+graph TD
+    A[TOPBAR - 100% largeur] --> B[MENUBAR - 100% largeur]
+    B --> C[Espace Principal - flex: 1]
+    
+    C --> D[Colonne Open Files - 200px]
+    C --> E[Espace2 - flex: 1]
+    
+    D --> D1[Liste fichiers ouverts]
+    
+    E --> F[Espace3 - flex: 1]
+    E --> G[Barre d'onglets - 48px]
+    
+    F --> H[Carte Mentale - flex: 1]
+    F --> I[Colonne Propriétés - 200px]
+    
+    H --> H1[SVG Mind Map]
+    H --> H2[WelcomePane]
+    H --> H3[SettingsPane]
+    
+    I --> I1[Liste propriétés sélection]
+    
+    G --> G1[Onglet 1]
+    G --> G2[Onglet 2]
+    G --> G3[Bouton +]
+    
+    %% Styles
+    classDef topBar fill:#e1f5fe
+    classDef menuBar fill:#f3e5f5
+    classDef openFiles fill:#e8f5e8
+    classDef mindMap fill:#fff3e0
+    classDef properties fill:#fce4ec
+    classDef tabsBar fill:#f1f8e9
+    classDef conditional fill:#ffebee
+    
+    class A topBar
+    class B menuBar
+    class D,D1 openFiles
+    class H,H1,H2,H3 mindMap
+    class I,I1 properties
+    class G,G1,G2,G3 tabsBar
+    class H2,H3 conditional
