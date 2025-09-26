@@ -1565,26 +1565,6 @@ const MindMap: React.FC = () => {
           </div>
           {/* FR: Contrôles de zoom - EN: Zoom controls */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            {/* FR: Plein écran - EN: Fullscreen */}
-            <button
-              aria-label={t('Fullscreen')}
-              style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center' }}
-              onClick={() => {
-                try {
-                  const doc: any = document
-                  const el: any = document.documentElement
-                  const isFs = !!(doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement || doc.msFullscreenElement)
-                  if (!isFs) {
-                    ;(el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen)?.call(el)
-                  } else {
-                    ;(doc.exitFullscreen || doc.webkitExitFullscreen || doc.mozCancelFullScreen || doc.msExitFullscreen)?.call(doc)
-                  }
-                } catch {}
-              }}
-              title={t('Fullscreen')}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 9 3 3 9 3"/><polyline points="15 3 21 3 21 9"/><polyline points="21 15 21 21 15 21"/><polyline points="9 21 3 21 3 15"/></svg>
-            </button>
             {/* FR: Icônes zoom (SVG) - EN: Zoom icons */}
             <button
               aria-label={t('Zoom out')}
@@ -1602,11 +1582,32 @@ const MindMap: React.FC = () => {
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
             </button>
+            {/* FR: Adapter à la fenêtre (double flèche ↔) - EN: Fit to screen (double arrow) */}
             <button
               aria-label={t('Fit to screen')}
               style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center', gap: 4 }}
               onClick={() => { try { fitToView() } catch {} }}
               title={t('Fit to screen')}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="7 8 3 12 7 16"/><polyline points="17 8 21 12 17 16"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+            </button>
+            {/* FR: Plein écran - EN: Fullscreen */}
+            <button
+              aria-label={t('Fullscreen')}
+              style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center' }}
+              onClick={() => {
+                try {
+                  const doc: any = document
+                  const el: any = document.documentElement
+                  const isFs = !!(doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement || doc.msFullscreenElement)
+                  if (!isFs) {
+                    ;(el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen)?.call(el)
+                  } else {
+                    ;(doc.exitFullscreen || doc.webkitExitFullscreen || doc.mozCancelFullScreen || doc.msExitFullscreen)?.call(doc)
+                  }
+                } catch {}
+              }}
+              title={t('Fullscreen')}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 9 3 3 9 3"/><polyline points="15 3 21 3 21 9"/><polyline points="21 15 21 21 15 21"/><polyline points="9 21 3 21 3 15"/></svg>
             </button>
