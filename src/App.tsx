@@ -93,14 +93,17 @@ const MindMap: React.FC = () => {
   const hoverTargetIdRef = React.useRef<string | null>(null)
   const showLeft = useApp((s) => s.leftSidebarOpen)
   const showRight = useApp((s) => s.rightSidebarOpen)
+  const showTree = useApp((s) => s.treeSidebarOpen)
   const setShowLeft = useApp((s) => s.setLeftSidebarOpen)
   const setShowRight = useApp((s) => s.setRightSidebarOpen)
+  const setShowTree = useApp((s) => s.setTreeSidebarOpen)
+  const showToggles = useApp((s) => s.showSidebarToggles)
   const leftWidth = useApp((s) => s.leftSidebarWidth)
   const rightWidth = useApp((s) => s.rightSidebarWidth)
   const setLeftWidth = useApp((s) => s.setLeftSidebarWidth)
   const setRightWidth = useApp((s) => s.setRightSidebarWidth)
   const collapseMs = useApp((s) => s.collapseDurationMs)
-  const showToggles = useApp((s) => s.showSidebarToggles)
+  // duplicate removed
   const dropTolerancePx = useApp((s) => s.dropTolerancePx)
   const nodeWidthPx = useApp((s) => s.nodeWidthPx || UI_CONSTANTS.NODE_WIDTH)
   const genGapPx = useApp((s) => s.genGapPx || UI_CONSTANTS.DEFAULT_GEN_GAP)
@@ -908,13 +911,56 @@ const MindMap: React.FC = () => {
       console.log('NODE MOUSEDOWN:', d.id, 'event:', event)
       // Ne pas preventDefault pour laisser D3-drag initier le drag immédiatement
       event.stopPropagation()
+      // FR: Marquer les coordonnées/temps pour distinguer clic vs drag
+      // EN: Record coords/time to distinguish click from drag
+      ;(d as any).__down = { x: event.clientX, y: event.clientY, t: Date.now() }
       if (editing) setEditing(null)
     })
+    // FR: Sélection au clic sur le groupe entier (sans preventDefault)
+    // EN: Select on click on the whole group (no preventDefault)
     nodeGroups.on('click', (event, d) => {
       console.log('NODE CLICK:', d.id, 'event:', event)
       event.stopPropagation()
-      event.preventDefault()
       select(d.id)
+    })
+    // FR: Sélection au mouseup si déplacement et durée faibles (anti micro-drag)
+    // EN: Select on mouseup if small move/time (anti micro-drag)
+    nodeGroups.on('mouseup', (event, d) => {
+      try {
+        const down = (d as any).__down
+        if (down) {
+          const dx = Math.abs(event.clientX - (down.x || 0))
+          const dy = Math.abs(event.clientY - (down.y || 0))
+          const dt = Date.now() - (down.t || 0)
+          if (dx < 3 && dy < 3 && dt < 250) {
+            event.stopPropagation()
+            select(d.id)
+          }
+          ;(d as any).__down = null
+        }
+      } catch {}
+    })
+
+    // FR: Délégation globale sur le conteneur pour capter les clics sur tspan/texte
+    // EN: Global delegation on container to catch clicks on tspan/text
+    g.on('click.select-delegate', function(event: any) {
+      const target: Element | null = event?.target || null
+      const group = target && (target as any).closest ? (target as any).closest('g.node') as SVGGElement | null : null
+      if (group) {
+        const data = d3.select(group).datum() as any
+        if (data && data.id) {
+          event.stopPropagation()
+          select(data.id)
+        }
+      }
+    })
+    // FR: Filets de sécurité: clic direct sur rect ou text
+    // EN: Safety nets: click directly on rect or text
+    nodeGroups.select('rect').style('pointer-events', 'all').on('click.select', function(event: any, d: any) {
+      event.stopPropagation(); select(d.id)
+    })
+    nodeGroups.select('text').style('pointer-events', 'all').on('click.select', function(event: any, d: any) {
+      event.stopPropagation(); select(d.id)
     })
     nodeGroups.on('dblclick', function(event, d) {
       console.log('[dblclick] group node id=', d.id, 'detail=', (event as any).detail, 'target=', (event.target as Element).tagName)
@@ -1356,19 +1402,52 @@ const MindMap: React.FC = () => {
         width: '100%', 
         background: 'var(--bg, #f8fafc)',
         display: 'flex',
-        flexDirection: 'row'
+        flexDirection: 'row',
+        position: 'relative'
       }}>
         {/* FR: Colonne de fichiers ouverts à gauche (masquée pour les paramètres) - EN: Open files column on the left (hidden for settings) */}
         {!(activeTabId && tabs.find(t => t.id === activeTabId)?.type === 'settings') && (
           <div style={{
-            width: 200,
-            borderRight: '1px solid #e5e7eb',
+            width: showLeft ? 200 : 0,
+            borderRight: showLeft ? '1px solid #e5e7eb' : 'none',
             display: 'flex',
             flexDirection: 'column',
-            minWidth: 160,
-            backgroundColor: 'var(--panel)'
+            minWidth: showLeft ? 160 : 0,
+            backgroundColor: 'var(--panel)',
+            overflow: 'hidden',
+            transition: `width ${collapseMs}ms ease`,
+            zIndex: 1,
+            position: 'relative'
           }}>
-            <div style={{ padding: '8px 8px 4px', fontWeight: 600 }}>{t('Open files')}</div>
+            {/* Bouton pour contrôler la colonne Open files */}
+            <div style={{ padding: '8px 8px 4px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>{t('Open files')}</span>
+              {showToggles && (
+                <button
+                  title={t('Toggle open files')}
+                  onClick={() => setShowLeft(!showLeft)}
+                  style={{ 
+                    position: 'absolute', 
+                    right: 0, 
+                    top: '50%', 
+                    transform: 'translateY(-50%)', 
+                    border: '1px solid var(--border)', 
+                    background: 'var(--panel)', 
+                    borderRadius: '0 4px 4px 0', 
+                    width: 18, 
+                    height: 36, 
+                    cursor: 'pointer', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    zIndex: 15
+                  }}
+                >
+                  ‹
+                </button>
+              )}
+            </div>
             <div style={{ padding: '0 4px 8px', overflow: 'auto' }}>
               {files.length === 0 ? (
                 <div style={{ opacity: .7, padding: '4px 8px' }}>{t('No open files')}</div>
@@ -1400,6 +1479,107 @@ const MindMap: React.FC = () => {
               )}
             </div>
           </div>
+        )}
+        
+        {/* Bouton flottant pour rouvrir la colonne Open files quand elle est fermée */}
+        {!(activeTabId && tabs.find(t => t.id === activeTabId)?.type === 'settings') && !showLeft && showToggles && (
+          <button
+            title={t('Show open files')}
+            onClick={() => setShowLeft(true)}
+            style={{ 
+              position: 'absolute', 
+              left: 0, 
+              top: '50%', 
+              transform: 'translateY(-50%)', 
+              zIndex: 15, 
+              border: '1px solid var(--border)', 
+              background: 'var(--panel)', 
+              borderRadius: '0 4px 4px 0', 
+              width: 18, 
+              height: 36, 
+              cursor: 'pointer', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              fontSize: '12px'
+            }}
+          >
+            ›
+          </button>
+        )}
+        
+        {/* FR: Colonne d'arborescence (navigation) - EN: Tree sidebar (navigation) */}
+        <div style={{
+          width: showTree ? 240 : 0,
+          display: showTree ? 'flex' : 'none',
+          flexDirection: 'column',
+          minWidth: showTree ? 200 : 0,
+          backgroundColor: 'var(--panel)',
+          borderRight: showTree ? '1px solid var(--border)' : 'none',
+          overflow: 'hidden',
+          transition: `width ${collapseMs}ms ease`,
+          zIndex: 5,
+          position: 'relative'
+        }}>
+          <div style={{ padding: '8px 8px 4px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span>Navigation</span>
+            {showToggles && (
+              <button
+                title={t('Toggle tree sidebar')}
+                onClick={() => setShowTree(!showTree)}
+                style={{ 
+                  position: 'absolute', 
+                  right: 0, 
+                  top: '50%', 
+                  transform: 'translateY(-50%)', 
+                  border: '1px solid var(--border)', 
+                  background: 'var(--panel)', 
+                  borderRadius: '0 4px 4px 0', 
+                  width: 18, 
+                  height: 36, 
+                  cursor: 'pointer', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  fontSize: '12px',
+                  zIndex: 15
+                }}
+              >
+                ‹
+              </button>
+            )}
+          </div>
+          <div style={{ padding: '0 4px 8px', overflow: 'auto' }}>
+            <div style={{ padding: '4px 8px', opacity: 0.7 }}>Structure de la carte</div>
+            {/* TODO: Ajouter le contenu de l'arborescence ici */}
+          </div>
+        </div>
+        
+        {/* Bouton flottant pour rouvrir la colonne navigation quand elle est fermée */}
+        {!showTree && showToggles && (
+          <button
+            title={t('Show tree sidebar')}
+            onClick={() => setShowTree(true)}
+            style={{ 
+              position: 'absolute', 
+              left: (showLeft ? 200 : 0), 
+              top: '50%', 
+              transform: 'translateY(-50%)', 
+              zIndex: 15, 
+              border: '1px solid var(--border)', 
+              background: 'var(--panel)', 
+              borderRadius: '0 4px 4px 0', 
+              width: 18, 
+              height: 36, 
+              cursor: 'pointer', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              fontSize: '12px'
+            }}
+          >
+            ›
+          </button>
         )}
         
         {/* FR: Espace2 divisé horizontalement - EN: Espace2 split horizontally */}
@@ -1442,20 +1622,78 @@ const MindMap: React.FC = () => {
             {/* FR: Colonne de propriétés à droite (masquée pour les paramètres) - EN: Properties column on the right (hidden for settings) */}
             {!(activeTabId && tabs.find(t => t.id === activeTabId)?.type === 'settings') && (
             <div style={{ 
-              width: 200,
-              display: 'flex',
+              width: showRight ? 200 : 0,
+              display: showRight ? 'flex' : 'none',
               flexDirection: 'column',
-              minWidth: 160,
-              backgroundColor: 'var(--panel)' // FR: Fond normal - EN: Normal background
+              minWidth: showRight ? 160 : 0,
+              backgroundColor: 'var(--panel)',
+              overflow: 'hidden',
+              transition: `width ${collapseMs}ms ease`,
+              position: 'relative'
             }}>
-              <div style={{ padding: '8px 8px 4px', fontWeight: 600 }}>Propriétés</div>
-              <div style={{ padding: '0 4px 8px', overflow: 'auto' }}>
-                {/* FR: Liste des propriétés de la sélection - EN: List of selected item properties */}
+              {/* En-tête avec bouton pour fermer */}
+              <div style={{ padding: '8px 8px 4px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span>Propriétés</span>
+                {showToggles && (
+                  <button
+                    title={t('Toggle properties sidebar')}
+                    onClick={() => setShowRight(!showRight)}
+                    style={{ 
+                      position: 'absolute', 
+                      left: 0, 
+                      top: '50%', 
+                      transform: 'translateY(-50%)', 
+                      border: '1px solid var(--border)', 
+                      background: 'var(--panel)', 
+                      borderRadius: '4px 0 0 4px', 
+                      width: 18, 
+                      height: 36, 
+                      cursor: 'pointer', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      fontSize: '12px',
+                      zIndex: 15
+                    }}
+                  >
+                    ›
+                  </button>
+                )}
+              </div>
+              <div style={{ flex: 1, overflow: 'auto' }}>
+                <SidebarRight />
               </div>
             </div>
             )}
           </div>
         </div>
+        
+        {/* Bouton flottant pour rouvrir la colonne propriétés quand elle est fermée */}
+        {!(activeTabId && tabs.find(t => t.id === activeTabId)?.type === 'settings') && !showRight && showToggles && (
+          <button
+            title={t('Show properties sidebar')}
+            onClick={() => setShowRight(true)}
+            style={{ 
+              position: 'absolute', 
+              right: 0, 
+              top: '50%', 
+              transform: 'translateY(-50%)', 
+              zIndex: 15, 
+              border: '1px solid var(--border)', 
+              background: 'var(--panel)', 
+              borderRadius: '4px 0 0 4px', 
+              width: 18, 
+              height: 36, 
+              cursor: 'pointer', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              fontSize: '12px'
+            }}
+          >
+            ‹
+          </button>
+        )}
       </div>
       
       {/* FR: Barre d'onglets - EN: Tabs bar (masquée pour les paramètres) */}
@@ -1468,7 +1706,8 @@ const MindMap: React.FC = () => {
         padding: '0',
         gap: '0',
         overflow: 'auto',
-        marginLeft: '200px'
+        marginLeft: showLeft ? '200px' : '0px',
+        transition: `margin-left ${collapseMs}ms ease`
       }}>
           {/* FR: Affichage des onglets (filtrés par fichier actif) - EN: Display tabs (filtered by active file) */}
           {tabs

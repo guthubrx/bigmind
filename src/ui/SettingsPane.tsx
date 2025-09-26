@@ -30,8 +30,8 @@ const SettingsPane: React.FC = () => {
   const setNodeWidthPx = useApp((s) => s.setNodeWidthPx)
   const dropTolerancePref = useApp((s) => s.dropTolerancePx || UI_CONSTANTS.DROP_TOLERANCE)
   const setDropTolerancePx = useApp((s) => s.setDropTolerancePx)
-  const showToggles = useApp((s) => s.showToggles)
-  const setShowToggles = useApp((s) => s.setShowToggles)
+  const showToggles = useApp((s) => s.showSidebarToggles)
+  const setShowToggles = useApp((s) => s.setShowSidebarToggles)
   const leftSidebarOpen = useApp((s) => s.leftSidebarOpen)
   const setLeftSidebarOpen = useApp((s) => s.setLeftSidebarOpen)
   const rightSidebarOpen = useApp((s) => s.rightSidebarOpen)
@@ -111,7 +111,7 @@ const SettingsPane: React.FC = () => {
         padding: '0',
         overflow: 'auto',
         position: 'relative',
-        zIndex: 2
+        zIndex: 10
       }}>
         <div style={{ 
           padding: '20px 16px 16px',
