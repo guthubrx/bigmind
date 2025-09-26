@@ -48,6 +48,8 @@ import React from 'react'
 import * as d3 from 'd3'
 import { useTranslation } from 'react-i18next'
 import Topbar from './ui/Topbar'
+// FR: Import de la version depuis package.json - EN: Import app version from package.json
+import pkg from '../package.json'
 import SidebarLeft from './ui/SidebarLeft'
 import SidebarRight from './ui/SidebarRight'
 import { useApp } from './store/app'
@@ -104,6 +106,65 @@ const MindMap: React.FC = () => {
   const genGapPx = useApp((s) => s.genGapPx || UI_CONSTANTS.DEFAULT_GEN_GAP)
   const vGapPxSetting = useApp((s) => s.vGapPx || UI_CONSTANTS.DEFAULT_V_GAP)
   const didInitialFitRef = React.useRef(false)
+  // FR: Couleurs des onglets - EN: Tab colors
+  const tabActiveColor = useApp((s) => s.tabActiveColor)
+  const tabInactiveColor = useApp((s) => s.tabInactiveColor)
+  const tabBarBackgroundColor = useApp((s) => s.tabBarBackgroundColor)
+
+  // FR: Version locale + dernière version GitHub - EN: Local version + latest GitHub release
+  const localVersion = (pkg as any).version as string
+  const [latestVersion, setLatestVersion] = React.useState<string | null>(null)
+  const [hasNewer, setHasNewer] = React.useState(false)
+
+  const checkUpdates = useApp((s) => s.checkUpdates)
+  React.useEffect(() => {
+    // FR: Récupère la dernière release GitHub - EN: Fetch latest GitHub release
+    const controller = new AbortController()
+    ;(async () => {
+      try {
+        if (!checkUpdates) return
+        // FR: Mode mock via localStorage.mockLatestVersion - EN: Mock mode via localStorage.mockLatestVersion
+        const mocked = (localStorage.getItem('mockLatestVersion') || '').trim()
+        if (mocked) {
+          const norm = (s: string) => s.replace(/^v/i, '')
+          const lv = norm(localVersion)
+          const gv = norm(mocked)
+          setLatestVersion(gv)
+          const toParts = (s: string) => s.split('.').map(n=>parseInt(n,10)).map(n=>Number.isFinite(n)?n:0)
+          const [a1,a2,a3] = toParts(lv)
+          const [b1,b2,b3] = toParts(gv)
+          const newer = b1>a1 || (b1===a1 && (b2>a2 || (b2===a2 && b3>a3)))
+          setHasNewer(!!gv && newer)
+          return
+        }
+        const headers = { 'Accept': 'application/vnd.github+json' }
+        let res = await fetch('https://api.github.com/repos/guthubrx/bigmind/releases/latest', { signal: controller.signal, headers })
+        let tag = ''
+        if (res.ok) {
+          const data = await res.json()
+          tag = (data.tag_name || data.name || '').toString()
+        } else {
+          // FR: Fallback sur les tags si pas de release/latest (404 privé/aucune release) - EN: Fallback to tags if no release/latest
+          const resTags = await fetch('https://api.github.com/repos/guthubrx/bigmind/tags?per_page=1', { signal: controller.signal, headers })
+          if (!resTags.ok) return
+          const tags = await resTags.json()
+          tag = (tags && tags[0] && (tags[0].name || '')).toString()
+        }
+        const norm = (s: string) => s.replace(/^v/i, '')
+        const lv = norm(localVersion)
+        const gv = norm(tag)
+        setLatestVersion(gv || null)
+        const toParts = (s: string) => s.split('.')
+          .map((n) => parseInt(n, 10))
+          .map((n) => (Number.isFinite(n) ? n : 0))
+        const [a1, a2, a3] = toParts(lv)
+        const [b1, b2, b3] = toParts(gv)
+        const newer = b1 > a1 || (b1 === a1 && (b2 > a2 || (b2 === a2 && b3 > a3)))
+        setHasNewer(!!gv && newer)
+      } catch {}
+    })()
+    return () => controller.abort()
+  }, [localVersion, checkUpdates])
 
   // Layout en arbre hiérarchique
   const [nodes, setNodes] = React.useState([
@@ -1097,16 +1158,23 @@ const MindMap: React.FC = () => {
         return true
       })
       .on('zoom', (event) => {
-        console.log('ZOOM EVENT:', event.transform)
+        console.info('ZOOM EVENT:', event.transform)
         g.attr('transform', event.transform)
         setZoom(Number(event.transform.k.toFixed(2)))
         zoomTransformRef.current = event.transform
       })
       .on('start', (event) => {
-        console.log('ZOOM START:', event.sourceEvent?.type)
+        console.info('ZOOM START:', event.sourceEvent?.type)
       })
       .on('end', (event) => {
-        console.log('ZOOM END:', event.sourceEvent?.type)
+        console.info('ZOOM END:', event.sourceEvent?.type)
+        try {
+          const active = useApp.getState().activeTabId
+          if (active && zoomTransformRef.current) {
+            const t = zoomTransformRef.current
+            useApp.getState().setTabZoom(active, { k: t.k, x: t.x, y: t.y })
+          }
+        } catch {}
       })
     // Appliquer le zoom uniquement sur le pane de fond
     zoomPane.call(zoomBehavior as any)
@@ -1122,6 +1190,17 @@ const MindMap: React.FC = () => {
     // Synchroniser la transform actuelle si on en a une
     if (zoomTransformRef.current) {
       (zoomPane as any).call((zoomBehavior as any).transform, zoomTransformRef.current)
+    } else {
+      // FR: Appliquer le zoom mémorisé pour l'onglet actif - EN: Apply stored zoom for active tab
+      try {
+        const active = useApp.getState().activeTabId
+        const z = useApp.getState().getTabZoom(active)
+        if (z) {
+          const t = d3.zoomIdentity.translate(z.x, z.y).scale(z.k)
+          ;(zoomPane as any).call((zoomBehavior as any).transform, t)
+          zoomTransformRef.current = t
+        }
+      } catch {}
     }
     // Désactiver double-clic zoom sur le pane
     zoomPane.on('dblclick.zoom', null)
@@ -1228,6 +1307,7 @@ const MindMap: React.FC = () => {
   const activeFileId = useApp((s) => s.activeFileId)
   const activeTabId = useApp((s) => s.activeTabId)
   const activate = useApp((s) => s.activate)
+  const setActiveFile = useApp((s) => s.setActiveFile) // FR: Définir le fichier actif - EN: Set active file
   const closeTab = useApp((s) => s.closeTab)
   const updateTabMap = useApp((s) => s.updateTabMap)
   const resetEmpty = useMindMap((s) => s.resetEmpty)
@@ -1259,272 +1339,238 @@ const MindMap: React.FC = () => {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Topbar />
       <MenuBar />
-      {/* Tabs bar – only tabs of the active file */}
-      <div className="tabs" style={{ ['--accent' as any]: accentColor }}>
-        {tabs.filter(t => t.type !== 'mindmap' || !activeFileId || t.fileId === activeFileId).map((t, idx) => (
-          <div key={t.id}
-            draggable
-            onDragStart={(e) => { e.dataTransfer.setData('text/tab-index', String(idx)) }}
-            onDragOver={(e) => { e.preventDefault(); (e.currentTarget.previousSibling as HTMLElement | null)?.classList.remove('show-drop'); }}
-            onDragEnter={(e) => { e.preventDefault(); }}
-            onDrop={(e) => { const from = Number(e.dataTransfer.getData('text/tab-index')); if (!Number.isNaN(from)) useApp.getState().moveTab(from, idx); (e.currentTarget.querySelector('.tab-drop') as HTMLElement | null)?.remove?.(); }}
-            onDragLeave={(e) => { (e.currentTarget.querySelector('.tab-drop') as HTMLElement | null)?.remove?.(); }}
-            onDragOverCapture={(e) => {
-              // Show visual indicator before current tab
-              const el = e.currentTarget as HTMLElement
-              if (!el.querySelector('.tab-drop')) {
-                const marker = document.createElement('div')
-                marker.className = 'tab-drop'
-                el.prepend(marker)
-              }
-            }}
-            onAuxClick={(e) => { if (e.button === 1) closeTab(t.id) }}
-            onClick={() => activate(t.id)}
-            className={`tab ${activeTabId === t.id ? 'active' : ''}`}>
-            <span>{t.title}</span>
-            {/* dirty indicator placeholder */}
-            <button className="tab-close" onClick={(e) => { e.stopPropagation(); closeTab(t.id) }} title={t.dirty ? 'Unsaved changes' : 'Close'}>
-              {t.dirty ? (
-                <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 999, background: 'var(--accent)' }} />
+      {/* FR: Espace1 divisé verticalement - EN: Espace1 split vertically */}
+      <div style={{ 
+        flex: 1, 
+        width: '100%', 
+        background: 'var(--bg, #f8fafc)',
+        display: 'flex',
+        flexDirection: 'row'
+      }}>
+        {/* FR: Colonne de fichiers ouverts à gauche (masquée pour les paramètres) - EN: Open files column on the left (hidden for settings) */}
+        {!(activeTabId && tabs.find(t => t.id === activeTabId)?.type === 'settings') && (
+          <div style={{
+            width: 200,
+            borderRight: '1px solid #e5e7eb',
+            display: 'flex',
+            flexDirection: 'column',
+            minWidth: 160,
+            backgroundColor: 'var(--panel)'
+          }}>
+            <div style={{ padding: '8px 8px 4px', fontWeight: 600 }}>{t('Open files')}</div>
+            <div style={{ padding: '0 4px 8px', overflow: 'auto' }}>
+              {files.length === 0 ? (
+                <div style={{ opacity: .7, padding: '4px 8px' }}>{t('No open files')}</div>
               ) : (
-                '×'
-              )}
-            </button>
-                  </div>
-        ))}
-        <button onClick={() => { useApp.getState().openMindmap(); resetEmpty(); }} title="New tab" style={{
-          width: 32, height: 32, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--accent)'
-        }}>+
-        </button>
-      </div>
-      <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
-        {/* Left sidebar only for mindmap tabs */}
-        {tabs.find(t => t.id === activeTabId)?.type === 'mindmap' && (
-          <div style={{
-            width: showLeft ? leftWidth : 0,
-            transition: `width ${collapseMs}ms ease`,
-            overflow: 'hidden',
-            borderRight: showLeft ? '1px solid #e5e7eb' : 'none',
-            background: 'var(--panel)',
-            position: 'relative'
-          }}>
-            {showLeft && <SidebarLeft />}
-            {/* Resizer */}
-            {showLeft && (
-              <div
-                onMouseDown={(e) => {
-                  const startX = e.clientX
-                  const start = leftWidth
-                  const onMove = (ev: MouseEvent) => {
-                    const next = Math.max(160, Math.min(480, start + (ev.clientX - startX)))
-                    setLeftWidth(next)
-                  }
-                  const onUp = () => {
-                    window.removeEventListener('mousemove', onMove)
-                    window.removeEventListener('mouseup', onUp)
-                  }
-                  window.addEventListener('mousemove', onMove)
-                  window.addEventListener('mouseup', onUp)
-                }}
-                className="resizer-handle"
-                style={{ position: 'absolute', top: 0, right: 0, width: 6, cursor: 'col-resize', height: '100%' }}
-              />
-            )}
-          </div>
-        )}
-        <div style={{ flex: 1, background: 'var(--bg, #f8fafc)', position: 'relative' }}>
-          {tabs.find(t => t.id === activeTabId)?.type === 'mindmap' ? (
-            <>
-              <svg
-                ref={svgRef}
-                width={dimensions.width}
-                height={dimensions.height}
-                style={{ width: '100%', height: '100%' }}
-              />
-              {/* Toggle buttons for sidebars */}
-              {showToggles && <button
-                className="sidebar-toggle right"
-                aria-label={showRight ? t('Hide right panel') : t('Show right panel')}
-                title={showRight ? t('Hide right panel') : t('Show right panel')}
-                onClick={() => setShowRight(!showRight)}
-                style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 10, boxShadow: '0 1px 3px rgba(0,0,0,.12)' }}
-              >
-                {showRight ? (
-                  // open → chevron vers la droite pour indiquer repli vers la droite
-                  <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
-                ) : (
-                  // fermé → chevron vers la gauche pour réafficher
-                  <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
-                )}
-              </button>}
-              {showToggles && <button
-                className="sidebar-toggle left"
-                aria-label={showLeft ? t('Hide left panel') : t('Show left panel')}
-                title={showLeft ? t('Hide left panel') : t('Show left panel')}
-                onClick={() => setShowLeft(!showLeft)}
-                style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 10, boxShadow: '0 1px 3px rgba(0,0,0,.12)' }}
-              >
-                {showLeft ? (
-                  // open → chevron vers la gauche pour indiquer repli vers la gauche
-                  <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
-                ) : (
-                  // fermé → chevron vers la droite pour réafficher
-                  <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
-                )}
-              </button>}
-              {editing && (
-                <input
-                  autoFocus
-                  value={editing.value}
-                  onChange={(e) => setEditing({ ...editing, value: e.target.value })}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      const newLabel = editing.value.trim()
-                      if (newLabel) {
-                        setNodes(prev => prev.map(n => n.id === editing.id ? { ...n, label: newLabel } : n))
-                        renameInStore(editing.id, newLabel)
-                      }
-                      setEditing(null)
-                    } else if (e.key === 'Escape') {
-                      setEditing(null)
+                files.map((file) => {
+                  const displayName = ((): string => {
+                    if (file.path && typeof file.path === 'string') {
+                      const p = file.path.replace(/\\/g, '/')
+                      return p.split('/').filter(Boolean).pop() || file.title
                     }
-                  }}
-                  onBlur={() => {
-                    const newLabel = editing.value.trim()
-                    if (newLabel) {
-                      setNodes(prev => prev.map(n => n.id === editing.id ? { ...n, label: newLabel } : n))
-                      renameInStore(editing.id, newLabel)
-                    }
-                    setEditing(null)
-                  }}
-                  style={{ position: 'absolute', left: editing.left, top: editing.top, width: editing.width, height: editing.height, fontWeight: 'bold', fontSize: 14, borderRadius: 8, border: '1px solid var(--muted)', padding: '8px 10px', zIndex: 100, background: 'var(--panel)', color: 'var(--fg)', boxShadow: '0 2px 8px rgba(0,0,0,.15)' }}
-                />
+                    return file.title || 'Sans titre'
+                  })()
+                  const isActive = file.id === activeFileId
+                  return (
+                    <button
+                      key={file.id}
+                      onClick={() => setActiveFile(file.id)}
+                      title={file.path || file.title}
+                      style={{
+                        width: '100%', textAlign: 'left', padding: '6px 8px', border: 'none', borderRadius: 6,
+                        background: isActive ? '#fff' : 'transparent', color: 'var(--fg)', cursor: 'pointer',
+                        boxShadow: isActive ? 'inset 0 0 0 1px var(--muted)' : 'none', display: 'flex', alignItems: 'center', gap: 8, margin: '2px 0'
+                      }}
+                    >
+                      <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{displayName}</span>
+                    </button>
+                  )
+                })
               )}
-            </>
-          ) : tabs.find(t => t.id === activeTabId)?.type === 'settings' ? (
-            <SettingsPane />
-          ) : (
-            <WelcomePane />
-          )}
-        </div>
-        {tabs.find(t => t.id === activeTabId)?.type === 'mindmap' && (
-          <div style={{
-            width: showRight ? rightWidth : 0,
-            transition: `width ${collapseMs}ms ease`,
-            overflow: 'hidden',
-            borderLeft: showRight ? '1px solid #e5e7eb' : 'none',
-            background: 'var(--panel)',
-            position: 'relative'
-          }}>
-            {showRight && <SidebarRight />}
-            {showRight && (
-              <div
-                onMouseDown={(e) => {
-                  const startX = e.clientX
-                  const start = rightWidth
-                  const onMove = (ev: MouseEvent) => {
-                    const delta = startX - ev.clientX
-                    const next = Math.max(200, Math.min(520, start + delta))
-                    setRightWidth(next)
-                  }
-                  const onUp = () => {
-                    window.removeEventListener('mousemove', onMove)
-                    window.removeEventListener('mouseup', onUp)
-                  }
-                  window.addEventListener('mousemove', onMove)
-                  window.addEventListener('mouseup', onUp)
-                }}
-                className="resizer-handle"
-                style={{ position: 'absolute', top: 0, left: 0, width: 6, cursor: 'col-resize', height: '100%' }}
-              />
-            )}
             </div>
-        )}
           </div>
-      {/* FR: Barre d’onglets en bas (déplacée depuis le haut)
-          
-          EN: Bottom tabs bar (moved from the top) */}
-      <div className="tabs" style={{ ['--accent' as any]: accentColor, borderTop: '1px solid var(--muted)' }}>
-        {tabs.map((t, idx) => (
-          <div key={t.id}
-            draggable
-            onDragStart={(e) => { e.dataTransfer.setData('text/tab-index', String(idx)) }}
-            onDragOver={(e) => { e.preventDefault(); (e.currentTarget.previousSibling as HTMLElement | null)?.classList.remove('show-drop'); }}
-            onDragEnter={(e) => { e.preventDefault(); }}
-            onDrop={(e) => { const from = Number(e.dataTransfer.getData('text/tab-index')); if (!Number.isNaN(from)) useApp.getState().moveTab(from, idx); (e.currentTarget.querySelector('.tab-drop') as HTMLElement | null)?.remove?.(); }}
-            onDragLeave={(e) => { (e.currentTarget.querySelector('.tab-drop') as HTMLElement | null)?.remove?.(); }}
-            onDragOverCapture={(e) => {
-              // FR: Afficher un marqueur visuel avant l’onglet courant
-              //
-              // EN: Show a visual marker before the current tab
-              const el = e.currentTarget as HTMLElement
-              if (!el.querySelector('.tab-drop')) {
-                const marker = document.createElement('div')
-                marker.className = 'tab-drop'
-                el.prepend(marker)
+        )}
+        
+        {/* FR: Espace2 divisé horizontalement - EN: Espace2 split horizontally */}
+        <div style={{ 
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+          {/* FR: Espace3 divisé verticalement - EN: Espace3 split vertically */}
+          <div style={{ 
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'row'
+          }}>
+            {/* FR: Carte mentale à gauche - EN: Mind map on the left */}
+            <div style={{ 
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              borderRight: '1px solid #e5e7eb',
+              position: 'relative'
+            }}>
+              {/* FR: Affichage conditionnel - EN: Conditional display */}
+              {activeTabId && tabs.find(t => t.id === activeTabId)?.type === 'mindmap' ? (
+                // FR: SVG pour la carte mentale quand un onglet mindmap est actif - EN: SVG for mind map when mindmap tab is active
+                <svg
+                  ref={svgRef}
+                  style={{ width: '100%', height: '100%', minHeight: 0 }}
+                  key={activeTabId} // FR: Force le re-rendu quand l'onglet change - EN: Force re-render when tab changes
+                />
+              ) : activeTabId && tabs.find(t => t.id === activeTabId)?.type === 'settings' ? (
+                // FR: Panneau de paramètres quand un onglet settings est actif - EN: Settings pane when settings tab is active
+                <SettingsPane />
+              ) : (
+                // FR: Écran d'accueil par défaut - EN: Welcome screen by default
+                <WelcomePane />
+              )}
+            </div>
+            
+            {/* FR: Colonne de propriétés à droite (masquée pour les paramètres) - EN: Properties column on the right (hidden for settings) */}
+            {!(activeTabId && tabs.find(t => t.id === activeTabId)?.type === 'settings') && (
+            <div style={{ 
+              width: 200,
+              display: 'flex',
+              flexDirection: 'column',
+              minWidth: 160,
+              backgroundColor: 'var(--panel)' // FR: Fond normal - EN: Normal background
+            }}>
+              <div style={{ padding: '8px 8px 4px', fontWeight: 600 }}>Propriétés</div>
+              <div style={{ padding: '0 4px 8px', overflow: 'auto' }}>
+                {/* FR: Liste des propriétés de la sélection - EN: List of selected item properties */}
+              </div>
+            </div>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {/* FR: Barre d'onglets - EN: Tabs bar (masquée pour les paramètres) */}
+      {!(activeTabId && tabs.find(t => t.id === activeTabId)?.type === 'settings') && (
+      <div style={{
+        height: '48px', // FR: Hauteur de la barre d'onglets - EN: Tabs bar height
+        backgroundColor: tabBarBackgroundColor,
+        display: 'flex',
+        alignItems: 'stretch',
+        padding: '0',
+        gap: '0',
+        overflow: 'auto',
+        marginLeft: '200px'
+      }}>
+          {/* FR: Affichage des onglets (filtrés par fichier actif) - EN: Display tabs (filtered by active file) */}
+          {tabs
+            .filter(tab => tab.type === 'mindmap' && (!activeFileId || tab.fileId === activeFileId))
+            .map(tab => (
+          <div
+            key={tab.id}
+            style={{
+              padding: '0 12px', // FR: Pas de padding vertical - EN: No vertical padding
+              borderRadius: '0', // FR: Pas de border-radius - EN: No border-radius
+              backgroundColor: tab.id === activeTabId ? tabActiveColor : tabInactiveColor,
+              color: 'var(--fg)',
+              cursor: 'pointer',
+              fontSize: '14px',
+              whiteSpace: 'nowrap',
+              border: '1px solid transparent',
+              transition: 'all 0.2s ease',
+              fontWeight: tab.id === activeTabId ? '600' : '400',
+              display: 'flex',
+              alignItems: 'center', // FR: Centrer le texte verticalement - EN: Center text vertically
+              height: '100%' // FR: Prendre toute la hauteur - EN: Take full height
+            }}
+            onClick={() => {
+              activate(tab.id)
+              
+              // FR: Charger la carte mentale correspondante - EN: Load corresponding mind map
+              const active = tabs.find(t => t.id === tab.id)
+              
+              if (active && active.type === 'mindmap') {
+                useMindMap.setState({ root: active.map, past: [], future: [], selectedId: null })
+                const built = buildFromRoot(active.map)
+                setNodes(built.nodes)
+                setLinks(built.links)
+                // FR: Mettre à jour les dimensions du SVG - EN: Update SVG dimensions
+                setDimensions({ width: window.innerWidth, height: window.innerHeight })
               }
             }}
-            onAuxClick={(e) => { if (e.button === 1) closeTab(t.id) }}
-            onClick={() => activate(t.id)}
-            className={`tab ${activeTabId === t.id ? 'active' : ''}`}>
-            <span>{t.title}</span>
-            {/* FR: Indicateur “dirty” si l’onglet a des modifications non enregistrées
-                
-                EN: “Dirty” indicator if the tab has unsaved changes */}
-            <button className="tab-close" onClick={(e) => { e.stopPropagation(); closeTab(t.id) }} title={t.dirty ? 'Unsaved changes' : 'Close'}>
-              {t.dirty ? (
-                <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 999, background: 'var(--accent)' }} />
-              ) : (
-                '×'
-              )}
-            </button>
+            onMouseEnter={(e) => {
+              if (tab.id !== activeTabId) {
+                e.currentTarget.style.backgroundColor = 'var(--bg)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (tab.id !== activeTabId) {
+                e.currentTarget.style.backgroundColor = tabInactiveColor
+              }
+            }}
+          >
+            {tab.title}
           </div>
-        ))}
-        <button onClick={() => { useApp.getState().openMindmap(); resetEmpty(); }} title="New tab" style={{
-          width: 32, height: 32, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--accent)'
-        }}>+
-        </button>
+          ))}
       </div>
-
-      {/* Status bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', borderTop: '1px solid var(--muted)', background: 'var(--panel)', color: 'var(--fg)' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12 }}>
-          <span className="tag-muted">{t('Language:') + ' ' + language.toUpperCase()}</span>
-          <span className="tag-muted">{t('Selection:') + ' ' + (selectedId || '—')}</span>
+      )}
+      
+        {/* FR: Barre de statut - EN: Status bar */}
+        <div style={{ 
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '6px 10px',
+          backgroundColor: 'var(--muted)',
+          borderTop: '1px solid var(--border)',
+          fontSize: '12px',
+          color: 'var(--muted-foreground)',
+          height: '32px',
+          gap: 8
+        }}>
+          {/* FR: Marque et version – avec pastille si nouvelle version - EN: Brand + version with badge if newer */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>BigMind {localVersion}</span>
+            {hasNewer && (
+              // FR: Pastille cliquable → propose de télécharger la mise à jour
+              // EN: Clickable badge → prompts to download the update
+              <span
+                title={`Version ${latestVersion} disponible`}
+                onClick={() => {
+                  const v = latestVersion || 'latest'
+                  const go = typeof window !== 'undefined' && window.confirm(
+                    `\nFR: Une nouvelle version (${v}) est disponible.\nVoulez-vous ouvrir la page de téléchargement ?\n\nEN: A new version (${v}) is available.\nOpen the download page?`
+                  )
+                  if (go) {
+                    const url = v && v !== 'latest'
+                      ? `https://github.com/guthubrx/bigmind/releases/tag/v${v}`
+                      : 'https://github.com/guthubrx/bigmind/releases/latest'
+                    try { window.open(url, '_blank', 'noopener,noreferrer') } catch {}
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') (e.currentTarget as any).click() }}
+                style={{ width: 10, height: 10, borderRadius: 999, background: 'var(--accent)', display: 'inline-block', cursor: 'pointer', boxShadow: '0 0 0 2px rgba(0,0,0,0.05)' }}
+              />
+            )}
+          </div>
+          {/* FR: Contrôles de zoom - EN: Zoom controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button
+              style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)' }}
+              onClick={() => { try { (svgSelRef.current as any)?.call((zoomBehaviorRef.current as any).scaleBy, 1/1.1) } catch {} }}
+              title={t('Zoom out')}
+            >−</button>
+            <button
+              style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)' }}
+              onClick={() => { try { (svgSelRef.current as any)?.call((zoomBehaviorRef.current as any).scaleBy, 1.1) } catch {} }}
+              title={t('Zoom in')}
+            >+</button>
+            <button
+              style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)' }}
+              onClick={() => { try { fitToView() } catch {} }}
+              title={t('Fit to screen')}
+            >↔︎</button>
+          </div>
         </div>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <button className="icon-btn" aria-label={t('Zoom out')} title={t('Zoom out')} onClick={() => {
-            if (!svgSelRef.current || !zoomBehaviorRef.current) return
-            svgSelRef.current.transition().duration(150).call(zoomBehaviorRef.current.scaleBy as any, 1/1.1)
-          }}>
-            <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          </button>
-          <span className="tag-muted">{Math.round(zoom * 100)}%</span>
-          <button className="icon-btn" aria-label={t('Zoom in')} title={t('Zoom in')} onClick={() => {
-            if (!svgSelRef.current || !zoomBehaviorRef.current) return
-            svgSelRef.current.transition().duration(150).call(zoomBehaviorRef.current.scaleBy as any, 1.1)
-          }}>
-            <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          </button>
-          <button className="icon-btn" aria-label={t('Reset zoom')} title={t('Reset zoom')} onClick={() => {
-            if (!svgSelRef.current || !zoomBehaviorRef.current) return
-            svgSelRef.current.transition().duration(150).call(zoomBehaviorRef.current.scaleTo as any, 1)
-          }}>
-            <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-          </button>
-          <button className="icon-btn" aria-label="Fit map" title="Fit map" onClick={fitToView}>
-            <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polyline points="3 9 3 3 9 3" />
-              <polyline points="21 15 21 21 15 21" />
-              <polyline points="9 21 3 21 3 15" />
-              <polyline points="15 3 21 3 21 9" />
-            </svg>
-          </button>
-        </div>
-      </div>
     </div>
   )
 }
@@ -1534,5 +1580,3 @@ const App: React.FC = () => {
 }
 
 export default App
-
-

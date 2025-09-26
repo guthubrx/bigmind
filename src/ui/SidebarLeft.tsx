@@ -235,7 +235,16 @@ const SidebarLeft: React.FC = () => {
 
         EN: Column 1 – Open files (fixed vertical list, independent scroll)
       */}
-      <div style={{ width: 200, borderRight: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', minWidth: 160 }}>
+      <div style={{ 
+        width: 200, 
+        borderRight: '1px solid #e5e7eb', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        minWidth: 160,
+        height: 'calc(100% + 40px)', // FR: Hauteur totale + barre d'onglets - EN: Full height + tabs bar
+        backgroundColor: 'var(--panel)', // FR: Utiliser le fond du thème (fin debug) - EN: Use themed panel background (end of debug)
+        color: 'var(--fg)' // FR: Forcer la couleur du texte pour garantir la lisibilité - EN: Force text color to ensure readability
+      }}>
         <div style={{ padding: '8px 8px 4px', fontWeight: 600 }}>{t('Open files')}</div>
         <div style={{ padding: '0 4px 8px', overflow: 'auto' }}>
           {files.length === 0 ? (
@@ -249,7 +258,7 @@ const SidebarLeft: React.FC = () => {
                   const p = file.path.replace(/\\/g, '/')
                   return p.split('/').filter(Boolean).pop() || file.title
                 }
-                return file.title
+                return file.title || 'Sans titre' // FR: Secours si titre absent - EN: Fallback when title missing
               })()
               return (
                 <button
@@ -269,7 +278,7 @@ const SidebarLeft: React.FC = () => {
                     border: 'none',
                     borderRadius: 6,
                     background: isActive ? '#fff' : 'transparent',
-                    color: 'inherit',
+                    color: 'var(--fg)', // FR: Couleur explicite pour éviter l'héritage problématique - EN: Explicit color to avoid inheritance issues
                     cursor: 'pointer',
                     boxShadow: isActive ? 'inset 0 0 0 1px var(--muted)' : 'none',
                     display: 'flex',

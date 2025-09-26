@@ -71,6 +71,20 @@ export type AppState = {
   setGenGapPx?: (px: number) => void
   vGapPx?: number
   setVGapPx?: (px: number) => void
+  // FR: Couleurs des onglets - EN: Tab colors
+  tabActiveColor: string
+  setTabActiveColor: (color: string) => void
+  tabInactiveColor: string
+  setTabInactiveColor: (color: string) => void
+  tabBarBackgroundColor: string
+  setTabBarBackgroundColor: (color: string) => void
+  // FR: Mémorisation du zoom par onglet - EN: Per-tab zoom memory
+  tabZooms?: Record<string, { k: number; x: number; y: number }>
+  setTabZoom: (tabId: string, t: { k: number; x: number; y: number }) => void
+  getTabZoom: (tabId: string) => { k: number; x: number; y: number } | undefined
+  // FR: Confidentialité – vérifier les mises à jour en ligne - EN: Privacy – check updates online
+  checkUpdates: boolean
+  setCheckUpdates: (enabled: boolean) => void
   loadPrefsExternal: (prefs: any) => Promise<void>
 }
 
@@ -79,7 +93,7 @@ const uid = () => Math.random().toString(36).slice(2, 10)
 export const useApp = create<AppState>((set, get) => {
   const initialMindmapId = uid()
   const loadPrefs = () => loadPrefsSync() || {}
-  const savePrefs = async (overrides: Partial<{ language: string; theme: string; leftSidebarOpen: boolean; rightSidebarOpen: boolean; zoom: number; leftSidebarWidth: number; rightSidebarWidth: number; collapseDurationMs: number; showSidebarToggles: boolean; accentColor: string; dropTolerancePx: number; nodeWidthPx: number; genGapPx: number; vGapPx: number }>) => {
+  const savePrefs = async (overrides: Partial<{ language: string; theme: string; leftSidebarOpen: boolean; rightSidebarOpen: boolean; zoom: number; leftSidebarWidth: number; rightSidebarWidth: number; collapseDurationMs: number; showSidebarToggles: boolean; accentColor: string; dropTolerancePx: number; nodeWidthPx: number; genGapPx: number; vGapPx: number; tabZooms: Record<string, { k: number; x: number; y: number }>; checkUpdates: boolean }>) => {
     const current = loadPrefs() || {}
     const next = { ...current, ...overrides }
     savePrefsToLocalStorage(next)
@@ -110,6 +124,11 @@ export const useApp = create<AppState>((set, get) => {
         nodeWidthPx: typeof next.nodeWidthPx === 'number' ? next.nodeWidthPx : 200,
         genGapPx: typeof next.genGapPx === 'number' ? next.genGapPx : 40,
         vGapPx: typeof next.vGapPx === 'number' ? next.vGapPx : 28,
+        tabActiveColor: next.tabActiveColor || 'var(--bg)',
+        tabInactiveColor: next.tabInactiveColor || 'var(--muted)',
+        tabBarBackgroundColor: next.tabBarBackgroundColor || '#2a2a2a',
+        tabZooms: next.tabZooms || {},
+        checkUpdates: next.checkUpdates ?? false
       })
       if (next.language) i18n.changeLanguage(next.language)
     }
@@ -241,6 +260,22 @@ export const useApp = create<AppState>((set, get) => {
     setCollapseDurationMs: (ms: number) => { savePrefs({ collapseDurationMs: ms }); set({ collapseDurationMs: ms }) },
     showSidebarToggles: prefs.showSidebarToggles ?? true,
     setShowSidebarToggles: (show: boolean) => { savePrefs({ showSidebarToggles: show }); set({ showSidebarToggles: show }) },
+    // FR: Couleurs des onglets - EN: Tab colors
+    tabActiveColor: prefs.tabActiveColor || 'var(--bg)',
+    setTabActiveColor: (color: string) => { savePrefs({ tabActiveColor: color }); set({ tabActiveColor: color }) },
+    tabInactiveColor: prefs.tabInactiveColor || 'var(--muted)',
+    setTabInactiveColor: (color: string) => { savePrefs({ tabInactiveColor: color }); set({ tabInactiveColor: color }) },
+    tabBarBackgroundColor: prefs.tabBarBackgroundColor || '#2a2a2a',
+    setTabBarBackgroundColor: (color: string) => { savePrefs({ tabBarBackgroundColor: color }); set({ tabBarBackgroundColor: color }) },
+    tabZooms: (loadPrefs() || {}).tabZooms || {},
+    setTabZoom: (tabId, t) => set((state) => {
+      const next = { ...(state.tabZooms || {}), [tabId]: t }
+      savePrefs({ tabZooms: next })
+      return { tabZooms: next }
+    }),
+    getTabZoom: (tabId) => (get().tabZooms || {})[tabId],
+    checkUpdates: (loadPrefs() || {}).checkUpdates ?? false,
+    setCheckUpdates: (enabled: boolean) => { savePrefs({ checkUpdates: enabled }); set({ checkUpdates: enabled }) },
   }
 })
 

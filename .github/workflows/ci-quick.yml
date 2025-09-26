@@ -1,0 +1,39 @@
+name: CI Quick
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+
+concurrency:
+  group: ci-quick-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install deps (CI)
+        run: npm ci
+
+      - name: Quick build
+        run: npm run build
+
+      # FR: Workflow rapide pour ne pas surcharger les PR pendant le dev.
+      #
+      # EN: Fast workflow to avoid overloading PRs during development.
+
+
+
+
