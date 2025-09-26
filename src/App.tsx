@@ -111,10 +111,21 @@ const MindMap: React.FC = () => {
   const tabInactiveColor = useApp((s) => s.tabInactiveColor)
   const tabBarBackgroundColor = useApp((s) => s.tabBarBackgroundColor)
 
-  // FR: Version locale + dernière version GitHub - EN: Local version + latest GitHub release
-  const localVersion = (pkg as any).version as string
+  // FR: Version locale + dernière version GitHub (mock local possible) - EN: Local version + latest GitHub release (mockable local)
+  const [localVersion, setLocalVersion] = React.useState<string>((pkg as any).version as string)
   const [latestVersion, setLatestVersion] = React.useState<string | null>(null)
   const [hasNewer, setHasNewer] = React.useState(false)
+
+  // FR: Autoriser un mock de version locale via localStorage.mockLocalVersion
+  // EN: Allow mocking local version via localStorage.mockLocalVersion
+  React.useEffect(() => {
+    try {
+      const mockedLocal = (typeof window !== 'undefined' && (localStorage.getItem('mockLocalVersion') || '').trim())
+      setLocalVersion(mockedLocal || ((pkg as any).version as string))
+    } catch {
+      setLocalVersion((pkg as any).version as string)
+    }
+  }, [])
 
   const checkUpdates = useApp((s) => s.checkUpdates)
   React.useEffect(() => {
@@ -1554,21 +1565,51 @@ const MindMap: React.FC = () => {
           </div>
           {/* FR: Contrôles de zoom - EN: Zoom controls */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {/* FR: Plein écran - EN: Fullscreen */}
             <button
-              style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)' }}
+              aria-label={t('Fullscreen')}
+              style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center' }}
+              onClick={() => {
+                try {
+                  const doc: any = document
+                  const el: any = document.documentElement
+                  const isFs = !!(doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement || doc.msFullscreenElement)
+                  if (!isFs) {
+                    ;(el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen)?.call(el)
+                  } else {
+                    ;(doc.exitFullscreen || doc.webkitExitFullscreen || doc.mozCancelFullScreen || doc.msExitFullscreen)?.call(doc)
+                  }
+                } catch {}
+              }}
+              title={t('Fullscreen')}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 9 3 3 9 3"/><polyline points="15 3 21 3 21 9"/><polyline points="21 15 21 21 15 21"/><polyline points="9 21 3 21 3 15"/></svg>
+            </button>
+            {/* FR: Icônes zoom (SVG) - EN: Zoom icons */}
+            <button
+              aria-label={t('Zoom out')}
+              style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center', gap: 4 }}
               onClick={() => { try { (svgSelRef.current as any)?.call((zoomBehaviorRef.current as any).scaleBy, 1/1.1) } catch {} }}
               title={t('Zoom out')}
-            >−</button>
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+            </button>
             <button
-              style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)' }}
+              aria-label={t('Zoom in')}
+              style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center', gap: 4 }}
               onClick={() => { try { (svgSelRef.current as any)?.call((zoomBehaviorRef.current as any).scaleBy, 1.1) } catch {} }}
               title={t('Zoom in')}
-            >+</button>
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+            </button>
             <button
-              style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)' }}
+              aria-label={t('Fit to screen')}
+              style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center', gap: 4 }}
               onClick={() => { try { fitToView() } catch {} }}
               title={t('Fit to screen')}
-            >↔︎</button>
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 9 3 3 9 3"/><polyline points="15 3 21 3 21 9"/><polyline points="21 15 21 21 15 21"/><polyline points="9 21 3 21 3 15"/></svg>
+            </button>
           </div>
         </div>
     </div>
