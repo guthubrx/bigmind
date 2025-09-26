@@ -49,8 +49,10 @@ export type AppState = {
   setTheme: (theme: string) => void
   leftSidebarOpen: boolean
   rightSidebarOpen: boolean
+  treeSidebarOpen: boolean
   setLeftSidebarOpen: (open: boolean) => void
   setRightSidebarOpen: (open: boolean) => void
+  setTreeSidebarOpen: (open: boolean) => void
   zoom: number
   setZoom: (k: number) => void
   leftSidebarWidth: number
@@ -114,6 +116,7 @@ export const useApp = create<AppState>((set, get) => {
         theme: next.theme || 'light',
         leftSidebarOpen: next.leftSidebarOpen ?? true,
         rightSidebarOpen: next.rightSidebarOpen ?? true,
+        treeSidebarOpen: next.treeSidebarOpen ?? false,
         zoom: typeof next.zoom === 'number' ? next.zoom : 1,
         leftSidebarWidth: typeof next.leftSidebarWidth === 'number' ? next.leftSidebarWidth : 260,
         rightSidebarWidth: typeof next.rightSidebarWidth === 'number' ? next.rightSidebarWidth : 280,
@@ -248,8 +251,10 @@ export const useApp = create<AppState>((set, get) => {
     setTheme: (theme: string) => { savePrefs({ theme }); set({ theme }) },
     leftSidebarOpen: prefs.leftSidebarOpen ?? true,
     rightSidebarOpen: prefs.rightSidebarOpen ?? true,
+    treeSidebarOpen: prefs.treeSidebarOpen ?? false,
     setLeftSidebarOpen: (open: boolean) => { savePrefs({ leftSidebarOpen: open }); set({ leftSidebarOpen: open }) },
     setRightSidebarOpen: (open: boolean) => { savePrefs({ rightSidebarOpen: open }); set({ rightSidebarOpen: open }) },
+    setTreeSidebarOpen: (open: boolean) => { savePrefs({ treeSidebarOpen: open }); set({ treeSidebarOpen: open }) },
     zoom: typeof prefs.zoom === 'number' ? prefs.zoom : 1,
     setZoom: (k: number) => { savePrefs({ zoom: k }); set({ zoom: k }) },
     leftSidebarWidth: typeof prefs.leftSidebarWidth === 'number' ? prefs.leftSidebarWidth : 260,
