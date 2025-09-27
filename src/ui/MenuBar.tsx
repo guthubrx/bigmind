@@ -27,13 +27,49 @@ const MenuBar: React.FC = () => {
 
   const Menu: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => {
     const [open, setOpen] = React.useState(false)
+    
+    const handleClick = () => {
+      setOpen(!open)
+    }
+    
+    // FR: Fermer le menu si on clique ailleurs - EN: Close menu if clicking elsewhere
+    React.useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (open && !(event.target as Element).closest('[data-menu]')) {
+          setOpen(false)
+        }
+      }
+      
+      if (open) {
+        document.addEventListener('click', handleClickOutside)
+        return () => document.removeEventListener('click', handleClickOutside)
+      }
+    }, [open])
+    
     return (
-      <div style={{ position: 'relative' }}
-        onMouseEnter={() => setOpen(true)}
-        onMouseLeave={() => setOpen(false)}>
-        <button style={{ background: 'transparent', border: 'none', padding: '6px 10px', cursor: 'default', color: 'var(--fg)' }}>{title}</button>
+      <div style={{ position: 'relative' }} data-menu>
+        <button 
+          style={{ background: 'transparent', border: 'none', padding: '6px 10px', cursor: 'pointer', color: 'var(--fg)' }}
+          onClick={handleClick}
+        >
+          {title}
+        </button>
         {open && (
-          <div style={{ position: 'absolute', top: '100%', left: 0, background: 'var(--panel)', border: '1px solid var(--muted)', borderRadius: 6, boxShadow: '0 6px 24px rgba(0,0,0,.08)', padding: 6, minWidth: 180, zIndex: 20 }}>
+          <div 
+            style={{ 
+              position: 'absolute', 
+              top: '100%', 
+              left: 0, 
+              background: 'var(--panel)', 
+              border: '1px solid var(--muted)', 
+              borderRadius: 6, 
+              boxShadow: '0 6px 24px rgba(0,0,0,.08)', 
+              padding: 6, 
+              minWidth: 180, 
+              zIndex: 20,
+              marginTop: 2
+            }}
+          >
             {children}
           </div>
         )}

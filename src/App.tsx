@@ -86,10 +86,19 @@ const MindMap: React.FC = () => {
   const svgSelRef = React.useRef<d3.Selection<SVGSVGElement, unknown, null, undefined> | null>(null)
   const zoomBehaviorRef = React.useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null)
   const zoomTransformRef = React.useRef<d3.ZoomTransform | null>(null)
+  const isDraggingRef = React.useRef<boolean>(false)
   const [dimensions, setDimensions] = React.useState({ width: 800, height: 600 })
   const language = useApp((s) => s.language)
   const [zoom, setZoom] = React.useState(1)
+  const [zoomInput, setZoomInput] = React.useState('100%')
+  const [mousePosition, setMousePosition] = React.useState({ x: 0, y: 0 })
   const [editing, setEditing] = React.useState<{ id: string; value: string; left: number; top: number; width: number; height: number } | null>(null)
+
+  // FR: Synchroniser l'input de zoom avec la valeur de zoom
+  // EN: Synchronize zoom input with zoom value
+  React.useEffect(() => {
+    setZoomInput(`${Math.round(zoom * 100)}%`)
+  }, [zoom])
   const hoverTargetIdRef = React.useRef<string | null>(null)
   const showLeft = useApp((s) => s.leftSidebarOpen)
   const showRight = useApp((s) => s.rightSidebarOpen)
@@ -99,6 +108,16 @@ const MindMap: React.FC = () => {
   const setShowTree = useApp((s) => s.setTreeSidebarOpen)
   const showToggles = useApp((s) => s.showSidebarToggles)
   const leftWidth = useApp((s) => s.leftSidebarWidth)
+  
+  // FR: Gestionnaire pour tracker la position de la souris - EN: Handler to track mouse position
+  React.useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY })
+    }
+    
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [])
   const rightWidth = useApp((s) => s.rightSidebarWidth)
   const setLeftWidth = useApp((s) => s.setLeftSidebarWidth)
   const setRightWidth = useApp((s) => s.setRightSidebarWidth)
@@ -201,33 +220,318 @@ const MindMap: React.FC = () => {
    * Computes the bounding box of all nodes and applies a d3 transform
    * (translate + scale) so the whole map fits into the viewport.
    */
+  // FR: Fonctions utilitaires pour les calculs de position - EN: Utility functions for position calculations
+  const calculateVisibleArea = () => {
+    const windowWidth = window.innerWidth
+    const windowHeight = window.innerHeight
+    const leftColumnWidth = showLeft ? 180 : 0
+    const treeColumnWidth = showTree ? 200 : 0
+    const rightColumnWidth = showRight ? 180 : 0
+    const visibleWidth = windowWidth - leftColumnWidth - treeColumnWidth - rightColumnWidth
+    const visibleHeight = windowHeight - 40 - 48 - 32 // FR: - topbar - menubar - statusbar - EN: - topbar - menubar - statusbar
+    const visibleCenterX = leftColumnWidth + treeColumnWidth + (visibleWidth / 2)
+    const visibleCenterY = 40 + 48 + (visibleHeight / 2) // FR: + topbar + menubar - EN: + topbar + menubar
+    
+    return {
+      windowWidth,
+      windowHeight,
+      leftColumnWidth,
+      treeColumnWidth,
+      rightColumnWidth,
+      visibleWidth,
+      visibleHeight,
+      visibleCenterX,
+      visibleCenterY
+    }
+  }
+
+  const calculateMapCoordinates = (x: number, y: number) => {
+    const { leftColumnWidth, treeColumnWidth } = calculateVisibleArea()
+    return {
+      mapX: x - leftColumnWidth - treeColumnWidth,
+      mapY: y - 40 - 48 - 32 // FR: - topbar - menubar - statusbar - EN: - topbar - menubar - statusbar
+    }
+  }
+
+  // FR: Centrer seulement le nœud racine sur le point rouge (sans ajuster le zoom)
+  // EN: Center only the root node on the red dot (without adjusting zoom)
+  const centerOnly = React.useCallback(() => {
+    console.log('🎯 === CENTER ONLY CALLED ===')
+    console.log('✅ Function is being executed!')
+    
+    if (!zoomBehaviorRef.current || !svgSelRef.current || nodes.length === 0) {
+      console.log('❌ Early return: missing required refs or no nodes')
+      return
+    }
+    
+    console.log('✅ All checks passed, calculating center position')
+    
+    // FR: Calculer les dimensions de la zone visible
+    // EN: Calculate visible area dimensions
+    const {
+      windowWidth,
+      windowHeight,
+      leftColumnWidth,
+      treeColumnWidth,
+      rightColumnWidth,
+      visibleWidth,
+      visibleHeight,
+      visibleCenterX,
+      visibleCenterY
+    } = calculateVisibleArea()
+    
+    console.log('📐 Visible area calculations:')
+    console.log('  - Window:', windowWidth, 'x', windowHeight)
+    console.log('  - Columns: left=', leftColumnWidth, 'tree=', treeColumnWidth, 'right=', rightColumnWidth)
+    console.log('  - Visible area:', visibleWidth, 'x', visibleHeight)
+    console.log('  - Visible center:', visibleCenterX, visibleCenterY)
+    
+    // FR: Trouver le nœud racine
+    // EN: Find the root node
+    const rootNode = nodes.find(n => n.id === 'root') || nodes[0]
+    if (!rootNode) {
+      console.log('❌ No root node found')
+      return
+    }
+    
+    const mapCenterX = rootNode.x
+    const mapCenterY = rootNode.y
+    
+    console.log('📍 Root node position:', mapCenterX, mapCenterY)
+    
+    // FR: Calculer la translation pour centrer le nœud racine
+    // EN: Calculate translation to center the root node
+    const translateX = visibleCenterX - mapCenterX
+    const translateY = visibleCenterY - mapCenterY
+    
+    console.log('🔄 Translation calculation:')
+    console.log('  - Target center:', visibleCenterX, visibleCenterY)
+    console.log('  - Root node position:', mapCenterX, mapCenterY)
+    console.log('  - Translation needed:', translateX, translateY)
+    
+    // FR: Appliquer seulement la translation (pas de zoom)
+    // EN: Apply only translation (no zoom)
+    const transform = d3.zoomIdentity
+      .translate(translateX, translateY)
+      .scale(1) // FR: Pas de zoom - EN: No zoom
+    
+    try {
+      (svgSelRef.current as any).call((zoomBehaviorRef.current as any).transform, transform)
+      zoomTransformRef.current = transform
+      console.log('✅ Center transform applied successfully')
+      console.log('🎯 === CENTER ONLY COMPLETE ===')
+    } catch (error) {
+      console.error('❌ Error applying center transform:', error)
+    }
+  }, [nodes, showLeft, showTree, showRight])
+
   const fitToView = React.useCallback(() => {
-    if (!zoomBehaviorRef.current || !svgSelRef.current || nodes.length === 0) return
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
-    nodes.forEach((n: any) => {
-      const w = n.width || 120
-      const h = n.height || 40
-      minX = Math.min(minX, n.x - w / 2)
-      maxX = Math.max(maxX, n.x + w / 2)
-      minY = Math.min(minY, n.y - h / 2)
-      maxY = Math.max(maxY, n.y + h / 2)
+    console.log('🚀 === FIT TO VIEW CALLED - STARTING FRESH ===')
+    console.log('✅ Function is being executed!')
+    console.log('📊 Basic info:')
+    console.log('  - zoomBehaviorRef.current:', !!zoomBehaviorRef.current)
+    console.log('  - svgSelRef.current:', !!svgSelRef.current)
+    console.log('  - nodes.length:', nodes.length)
+    console.log('  - svgRef.current:', !!svgRef.current)
+    
+    if (!zoomBehaviorRef.current || !svgSelRef.current || nodes.length === 0) {
+      console.log('❌ Early return: missing required refs or no nodes')
+      return
+    }
+    
+    console.log('✅ All checks passed, calculating visible area center')
+    
+    // FR: Calculer les dimensions de la zone visible
+    // EN: Calculate visible area dimensions
+    const {
+      windowWidth,
+      windowHeight,
+      leftColumnWidth,
+      treeColumnWidth,
+      rightColumnWidth,
+      visibleWidth,
+      visibleHeight,
+      visibleCenterX,
+      visibleCenterY
+    } = calculateVisibleArea()
+    
+    console.log('📐 Visible area calculations:')
+    console.log('  - Window:', windowWidth, 'x', windowHeight)
+    console.log('  - Columns: left=', leftColumnWidth, 'tree=', treeColumnWidth, 'right=', rightColumnWidth)
+    console.log('  - Visible area:', visibleWidth, 'x', visibleHeight)
+    console.log('  - Visible center:', visibleCenterX, visibleCenterY)
+    
+    // FR: Créer un point rouge au centre de la zone visible
+    // EN: Create a red dot at the center of visible area
+    const existingDot = document.getElementById('debug-center-dot')
+    if (existingDot) {
+      existingDot.remove()
+    }
+    
+    const existingLabel = document.getElementById('debug-center-label')
+    if (existingLabel) {
+      existingLabel.remove()
+    }
+    
+    const debugDot = document.createElement('div')
+    debugDot.id = 'debug-center-dot'
+    debugDot.style.position = 'absolute'
+    debugDot.style.left = `${visibleCenterX - 10}px` // FR: -10 pour centrer un point de 20px - EN: -10 to center a 20px dot
+    debugDot.style.top = `${visibleCenterY - 10}px`
+    debugDot.style.width = '20px'
+    debugDot.style.height = '20px'
+    debugDot.style.borderRadius = '50%'
+    debugDot.style.backgroundColor = 'red'
+    debugDot.style.border = '2px solid yellow'
+    debugDot.style.pointerEvents = 'none'
+    debugDot.style.zIndex = '9999'
+    debugDot.style.opacity = '0.8'
+    
+    document.body.appendChild(debugDot)
+    
+    // FR: Créer un label avec les coordonnées du point rouge par rapport à la zone de carte mentale
+    // EN: Create a label with red dot coordinates relative to mind map area
+    const debugLabel = document.createElement('div')
+    debugLabel.id = 'debug-center-label'
+    debugLabel.style.position = 'absolute'
+    debugLabel.style.left = `${visibleCenterX + 15}px` // FR: À droite du point rouge - EN: To the right of red dot
+    debugLabel.style.top = `${visibleCenterY - 10}px`
+    debugLabel.style.fontSize = '12px'
+    debugLabel.style.fontFamily = 'monospace'
+    debugLabel.style.color = 'red'
+    debugLabel.style.backgroundColor = 'rgba(255,255,255,0.9)'
+    debugLabel.style.padding = '2px 6px'
+    debugLabel.style.borderRadius = '3px'
+    debugLabel.style.border = '1px solid red'
+    debugLabel.style.zIndex = '9999'
+    debugLabel.style.pointerEvents = 'none'
+    
+    // FR: Calculer les coordonnées par rapport à la zone de carte mentale
+    // EN: Calculate coordinates relative to mind map area
+    const { mapX, mapY } = calculateMapCoordinates(visibleCenterX, visibleCenterY)
+    debugLabel.textContent = `X:${Math.round(mapX)} Y:${Math.round(mapY)}`
+    
+    document.body.appendChild(debugLabel)
+    
+    console.log('🔴 Debug dot placed at:', visibleCenterX, visibleCenterY)
+    
+    // FR: Calculer le bounding box de tous les nœuds
+    // EN: Calculate bounding box of all nodes
+    if (nodes.length === 0) {
+      console.log('❌ No nodes to fit')
+      return
+    }
+    
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+    
+    nodes.forEach(node => {
+      const nodeWidth = (node as any).width || 200
+      const nodeHeight = (node as any).height || 40
+      
+      // FR: Calculer les bords du nœud en tenant compte de sa largeur/hauteur
+      // EN: Calculate node edges considering its width/height
+      const left = node.x - nodeWidth / 2
+      const right = node.x + nodeWidth / 2
+      const top = node.y - nodeHeight / 2
+      const bottom = node.y + nodeHeight / 2
+      
+      minX = Math.min(minX, left)
+      maxX = Math.max(maxX, right)
+      minY = Math.min(minY, top)
+      maxY = Math.max(maxY, bottom)
     })
-    const boundsWidth = maxX - minX
-    const boundsHeight = maxY - minY
-    if (boundsWidth <= 0 || boundsHeight <= 0) return
-    const padding = 40
-    const k = Math.min(
-      (dimensions.width - padding * 2) / boundsWidth,
-      (dimensions.height - padding * 2) / boundsHeight,
-    )
-    const centerX = (minX + maxX) / 2
-    const centerY = (minY + maxY) / 2
-    const translateX = dimensions.width / 2 - centerX * k
-    const translateY = dimensions.height / 2 - centerY * k
-    const transform = d3.zoomIdentity.translate(translateX, translateY).scale(k)
-    // @ts-ignore
-    svgSelRef.current.transition().duration(200).call(zoomBehaviorRef.current.transform, transform)
-  }, [nodes, dimensions.width, dimensions.height])
+    
+    const mapWidth = maxX - minX
+    const mapHeight = maxY - minY
+    const mapCenterX = minX + mapWidth / 2
+    const mapCenterY = minY + mapHeight / 2
+    
+    console.log('📏 Map bounding box:')
+    console.log('  - Bounds:', minX, minY, 'to', maxX, maxY)
+    console.log('  - Map size:', mapWidth, 'x', mapHeight)
+    console.log('  - Map center:', mapCenterX, mapCenterY)
+    
+    // FR: Calculer le zoom pour que la carte rentre dans la zone visible avec un padding
+    // EN: Calculate zoom so the map fits in visible area with padding
+    const padding = 40 // FR: Padding en pixels - EN: Padding in pixels
+    const availableWidth = visibleWidth - (padding * 2)
+    const availableHeight = visibleHeight - (padding * 2)
+    
+    const scaleX = availableWidth / mapWidth
+    const scaleY = availableHeight / mapHeight
+    const scale = Math.min(scaleX, scaleY, 2) // FR: Limiter le zoom max à 2x - EN: Limit max zoom to 2x
+    
+    console.log('🔍 Zoom calculations:')
+    console.log('  - Available space:', availableWidth, 'x', availableHeight)
+    console.log('  - Scale X:', scaleX.toFixed(3))
+    console.log('  - Scale Y:', scaleY.toFixed(3))
+    console.log('  - Final scale:', scale.toFixed(3))
+    
+    // FR: Utiliser la méthode D3 pour centrer et zoomer
+    // EN: Use D3 method to center and zoom
+    // FR: D3.zoomIdentity permet de créer une transformation qui centre et scale
+    // EN: D3.zoomIdentity allows creating a transform that centers and scales
+    
+    console.log('📍 Using D3 zoomIdentity method:')
+    console.log('  - Target center:', visibleCenterX, visibleCenterY)
+    console.log('  - Map center:', mapCenterX, mapCenterY)
+    console.log('  - Scale:', scale.toFixed(3))
+    
+    // FR: Étape 1: Centrer le nœud racine sur le point rouge (translation seulement)
+    // EN: Step 1: Center the root node on the red dot (translation only)
+    console.log('📍 Step 1: Centering root node on red dot')
+    const centerTransform = d3.zoomIdentity
+      .translate(visibleCenterX - mapCenterX, visibleCenterY - mapCenterY)
+      .scale(1) // FR: Pas de zoom pour l'instant - EN: No zoom for now
+    
+    console.log('  - Center transform:', centerTransform.toString())
+    
+    // FR: Appliquer la translation pour centrer
+    // EN: Apply translation to center
+    try {
+      (svgSelRef.current as any).call((zoomBehaviorRef.current as any).transform, centerTransform)
+      zoomTransformRef.current = centerTransform
+      console.log('✅ Step 1 completed: Root node centered')
+    } catch (error) {
+      console.error('❌ Error in step 1:', error)
+      return
+    }
+    
+    // FR: Étape 2: Ajuster le zoom pour que toute la carte rentre (scale seulement)
+    // EN: Step 2: Adjust zoom so the whole map fits (scale only)
+    console.log('🔍 Step 2: Adjusting zoom to fit all nodes')
+    
+    // FR: Attendre un peu que la première transformation soit appliquée
+    // EN: Wait a bit for the first transform to be applied
+    setTimeout(() => {
+      // FR: Ajuster la translation pour compenser l'effet du scale sur le centrage
+      // EN: Adjust translation to compensate for the scale effect on centering
+      // FR: D3 applique d'abord translate, puis scale
+      // EN: D3 applies translate first, then scale
+      // FR: Pour que le centre reste au bon endroit après scale, on doit ajuster
+      // EN: To keep the center in the right place after scale, we must adjust
+      const adjustedTranslateX = visibleCenterX - (mapCenterX * scale)
+      const adjustedTranslateY = visibleCenterY - (mapCenterY * scale)
+      
+      const finalTransform = d3.zoomIdentity
+        .translate(adjustedTranslateX, adjustedTranslateY)
+        .scale(scale)
+      
+      console.log('  - Final transform:', finalTransform.toString())
+      console.log('  - Adjusted translation:', adjustedTranslateX, adjustedTranslateY)
+      console.log('  - Scale:', scale)
+      
+      try {
+        (svgSelRef.current as any).call((zoomBehaviorRef.current as any).transform, finalTransform)
+        zoomTransformRef.current = finalTransform
+        console.log('✅ Step 2 completed: Zoom adjusted')
+      } catch (error) {
+        console.error('❌ Error in step 2:', error)
+      }
+    }, 50)
+    
+    console.log('🎯 === FIT TO VIEW COMPLETE ===')
+  }, [nodes, dimensions.width, dimensions.height, showLeft, showTree, showRight])
 
   // FR: Construire nœuds/liens avec un empilement par côté pour éviter les recouvrements
   //
@@ -395,10 +699,11 @@ const MindMap: React.FC = () => {
     setNodes(built.nodes)
     setLinks(built.links)
     // Auto-fit uniquement au premier rendu pour éviter les "sauts" lors des interactions
-    if (!didInitialFitRef.current) {
-      didInitialFitRef.current = true
-      setTimeout(() => fitToView(), 0)
-    }
+    // FR: Temporairement désactivé pour debug - EN: Temporarily disabled for debug
+    // if (!didInitialFitRef.current) {
+    //   didInitialFitRef.current = true
+    //   setTimeout(() => fitToView(), 0)
+    // }
   }, [root, buildFromRoot])
 
   const hexToRgba = React.useCallback((hex: string, alpha: number) => {
@@ -580,7 +885,11 @@ const MindMap: React.FC = () => {
       .attr('fill', '#000')
 
     const wrapText = (text: d3.Selection<SVGTextElement, any, any, any>, width: number, lineHeight = 18) => {
-      text.each(function(d: any) {
+      text.filter(function(d: any) {
+        // FR: Ne traiter que le texte principal du nœud, pas les cercles de repli
+        // EN: Only process main node text, not toggle circles
+        return !d3.select(this).classed('toggle-text')
+      }).each(function(d: any) {
         const words = String(d.label || '').split(/\s+/).filter(Boolean)
         const lines: string[] = []
         let line: string[] = []
@@ -608,10 +917,29 @@ const MindMap: React.FC = () => {
             .attr('dy', i === 0 ? 0 : `${lineHeight}px`)
             .text(ln)
         })
+        
+        // FR: Ajouter les coordonnées X,Y sous le texte principal
+        // EN: Add X,Y coordinates below the main text
+        // FR: Calculer les coordonnées transformées du centre du nœud
+        // EN: Calculate transformed coordinates of the node center
+        const t = zoomTransformRef.current || d3.zoomIdentity
+        const nodeWidth = (d as any).width || 120
+        const nodeHeight = (d as any).height || 40
+        const nodeCenterX = d.x // FR: X est déjà au centre - EN: X is already at center
+        const nodeCenterY = d.y + (nodeHeight / 2) // FR: Y doit être décalé vers le centre - EN: Y must be shifted to center
+        const [transformedCenterX, transformedCenterY] = t.apply([nodeCenterX, nodeCenterY])
+        
+        temp.append('tspan')
+          .attr('x', 0)
+          .attr('dy', `${lineHeight}px`)
+          .attr('font-size', '10px')
+          .attr('font-weight', 'normal')
+          .attr('fill', '#666')
+          .text(`X:${Math.round(transformedCenterX)} Y:${Math.round(transformedCenterY)}`)
+        
         ;(d as any).__lines = lines.length
       })
     }
-    wrapText(textSel as any, 190)
 
     // FR: Ajuster la taille des rectangles selon le texte et stocker la taille dans les données
     //
@@ -627,7 +955,10 @@ const MindMap: React.FC = () => {
       const width = 200
       const lines = (d as any).__lines || 1
       const lineHeight = 18
-      const height = Math.max(32, lines * lineHeight + padY)
+      // FR: Ajouter une ligne supplémentaire pour les coordonnées X,Y
+      // EN: Add an extra line for X,Y coordinates
+      const totalLines = lines + 1 // FR: +1 pour les coordonnées - EN: +1 for coordinates
+      const height = Math.max(32, totalLines * lineHeight + padY)
       rectEl
         .attr('width', width)
         .attr('height', height)
@@ -636,6 +967,9 @@ const MindMap: React.FC = () => {
       d.width = width
       d.height = height
     })
+
+    // FR: wrapText sera appelé plus tard pour éviter de perturber les événements de drag
+    // EN: wrapText will be called later to avoid interfering with drag events
 
     // FR: Ajuster la position X des enfants selon les largeurs réelles pour garantir que
     //     le bord droit d'un enfant à gauche soit à gauche du bord gauche du parent (et inversement à droite)
@@ -766,7 +1100,7 @@ const MindMap: React.FC = () => {
             .on('mousedown', (event: any) => { console.log('[md] node-toggle', d.id); event.stopPropagation(); event.preventDefault(); })
             .on('click', (event: any) => { console.log('[click] node-toggle', d.id); event.stopPropagation(); event.preventDefault(); toggleCollapse(d.id) })
           toggleG.append('circle').attr('r', 12).attr('fill', accentColor).attr('stroke', '#fff').attr('stroke-width', 2).style('pointer-events', 'all')
-          toggleG.append('text').attr('text-anchor', 'middle').attr('dy', '0.35em').attr('fill', '#fff').style('font-size', '11px').text(String(total)).style('pointer-events', 'none')
+          toggleG.append('text').attr('text-anchor', 'middle').attr('dy', '0.35em').attr('fill', '#fff').style('font-size', '11px').text(String(total)).style('pointer-events', 'none').classed('toggle-text', true)
           togglesCreated++
         })
         console.log('[render] node toggles created =', togglesCreated)
@@ -823,7 +1157,7 @@ const MindMap: React.FC = () => {
                 collapseSide(side, !currentHidden)
               })
             btn.append('circle').attr('r', 12).attr('fill', accentColor).attr('stroke', '#fff').attr('stroke-width', 2).style('pointer-events', 'all')
-            btn.append('text').attr('text-anchor', 'middle').attr('dy', '0.35em').attr('fill', '#fff').style('font-size', '11px').text(String(count)).style('pointer-events', 'none')
+            btn.append('text').attr('text-anchor', 'middle').attr('dy', '0.35em').attr('fill', '#fff').style('font-size', '11px').text(String(count)).style('pointer-events', 'none').classed('toggle-text', true)
           }
 
           makeBtn(-(rw / 2) - 14, 'left', leftCount, 'left')
@@ -1009,6 +1343,7 @@ const MindMap: React.FC = () => {
       .on('start', function(event, d) {
         event.sourceEvent.stopPropagation()
         d3.select(this).raise()
+        isDraggingRef.current = true
         // FR: Fixer la position actuelle pour démarrer sans "saut"
         //
         // EN: Pin the current position to start without a visual "jump"
@@ -1130,6 +1465,7 @@ const MindMap: React.FC = () => {
         } catch {}
       })
       .on('end', function(event, d) {
+        isDraggingRef.current = false
         // FR: Nettoyer un éventuel surlignage résiduel
         //
         // EN: Clear any remaining highlight
@@ -1206,9 +1542,17 @@ const MindMap: React.FC = () => {
 
     nodeGroups.call(drag)
 
+    // FR: Maintenant que le drag est attaché, on peut afficher les coordonnées sans perturber les événements
+    // EN: Now that drag is attached, we can display coordinates without interfering with events
+    // FR: Éviter d'appeler wrapText pendant un drag actif pour ne pas perturber les événements
+    // EN: Avoid calling wrapText during active drag to not interfere with events
+    if (!isDraggingRef.current) {
+      wrapText(textSel as any, 190)
+    }
+
     // Zoom/Pan via D3 appliqué au zoomPane uniquement
     const zoomBehavior = d3.zoom<SVGRectElement, unknown>()
-      .scaleExtent([0.5, 2])
+      .scaleExtent([0.1, 10])
       // Autoriser le zoom à la molette uniquement si Ctrl/Cmd
       .filter((event: any) => {
         if (event.type === 'wheel') return !!(event.ctrlKey || event.metaKey)
@@ -1232,6 +1576,13 @@ const MindMap: React.FC = () => {
             useApp.getState().setTabZoom(active, { k: t.k, x: t.x, y: t.y })
           }
         } catch {}
+        
+        // FR: Mettre à jour les coordonnées affichées dans les nœuds à la fin du zoom/pan
+        // EN: Update coordinates displayed in nodes at the end of zoom/pan
+        setTimeout(() => {
+          const textSel = g.selectAll('g.node text')
+          wrapText(textSel as any, 190)
+        }, 100)
       })
     // Appliquer le zoom uniquement sur le pane de fond
     zoomPane.call(zoomBehavior as any)
@@ -1264,6 +1615,7 @@ const MindMap: React.FC = () => {
     // Pour les boutons +/-
     svgSelRef.current = zoomPane as any
     zoomBehaviorRef.current = zoomBehavior as any
+
 
   }, [root, select, selectedId, dimensions, nodes, links])
 
@@ -1408,7 +1760,7 @@ const MindMap: React.FC = () => {
         {/* FR: Colonne de fichiers ouverts à gauche (masquée pour les paramètres) - EN: Open files column on the left (hidden for settings) */}
         {!(activeTabId && tabs.find(t => t.id === activeTabId)?.type === 'settings') && (
           <div style={{
-            width: showLeft ? 200 : 0,
+            width: showLeft ? 180 : 0,
             borderRight: showLeft ? '1px solid #e5e7eb' : 'none',
             display: 'flex',
             flexDirection: 'column',
@@ -1445,9 +1797,9 @@ const MindMap: React.FC = () => {
                   }}
                 >
                   ‹
-                </button>
+            </button>
               )}
-            </div>
+                  </div>
             <div style={{ padding: '0 4px 8px', overflow: 'auto' }}>
               {files.length === 0 ? (
                 <div style={{ opacity: .7, padding: '4px 8px' }}>{t('No open files')}</div>
@@ -1473,11 +1825,11 @@ const MindMap: React.FC = () => {
                       }}
                     >
                       <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{displayName}</span>
-                    </button>
+        </button>
                   )
                 })
               )}
-            </div>
+                  </div>
           </div>
         )}
         
@@ -1509,18 +1861,18 @@ const MindMap: React.FC = () => {
         )}
         
         {/* FR: Colonne d'arborescence (navigation) - EN: Tree sidebar (navigation) */}
-        <div style={{
-          width: showTree ? 240 : 0,
+          <div style={{
+          width: showTree ? 200 : 0,
           display: showTree ? 'flex' : 'none',
           flexDirection: 'column',
           minWidth: showTree ? 200 : 0,
           backgroundColor: 'var(--panel)',
           borderRight: showTree ? '1px solid var(--border)' : 'none',
-          overflow: 'hidden',
+            overflow: 'hidden',
           transition: `width ${collapseMs}ms ease`,
           zIndex: 5,
-          position: 'relative'
-        }}>
+            position: 'relative'
+          }}>
           <div style={{ padding: '8px 8px 4px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span>Navigation</span>
             {showToggles && (
@@ -1562,7 +1914,7 @@ const MindMap: React.FC = () => {
             onClick={() => setShowTree(true)}
             style={{ 
               position: 'absolute', 
-              left: (showLeft ? 200 : 0), 
+              left: (showLeft ? 180 : 0), 
               top: '50%', 
               transform: 'translateY(-50%)', 
               zIndex: 15, 
@@ -1605,39 +1957,39 @@ const MindMap: React.FC = () => {
               {/* FR: Affichage conditionnel - EN: Conditional display */}
               {activeTabId && tabs.find(t => t.id === activeTabId)?.type === 'mindmap' ? (
                 // FR: SVG pour la carte mentale quand un onglet mindmap est actif - EN: SVG for mind map when mindmap tab is active
-                <svg
-                  ref={svgRef}
+              <svg
+                ref={svgRef}
                   style={{ width: '100%', height: '100%', minHeight: 0 }}
                   key={activeTabId} // FR: Force le re-rendu quand l'onglet change - EN: Force re-render when tab changes
                 />
               ) : activeTabId && tabs.find(t => t.id === activeTabId)?.type === 'settings' ? (
                 // FR: Panneau de paramètres quand un onglet settings est actif - EN: Settings pane when settings tab is active
-                <SettingsPane />
-              ) : (
+            <SettingsPane />
+          ) : (
                 // FR: Écran d'accueil par défaut - EN: Welcome screen by default
-                <WelcomePane />
-              )}
-            </div>
+            <WelcomePane />
+          )}
+        </div>
             
             {/* FR: Colonne de propriétés à droite (masquée pour les paramètres) - EN: Properties column on the right (hidden for settings) */}
             {!(activeTabId && tabs.find(t => t.id === activeTabId)?.type === 'settings') && (
-            <div style={{ 
-              width: showRight ? 200 : 0,
+          <div style={{
+              width: showRight ? 180 : 0,
               display: showRight ? 'flex' : 'none',
               flexDirection: 'column',
               minWidth: showRight ? 160 : 0,
               backgroundColor: 'var(--panel)',
-              overflow: 'hidden',
+            overflow: 'hidden',
               transition: `width ${collapseMs}ms ease`,
-              position: 'relative'
-            }}>
+            position: 'relative'
+          }}>
               {/* En-tête avec bouton pour fermer */}
               <div style={{ padding: '8px 8px 4px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span>Propriétés</span>
                 {showToggles && (
                   <button
                     title={t('Toggle properties sidebar')}
-                    onClick={() => setShowRight(!showRight)}
+                onClick={() => setShowRight(!showRight)}
                     style={{ 
                       position: 'absolute', 
                       left: 0, 
@@ -1664,7 +2016,7 @@ const MindMap: React.FC = () => {
                 <SidebarRight />
               </div>
             </div>
-            )}
+        )}
           </div>
         </div>
         
@@ -1692,7 +2044,7 @@ const MindMap: React.FC = () => {
             }}
           >
             ‹
-          </button>
+            </button>
         )}
       </div>
       
@@ -1757,13 +2109,13 @@ const MindMap: React.FC = () => {
             }}
           >
             {tab.title}
-          </div>
-          ))}
+        </div>
+        ))}
       </div>
       )}
       
         {/* FR: Barre de statut - EN: Status bar */}
-        <div style={{ 
+          <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -1801,7 +2153,26 @@ const MindMap: React.FC = () => {
                 style={{ width: 10, height: 10, borderRadius: 999, background: 'var(--accent)', display: 'inline-block', cursor: 'pointer', boxShadow: '0 0 0 2px rgba(0,0,0,0.05)' }}
               />
             )}
+            </div>
+          
+          {/* FR: Coordonnées de la souris - EN: Mouse coordinates */}
+          {(() => {
+            const mapCoords = calculateMapCoordinates(mousePosition.x, mousePosition.y);
+            return (
+              <div style={{ 
+                fontSize: '11px', 
+                fontFamily: 'monospace', 
+                color: 'var(--muted-foreground)',
+                backgroundColor: 'rgba(0,0,0,0.1)',
+                padding: '2px 6px',
+                borderRadius: '3px',
+                border: '1px solid var(--border)'
+              }}>
+                Window: X:{mousePosition.x} Y:{mousePosition.y} | Map: X:{mapCoords.mapX} Y:{mapCoords.mapY}
           </div>
+            );
+          })()}
+          
           {/* FR: Contrôles de zoom - EN: Zoom controls */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {/* FR: Icônes zoom (SVG) - EN: Zoom icons */}
@@ -1812,7 +2183,45 @@ const MindMap: React.FC = () => {
               title={t('Zoom out')}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-            </button>
+          </button>
+            
+            {/* FR: Champ de saisie du niveau de zoom - EN: Zoom level input field */}
+            <input
+              type="text"
+              value={zoomInput}
+              onChange={(e) => setZoomInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const value = e.currentTarget.value.replace('%', '')
+                  const numValue = parseFloat(value)
+                  if (!isNaN(numValue) && numValue > 0) {
+                    const newZoom = Math.max(0.1, Math.min(10, numValue / 100))
+                    try {
+                      const transform = d3.zoomIdentity.scale(newZoom)
+                      ;(svgSelRef.current as any)?.call((zoomBehaviorRef.current as any).transform, transform)
+                      zoomTransformRef.current = transform
+                      setZoom(newZoom)
+                    } catch {}
+                  } else {
+                    setZoomInput(`${Math.round(zoom * 100)}%`)
+                  }
+                }
+              }}
+              onBlur={() => setZoomInput(`${Math.round(zoom * 100)}%`)}
+              style={{
+                width: '50px',
+                height: '24px',
+                fontSize: '11px',
+                textAlign: 'center',
+                border: '1px solid var(--border)',
+                borderRadius: '4px',
+                background: 'var(--bg)',
+                color: 'var(--fg)',
+                padding: '2px 4px'
+              }}
+              title="Niveau de zoom (10% - 1000%)"
+            />
+            
             <button
               aria-label={t('Zoom in')}
               style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center', gap: 4 }}
@@ -1821,15 +2230,191 @@ const MindMap: React.FC = () => {
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
             </button>
+            {/* FR: Centrer seulement (cible) - EN: Center only (target) */}
+            <button
+              aria-label={t('Center')}
+              style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center', gap: 4 }}
+              onClick={() => { 
+                // FR: Calculer les dimensions de la fenêtre et des colonnes
+                // EN: Calculate window dimensions and column widths
+                const windowWidth = window.innerWidth
+                const windowHeight = window.innerHeight
+                
+                // FR: Largeurs des colonnes (en pixels)
+                // EN: Column widths (in pixels)
+                const leftColumnWidth = showLeft ? 180 : 0
+                const treeColumnWidth = showTree ? 200 : 0
+                const rightColumnWidth = showRight ? 180 : 0
+                
+                // FR: Calculer la zone visible pour la carte mentale
+                // EN: Calculate visible area for the mind map
+                const visibleWidth = windowWidth - leftColumnWidth - treeColumnWidth - rightColumnWidth
+                const visibleHeight = windowHeight - 40 - 48 - 32 // FR: - topbar - menubar - statusbar - EN: - topbar - menubar - statusbar
+                
+                // FR: Calculer le centre de la zone visible
+                // EN: Calculate center of visible area
+                const visibleCenterX = leftColumnWidth + treeColumnWidth + (visibleWidth / 2)
+                const visibleCenterY = 40 + 48 + (visibleHeight / 2) // FR: + topbar + menubar - EN: + topbar + menubar
+                
+                // FR: Trouver le nœud racine
+                // EN: Find the root node
+                const rootNode = nodes.find(n => n.id === 'root') || nodes[0]
+                const rootX = rootNode ? rootNode.x : 0
+                const rootY = rootNode ? rootNode.y : 0
+                
+                // FR: rootX et rootY sont les coordonnées du milieu du bord gauche, on doit calculer le centre
+                // EN: rootX and rootY are the coordinates of the middle of the left edge, we need to calculate the center
+                const rootWidth = rootNode ? (rootNode as any).width || 120 : 120
+                const rootHeight = rootNode ? (rootNode as any).height || 40 : 40
+                const rootCenterX = rootX // FR: X est déjà au centre - EN: X is already at center
+                const rootCenterY = rootY + (rootHeight / 2) // FR: Y doit être décalé vers le centre - EN: Y must be shifted to center
+                
+                // FR: Calculer les coordonnées du point rouge par rapport à la zone de carte mentale
+                // EN: Calculate red dot coordinates relative to mind map area
+                const { mapX: redDotMapX, mapY: redDotMapY } = calculateMapCoordinates(visibleCenterX, visibleCenterY)
+                
+                // FR: Calculer la translation nécessaire pour centrer le nœud racine sur le point rouge
+                // EN: Calculate needed translation to center root node on red dot
+                const translateX = redDotMapX - rootCenterX
+                const translateY = redDotMapY - rootCenterY
+                
+                console.log('🎯 CENTER BUTTON - COORDINATES:')
+                console.log('  - Root node center: X:', rootCenterX, 'Y:', rootCenterY)
+                console.log('  - Red dot: X:', redDotMapX, 'Y:', redDotMapY)
+                console.log('  - Translation needed: X:', translateX, 'Y:', translateY)
+                
+                // FR: Créer un point rouge au centre de la zone visible
+                // EN: Create a red dot at the center of visible area
+                const existingDot = document.getElementById('debug-center-dot')
+                if (existingDot) {
+                  existingDot.remove()
+                }
+                
+                const existingLabel = document.getElementById('debug-center-label')
+                if (existingLabel) {
+                  existingLabel.remove()
+                }
+                
+                const debugDot = document.createElement('div')
+                debugDot.id = 'debug-center-dot'
+                debugDot.style.position = 'absolute'
+                debugDot.style.left = `${visibleCenterX - 10}px` // FR: -10 pour centrer un point de 20px - EN: -10 to center a 20px dot
+                debugDot.style.top = `${visibleCenterY - 10}px`
+                debugDot.style.width = '20px'
+                debugDot.style.height = '20px'
+                debugDot.style.borderRadius = '50%'
+                debugDot.style.backgroundColor = 'red'
+                debugDot.style.border = '2px solid yellow'
+                debugDot.style.pointerEvents = 'all'
+                debugDot.style.zIndex = '9999'
+                debugDot.style.opacity = '0.8'
+                
+                document.body.appendChild(debugDot)
+                
+                // FR: Créer un label avec les coordonnées du point rouge par rapport à la zone de carte mentale
+                // EN: Create a label with red dot coordinates relative to mind map area
+                const debugLabel = document.createElement('div')
+                debugLabel.id = 'debug-center-label'
+                debugLabel.style.position = 'absolute'
+                debugLabel.style.left = `${visibleCenterX + 15}px` // FR: À droite du point rouge - EN: To the right of red dot
+                debugLabel.style.top = `${visibleCenterY - 10}px`
+                debugLabel.style.fontSize = '12px'
+                debugLabel.style.fontFamily = 'monospace'
+                debugLabel.style.color = 'red'
+                debugLabel.style.backgroundColor = 'rgba(255,255,255,0.9)'
+                debugLabel.style.padding = '2px 6px'
+                debugLabel.style.borderRadius = '3px'
+                debugLabel.style.border = '1px solid red'
+                debugLabel.style.zIndex = '9999'
+                debugLabel.style.pointerEvents = 'none'
+                
+    // FR: Calculer les coordonnées par rapport à la zone de carte mentale
+    // EN: Calculate coordinates relative to mind map area
+    const { mapX, mapY } = calculateMapCoordinates(visibleCenterX, visibleCenterY)
+    debugLabel.textContent = `X:${Math.round(mapX)} Y:${Math.round(mapY)}`
+                
+                document.body.appendChild(debugLabel)
+                
+                // FR: Ajouter un gestionnaire de clic sur le point rouge pour faire la translation
+                // EN: Add click handler on red dot to perform translation
+                debugDot.style.cursor = 'pointer'
+                debugDot.title = 'Cliquer pour centrer verticalement'
+                
+                debugDot.addEventListener('click', () => {
+                  if (!zoomBehaviorRef.current || !svgSelRef.current) {
+                    return
+                  }
+                  
+                  // FR: Appliquer la translation pour centrer le nœud racine sur le point rouge
+                  // EN: Apply translation to center root node on red dot
+                  const currentTransform = zoomTransformRef.current || d3.zoomIdentity
+                  const transform = d3.zoomIdentity
+                    .translate(translateX, translateY) // FR: Translation X et Y - EN: X and Y translation
+                    .scale(currentTransform.k) // FR: Garder le niveau de zoom actuel - EN: Keep current zoom level
+                  
+                  try {
+                    (svgSelRef.current as any).call((zoomBehaviorRef.current as any).transform, transform)
+                    zoomTransformRef.current = transform
+                    setZoom(Number(currentTransform.k.toFixed(2))) // FR: Mettre à jour l'état React - EN: Update React state
+                  } catch (error) {
+                    console.error('❌ Error applying vertical translation:', error)
+                  }
+                })
+              }}
+              title={t('Center')}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"/></svg>
+        </button>
             {/* FR: Adapter à la fenêtre (double flèche ↔) - EN: Fit to screen (double arrow) */}
             <button
               aria-label={t('Fit to screen')}
               style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center', gap: 4 }}
-              onClick={() => { try { fitToView() } catch {} }}
+              onClick={() => { 
+                console.log('🚀 FIT TO SCREEN - VERTICAL CENTERING ONLY')
+                
+                // FR: Calculer le centre vertical de la zone visible
+                // EN: Calculate vertical center of visible area
+                const windowHeight = window.innerHeight
+                const visibleHeight = windowHeight - 40 - 48 - 32 // FR: - topbar - menubar - statusbar - EN: - topbar - menubar - statusbar
+                const visibleCenterY = 40 + 48 + (visibleHeight / 2) // FR: + topbar + menubar - EN: + topbar + menubar
+                
+                // FR: Trouver le nœud racine
+                // EN: Find the root node
+                const rootNode = nodes.find(n => n.id === 'root') || nodes[0]
+                if (!rootNode) {
+                  console.log('❌ No root node found')
+                  return
+                }
+                
+                const rootY = rootNode.y
+                
+                // FR: Calculer la translation verticale seulement
+                // EN: Calculate vertical translation only
+                const translateY = visibleCenterY - rootY
+                
+                console.log('📐 Vertical centering:')
+                console.log('  - Root node Y:', rootY)
+                console.log('  - Target Y (red dot):', visibleCenterY)
+                console.log('  - Vertical translation needed:', translateY)
+                
+                // FR: Appliquer seulement la translation verticale
+                // EN: Apply only vertical translation
+                const transform = d3.zoomIdentity
+                  .translate(0, translateY) // FR: Pas de translation horizontale - EN: No horizontal translation
+                  .scale(1) // FR: Pas de zoom - EN: No zoom
+                
+                try {
+                  (svgSelRef.current as any).call((zoomBehaviorRef.current as any).transform, transform)
+                  zoomTransformRef.current = transform
+                  console.log('✅ Vertical centering applied successfully')
+                } catch (error) {
+                  console.error('❌ Error applying vertical centering:', error)
+                }
+              }}
               title={t('Fit to screen')}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="7 8 3 12 7 16"/><polyline points="17 8 21 12 17 16"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
-            </button>
+          </button>
             {/* FR: Plein écran - EN: Fullscreen */}
             <button
               aria-label={t('Fullscreen')}
@@ -1849,9 +2434,9 @@ const MindMap: React.FC = () => {
               title={t('Fullscreen')}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 9 3 3 9 3"/><polyline points="15 3 21 3 21 9"/><polyline points="21 15 21 21 15 21"/><polyline points="9 21 3 21 3 15"/></svg>
-            </button>
-          </div>
+          </button>
         </div>
+      </div>
     </div>
   )
 }
