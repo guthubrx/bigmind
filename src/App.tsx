@@ -813,12 +813,17 @@ const MindMap: React.FC = () => {
     svg.selectAll('*').remove()
 
     // Pane de zoom séparé en arrière-plan
+    // FR: Utiliser les dimensions réelles de la fenêtre pour couvrir toute la zone
+    // EN: Use actual window dimensions to cover the entire area
+    const windowWidth = window.innerWidth
+    const windowHeight = window.innerHeight
     const zoomPane = svg.append('rect')
       .attr('x', 0)
       .attr('y', 0)
-      .attr('width', dimensions.width)
-      .attr('height', dimensions.height)
+      .attr('width', windowWidth)
+      .attr('height', windowHeight)
       .style('fill', 'transparent')
+      .style('pointer-events', 'all') // FR: S'assurer que les événements sont capturés - EN: Ensure events are captured
       .style('cursor', 'grab')
 
     // Calque principal
@@ -1566,9 +1571,14 @@ const MindMap: React.FC = () => {
       })
       .on('start', (event) => {
         console.info('ZOOM START:', event.sourceEvent?.type)
+        // FR: Changer le curseur pendant le drag - EN: Change cursor during drag
+        zoomPane.style('cursor', 'grabbing')
       })
       .on('end', (event) => {
         console.info('ZOOM END:', event.sourceEvent?.type)
+        // FR: Remettre le curseur normal - EN: Restore normal cursor
+        zoomPane.style('cursor', 'grab')
+        
         try {
           const active = useApp.getState().activeTabId
           if (active && zoomTransformRef.current) {
@@ -1583,6 +1593,70 @@ const MindMap: React.FC = () => {
           const textSel = g.selectAll('g.node text')
           wrapText(textSel as any, 190)
         }, 100)
+        
+        // FR: Mettre à jour les coordonnées du point rouge si il existe
+        // EN: Update red dot coordinates if it exists
+        setTimeout(() => {
+          const existingDot = document.getElementById('debug-center-dot')
+          const existingLabel = document.getElementById('debug-center-label')
+          
+          console.log('🔍 Debug red dot update:', { existingDot: !!existingDot, existingLabel: !!existingLabel })
+          
+          if (existingDot && existingLabel) {
+            // FR: Vérifier si on est en train de cliquer sur le point rouge
+            // EN: Check if we're clicking on the red dot
+            const isClicking = existingDot.dataset.isClicking === 'true'
+            
+            if (isClicking) {
+              console.log('🔄 Skipping coordinate update during red dot click')
+              return
+            }
+            
+            // FR: Récupérer les coordonnées stockées et les mettre à jour selon le zoom actuel
+            // EN: Get stored coordinates and update them according to current zoom
+            const storedMapX = parseFloat(existingDot.dataset.originalMapX || '0')
+            const storedMapY = parseFloat(existingDot.dataset.originalMapY || '0')
+            
+            // FR: Recalculer les coordonnées en tenant compte du zoom actuel
+            // EN: Recalculate coordinates taking current zoom into account
+            const currentTransform = zoomTransformRef.current || d3.zoomIdentity
+            const scale = currentTransform.k
+            const translateX = currentTransform.x
+            const translateY = currentTransform.y
+            
+            // FR: Recalculer le centre de la zone visible et repositionner le point rouge
+            // EN: Recalculate center of visible area and reposition red dot
+            const { visibleCenterX, visibleCenterY } = calculateVisibleArea()
+            
+            // FR: Repositionner le point rouge au centre de la zone visible
+            // EN: Reposition red dot at center of visible area
+            existingDot.style.left = `${visibleCenterX - 10}px`
+            existingDot.style.top = `${visibleCenterY - 10}px`
+            existingLabel.style.left = `${visibleCenterX + 15}px`
+            existingLabel.style.top = `${visibleCenterY - 10}px`
+            
+            // FR: Appliquer la transformation inverse pour obtenir les coordonnées réelles
+            // EN: Apply inverse transformation to get real coordinates
+            const realMapX = (visibleCenterX - translateX) / scale
+            const realMapY = (visibleCenterY - translateY) / scale
+            
+            console.log('🔄 Updating red dot coordinates:', { 
+              storedMapX, 
+              storedMapY,
+              realMapX: Math.round(realMapX),
+              realMapY: Math.round(realMapY),
+              scale,
+              translateX,
+              translateY
+            })
+            
+            // FR: Mettre à jour les coordonnées dans l'étiquette avec les coordonnées réelles
+            // EN: Update coordinates in the label with real coordinates
+            existingLabel.textContent = `X:${Math.round(realMapX)} Y:${Math.round(realMapY)}`
+          } else {
+            console.log('❌ Red dot or label not found for update')
+          }
+        }, 150)
       })
     // Appliquer le zoom uniquement sur le pane de fond
     zoomPane.call(zoomBehavior as any)
@@ -1716,6 +1790,101 @@ const MindMap: React.FC = () => {
   const activeFileId = useApp((s) => s.activeFileId)
   const activeTabId = useApp((s) => s.activeTabId)
   const activate = useApp((s) => s.activate)
+
+  // FR: Raccourcis clavier contextuels pour la page de bienvenue
+  // EN: Contextual keyboard shortcuts for welcome page
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      console.log('🎹 Touche pressée:', event.key, 'activeTabId:', activeTabId)
+      
+      // FR: Vérifier le type d'onglet actif
+      // EN: Check active tab type
+      const activeTab = tabs.find(t => t.id === activeTabId)
+      const isOnWelcomePage = activeTab?.type === 'welcome'
+      const isOnMindMap = activeTab?.type === 'mindmap'
+      
+      console.log('🎯 Onglet actif:', activeTab, 'Type:', activeTab?.type, 'Sur page de bienvenue:', isOnWelcomePage, 'Sur carte mentale:', isOnMindMap)
+      
+      // FR: Si on n'est ni sur la page de bienvenue ni sur une carte mentale, ignorer
+      // EN: If we're neither on welcome page nor on mind map, ignore
+      if (!isOnWelcomePage && !isOnMindMap) return
+      
+      // FR: Empêcher le comportement par défaut pour nos raccourcis
+      // EN: Prevent default behavior for our shortcuts
+      if (['o', 'p', 'n', 'c'].includes(event.key.toLowerCase())) {
+        event.preventDefault()
+      }
+      
+      // FR: Raccourcis pour la page de bienvenue
+      // EN: Shortcuts for welcome page
+      if (isOnWelcomePage) {
+        switch (event.key.toLowerCase()) {
+          case 'o':
+            // FR: Ouvrir une carte - EN: Open a map
+            console.log('🎯 Raccourci O: Ouvrir une carte')
+            // FR: Déclencher le clic sur le bouton d'ouverture de fichier
+            // EN: Trigger click on file open button
+            const openFileBtn = document.querySelector('[data-action="open-file"]') as HTMLButtonElement
+            if (openFileBtn) {
+              openFileBtn.click()
+            }
+            break
+            
+          case 'p':
+            // FR: Paramètres - EN: Settings
+            console.log('🎯 Raccourci P: Paramètres')
+            // FR: Déclencher le clic sur le bouton paramètres
+            // EN: Trigger click on settings button
+            const settingsBtn = document.querySelector('[data-action="settings"]') as HTMLButtonElement
+            if (settingsBtn) {
+              settingsBtn.click()
+            }
+            break
+            
+          case 'n':
+            // FR: Nouvelle carte - EN: New map
+            console.log('🎯 Raccourci N: Nouvelle carte')
+            // FR: Déclencher le clic sur le bouton nouvelle carte
+            // EN: Trigger click on new map button
+            const newMapBtn = document.querySelector('[data-action="new-map"]') as HTMLButtonElement
+            if (newMapBtn) {
+              newMapBtn.click()
+            }
+            break
+        }
+      }
+      
+      // FR: Raccourcis pour les cartes mentales
+      // EN: Shortcuts for mind maps
+      if (isOnMindMap) {
+        switch (event.key.toLowerCase()) {
+          case 'c':
+            // FR: Center - EN: Center
+            console.log('🎯 Raccourci C: Center')
+            // FR: Déclencher le clic sur le bouton Center
+            // EN: Trigger click on Center button
+            const centerBtn = document.querySelector('[title="Center"]') as HTMLButtonElement
+            if (centerBtn) {
+              console.log('🎯 Clic sur bouton Center via raccourci C')
+              centerBtn.click()
+            } else {
+              console.log('❌ Bouton Center non trouvé')
+            }
+            break
+        }
+      }
+    }
+    
+    // FR: Ajouter l'écouteur d'événements
+    // EN: Add event listener
+    document.addEventListener('keydown', handleKeyDown)
+    
+    // FR: Nettoyer l'écouteur d'événements
+    // EN: Clean up event listener
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [activeTabId, tabs])
   const setActiveFile = useApp((s) => s.setActiveFile) // FR: Définir le fichier actif - EN: Set active file
   const closeTab = useApp((s) => s.closeTab)
   const updateTabMap = useApp((s) => s.updateTabMap)
@@ -2273,15 +2442,27 @@ const MindMap: React.FC = () => {
                 // EN: Calculate red dot coordinates relative to mind map area
                 const { mapX: redDotMapX, mapY: redDotMapY } = calculateMapCoordinates(visibleCenterX, visibleCenterY)
                 
+                // FR: Appliquer la transformation inverse pour obtenir les coordonnées réelles au zoom actuel
+                // EN: Apply inverse transformation to get real coordinates at current zoom
+                const currentTransform = zoomTransformRef.current || d3.zoomIdentity
+                const scale = currentTransform.k
+                const translateX = currentTransform.x
+                const translateY = currentTransform.y
+                
+                // FR: Formule inverse : (screenX - translateX) / scale = mapX
+                // EN: Inverse formula: (screenX - translateX) / scale = mapX
+                const realRedDotMapX = (visibleCenterX - translateX) / scale
+                const realRedDotMapY = (visibleCenterY - translateY) / scale
+                
                 // FR: Calculer la translation nécessaire pour centrer le nœud racine sur le point rouge
                 // EN: Calculate needed translation to center root node on red dot
-                const translateX = redDotMapX - rootCenterX
-                const translateY = redDotMapY - rootCenterY
+                const centerTranslateX = realRedDotMapX - rootCenterX
+                const centerTranslateY = realRedDotMapY - rootCenterY
                 
                 console.log('🎯 CENTER BUTTON - COORDINATES:')
                 console.log('  - Root node center: X:', rootCenterX, 'Y:', rootCenterY)
-                console.log('  - Red dot: X:', redDotMapX, 'Y:', redDotMapY)
-                console.log('  - Translation needed: X:', translateX, 'Y:', translateY)
+                console.log('  - Red dot: X:', realRedDotMapX, 'Y:', realRedDotMapY)
+                console.log('  - Translation needed: X:', centerTranslateX, 'Y:', centerTranslateY)
                 
                 // FR: Créer un point rouge au centre de la zone visible
                 // EN: Create a red dot at the center of visible area
@@ -2328,12 +2509,34 @@ const MindMap: React.FC = () => {
                 debugLabel.style.zIndex = '9999'
                 debugLabel.style.pointerEvents = 'none'
                 
-    // FR: Calculer les coordonnées par rapport à la zone de carte mentale
-    // EN: Calculate coordinates relative to mind map area
-    const { mapX, mapY } = calculateMapCoordinates(visibleCenterX, visibleCenterY)
-    debugLabel.textContent = `X:${Math.round(mapX)} Y:${Math.round(mapY)}`
+                // FR: Calculer les coordonnées par rapport à la zone de carte mentale
+                // EN: Calculate coordinates relative to mind map area
+                const { mapX, mapY } = calculateMapCoordinates(visibleCenterX, visibleCenterY)
+                
+                // FR: Au chargement initial (zoom 100%, translation 0,0), utiliser directement mapX/mapY
+                // EN: At initial load (100% zoom, 0,0 translation), use mapX/mapY directly
+                const currentTransform2 = zoomTransformRef.current || d3.zoomIdentity
+                const scale2 = currentTransform2.k
+                const translateX2 = currentTransform2.x
+                const translateY2 = currentTransform2.y
+                
+                // FR: Si zoom = 1 et translation = 0, utiliser mapX/mapY directement
+                // EN: If zoom = 1 and translation = 0, use mapX/mapY directly
+                const realMapX = (scale2 === 1 && translateX2 === 0 && translateY2 === 0) 
+                  ? mapX 
+                  : (visibleCenterX - translateX2) / scale2
+                const realMapY = (scale2 === 1 && translateX2 === 0 && translateY2 === 0) 
+                  ? mapY 
+                  : (visibleCenterY - translateY2) / scale2
+                
+                debugLabel.textContent = `X:${Math.round(realMapX)} Y:${Math.round(realMapY)}`
                 
                 document.body.appendChild(debugLabel)
+                
+                // FR: Stocker les coordonnées originales du point rouge pour éviter les recalculs
+                // EN: Store original red dot coordinates to avoid recalculations
+                debugDot.dataset.originalMapX = realMapX.toString()
+                debugDot.dataset.originalMapY = realMapY.toString()
                 
                 // FR: Ajouter un gestionnaire de clic sur le point rouge pour faire la translation
                 // EN: Add click handler on red dot to perform translation
@@ -2345,19 +2548,66 @@ const MindMap: React.FC = () => {
                     return
                   }
                   
+                  // FR: Marquer qu'on est en train de cliquer sur le point rouge pour éviter la mise à jour des coordonnées
+                  // EN: Mark that we're clicking on red dot to avoid coordinate update
+                  debugDot.dataset.isClicking = 'true'
+                  
+                  // FR: Recalculer les coordonnées du centre de la zone visible au zoom actuel
+                  // EN: Recalculate center of visible area coordinates at current zoom
+                  const { visibleCenterX: currentVisibleX, visibleCenterY: currentVisibleY } = calculateVisibleArea()
+                  const { mapX: currentMapX, mapY: currentMapY } = calculateMapCoordinates(currentVisibleX, currentVisibleY)
+                  
+                  // FR: Appliquer la transformation inverse pour obtenir les coordonnées réelles au zoom actuel
+                  // EN: Apply inverse transformation to get real coordinates at current zoom
+                  const currentTransform4 = zoomTransformRef.current || d3.zoomIdentity
+                  const scale = currentTransform4.k
+                  const translateX = currentTransform4.x
+                  const translateY = currentTransform4.y
+                  
+                  // FR: Si zoom = 1 et translation = 0, utiliser mapX/mapY directement
+                  // EN: If zoom = 1 and translation = 0, use mapX/mapY directly
+                  const realMapX = (scale === 1 && translateX === 0 && translateY === 0) 
+                    ? currentMapX 
+                    : (currentVisibleX - translateX) / scale
+                  const realMapY = (scale === 1 && translateX === 0 && translateY === 0) 
+                    ? currentMapY 
+                    : (currentVisibleY - translateY) / scale
+                  
+                  // FR: Recalculer seulement la position du nœud racine (pas les coordonnées du point rouge)
+                  // EN: Recalculate only root node position (not red dot coordinates)
+                  const rootNode = nodes.find(n => n.id === 'root') || nodes[0]
+                  const rootX = rootNode ? rootNode.x : 0
+                  const rootY = rootNode ? rootNode.y : 0
+                  const rootWidth = (rootNode as any)?.width || 120
+                  const rootHeight = (rootNode as any)?.height || 40
+                  const rootCenterX = rootX + (rootWidth / 2)
+                  const rootCenterY = rootY + (rootHeight / 2)
+                  
+                  // FR: Calculer la translation nécessaire
+                  // EN: Calculate needed translation
+                  const centerTranslateX = realMapX - rootCenterX
+                  const centerTranslateY = realMapY - rootCenterY
+                  
                   // FR: Appliquer la translation pour centrer le nœud racine sur le point rouge
                   // EN: Apply translation to center root node on red dot
                   const currentTransform = zoomTransformRef.current || d3.zoomIdentity
                   const transform = d3.zoomIdentity
-                    .translate(translateX, translateY) // FR: Translation X et Y - EN: X and Y translation
+                    .translate(centerTranslateX, centerTranslateY) // FR: Translation X et Y - EN: X and Y translation
                     .scale(currentTransform.k) // FR: Garder le niveau de zoom actuel - EN: Keep current zoom level
                   
                   try {
                     (svgSelRef.current as any).call((zoomBehaviorRef.current as any).transform, transform)
                     zoomTransformRef.current = transform
                     setZoom(Number(currentTransform.k.toFixed(2))) // FR: Mettre à jour l'état React - EN: Update React state
+                    
+                    // FR: Réinitialiser le flag après un délai pour permettre la mise à jour normale
+                    // EN: Reset flag after delay to allow normal updates
+                    setTimeout(() => {
+                      debugDot.dataset.isClicking = 'false'
+                    }, 200)
                   } catch (error) {
                     console.error('❌ Error applying vertical translation:', error)
+                    debugDot.dataset.isClicking = 'false'
                   }
                 })
               }}

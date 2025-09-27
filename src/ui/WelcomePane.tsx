@@ -29,8 +29,10 @@ const WelcomePane: React.FC = () => {
       <div style={{ ...commonStyles.card, display: 'grid', gap: 16 }}>
         <h2 style={{ margin: 0 }}>{t('Bienvenue')}</h2>
         <div style={{ display: 'flex', gap: 12 }}>
-          <button onClick={() => openMindmap()} style={commonStyles.button}>{t('Nouvelle carte')}</button>
-          <button onClick={async () => {
+          <button data-action="new-map" onClick={() => openMindmap()} style={commonStyles.button}>
+            <u>N</u>ouvelle carte
+          </button>
+          <button data-action="open-file" onClick={async () => {
             /*
               FR: Ouverture d'un fichier depuis l'écran d'accueil: créer un onglet par feuille,
               charger la première dans le store, puis fermer l'onglet "welcome".
@@ -63,8 +65,12 @@ const WelcomePane: React.FC = () => {
             // Close welcome tab if present
             const welcome = (tabs || useApp.getState().tabs).find(t => t.type === 'welcome')
             if (welcome) closeTab(welcome.id)
-          }} style={commonStyles.button}>{t('Ouvrir une carte')}</button>
-          <button onClick={() => openSettings()} style={commonStyles.button}>{t('Paramètres')}</button>
+          }} style={commonStyles.button}>
+            <u>O</u>uvrir une carte
+          </button>
+          <button data-action="settings" onClick={() => openSettings()} style={commonStyles.button}>
+            <u>P</u>aramètres
+          </button>
         </div>
         <div>
           {!isWeb() && <h4 style={{ margin: '8px 0' }}>{t('Récents')}</h4>}
