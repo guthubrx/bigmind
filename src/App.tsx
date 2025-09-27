@@ -1407,6 +1407,19 @@ const MindMap: React.FC = () => {
         e.preventDefault(); setNodes(prev => prev.filter(n => n.id !== selectedId)); select('root')
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
         e.preventDefault(); if (e.shiftKey) redo(); else undo()
+      } else if (e.key.toLowerCase() === 'c') {
+        // FR: Centrer le nœud racine - EN: Center root node
+        e.preventDefault()
+        console.log('🎯 Keyboard shortcut C: Center root node')
+        // FR: Déclencher le clic sur le bouton Center
+        // EN: Trigger click on Center button
+        const centerBtn = document.querySelector('[title="Center"]') as HTMLButtonElement
+        if (centerBtn) {
+          console.log('🎯 Clicking Center button via keyboard shortcut C')
+          centerBtn.click()
+        } else {
+          console.log('❌ Center button not found')
+        }
       }
     }
     window.addEventListener('keydown', handleKey)
@@ -2011,6 +2024,83 @@ const MindMap: React.FC = () => {
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
             </button>
+            
+            {/* FR: Centrer - EN: Center */}
+            <button
+              aria-label={t('Center')}
+              style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center', gap: 4 }}
+              onClick={() => {
+                console.log('🎯 CENTER BUTTON CLICKED - Centering root node')
+                
+                // FR: Calculer le centre de la zone visible
+                // EN: Calculate visible area center
+                const windowWidth = window.innerWidth
+                const windowHeight = window.innerHeight
+                const leftColumnWidth = showLeft ? 180 : 0
+                const treeColumnWidth = showTree ? 200 : 0
+                const rightColumnWidth = showRight ? 180 : 0
+                const topBarHeight = 40
+                const menuBarHeight = 48
+                const statusBarHeight = 32
+                
+                const visibleWidth = windowWidth - leftColumnWidth - treeColumnWidth - rightColumnWidth
+                const visibleHeight = windowHeight - topBarHeight - menuBarHeight - statusBarHeight
+                const visibleCenterX = leftColumnWidth + treeColumnWidth + (visibleWidth / 2)
+                const visibleCenterY = topBarHeight + menuBarHeight + (visibleHeight / 2)
+                
+                console.log('📐 Visible area calculation:')
+                console.log('  - Window:', windowWidth, 'x', windowHeight)
+                console.log('  - Columns: left=', leftColumnWidth, 'tree=', treeColumnWidth, 'right=', rightColumnWidth)
+                console.log('  - Bars: top=', topBarHeight, 'menu=', menuBarHeight, 'status=', statusBarHeight)
+                console.log('  - Visible area:', visibleWidth, 'x', visibleHeight)
+                console.log('  - Visible center:', visibleCenterX, visibleCenterY)
+                
+                // FR: Trouver le nœud racine
+                // EN: Find root node
+                const rootNode = nodes.find(n => n.id === 'root')
+                if (!rootNode) {
+                  console.log('❌ Root node not found')
+                  return
+                }
+                
+                console.log('📍 Root node position:', rootNode.x, rootNode.y)
+                
+                // FR: Calculer la position actuelle du nœud racine après transformation
+                // EN: Calculate current position of root node after transformation
+                const currentTransform = zoomTransformRef.current || d3.zoomIdentity
+                const [currentRootX, currentRootY] = currentTransform.apply([rootNode.x, rootNode.y])
+                
+                console.log('📍 Root node current screen position:', currentRootX, currentRootY)
+                
+                // FR: Calculer la translation nécessaire pour centrer
+                // EN: Calculate translation needed to center
+                const translateX = visibleCenterX - currentRootX
+                const translateY = visibleCenterY - currentRootY
+                
+                console.log('🔄 Translation needed:', translateX, translateY)
+                
+                // FR: Appliquer la nouvelle transformation
+                // EN: Apply new transformation
+                const newTransform = d3.zoomIdentity
+                  .translate(currentTransform.x + translateX, currentTransform.y + translateY)
+                  .scale(currentTransform.k)
+                
+                try {
+                  (svgSelRef.current as any).call((zoomBehaviorRef.current as any).transform, newTransform)
+                  zoomTransformRef.current = newTransform
+                  console.log('✅ Root node centered successfully')
+                } catch (error) {
+                  console.error('❌ Error centering root node:', error)
+                }
+              }}
+              title={t('Center')}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"/>
+              </svg>
+            </button>
+            
             {/* FR: Plein écran - EN: Fullscreen */}
             <button
               aria-label={t('Fullscreen')}
