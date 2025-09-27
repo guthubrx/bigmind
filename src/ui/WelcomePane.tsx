@@ -29,7 +29,7 @@ const WelcomePane: React.FC = () => {
       <div style={{ ...commonStyles.card, display: 'grid', gap: 16 }}>
         <h2 style={{ margin: 0 }}>{t('Bienvenue')}</h2>
         <div style={{ display: 'flex', gap: 12 }}>
-          <button data-action="new-map" onClick={() => openMindmap()} style={commonStyles.button}>
+          <button data-action="new-map" onClick={() => openMindmap()} style={commonStyles.button} title={`${t('Nouvelle carte')} (N)`}>
             <u>N</u>ouvelle carte
           </button>
           <button data-action="open-file" onClick={async () => {
@@ -65,10 +65,10 @@ const WelcomePane: React.FC = () => {
             // Close welcome tab if present
             const welcome = (tabs || useApp.getState().tabs).find(t => t.type === 'welcome')
             if (welcome) closeTab(welcome.id)
-          }} style={commonStyles.button}>
+          }} style={commonStyles.button} title={`${t('Ouvrir une carte')} (O)`}>
             <u>O</u>uvrir une carte
           </button>
-          <button data-action="settings" onClick={() => openSettings()} style={commonStyles.button}>
+          <button data-action="settings" onClick={() => openSettings()} style={commonStyles.button} title={`${t('Paramètres')} (P)`}>
             <u>P</u>aramètres
           </button>
         </div>

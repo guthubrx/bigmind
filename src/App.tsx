@@ -1407,24 +1407,94 @@ const MindMap: React.FC = () => {
         e.preventDefault(); setNodes(prev => prev.filter(n => n.id !== selectedId)); select('root')
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
         e.preventDefault(); if (e.shiftKey) redo(); else undo()
-      } else if (e.key.toLowerCase() === 'c') {
-        // FR: Centrer le nœud racine - EN: Center root node
-        e.preventDefault()
-        console.log('🎯 Keyboard shortcut C: Center root node')
-        // FR: Déclencher le clic sur le bouton Center
-        // EN: Trigger click on Center button
-        const centerBtn = document.querySelector('[title="Center"]') as HTMLButtonElement
-        if (centerBtn) {
-          console.log('🎯 Clicking Center button via keyboard shortcut C')
-          centerBtn.click()
-        } else {
-          console.log('❌ Center button not found')
-        }
+        } else if (e.key.toLowerCase() === 'c') {
+          // FR: Centrer le nœud racine - EN: Center root node
+          e.preventDefault()
+          console.log('🎯 Keyboard shortcut C: Center root node')
+          // FR: Déclencher le clic sur le bouton Center
+          // EN: Trigger click on Center button
+          const centerBtn = document.querySelector('[data-action="center"]') as HTMLButtonElement
+          if (centerBtn) {
+            console.log('🎯 Clicking Center button via keyboard shortcut C')
+            centerBtn.click()
+          } else {
+            console.log('❌ Center button not found')
+          }
+        } else if (e.shiftKey && e.key.toLowerCase() === 'f') {
+          // FR: Plein écran - EN: Fullscreen
+          e.preventDefault()
+          console.log('🎯 Keyboard shortcut Shift+F: Fullscreen')
+          // FR: Déclencher le clic sur le bouton plein écran
+          // EN: Trigger click on fullscreen button
+          const fullscreenBtn = document.querySelector('[data-action="fullscreen"]') as HTMLButtonElement
+          if (fullscreenBtn) {
+            console.log('🎯 Clicking Fullscreen button via keyboard shortcut Shift+F')
+            fullscreenBtn.click()
+          } else {
+            console.log('❌ Fullscreen button not found')
+          }
+        } else if (e.key.toLowerCase() === 'f') {
+          // FR: Ajuster à l'écran - EN: Fit to screen
+          e.preventDefault()
+          console.log('🎯 Keyboard shortcut F: Fit to screen')
+          // FR: Déclencher le clic sur le bouton Fit to screen
+          // EN: Trigger click on Fit to screen button
+          const fitBtn = document.querySelector('[data-action="fit-to-screen"]') as HTMLButtonElement
+          if (fitBtn) {
+            console.log('🎯 Clicking Fit to screen button via keyboard shortcut F')
+            fitBtn.click()
+          } else {
+            console.log('❌ Fit to screen button not found')
+          }
+        } else if (e.key === '+' || e.key === '=') {
+          // FR: Zoom in - EN: Zoom in
+          e.preventDefault()
+          console.log('🎯 Keyboard shortcut +: Zoom in')
+          const currentZoom = zoom
+          const newZoom = Math.min(currentZoom * 1.2, 10) // FR: Limiter à 10x - EN: Limit to 10x
+          setZoom(Number(newZoom.toFixed(2)))
+          
+          // FR: Appliquer le zoom via D3
+          // EN: Apply zoom via D3
+          const currentTransform = zoomTransformRef.current || d3.zoomIdentity
+          const newTransform = d3.zoomIdentity
+            .translate(currentTransform.x, currentTransform.y)
+            .scale(newZoom)
+          
+          try {
+            (svgSelRef.current as any).call((zoomBehaviorRef.current as any).transform, newTransform)
+            zoomTransformRef.current = newTransform
+            console.log('✅ Zoom in applied:', newZoom)
+          } catch (error) {
+            console.error('❌ Error applying zoom in:', error)
+          }
+        } else if (e.key === '-') {
+          // FR: Zoom out - EN: Zoom out
+          e.preventDefault()
+          console.log('🎯 Keyboard shortcut -: Zoom out')
+          const currentZoom = zoom
+          const newZoom = Math.max(currentZoom / 1.2, 0.1) // FR: Limiter à 0.1x - EN: Limit to 0.1x
+          setZoom(Number(newZoom.toFixed(2)))
+          
+          // FR: Appliquer le zoom via D3
+          // EN: Apply zoom via D3
+          const currentTransform = zoomTransformRef.current || d3.zoomIdentity
+          const newTransform = d3.zoomIdentity
+            .translate(currentTransform.x, currentTransform.y)
+            .scale(newZoom)
+          
+          try {
+            (svgSelRef.current as any).call((zoomBehaviorRef.current as any).transform, newTransform)
+            zoomTransformRef.current = newTransform
+            console.log('✅ Zoom out applied:', newZoom)
+          } catch (error) {
+            console.error('❌ Error applying zoom out:', error)
+          }
       }
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [selectedId, addSibling, addChild, remove, undo, redo])
+  }, [selectedId, addSibling, addChild, remove, undo, redo, zoom, setZoom])
 
   const tabs = useApp((s) => s.tabs)
   const files = useApp((s) => s.files)
@@ -1974,7 +2044,7 @@ const MindMap: React.FC = () => {
               aria-label={t('Zoom out')}
               style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center', gap: 4 }}
               onClick={() => { try { (svgSelRef.current as any)?.call((zoomBehaviorRef.current as any).scaleBy, 1/1.1) } catch {} }}
-              title={t('Zoom out')}
+              title={`${t('Zoom out')} (-)`}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
           </button>
@@ -2020,13 +2090,14 @@ const MindMap: React.FC = () => {
               aria-label={t('Zoom in')}
               style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center', gap: 4 }}
               onClick={() => { try { (svgSelRef.current as any)?.call((zoomBehaviorRef.current as any).scaleBy, 1.1) } catch {} }}
-              title={t('Zoom in')}
+              title={`${t('Zoom in')} (+)`}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
             </button>
             
             {/* FR: Centrer - EN: Center */}
             <button
+              data-action="center"
               aria-label={t('Center')}
               style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center', gap: 4 }}
               onClick={() => {
@@ -2040,26 +2111,33 @@ const MindMap: React.FC = () => {
                 const treeColumnWidth = showTree ? 200 : 0
                 const rightColumnWidth = showRight ? 180 : 0
                 const topBarHeight = 40
+                const tabBarHeight = 48
                 const menuBarHeight = 48
                 const statusBarHeight = 32
                 
                 const visibleWidth = windowWidth - leftColumnWidth - treeColumnWidth - rightColumnWidth
-                const visibleHeight = windowHeight - topBarHeight - menuBarHeight - statusBarHeight
-                const visibleCenterX = leftColumnWidth + treeColumnWidth + (visibleWidth / 2)
-                const visibleCenterY = topBarHeight + menuBarHeight + (visibleHeight / 2)
+                const visibleHeight = windowHeight - topBarHeight - tabBarHeight - menuBarHeight - statusBarHeight
+                // FR: Centre relatif au SVG (pas à la fenêtre)
+                // EN: Center relative to SVG (not window)
+                const visibleCenterX = visibleWidth / 2
+                const visibleCenterY = visibleHeight / 2
                 
                 console.log('📐 Visible area calculation:')
                 console.log('  - Window:', windowWidth, 'x', windowHeight)
                 console.log('  - Columns: left=', leftColumnWidth, 'tree=', treeColumnWidth, 'right=', rightColumnWidth)
-                console.log('  - Bars: top=', topBarHeight, 'menu=', menuBarHeight, 'status=', statusBarHeight)
+                console.log('  - Bars: top=', topBarHeight, 'tab=', tabBarHeight, 'menu=', menuBarHeight, 'status=', statusBarHeight)
                 console.log('  - Visible area:', visibleWidth, 'x', visibleHeight)
                 console.log('  - Visible center:', visibleCenterX, visibleCenterY)
                 
-                // FR: Trouver le nœud racine
-                // EN: Find root node
-                const rootNode = nodes.find(n => n.id === 'root')
+                // FR: Trouver le nœud racine (celui qui n'a pas de parent)
+                // EN: Find root node (the one without a parent)
+                const rootNode = nodes.find(node => {
+                  // FR: Un nœud est racine s'il n'apparaît pas comme target dans les liens
+                  // EN: A node is root if it doesn't appear as target in links
+                  return !links.some(link => link.target === node.id)
+                })
                 if (!rootNode) {
-                  console.log('❌ Root node not found')
+                  console.log('❌ Root node not found - no node without parent')
                   return
                 }
                 
@@ -2068,7 +2146,8 @@ const MindMap: React.FC = () => {
                 // FR: Calculer la position actuelle du nœud racine après transformation
                 // EN: Calculate current position of root node after transformation
                 const currentTransform = zoomTransformRef.current || d3.zoomIdentity
-                const [currentRootX, currentRootY] = currentTransform.apply([rootNode.x, rootNode.y])
+                const currentRootX = rootNode.x * currentTransform.k + currentTransform.x
+                const currentRootY = rootNode.y * currentTransform.k + currentTransform.y
                 
                 console.log('📍 Root node current screen position:', currentRootX, currentRootY)
                 
@@ -2093,16 +2172,114 @@ const MindMap: React.FC = () => {
                   console.error('❌ Error centering root node:', error)
                 }
               }}
-              title={t('Center')}
+              title={`${t('Center')} (C)`}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="3"/>
                 <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"/>
-              </svg>
+            </svg>
+          </button>
+            
+            {/* FR: Ajuster à l'écran - EN: Fit to screen */}
+            <button
+              data-action="fit-to-screen"
+              aria-label={t('Fit to screen')}
+              style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center', gap: 4 }}
+              onClick={() => {
+                console.log('🎯 FIT TO SCREEN BUTTON CLICKED - Fitting entire map to view')
+                
+                if (nodes.length === 0) {
+                  console.log('❌ No nodes to fit')
+                  return
+                }
+                
+                // FR: Calculer les dimensions de la zone visible
+                // EN: Calculate visible area dimensions
+                const windowWidth = window.innerWidth
+                const windowHeight = window.innerHeight
+                const leftColumnWidth = showLeft ? 180 : 0
+                const treeColumnWidth = showTree ? 200 : 0
+                const rightColumnWidth = showRight ? 180 : 0
+                const topBarHeight = 40
+                const tabBarHeight = 48
+                const menuBarHeight = 48
+                const statusBarHeight = 32
+                
+                const visibleWidth = windowWidth - leftColumnWidth - treeColumnWidth - rightColumnWidth
+                const visibleHeight = windowHeight - topBarHeight - tabBarHeight - menuBarHeight - statusBarHeight
+                
+                console.log('📐 Visible area:', visibleWidth, 'x', visibleHeight)
+                
+                // FR: Calculer la bounding box de tous les nœuds
+                // EN: Calculate bounding box of all nodes
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+                
+                nodes.forEach(node => {
+                  minX = Math.min(minX, node.x)
+                  minY = Math.min(minY, node.y)
+                  maxX = Math.max(maxX, node.x)
+                  maxY = Math.max(maxY, node.y)
+                })
+                
+                // FR: Ajouter une marge autour de la carte
+                // EN: Add margin around the map
+                const margin = 50
+                const mapWidth = maxX - minX + margin * 2
+                const mapHeight = maxY - minY + margin * 2
+                const mapCenterX = (minX + maxX) / 2
+                const mapCenterY = (minY + maxY) / 2
+                
+                console.log('📏 Map bounds:', minX, minY, 'to', maxX, maxY)
+                console.log('📏 Map size:', mapWidth, 'x', mapHeight)
+                console.log('📏 Map center:', mapCenterX, mapCenterY)
+                
+                // FR: Calculer le zoom pour que la carte rentre dans la zone visible
+                // EN: Calculate zoom so map fits in visible area
+                const scaleX = visibleWidth / mapWidth
+                const scaleY = visibleHeight / mapHeight
+                const scale = Math.min(scaleX, scaleY, 10) // FR: Limiter le zoom max - EN: Limit max zoom
+                
+                console.log('🔍 Scale calculations:')
+                console.log('  - Scale X:', scaleX)
+                console.log('  - Scale Y:', scaleY)
+                console.log('  - Final scale:', scale)
+                
+                // FR: Calculer la translation pour centrer la carte
+                // EN: Calculate translation to center the map
+                const visibleCenterX = visibleWidth / 2
+                const visibleCenterY = visibleHeight / 2
+                const translateX = visibleCenterX - mapCenterX * scale
+                const translateY = visibleCenterY - mapCenterY * scale
+                
+                console.log('🔄 Final transform:')
+                console.log('  - Translate:', translateX, translateY)
+                console.log('  - Scale:', scale)
+                
+                // FR: Appliquer la transformation
+                // EN: Apply transformation
+                const newTransform = d3.zoomIdentity
+                  .translate(translateX, translateY)
+                  .scale(scale)
+                
+                try {
+                  (svgSelRef.current as any).call((zoomBehaviorRef.current as any).transform, newTransform)
+                  zoomTransformRef.current = newTransform
+                  setZoom(Number(scale.toFixed(2)))
+                  console.log('✅ Map fitted to screen successfully')
+                } catch (error) {
+                  console.error('❌ Error fitting map to screen:', error)
+                }
+              }}
+              title={`${t('Fit to screen')} (F)`}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+            </svg>
             </button>
             
             {/* FR: Plein écran - EN: Fullscreen */}
             <button
+              data-action="fullscreen"
               aria-label={t('Fullscreen')}
               style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', color: 'var(--fg)', display: 'flex', alignItems: 'center' }}
               onClick={() => {
@@ -2117,7 +2294,7 @@ const MindMap: React.FC = () => {
                   }
                 } catch {}
               }}
-              title={t('Fullscreen')}
+              title={`${t('Fullscreen')} (Shift+F)`}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 9 3 3 9 3"/><polyline points="15 3 21 3 21 9"/><polyline points="21 15 21 21 15 21"/><polyline points="9 21 3 21 3 15"/></svg>
           </button>
