@@ -1,0 +1,9 @@
+<type>(<scope>): <summary>
+
+Pourquoi:
+
+Impacts:
+
+BREAKING CHANGE:
+
+
