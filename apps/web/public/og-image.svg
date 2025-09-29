@@ -1,0 +1,92 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- FR: Image de couverture BigMind pour les réseaux sociaux -->
+  <!-- EN: BigMind cover image for social media -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1d4ed8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e0e7ff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- FR: Fond avec dégradé -->
+  <!-- EN: Background with gradient -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+  
+  <!-- FR: Motifs décoratifs -->
+  <!-- EN: Decorative patterns -->
+  <circle cx="100" cy="100" r="50" fill="white" opacity="0.1"/>
+  <circle cx="1100" cy="150" r="80" fill="white" opacity="0.1"/>
+  <circle cx="200" cy="500" r="60" fill="white" opacity="0.1"/>
+  <circle cx="1000" cy="500" r="40" fill="white" opacity="0.1"/>
+  
+  <!-- FR: Icône de carte mentale principale -->
+  <!-- EN: Main mind map icon -->
+  <g transform="translate(200, 200)">
+    <!-- FR: Nœud central -->
+    <!-- EN: Central node -->
+    <circle cx="100" cy="100" r="60" fill="white" stroke="#3b82f6" stroke-width="6"/>
+    <circle cx="100" cy="100" r="20" fill="#3b82f6"/>
+    
+    <!-- FR: Nœuds satellites -->
+    <!-- EN: Satellite nodes -->
+    <circle cx="50" cy="60" r="30" fill="white" stroke="#3b82f6" stroke-width="4"/>
+    <circle cx="150" cy="60" r="30" fill="white" stroke="#3b82f6" stroke-width="4"/>
+    <circle cx="50" cy="140" r="30" fill="white" stroke="#3b82f6" stroke-width="4"/>
+    <circle cx="150" cy="140" r="30" fill="white" stroke="#3b82f6" stroke-width="4"/>
+    
+    <!-- FR: Points dans les nœuds satellites -->
+    <!-- EN: Dots in satellite nodes -->
+    <circle cx="50" cy="60" r="8" fill="#3b82f6"/>
+    <circle cx="150" cy="60" r="8" fill="#3b82f6"/>
+    <circle cx="50" cy="140" r="8" fill="#3b82f6"/>
+    <circle cx="150" cy="140" r="8" fill="#3b82f6"/>
+    
+    <!-- FR: Connexions -->
+    <!-- EN: Connections -->
+    <path d="M100 80L50 60" stroke="#3b82f6" stroke-width="4" stroke-linecap="round"/>
+    <path d="M100 80L150 60" stroke="#3b82f6" stroke-width="4" stroke-linecap="round"/>
+    <path d="M100 120L50 140" stroke="#3b82f6" stroke-width="4" stroke-linecap="round"/>
+    <path d="M100 120L150 140" stroke="#3b82f6" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  
+  <!-- FR: Texte principal -->
+  <!-- EN: Main text -->
+  <text x="600" y="200" font-family="Arial, sans-serif" font-size="120" font-weight="bold" fill="url(#textGradient)" text-anchor="middle">
+    BigMind
+  </text>
+  
+  <!-- FR: Sous-titre -->
+  <!-- EN: Subtitle -->
+  <text x="600" y="280" font-family="Arial, sans-serif" font-size="48" fill="#e0e7ff" text-anchor="middle">
+    Cartes mentales intelligentes
+  </text>
+  
+  <!-- FR: Description -->
+  <!-- EN: Description -->
+  <text x="600" y="350" font-family="Arial, sans-serif" font-size="32" fill="#c7d2fe" text-anchor="middle">
+    Créez, organisez et partagez vos idées
+  </text>
+  
+  <!-- FR: Fonctionnalités -->
+  <!-- EN: Features -->
+  <text x="600" y="420" font-family="Arial, sans-serif" font-size="24" fill="#a5b4fc" text-anchor="middle">
+    • Interface intuitive • Export multiple formats • Collaboration temps réel
+  </text>
+  
+  <!-- FR: URL -->
+  <!-- EN: URL -->
+  <text x="600" y="500" font-family="Arial, sans-serif" font-size="28" fill="#818cf8" text-anchor="middle">
+    bigmind.app
+  </text>
+  
+  <!-- FR: Version -->
+  <!-- EN: Version -->
+  <text x="1100" y="580" font-family="Arial, sans-serif" font-size="20" fill="#6366f1">
+    v0.1.0
+  </text>
+</svg>

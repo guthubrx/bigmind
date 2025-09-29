@@ -1,0 +1,134 @@
+/**
+ * FR: Styles globaux pour BigMind
+ * EN: Global styles for BigMind
+ */
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* FR: Styles de base pour l'application */
+/* EN: Base styles for the application */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+/* FR: Styles pour le canvas de carte mentale */
+/* EN: Styles for mind map canvas */
+.mindmap-canvas {
+  background-color: theme('colors.background.secondary');
+  background-image: theme('backgroundImage.grid-pattern');
+  background-size: theme('backgroundSize.grid');
+}
+
+/* FR: Styles pour les nœuds */
+/* EN: Styles for nodes */
+.mindmap-node {
+  @apply node-base node-hover;
+  transition: all 0.2s ease-in-out;
+}
+
+.mindmap-node.selected {
+  @apply node-selected;
+}
+
+.mindmap-node:hover {
+  @apply shadow-md;
+}
+
+/* FR: Styles pour les connexions */
+/* EN: Styles for connections */
+.mindmap-connection {
+  stroke: theme('colors.border.DEFAULT');
+  stroke-width: 2;
+  fill: none;
+}
+
+.mindmap-connection.selected {
+  stroke: theme('colors.accent.500');
+  stroke-width: 3;
+}
+
+/* FR: Styles pour les boutons */
+/* EN: Styles for buttons */
+.btn {
+  @apply px-4 py-2 rounded-md font-medium transition-colors duration-150;
+}
+
+.btn-primary {
+  @apply btn btn-primary;
+}
+
+.btn-secondary {
+  @apply btn btn-secondary;
+}
+
+/* FR: Styles pour les inputs */
+/* EN: Styles for inputs */
+.input {
+  @apply px-3 py-2 border border-border rounded-md bg-background text-foreground;
+  @apply focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-accent-500;
+}
+
+/* FR: Styles pour les tooltips */
+/* EN: Styles for tooltips */
+.tooltip {
+  @apply absolute z-tooltip px-2 py-1 text-sm text-white bg-gray-900 rounded shadow-lg;
+  @apply opacity-0 pointer-events-none transition-opacity duration-200;
+}
+
+.tooltip.visible {
+  @apply opacity-100;
+}
+
+/* FR: Styles pour les modales */
+/* EN: Styles for modals */
+.modal-overlay {
+  @apply fixed inset-0 z-modal bg-black bg-opacity-50 flex items-center justify-center;
+}
+
+.modal-content {
+  @apply bg-background rounded-lg shadow-xl max-w-md w-full mx-4;
+}
+
+/* FR: Styles pour les animations */
+/* EN: Styles for animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* FR: Styles pour le mode sombre */
+/* EN: Styles for dark mode */
+@media (prefers-color-scheme: dark) {
+  .dark-mode {
+    @apply bg-gray-900 text-white;
+  }
+}

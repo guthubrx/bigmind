@@ -1,0 +1,23 @@
+{
+  "name": "@bigmind/core",
+  "version": "0.1.0",
+  "description": "Logique métier et modèles pour BigMind",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage"
+  },
+  "dependencies": {
+    "immer": "^10.0.3",
+    "nanoid": "^5.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.2",
+    "vitest": "^1.0.0"
+  }
+}

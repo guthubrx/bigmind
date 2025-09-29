@@ -1,0 +1,169 @@
+/**
+ * FR: Styles pour les propriétés de nœud
+ * EN: Styles for node properties
+ */
+
+.node-properties {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: theme('colors.background.secondary');
+}
+
+.no-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: theme('colors.foreground.tertiary');
+  padding: 20px;
+}
+
+.no-selection .icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.no-selection p {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.no-selection span {
+  font-size: 12px;
+}
+
+.properties-tabs {
+  display: flex;
+  border-bottom: 1px solid theme('colors.border.DEFAULT');
+  background-color: theme('colors.background.tertiary');
+}
+
+.properties-tabs .tab {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: theme('colors.foreground.secondary');
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.properties-tabs .tab:hover {
+  background-color: theme('colors.state.hover');
+  color: theme('colors.foreground.DEFAULT');
+}
+
+.properties-tabs .tab.active {
+  color: theme('colors.accent.600');
+  border-bottom-color: theme('colors.accent.500');
+  background-color: theme('colors.background.DEFAULT');
+}
+
+.properties-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: theme('colors.foreground.DEFAULT');
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid theme('colors.border.DEFAULT');
+  border-radius: 4px;
+  background-color: theme('colors.background.DEFAULT');
+  color: theme('colors.foreground.DEFAULT');
+  font-size: 12px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: theme('colors.accent.500');
+  box-shadow: 0 0 0 2px theme('colors.accent.100');
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.alignment-buttons,
+.font-style-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.alignment-buttons .btn,
+.font-style-buttons .btn {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid theme('colors.border.DEFAULT');
+  background-color: theme('colors.background.DEFAULT');
+  color: theme('colors.foreground.DEFAULT');
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 11px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alignment-buttons .btn:hover,
+.font-style-buttons .btn:hover {
+  background-color: theme('colors.state.hover');
+  border-color: theme('colors.border.secondary');
+}
+
+.color-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.color-input {
+  width: 40px;
+  height: 32px;
+  border: 1px solid theme('colors.border.DEFAULT');
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.position-inputs,
+.size-inputs {
+  display: flex;
+  gap: 8px;
+}
+
+.position-inputs input,
+.size-inputs input {
+  flex: 1;
+}

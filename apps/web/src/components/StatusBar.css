@@ -1,0 +1,44 @@
+/**
+ * FR: Styles pour la barre de statut
+ * EN: Styles for status bar
+ */
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 16px;
+  background-color: theme('colors.background.secondary');
+  border-top: 1px solid theme('colors.border.DEFAULT');
+  font-size: 11px;
+  color: theme('colors.foreground.secondary');
+}
+
+.status-left,
+.status-center,
+.status-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-dot {
+  color: theme('colors.semantic.success');
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

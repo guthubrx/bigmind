@@ -1,0 +1,496 @@
+/**
+ * FR: Styles pour le layout principal avec framesets
+ * EN: Styles for main layout with framesets
+ */
+
+.main-layout {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  background-color: theme('colors.background.DEFAULT');
+  overflow: hidden;
+}
+
+/* FR: Frameset vertical 1 - Layout principal */
+/* EN: Vertical frameset 1 - Main layout */
+.frameset-vertical-1 {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+}
+
+/* FR: Top Bar */
+/* EN: Top Bar */
+.top-bar-container {
+  height: 52px;
+  min-height: 52px;
+  max-height: 52px;
+  background-color: theme('colors.background.secondary');
+  border-bottom: 1px solid theme('colors.border.DEFAULT');
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+/* FR: Barre de menu */
+/* EN: Menu bar */
+.menu-bar-container {
+  height: 32px;
+  min-height: 32px;
+  max-height: 32px;
+  background-color: theme('colors.background.DEFAULT');
+  border-bottom: 1px solid theme('colors.border.DEFAULT');
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+/* FR: Frameset horizontal 2 - Zone principale */
+/* EN: Horizontal frameset 2 - Main area */
+.frameset-horizontal-2 {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 0;
+}
+
+/* FR: En-têtes de colonnes */
+/* EN: Column headers */
+.column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+  min-height: 32px;
+}
+
+.column-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* FR: États collapsed des colonnes */
+/* EN: Collapsed column states */
+.files-column.collapsed {
+  width: 32px;
+  min-width: 32px;
+  max-width: 32px;
+  transition: width 0.3s ease, min-width 0.3s ease, max-width 0.3s ease;
+  position: relative;
+}
+
+.files-column.collapsed .column-header {
+  padding: 8px 4px;
+  justify-content: center;
+}
+
+.files-column.collapsed .column-title {
+  display: none;
+}
+
+.node-explorer-column.collapsed {
+  width: 32px;
+  min-width: 32px;
+  max-width: 32px;
+  transition: width 0.3s ease, min-width 0.3s ease, max-width 0.3s ease;
+  position: relative;
+}
+
+.node-explorer-column.collapsed .column-header {
+  padding: 8px 4px;
+  justify-content: center;
+}
+
+.node-explorer-column.collapsed .column-title {
+  display: none;
+}
+
+.properties-column.collapsed {
+  width: 32px;
+  min-width: 32px;
+  max-width: 32px;
+  transition: width 0.3s ease, min-width 0.3s ease, max-width 0.3s ease;
+  position: relative;
+}
+
+.properties-column.collapsed .column-header {
+  padding: 8px 4px;
+  justify-content: center;
+}
+
+.properties-column.collapsed .column-title {
+  display: none;
+}
+
+/* FR: Titre vertical pour les colonnes collapsed */
+/* EN: Vertical title for collapsed columns */
+.vertical-title {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(270deg);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.vertical-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  opacity: 0.7;
+}
+
+/* FR: Transitions pour les colonnes normales */
+/* EN: Transitions for normal columns */
+
+/* FR: Colonne de fichiers ouverts */
+/* EN: Open files column */
+.files-column {
+  width: 200px;
+  min-width: 200px;
+  max-width: 300px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-right: 2px solid #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width 0.3s ease, min-width 0.3s ease, max-width 0.3s ease;
+}
+
+/* FR: Frameset horizontal 3 - Zone de travail */
+/* EN: Horizontal frameset 3 - Work area */
+.frameset-horizontal-3 {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-width: 0;
+}
+
+/* FR: Frameset vertical 4 - Zone centrale */
+/* EN: Vertical frameset 4 - Central area */
+.frameset-vertical-4 {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* FR: Frameset horizontal 5 - Zone de carte */
+/* EN: Horizontal frameset 5 - Map area */
+.frameset-horizontal-5 {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 0;
+}
+
+/* FR: Colonne explorateur de nœuds */
+/* EN: Node explorer column */
+.node-explorer-column {
+  width: 280px;
+  min-width: 280px;
+  max-width: 400px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-right: 2px solid #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width 0.3s ease, min-width 0.3s ease, max-width 0.3s ease;
+}
+
+/* FR: Carte mentale */
+/* EN: Mind map */
+.mindmap-column {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  background-color: theme('colors.background.DEFAULT');
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* FR: Colonne de propriétés du nœud sélectionné */
+/* EN: Selected node properties column */
+.properties-column {
+  width: 300px;
+  min-width: 300px;
+  max-width: 500px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 2px solid #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width 0.3s ease, min-width 0.3s ease, max-width 0.3s ease;
+}
+
+/* FR: Barre d'onglets */
+/* EN: Tab bar */
+.tab-bar-container {
+  height: 32px;
+  min-height: 32px;
+  max-height: 32px;
+  background-color: theme('colors.background.tertiary');
+  border-top: 1px solid theme('colors.border.DEFAULT');
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+}
+
+/* FR: Barre de statut */
+/* EN: Status bar */
+.status-bar-container {
+  height: 44px;
+  min-height: 44px;
+  max-height: 44px;
+  background-color: theme('colors.background.secondary');
+  border-top: 1px solid theme('colors.border.DEFAULT');
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 16px;
+  color: theme('colors.foreground.secondary');
+}
+
+/* FR: Styles pour les redimensionnables */
+/* EN: Styles for resizable elements */
+.resizable-handle {
+  background-color: theme('colors.border.DEFAULT');
+  transition: background-color 0.2s ease;
+}
+
+.resizable-handle:hover {
+  background-color: theme('colors.accent.500');
+}
+
+.resizable-handle.vertical {
+  width: 4px;
+  cursor: col-resize;
+}
+
+.resizable-handle.horizontal {
+  height: 4px;
+  cursor: row-resize;
+}
+
+/* FR: Styles pour les colonnes redimensionnables */
+/* EN: Styles for resizable columns */
+.files-column.resizable {
+  resize: horizontal;
+  overflow: auto;
+}
+
+.node-explorer-column.resizable {
+  resize: horizontal;
+  overflow: auto;
+}
+
+.properties-column.resizable {
+  resize: horizontal;
+  overflow: auto;
+}
+
+/* FR: Styles pour les barres de redimensionnement */
+/* EN: Styles for resize bars */
+.resize-bar {
+  background-color: theme('colors.border.DEFAULT');
+  transition: background-color 0.2s ease;
+  position: relative;
+}
+
+.resize-bar:hover {
+  background-color: theme('colors.accent.500');
+}
+
+.resize-bar.vertical {
+  width: 4px;
+  cursor: col-resize;
+}
+
+.resize-bar.horizontal {
+  height: 4px;
+  cursor: row-resize;
+}
+
+/* FR: Styles pour les panneaux */
+/* EN: Styles for panels */
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 8px 12px;
+  background-color: theme('colors.background.tertiary');
+  border-bottom: 1px solid theme('colors.border.DEFAULT');
+  font-weight: 600;
+  font-size: 14px;
+  color: theme('colors.foreground.DEFAULT');
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-content {
+  flex: 1;
+  overflow: auto;
+  padding: 8px;
+}
+
+/* FR: Styles pour les onglets */
+/* EN: Styles for tabs */
+.tab {
+  padding: 6px 12px;
+  background-color: theme('colors.background.secondary');
+  border: 1px solid theme('colors.border.DEFAULT');
+  border-bottom: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: theme('colors.foreground.secondary');
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tab:hover {
+  background-color: theme('colors.state.hover');
+  color: theme('colors.foreground.DEFAULT');
+}
+
+.tab.active {
+  background-color: theme('colors.background.DEFAULT');
+  color: theme('colors.foreground.DEFAULT');
+  border-bottom: 1px solid theme('colors.background.DEFAULT');
+}
+
+.tab-close {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.tab-close:hover {
+  background-color: theme('colors.state.hover');
+}
+
+/* FR: Styles pour les listes */
+/* EN: Styles for lists */
+.list-item {
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.list-item:hover {
+  background-color: theme('colors.state.hover');
+}
+
+.list-item.selected {
+  background-color: theme('colors.accent.100');
+  color: theme('colors.accent.900');
+}
+
+/* FR: Styles pour les icônes */
+/* EN: Styles for icons */
+.icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.icon-small {
+  width: 12px;
+  height: 12px;
+}
+
+/* FR: Styles pour les boutons */
+/* EN: Styles for buttons */
+.btn {
+  padding: 4px 8px;
+  border: 1px solid theme('colors.border.DEFAULT');
+  background-color: theme('colors.background.DEFAULT');
+  color: theme('colors.foreground.DEFAULT');
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background-color: theme('colors.state.hover');
+  border-color: theme('colors.border.secondary');
+}
+
+.btn.primary {
+  background-color: theme('colors.accent.500');
+  color: white;
+  border-color: theme('colors.accent.500');
+}
+
+.btn.primary:hover {
+  background-color: theme('colors.accent.600');
+  border-color: theme('colors.accent.600');
+}
+
+/* FR: Styles pour les inputs */
+/* EN: Styles for inputs */
+.input {
+  padding: 4px 8px;
+  border: 1px solid theme('colors.border.DEFAULT');
+  background-color: theme('colors.background.DEFAULT');
+  color: theme('colors.foreground.DEFAULT');
+  border-radius: 4px;
+  font-size: 12px;
+  width: 100%;
+}
+
+.input:focus {
+  outline: none;
+  border-color: theme('colors.accent.500');
+  box-shadow: 0 0 0 2px theme('colors.accent.100');
+}
+
+/* FR: Styles pour les scrollbars */
+/* EN: Styles for scrollbars */
+.panel-content::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+  background: theme('colors.background.secondary');
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+  background: theme('colors.border.secondary');
+  border-radius: 4px;
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+  background: theme('colors.border.DEFAULT');
+}

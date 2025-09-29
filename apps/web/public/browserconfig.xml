@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FR: Configuration pour les tuiles Windows -->
+<!-- EN: Configuration for Windows tiles -->
+<browserconfig>
+    <msapplication>
+        <tile>
+            <square150x150logo src="/favicon-192.png"/>
+            <TileColor>#3b82f6</TileColor>
+        </tile>
+    </msapplication>
+</browserconfig>

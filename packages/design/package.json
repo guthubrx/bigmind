@@ -1,0 +1,19 @@
+{
+  "name": "@bigmind/design",
+  "version": "0.1.0",
+  "description": "Design tokens et thèmes pour BigMind",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src --ext .ts,.tsx",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.2"
+  },
+  "peerDependencies": {
+    "tailwindcss": "^3.0.0"
+  }
+}

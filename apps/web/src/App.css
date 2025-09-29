@@ -1,0 +1,195 @@
+/**
+ * FR: Styles spécifiques à l'application BigMind
+ * EN: BigMind application specific styles
+ */
+
+.app {
+  /* FR: Layout principal de l'application */
+  /* EN: Main application layout */
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: theme('colors.background.DEFAULT');
+}
+
+/* FR: Styles pour la barre d'outils */
+/* EN: Styles for toolbar */
+.toolbar {
+  @apply bg-background border-b border-border px-4 py-2;
+  @apply flex items-center justify-between;
+  min-height: 60px;
+}
+
+/* FR: Styles pour la barre latérale */
+/* EN: Styles for sidebar */
+.sidebar {
+  @apply bg-background-secondary border-r border-border;
+  @apply w-80 flex flex-col;
+  min-width: 320px;
+}
+
+/* FR: Styles pour le canvas principal */
+/* EN: Styles for main canvas */
+.canvas-container {
+  @apply flex-1 relative overflow-hidden;
+  background-color: theme('colors.background.secondary');
+}
+
+/* FR: Styles pour les nœuds de carte mentale */
+/* EN: Styles for mind map nodes */
+.mindmap-node {
+  @apply bg-background border border-border rounded-lg shadow-sm;
+  @apply px-3 py-2 min-w-32 max-w-64;
+  @apply transition-all duration-200 ease-in-out;
+  @apply hover:shadow-md hover:border-accent-300;
+}
+
+.mindmap-node.selected {
+  @apply border-accent-500 shadow-lg ring-2 ring-accent-200;
+}
+
+.mindmap-node.editing {
+  @apply border-accent-500 shadow-lg;
+}
+
+/* FR: Styles pour les connexions entre nœuds */
+/* EN: Styles for connections between nodes */
+.mindmap-connection {
+  stroke: theme('colors.border.DEFAULT');
+  stroke-width: 2;
+  fill: none;
+  transition: stroke 0.2s ease-in-out;
+}
+
+.mindmap-connection:hover {
+  stroke: theme('colors.accent-400');
+  stroke-width: 3;
+}
+
+.mindmap-connection.selected {
+  stroke: theme('colors.accent-500');
+  stroke-width: 3;
+}
+
+/* FR: Styles pour les boutons d'action */
+/* EN: Styles for action buttons */
+.action-button {
+  @apply p-2 rounded-md transition-colors duration-150;
+  @apply hover:bg-state-hover active:bg-state-active;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.action-button.primary {
+  @apply bg-accent-500 text-white hover:bg-accent-600;
+}
+
+.action-button.secondary {
+  @apply bg-background-secondary text-foreground border border-border;
+}
+
+/* FR: Styles pour les menus contextuels */
+/* EN: Styles for context menus */
+.context-menu {
+  @apply absolute z-dropdown bg-background border border-border rounded-lg shadow-lg;
+  @apply py-1 min-w-48;
+}
+
+.context-menu-item {
+  @apply px-4 py-2 text-sm text-foreground hover:bg-state-hover;
+  @apply cursor-pointer transition-colors duration-150;
+}
+
+.context-menu-item.danger {
+  @apply text-error hover:bg-error hover:text-white;
+}
+
+/* FR: Styles pour les modales */
+/* EN: Styles for modals */
+.modal-overlay {
+  @apply fixed inset-0 z-modal bg-black bg-opacity-50;
+  @apply flex items-center justify-center p-4;
+}
+
+.modal-content {
+  @apply bg-background rounded-lg shadow-xl max-w-md w-full;
+  @apply border border-border;
+}
+
+.modal-header {
+  @apply px-6 py-4 border-b border-border;
+  @apply flex items-center justify-between;
+}
+
+.modal-body {
+  @apply px-6 py-4;
+}
+
+.modal-footer {
+  @apply px-6 py-4 border-t border-border;
+  @apply flex items-center justify-end space-x-2;
+}
+
+/* FR: Styles pour les notifications */
+/* EN: Styles for notifications */
+.notification {
+  @apply fixed top-4 right-4 z-toast;
+  @apply bg-background border border-border rounded-lg shadow-lg;
+  @apply px-4 py-3 min-w-64;
+  @apply animate-fade-in;
+}
+
+.notification.success {
+  @apply border-success bg-success/10 text-success;
+}
+
+.notification.error {
+  @apply border-error bg-error/10 text-error;
+}
+
+.notification.warning {
+  @apply border-warning bg-warning/10 text-warning;
+}
+
+/* FR: Styles pour les raccourcis clavier */
+/* EN: Styles for keyboard shortcuts */
+.keyboard-shortcut {
+  @apply text-xs text-foreground-tertiary;
+  @apply bg-background-secondary px-1 py-0.5 rounded;
+  @apply border border-border;
+}
+
+/* FR: Styles pour le mode plein écran */
+/* EN: Styles for fullscreen mode */
+.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  background-color: theme('colors.background.DEFAULT');
+}
+
+/* FR: Styles pour les animations de transition */
+/* EN: Styles for transition animations */
+.fade-enter {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+
+.fade-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
