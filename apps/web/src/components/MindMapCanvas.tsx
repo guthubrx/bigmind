@@ -855,7 +855,7 @@ function MindMapCanvas() {
     let closestNode: Node | null = null;
     let minDistance = Infinity;
 
-    allNodes.forEach((flowNode) => {
+    allNodes.forEach((flowNode: Node) => {
       if (flowNode.id === node.id) return; // FR: Ignorer le nœud qu'on glisse / EN: Ignore the dragged node
       
       const nodeX = flowNode.position.x;
@@ -886,7 +886,9 @@ function MindMapCanvas() {
       return;
     }
 
-    console.log('🎯 Found target node:', closestNode.id, 'current node:', node.id);
+    // TypeScript assertion: closestNode is not null at this point
+    const targetNode = closestNode as Node;
+    console.log('🎯 Found target node:', targetNode.id, 'current node:', node.id);
 
     // FR: Vérifier que le nœud cible n'est pas un descendant du nœud déplacé
     // EN: Check that target node is not a descendant of the moved node
@@ -897,14 +899,14 @@ function MindMapCanvas() {
       return isDescendant(currentNode.parentId, ancestorId);
     };
 
-    if (isDescendant(closestNode.id, node.id)) {
+    if (isDescendant(targetNode.id, node.id)) {
       console.log('❌ Target node is a descendant of dragged node');
       setDragTarget(null);
       return;
     }
 
-    console.log('✅ Setting drag target:', closestNode.id);
-    setDragTarget(closestNode.id);
+    console.log('✅ Setting drag target:', targetNode.id);
+    setDragTarget(targetNode.id);
   }, [activeFile]);
 
   // FR: Gérer le drag and drop des nœuds pour les rattacher

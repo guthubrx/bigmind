@@ -527,7 +527,8 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     // EN: Update history
     if (active.history) {
       const command = new AddNodeCommand(newNode.id, parentId, newNode.title);
-      active.history.execute(command, active.content as MindMap);
+      command.execute(active.content as MindMap);
+      active.history.addCommand(command);
     }
 
     set(prev => ({
