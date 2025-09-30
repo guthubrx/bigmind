@@ -3,7 +3,7 @@
  * EN: Main mind map canvas component
  */
 
-import React, { useCallback, useRef, useMemo, useEffect } from 'react';
+import React, { useCallback, useRef, useMemo, useEffect, useState } from 'react';
 import {
   ReactFlow,
   Node,
@@ -26,6 +26,9 @@ import MindMapNode from './MindMapNode';
 import MindMapEdge from './MindMapEdge';
 import { useFlowInstance } from '../hooks/useFlowInstance';
 import { useShortcuts } from '../hooks/useShortcuts';
+import { useAppSettings, COLOR_PALETTES } from '../hooks/useAppSettings';
+import { ReparentNodeCommand } from '@bigmind/core';
+import NodeContextMenu from './NodeContextMenu';
 
 // FR: Types de nœuds personnalisés
 // EN: Custom node types
@@ -45,24 +48,273 @@ function MindMapCanvas() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<any>(null);
   const setFlowInstance = useFlowInstance((s) => s.setInstance);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId: string } | null>(null);
+  const [dragTarget, setDragTarget] = useState<string | null>(null);
+  const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null);
+  const [draggedDescendants, setDraggedDescendants] = useState<string[]>([]);
+  const [ghostNode, setGhostNode] = useState<Node | null>(null);
+  const setSelectedNodeId = useSelection((s) => s.setSelectedNodeId);
+  const followSelection = useCanvasOptions((s) => s.followSelection);
+
+  // FR: Écouter les événements de menu contextuel des nœuds
+  // EN: Listen to context menu events from nodes
+  useEffect(() => {
+    const handleNodeContextMenu = (event: CustomEvent) => {
+      const { x, y, nodeId } = event.detail;
+      
+      // FR: D'abord sélectionner le nœud pour déclencher le mode follow
+      // EN: First select the node to trigger follow mode
+      setSelectedNodeId(nodeId);
+      
+      // FR: Attendre que le mode follow se termine, puis recalculer la position
+      // EN: Wait for follow mode to complete, then recalculate position
+      setTimeout(() => {
+        // FR: Si on est en mode follow, on centre le menu sur le nœud
+        // EN: If in follow mode, center menu on the node
+        if (followSelection && instanceRef.current) {
+          const nodeElement = instanceRef.current.getNode(nodeId);
+          if (nodeElement) {
+            const nodePosition = nodeElement.position;
+            const viewport = instanceRef.current.getViewport();
+            
+            // FR: Convertir la position du nœud en coordonnées écran
+            // EN: Convert node position to screen coordinates
+            const screenX = (nodePosition.x * viewport.zoom + viewport.x) + 100; // Offset pour éviter de masquer le nœud
+            const screenY = (nodePosition.y * viewport.zoom + viewport.y) + 50;
+            
+            setContextMenu({ x: screenX, y: screenY, nodeId });
+          } else {
+            setContextMenu({ x, y, nodeId });
+          }
+        } else {
+          setContextMenu({ x, y, nodeId });
+        }
+      }, 150); // Délai un peu plus long pour s'assurer que le mode follow est terminé
+    };
+
+    window.addEventListener('node-context-menu', handleNodeContextMenu as EventListener);
+    return () => {
+      window.removeEventListener('node-context-menu', handleNodeContextMenu as EventListener);
+    };
+  }, [setSelectedNodeId, followSelection]);
   // const zoom = useViewport((s) => s.zoom);
   // const setZoom = useViewport((s) => s.setZoom);
   const nodesDraggable = useCanvasOptions((s) => s.nodesDraggable);
-  const followSelection = useCanvasOptions((s) => s.followSelection);
   const selectedNodeId = useSelection((s) => s.selectedNodeId);
-  const setSelectedNodeId = useSelection((s) => s.setSelectedNodeId);
   const addChildToActive = useOpenFiles((s) => s.addChildToActive);
   const updateActiveFileNode = useOpenFiles((s) => s.updateActiveFileNode);
   const addSiblingToActive = useOpenFiles((s) => s.addSiblingToActive);
   const removeNodeFromActive = useOpenFiles((s) => s.removeNodeFromActive);
+  const copyNode = useOpenFiles((s) => s.copyNode);
+  const pasteNode = useOpenFiles((s) => s.pasteNode);
+  const canPaste = useOpenFiles((s) => s.canPaste);
   const getShortcut = useShortcuts((s) => s.getShortcut);
+  const selectedPaletteGlobal = useAppSettings((s) => s.selectedPalette);
+  // FR: Palette par carte (fallback globale)
+  // EN: Per-map palette (global fallback)
+  const perMapPaletteId = useOpenFiles((s) => s.openFiles.find(f => f.isActive)?.paletteId) || selectedPaletteGlobal;
 
   // Debug logs removed for cleanliness
+
+  // FR: Éclaircir une couleur hex (mélange vers blanc)
+  // EN: Lighten a hex color (blend towards white)
+  const lightenHexColor = useCallback((hex: string, ratio: number = 0.6): string => {
+    try {
+      const clean = hex.replace('#', '');
+      const isShort = clean.length === 3;
+      const r = parseInt(isShort ? clean[0] + clean[0] : clean.substring(0, 2), 16);
+      const g = parseInt(isShort ? clean[1] + clean[1] : clean.substring(2, 4), 16);
+      const b = parseInt(isShort ? clean[2] + clean[2] : clean.substring(4, 6), 16);
+      const lr = Math.round(r + (255 - r) * ratio);
+      const lg = Math.round(g + (255 - g) * ratio);
+      const lb = Math.round(b + (255 - b) * ratio);
+      const toHex = (n: number) => n.toString(16).padStart(2, '0');
+      return `#${toHex(lr)}${toHex(lg)}${toHex(lb)}`;
+    } catch (_e) {
+      return hex;
+    }
+  }, []);
+
+  // FR: Calculer la luminosité relative d'une couleur hex (0-1, 0=noir, 1=blanc)
+  // EN: Calculate relative luminance of a hex color (0-1, 0=black, 1=white)
+  const getRelativeLuminance = useCallback((hex: string): number => {
+    try {
+      const clean = hex.replace('#', '');
+      const isShort = clean.length === 3;
+      const r = parseInt(isShort ? clean[0] + clean[0] : clean.substring(0, 2), 16) / 255;
+      const g = parseInt(isShort ? clean[1] + clean[1] : clean.substring(2, 4), 16) / 255;
+      const b = parseInt(isShort ? clean[2] + clean[2] : clean.substring(4, 6), 16) / 255;
+      
+      // FR: Formule de luminosité relative selon WCAG
+      // EN: Relative luminance formula according to WCAG
+      const toLinear = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+    } catch (_e) {
+      return 0.5; // FR: Valeur par défaut si erreur de parsing
+    }
+  }, []);
+
+  // FR: Choisir la couleur de texte optimale (noir ou blanc) selon la luminosité du fond
+  // EN: Choose optimal text color (black or white) based on background luminance
+  const getOptimalTextColor = useCallback((backgroundColor: string): string => {
+    const luminance = getRelativeLuminance(backgroundColor);
+    // FR: Seuil de 0.5 : plus clair = texte noir, plus foncé = texte blanc
+    // EN: Threshold of 0.5: lighter = black text, darker = white text
+    return luminance > 0.5 ? '#000000' : '#ffffff';
+  }, [getRelativeLuminance]);
+
+  // FR: Appliquer l'inférence de couleurs par branche basée sur la palette sélectionnée
+  // EN: Apply branch color inference based on selected palette
+  const applyColorInference = useCallback((nodes: Record<string, any>, themeColors?: string[]) => {
+    // FR: Utiliser la palette sélectionnée ou celle du thème XMind en fallback
+    // EN: Use selected palette or XMind theme palette as fallback
+    const palette = COLOR_PALETTES.find(p => p.id === perMapPaletteId);
+    const colors = palette?.colors || themeColors || [];
+    
+    // Debug: Log palette selection
+    console.log('🎨 Color inference:', {
+      perMapPaletteId,
+      paletteName: palette?.name,
+      colorsCount: colors.length,
+      themeColorsCount: themeColors?.length || 0,
+      sampleColors: colors.slice(0, 3)
+    });
+    
+    // FR: Créer une copie non destructive et préparer computedStyle
+    // EN: Create non-destructive copy and prepare computedStyle
+    const updatedNodes: Record<string, any> = {};
+    Object.keys(nodes).forEach((id) => {
+      const original = nodes[id];
+      updatedNodes[id] = { 
+        ...original, 
+        computedStyle: { 
+          ...(original?.computedStyle || {}),
+          // FR: Préserver les couleurs XMind originales si elles existent
+          // EN: Preserve original XMind colors if they exist
+          backgroundColor: original?.style?.backgroundColor || 
+                          (original?.style as any)?.fill || 
+                          (original?.style as any)?.background || 
+                          (original?.style as any)?.bgColor,
+          textColor: original?.style?.textColor || 
+                    (original?.style as any)?.fontColor || 
+                    (original?.style as any)?.color
+        } 
+      };
+    });
+
+    // FR: Si pas de palette disponible, retourner les nœuds avec leurs couleurs originales
+    // EN: If no palette available, return nodes with their original colors
+    if (colors.length === 0) {
+      return updatedNodes;
+    }
+
+    const rootNode = updatedNodes[Object.keys(updatedNodes).find(id => !updatedNodes[id].parentId) || ''];
+    if (!rootNode || !rootNode.children) {
+      return updatedNodes;
+    }
+
+    // FR: Assigner une couleur à chaque enfant direct de la racine
+    // EN: Assign a color to each direct child of the root
+    rootNode.children.forEach((childId: string, index: number) => {
+      const colorIndex = index % colors.length;
+      const branchColor = colors[colorIndex];
+
+      // FR: Propager la couleur à tous les descendants de cette branche
+      // EN: Propagate color to all descendants of this branch
+      const propagateColor = (nodeId: string, depth: number) => {
+        const node = updatedNodes[nodeId];
+        if (!node) return;
+
+        // FR: Ne pas écraser les couleurs XMind existantes, seulement inférer si manquantes
+        // EN: Don't override existing XMind colors, only infer if missing
+        if (!node.computedStyle.backgroundColor) {
+          const bgColor = depth === 1 ? branchColor : lightenHexColor(branchColor, 0.7);
+          node.computedStyle.backgroundColor = bgColor;
+          if (!node.computedStyle.textColor) {
+            node.computedStyle.textColor = getOptimalTextColor(bgColor);
+          }
+        }
+
+        // FR: Propager aux enfants
+        // EN: Propagate to children
+        if (node.children) {
+          node.children.forEach((cid: string) => {
+            propagateColor(cid, depth + 1);
+          });
+        }
+      };
+
+      // FR: Fils directs partent à depth=1
+      // EN: Direct children start at depth=1
+      propagateColor(childId, 1);
+    });
+
+    return updatedNodes;
+  }, [lightenHexColor, getOptimalTextColor, perMapPaletteId]);
+
+  // FR: Nœuds avec inférence de couleurs appliquée
+  // EN: Nodes with color inference applied
+  const nodesWithColors = useMemo(() => {
+    if (!activeFile?.content?.nodes) {
+      return {};
+    }
+    return applyColorInference(activeFile.content.nodes, activeFile.themeColors);
+  }, [activeFile?.content?.nodes, activeFile?.themeColors, applyColorInference, perMapPaletteId]);
+
+  // FR: Calculer tous les descendants d'un nœud
+  // EN: Calculate all descendants of a node
+  const getAllDescendants = useCallback((nodeId: string): string[] => {
+    if (!activeFile?.content?.nodes) return [];
+    
+    const descendants: string[] = [];
+    const node = activeFile.content.nodes[nodeId];
+    if (!node?.children) return descendants;
+    
+    const traverse = (currentNodeId: string) => {
+      const currentNode = activeFile.content.nodes[currentNodeId];
+      if (currentNode?.children) {
+        currentNode.children.forEach((childId: string) => {
+          descendants.push(childId);
+          traverse(childId);
+        });
+      }
+    };
+    
+    traverse(nodeId);
+    return descendants;
+  }, [activeFile?.content?.nodes]);
+
+  // FR: Calculer le nombre total de descendants d'un nœud (récursif)
+  // EN: Calculate total number of descendants of a node (recursive)
+  const getTotalDescendantsCount = useCallback((nodeId: string): number => {
+    if (!activeFile?.content?.nodes) return 0;
+    
+    const node = activeFile.content.nodes[nodeId];
+    if (!node?.children || node.children.length === 0) return 0;
+    
+    let totalCount = 0;
+    
+    const countRecursively = (currentNodeId: string) => {
+      const currentNode = activeFile.content.nodes[currentNodeId];
+      if (currentNode?.children) {
+        currentNode.children.forEach((childId: string) => {
+          totalCount++; // Compter ce descendant
+          countRecursively(childId); // Compter récursivement ses descendants
+        });
+      }
+    };
+    
+    countRecursively(nodeId);
+    return totalCount;
+  }, [activeFile?.content?.nodes]);
 
   // FR: Convertir les nœuds du fichier actif en nœuds ReactFlow
   // EN: Convert active file nodes to ReactFlow nodes
   const convertToReactFlowNodes = useCallback((): Node[] => {
     // console.warn('convertToReactFlowNodes called');
+    if (dragTarget) {
+      console.log('🔄 convertToReactFlowNodes called with dragTarget:', dragTarget);
+    }
     if (!activeFile?.content?.nodes) {
       // console.warn('No nodes in activeFile.content');
       return [];
@@ -78,6 +330,9 @@ function MindMapCanvas() {
       // console.warn('No root node');
       return [];
     }
+
+    // FR: Utiliser les nœuds avec inférence de couleurs appliquée
+    // EN: Use nodes with color inference applied
 
     // FR: Le nœud racine sera ajouté par positionSubtree (pour éviter les doublons)
     // EN: Root node will be added by positionSubtree (to avoid duplicates)
@@ -123,7 +378,7 @@ function MindMapCanvas() {
       }
       let total = 0;
       node.children.forEach((childId: string, idx: number) => {
-        const childNode = activeFile.content.nodes[childId];
+        const childNode = nodesWithColors[childId];
         if (childNode) {
           total += computeSubtreeHeights(childNode);
           if (idx < node.children.length - 1) total += SIBLING_GAP;
@@ -146,6 +401,8 @@ function MindMapCanvas() {
       const x = level === 0 ? 0 : direction * level * LEVEL_WIDTH;
       const nodeCenterY = baseY + totalHeight / 2 - nodeOwnHeightById[node.id] / 2;
 
+      // FR: Toujours afficher le nœud, mais marquer s'il est en cours de drag
+      // EN: Always display the node, but mark if it's being dragged
       nodes.push({
         id: node.id,
         type: 'mindmap',
@@ -156,10 +413,14 @@ function MindMapCanvas() {
           parentId: level === 0 ? null : 'parent', // fixé plus tard
           children: node.children || [],
           style: node.style,
+          computedStyle: node.computedStyle,
           isSelected: false,
           isPrimary: level === 0,
           direction,
-          childCounts: { total: (node.children?.length || 0) }
+          childCounts: { total: getTotalDescendantsCount(node.id) },
+          isDragTarget: dragTarget === node.id,
+          isDescendantOfDragged: draggedDescendants.includes(node.id),
+          isBeingDragged: draggedNodeId === node.id
         },
       });
 
@@ -180,7 +441,7 @@ function MindMapCanvas() {
         let base = parentCenterY - ch / 2;
         if (base < bandStart) base = bandStart;
         if (base + ch > bandEnd) base = Math.max(bandStart, bandEnd - ch);
-        const childNode = activeFile.content.nodes[onlyId];
+        const childNode = nodesWithColors[onlyId];
         const childDirection = level === 0 ? (direction === 0 ? +1 : direction) : direction;
         positionSubtree(childNode, level + 1, childDirection, base);
       } else if (level === 0) {
@@ -192,10 +453,14 @@ function MindMapCanvas() {
         // FR: Injecter les compteurs gauche/droite sur la racine
         const rootIndex = nodes.findIndex((n) => n.id === node.id);
         if (rootIndex !== -1) {
+          // FR: Calculer le nombre total de descendants pour chaque côté
+          // EN: Calculate total number of descendants for each side
+          const leftTotal = leftIds.reduce((sum, id) => sum + getTotalDescendantsCount(id) + 1, 0);
+          const rightTotal = rightIds.reduce((sum, id) => sum + getTotalDescendantsCount(id) + 1, 0);
           (nodes[rootIndex].data as any).childCounts = {
-            left: leftIds.length,
-            right: rightIds.length,
-            total: childIds.length,
+            left: leftTotal,
+            right: rightTotal,
+            total: leftTotal + rightTotal,
           };
         }
 
@@ -203,7 +468,7 @@ function MindMapCanvas() {
         let offsetRight = nodeCenterY - (rightIds.reduce((acc, id) => acc + (subtreeHeightById[id] || (LINE_HEIGHT + NODE_VPAD)), 0) + SIBLING_GAP * Math.max(0, rightIds.length - 1)) / 2;
         rightIds.forEach((childId) => {
           const ch = subtreeHeightById[childId] || (LINE_HEIGHT + NODE_VPAD);
-          positionSubtree(activeFile.content.nodes[childId], level + 1, +1, offsetRight);
+          positionSubtree(nodesWithColors[childId], level + 1, +1, offsetRight);
           offsetRight += ch + SIBLING_GAP;
         });
 
@@ -211,7 +476,7 @@ function MindMapCanvas() {
         let offsetLeft = nodeCenterY - (leftIds.reduce((acc, id) => acc + (subtreeHeightById[id] || (LINE_HEIGHT + NODE_VPAD)), 0) + SIBLING_GAP * Math.max(0, leftIds.length - 1)) / 2;
         leftIds.forEach((childId) => {
           const ch = subtreeHeightById[childId] || (LINE_HEIGHT + NODE_VPAD);
-          positionSubtree(activeFile.content.nodes[childId], level + 1, -1, offsetLeft);
+          positionSubtree(nodesWithColors[childId], level + 1, -1, offsetLeft);
           offsetLeft += ch + SIBLING_GAP;
         });
       } else {
@@ -222,12 +487,12 @@ function MindMapCanvas() {
           const ch = subtreeHeightById[onlyId] || (LINE_HEIGHT + NODE_VPAD);
           const parentCenterY = nodeCenterY + ((nodeOwnHeightById[node.id] || (LINE_HEIGHT + NODE_VPAD)) / 2);
           const start = parentCenterY - ch / 2;
-          positionSubtree(activeFile.content.nodes[onlyId], level + 1, direction, start);
+          positionSubtree(nodesWithColors[onlyId], level + 1, direction, start);
         } else {
           let currentY = baseY;
           childIds.forEach((childId: string) => {
             const ch = subtreeHeightById[childId] || (LINE_HEIGHT + NODE_VPAD);
-            positionSubtree(activeFile.content.nodes[childId], level + 1, direction, currentY);
+            positionSubtree(nodesWithColors[childId], level + 1, direction, currentY);
             currentY += ch + SIBLING_GAP;
           });
         }
@@ -253,7 +518,7 @@ function MindMapCanvas() {
       
       if (node.children && node.children.length > 0) {
         node.children.forEach((childId: string) => {
-          const childNode = activeFile.content.nodes[childId];
+          const childNode = nodesWithColors[childId];
           if (childNode) {
             fixParentIds(childNode, node.id);
           }
@@ -263,9 +528,15 @@ function MindMapCanvas() {
     
     fixParentIds(rootNode);
     
+    // FR: Ajouter le nœud fantôme si on est en train de glisser un nœud
+    // EN: Add ghost node if we're dragging a node
+    if (ghostNode) {
+      nodes.push(ghostNode);
+    }
+    
     // console.warn('ReactFlow nodes created:', nodes.length);
     return nodes;
-  }, [activeFile]);
+  }, [activeFile, dragTarget, draggedDescendants, ghostNode, draggedNodeId, getTotalDescendantsCount]);
 
   // FR: Convertir les connexions en arêtes ReactFlow
   // EN: Convert connections to ReactFlow edges
@@ -284,6 +555,36 @@ function MindMapCanvas() {
     
     if (!rootNode) return edges;
 
+    // FR: Obtenir la couleur de fond d'un nœud
+    // EN: Get background color of a node
+    const getNodeColor = (nodeId: string): string => {
+      const node = nodesWithColors[nodeId];
+      if (!node) return '#dc2626';
+      return node.computedStyle?.backgroundColor || 
+             node.style?.backgroundColor || 
+             (node.style as any)?.fill || 
+             (node.style as any)?.background || 
+             (node.style as any)?.bgColor || 
+             '#dc2626';
+    };
+
+    // FR: Obtenir la couleur de la branche (héritée du parent)
+    // EN: Get branch color (inherited from parent)
+    const getBranchColor = (nodeId: string, parentId: string | null): string => {
+      if (!parentId) {
+        // FR: Nœud racine - pas de couleur de branche
+        // EN: Root node - no branch color
+        return '#dc2626';
+      }
+      
+      const parentNode = nodesWithColors[parentId];
+      if (!parentNode) return '#dc2626';
+      
+      // FR: La couleur de la branche est celle du parent
+      // EN: Branch color is the parent's color
+      return getNodeColor(parentId);
+    };
+
     // FR: Fonction récursive pour créer les connexions en respectant la direction (gauche/droite)
     // EN: Recursive function to create connections respecting direction (left/right)
     const createConnections = (node: any, level: number, direction: number): void => {
@@ -298,46 +599,71 @@ function MindMapCanvas() {
         childIds.forEach((id, idx) => (idx % 2 === 0 ? rightIds : leftIds).push(id));
 
         rightIds.forEach((childId) => {
-          edges.push({
-            id: `edge-${node.id}-${childId}`,
-            source: node.id,
-            target: childId,
-            sourceHandle: 'right',
-            type: 'smoothstep',
-            style: { stroke: '#dc2626', strokeWidth: 2 },
-            data: { isSelected: false, parentId: node.id, childId },
-          });
-          const childNode = activeFile.content.nodes[childId];
+          // FR: Première génération -> couleur du nœud enfant
+          // EN: First generation -> child's node color
+          const edgeColor = getNodeColor(childId);
+          
+          // FR: Ne pas créer de lien si le nœud enfant est en cours de drag OU si le nœud parent est en cours de drag
+          // EN: Don't create edge if child node is being dragged OR if parent node is being dragged
+          if (draggedNodeId !== childId && draggedNodeId !== node.id) {
+            edges.push({
+              id: `edge-${node.id}-${childId}`,
+              source: node.id,
+              target: childId,
+              sourceHandle: 'right',
+              type: 'smoothstep',
+              style: { stroke: edgeColor, strokeWidth: 2 },
+              data: { isSelected: false, parentId: node.id, childId },
+            });
+          }
+          
+          const childNode = nodesWithColors[childId];
           if (childNode) createConnections(childNode, level + 1, +1);
         });
 
         leftIds.forEach((childId) => {
-          edges.push({
-            id: `edge-${node.id}-${childId}`,
-            source: node.id,
-            target: childId,
-            sourceHandle: 'left',
-            type: 'smoothstep',
-            style: { stroke: '#dc2626', strokeWidth: 2 },
-            data: { isSelected: false, parentId: node.id, childId },
-          });
-          const childNode = activeFile.content.nodes[childId];
+          // FR: Première génération -> couleur du nœud enfant
+          // EN: First generation -> child's node color
+          const edgeColor = getNodeColor(childId);
+          
+          // FR: Ne pas créer de lien si le nœud enfant est en cours de drag OU si le nœud parent est en cours de drag
+          // EN: Don't create edge if child node is being dragged OR if parent node is being dragged
+          if (draggedNodeId !== childId && draggedNodeId !== node.id) {
+            edges.push({
+              id: `edge-${node.id}-${childId}`,
+              source: node.id,
+              target: childId,
+              sourceHandle: 'left',
+              type: 'smoothstep',
+              style: { stroke: edgeColor, strokeWidth: 2 },
+              data: { isSelected: false, parentId: node.id, childId },
+            });
+          }
+          
+          const childNode = nodesWithColors[childId];
           if (childNode) createConnections(childNode, level + 1, -1);
         });
       } else {
         // FR: Aux niveaux > 0, conserver la direction du parent
         const handleId = direction === -1 ? 'left' : 'right';
         childIds.forEach((childId) => {
-          edges.push({
-            id: `edge-${node.id}-${childId}`,
-            source: node.id,
-            target: childId,
-            sourceHandle: handleId,
-            type: 'smoothstep',
-            style: { stroke: '#dc2626', strokeWidth: 2 },
-            data: { isSelected: false, parentId: node.id, childId },
-          });
-          const childNode = activeFile.content.nodes[childId];
+          const edgeColor = getBranchColor(childId, node.id);
+          
+          // FR: Ne pas créer de lien si le nœud enfant est en cours de drag OU si le nœud parent est en cours de drag
+          // EN: Don't create edge if child node is being dragged OR if parent node is being dragged
+          if (draggedNodeId !== childId && draggedNodeId !== node.id) {
+            edges.push({
+              id: `edge-${node.id}-${childId}`,
+              source: node.id,
+              target: childId,
+              sourceHandle: handleId,
+              type: 'smoothstep',
+              style: { stroke: edgeColor, strokeWidth: 2 },
+              data: { isSelected: false, parentId: node.id, childId },
+            });
+          }
+          
+          const childNode = nodesWithColors[childId];
           if (childNode) createConnections(childNode, level + 1, direction);
         });
       }
@@ -347,9 +673,104 @@ function MindMapCanvas() {
     // EN: Start with root node
     createConnections(rootNode, 0, 0);
 
+    // FR: Créer les liens fantômes entre le nœud fantôme et ses enfants transparents
+    // EN: Create ghost edges between ghost node and its transparent children
+    if (ghostNode && draggedDescendants.length > 0) {
+      const ghostNodeId = ghostNode.id;
+      const originalNodeId = (ghostNode.data as any).originalNodeId;
+      
+      // FR: Trouver les enfants directs du nœud original
+      // EN: Find direct children of original node
+      const originalNode = activeFile?.content?.nodes?.[originalNodeId];
+      if (originalNode?.children) {
+        // FR: Utiliser la même logique de direction que pour les liens normaux
+        // EN: Use same direction logic as normal edges
+        const childIds: string[] = originalNode.children;
+        
+        if (originalNodeId === rootNode.id) {
+          // FR: Même partition qu'au layout: alternance droite/gauche
+          const rightIds: string[] = [];
+          const leftIds: string[] = [];
+          childIds.forEach((id, idx) => (idx % 2 === 0 ? rightIds : leftIds).push(id));
+
+          rightIds.forEach((childId: string) => {
+            const edgeColor = getNodeColor(childId);
+            edges.push({
+              id: `ghost-edge-${ghostNodeId}-${childId}`,
+              source: ghostNodeId,
+              target: childId,
+              sourceHandle: 'right',
+              type: 'smoothstep',
+              style: { 
+                stroke: edgeColor, 
+                strokeWidth: 2,
+                strokeDasharray: '5,5',
+                opacity: 0.6
+              },
+              data: { 
+                isSelected: false, 
+                parentId: ghostNodeId, 
+                childId,
+                isGhost: true
+              },
+            });
+          });
+
+          leftIds.forEach((childId: string) => {
+            const edgeColor = getNodeColor(childId);
+            edges.push({
+              id: `ghost-edge-${ghostNodeId}-${childId}`,
+              source: ghostNodeId,
+              target: childId,
+              sourceHandle: 'left',
+              type: 'smoothstep',
+              style: { 
+                stroke: edgeColor, 
+                strokeWidth: 2,
+                strokeDasharray: '5,5',
+                opacity: 0.6
+              },
+              data: { 
+                isSelected: false, 
+                parentId: ghostNodeId, 
+                childId,
+                isGhost: true
+              },
+            });
+          });
+        } else {
+          // FR: Pour les nœuds non-racine, utiliser la direction du parent
+          // EN: For non-root nodes, use parent's direction
+          const handleId = 'right'; // FR: Par défaut / EN: Default
+          childIds.forEach((childId: string) => {
+            const edgeColor = getBranchColor(childId, originalNodeId);
+            edges.push({
+              id: `ghost-edge-${ghostNodeId}-${childId}`,
+              source: ghostNodeId,
+              target: childId,
+              sourceHandle: handleId,
+              type: 'smoothstep',
+              style: { 
+                stroke: edgeColor, 
+                strokeWidth: 2,
+                strokeDasharray: '5,5',
+                opacity: 0.6
+              },
+              data: { 
+                isSelected: false, 
+                parentId: ghostNodeId, 
+                childId,
+                isGhost: true
+              },
+            });
+          });
+        }
+      }
+    }
+
     // console.warn('Edges created:', edges.length);
     return edges;
-  }, [activeFile]);
+  }, [activeFile, draggedNodeId, ghostNode, draggedDescendants]);
 
   const initialNodes = useMemo(() => convertToReactFlowNodes(), [convertToReactFlowNodes]);
   const initialEdges = useMemo(() => convertToReactFlowEdges(), [convertToReactFlowEdges]);
@@ -377,6 +798,167 @@ function MindMapCanvas() {
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
     [setEdges]
   );
+
+  // FR: Gérer le début du drag des nœuds
+  // EN: Handle node drag start
+  const onNodeDragStart = useCallback((event: React.MouseEvent, node: Node) => {
+    console.log('🚀 onNodeDragStart triggered for node:', node.id);
+    setDraggedNodeId(node.id);
+    
+    // FR: Calculer les descendants du nœud qu'on glisse pour l'effet de transparence
+    // EN: Calculate descendants of dragged node for transparency effect
+    const descendants = getAllDescendants(node.id);
+    setDraggedDescendants(descendants);
+    console.log('👥 Dragged node descendants:', descendants);
+    
+    // FR: Créer le nœud fantôme à la position d'origine
+    // EN: Create ghost node at original position
+    const ghost = {
+      ...node,
+      id: `ghost-${node.id}`,
+      data: {
+        ...node.data,
+        isGhost: true,
+        originalNodeId: node.id
+      }
+    };
+    setGhostNode(ghost);
+    console.log('👻 Ghost node created:', ghost.id);
+  }, [getAllDescendants]);
+
+  // FR: Gérer le drag des nœuds pour afficher l'indicateur visuel
+  // EN: Handle node drag to show visual indicator
+  const onNodeDrag = useCallback((event: React.MouseEvent, node: Node) => {
+    console.log('🖱️ onNodeDrag triggered for node:', node.id);
+    
+    // FR: Utiliser React Flow pour trouver le nœud sous le curseur
+    // EN: Use React Flow to find the node under the cursor
+    if (!instanceRef.current) {
+      console.log('❌ React Flow instance not available');
+      setDragTarget(null);
+      return;
+    }
+
+    // FR: Obtenir la position de la souris dans le système de coordonnées de React Flow
+    // EN: Get mouse position in React Flow coordinate system
+    const reactFlowBounds = instanceRef.current.getViewport();
+    const position = instanceRef.current.screenToFlowPosition({
+      x: event.clientX,
+      y: event.clientY,
+    });
+
+    console.log('📍 Mouse position in flow:', position);
+
+    // FR: Trouver le nœud le plus proche de cette position
+    // EN: Find the node closest to this position
+    const allNodes = instanceRef.current.getNodes();
+    let closestNode: Node | null = null;
+    let minDistance = Infinity;
+
+    allNodes.forEach((flowNode) => {
+      if (flowNode.id === node.id) return; // FR: Ignorer le nœud qu'on glisse / EN: Ignore the dragged node
+      
+      const nodeX = flowNode.position.x;
+      const nodeY = flowNode.position.y;
+      const nodeWidth = 200; // FR: Largeur fixe des nœuds / EN: Fixed node width
+      const nodeHeight = 50; // FR: Hauteur approximative / EN: Approximate height
+      const tolerance = useAppSettings.getState().dragTolerance; // FR: Zone de tolérance en pixels / EN: Tolerance zone in pixels
+      
+      // FR: Vérifier si la position de la souris est dans les limites du nœud + tolérance
+      // EN: Check if mouse position is within node bounds + tolerance
+      if (position.x >= nodeX - tolerance && position.x <= nodeX + nodeWidth + tolerance &&
+          position.y >= nodeY - tolerance && position.y <= nodeY + nodeHeight + tolerance) {
+        const distance = Math.sqrt(
+          Math.pow(position.x - (nodeX + nodeWidth/2), 2) + 
+          Math.pow(position.y - (nodeY + nodeHeight/2), 2)
+        );
+        
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestNode = flowNode;
+        }
+      }
+    });
+
+    if (!closestNode) {
+      console.log('❌ No target node found under cursor');
+      setDragTarget(null);
+      return;
+    }
+
+    console.log('🎯 Found target node:', closestNode.id, 'current node:', node.id);
+
+    // FR: Vérifier que le nœud cible n'est pas un descendant du nœud déplacé
+    // EN: Check that target node is not a descendant of the moved node
+    const isDescendant = (nodeId: string, ancestorId: string): boolean => {
+      const currentNode = activeFile?.content?.nodes?.[nodeId];
+      if (!currentNode?.parentId) return false;
+      if (currentNode.parentId === ancestorId) return true;
+      return isDescendant(currentNode.parentId, ancestorId);
+    };
+
+    if (isDescendant(closestNode.id, node.id)) {
+      console.log('❌ Target node is a descendant of dragged node');
+      setDragTarget(null);
+      return;
+    }
+
+    console.log('✅ Setting drag target:', closestNode.id);
+    setDragTarget(closestNode.id);
+  }, [activeFile]);
+
+  // FR: Gérer le drag and drop des nœuds pour les rattacher
+  // EN: Handle node drag and drop to reattach them
+  const onNodeDragStop = useCallback((event: React.MouseEvent, node: Node) => {
+    console.log('🛑 onNodeDragStop triggered for node:', node.id, 'dragTarget:', dragTarget);
+    
+    // FR: Toujours réinitialiser les états, même si pas de cible
+    // EN: Always reset states, even if no target
+    if (!dragTarget) {
+      console.log('❌ No drag target, resetting states');
+      setDragTarget(null);
+      setDraggedNodeId(null);
+      setDraggedDescendants([]);
+      setGhostNode(null);
+      return;
+    }
+
+    // FR: Rattacher le nœud
+    // EN: Reattach the node
+    console.log(`🔄 Rattachement: ${node.id} → ${dragTarget}`);
+    
+    // FR: Utiliser la commande ReparentNodeCommand pour undo/redo
+    // EN: Use ReparentNodeCommand for undo/redo
+    const openFiles = useOpenFiles.getState().openFiles;
+    const active = openFiles.find(f => f.isActive);
+    
+    if (active && active.content) {
+      const command = new ReparentNodeCommand(node.id, dragTarget);
+      const currentMap = active.content as any;
+      const newMap = command.execute(currentMap);
+
+      if (active.history) {
+        active.history.addCommand(command);
+        console.log('📝 Command added: ReparentNode', { nodeId: node.id, newParentId: dragTarget, canUndo: active.history.canUndo() });
+      }
+
+      // FR: Mettre à jour l'état
+      // EN: Update state
+      useOpenFiles.setState((state) => ({
+        openFiles: state.openFiles.map(f => 
+          f.isActive 
+            ? { ...f, content: newMap }
+            : f
+        )
+      }));
+    }
+
+    console.log('✅ Nœud rattaché avec succès');
+    setDragTarget(null);
+    setDraggedNodeId(null);
+    setDraggedDescendants([]);
+    setGhostNode(null);
+  }, [dragTarget]);
 
   // FR: Navigation clavier dans l'arborescence avec les flèches
   // EN: Keyboard navigation in the tree using arrow keys
@@ -407,14 +989,14 @@ function MindMapCanvas() {
         const currentIdSpace: string = selectedNodeId || rootIdSpace;
         if (!currentIdSpace) return;
         e.preventDefault();
-        const nodesMapAny: any = activeFile.content.nodes;
+        const nodesMapAny: any = nodesWithColors;
         const cur = nodesMapAny[currentIdSpace];
         const newCollapsed = !cur?.collapsed;
         updateActiveFileNode(currentIdSpace, { collapsed: newCollapsed });
         return;
       }
       if (key !== 'ArrowUp' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowRight') return;
-      const nodesMap: any = activeFile.content.nodes;
+      const nodesMap: any = nodesWithColors;
       // pick current or root
       const rootId: string = activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
       const currentId: string = selectedNodeId || rootId;
@@ -654,10 +1236,14 @@ function MindMapCanvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodeDragStart={onNodeDragStart}
+        onNodeDrag={onNodeDrag}
+        onNodeDragStop={onNodeDragStop}
         nodesDraggable={nodesDraggable}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView
+        minZoom={0.1}
         attributionPosition="bottom-left"
         style={{ width: '100%', height: '100%', minHeight: '400px' }}
         onInit={(inst) => { instanceRef.current = inst; setFlowInstance(inst); }}
@@ -666,6 +1252,179 @@ function MindMapCanvas() {
         {/* Controls retirés: le zoom est géré dans la StatusBar */}
         <MiniMap position="top-right" />
       </ReactFlow>
+      
+      {contextMenu && (
+        <NodeContextMenu
+          nodeId={contextMenu.nodeId}
+          isCollapsed={Boolean(activeFile?.content?.nodes?.[contextMenu.nodeId]?.collapsed)}
+          hasChildren={(activeFile?.content?.nodes?.[contextMenu.nodeId]?.children?.length || 0) > 0}
+          position={{ x: contextMenu.x, y: contextMenu.y }}
+          onClose={() => setContextMenu(null)}
+          onToggleCollapse={(nodeId: string) => {
+            const node = activeFile?.content?.nodes?.[nodeId];
+            if (!node) return;
+            updateActiveFileNode(nodeId, { collapsed: !node.collapsed });
+          }}
+          onToggleCollapseSiblings={(nodeId: string) => {
+            const node = activeFile?.content?.nodes?.[nodeId];
+            if (!node || !node.parentId) return;
+            const parent = activeFile?.content?.nodes?.[node.parentId];
+            if (!parent?.children) return;
+            parent.children.forEach((cid: string) => {
+              const child = activeFile?.content?.nodes?.[cid];
+              if (!child) return;
+              updateActiveFileNode(cid, { collapsed: !child.collapsed });
+            });
+          }}
+          onToggleCollapseGeneration={(nodeId: string) => {
+            // FR: Replier tous les nœuds de niveau > N (où N est le niveau du nœud cliqué)
+            // EN: Collapse all nodes at depth > N (where N is the clicked node's depth)
+            console.log('🔄 Replier génération pour nœud:', nodeId);
+            const nodes = activeFile?.content?.nodes;
+            if (!nodes) return;
+
+            // FR: Trouver la racine (nœud sans parent)
+            // EN: Find root (node without parent)
+            const rootId = Object.keys(nodes).find((id) => !nodes[id]?.parentId);
+            if (!rootId) return;
+
+            // FR: Calculer la profondeur du nœud cliqué
+            // EN: Calculate depth of clicked node
+            const getNodeDepth = (nodeId: string): number => {
+              const node = nodes[nodeId];
+              if (!node?.parentId) return 0;
+              return 1 + getNodeDepth(node.parentId);
+            };
+
+            const clickedNodeDepth = getNodeDepth(nodeId);
+            console.log('📍 Profondeur du nœud cliqué:', clickedNodeDepth);
+
+            // FR: Parcours en largeur pour trouver tous les nœuds de profondeur > clickedNodeDepth
+            // EN: BFS traversal to find all nodes at depth > clickedNodeDepth
+            const queue: Array<{ id: string; depth: number }> = [{ id: rootId, depth: 0 }];
+            const toCollapse: string[] = [];
+
+            while (queue.length > 0) {
+              const current = queue.shift()!;
+              const currentNode = nodes[current.id];
+              if (!currentNode) continue;
+
+              console.log(`🔍 Nœud ${current.id} à profondeur ${current.depth} (cible: >${clickedNodeDepth})`);
+
+            // FR: Replier les nœuds plus profonds que le nœud cliqué ET leurs parents directs
+            // EN: Collapse nodes deeper than the clicked node AND their direct parents
+            if (current.depth > clickedNodeDepth) {
+              toCollapse.push(current.id);
+              console.log(`✅ Ajouté à la liste de repli: ${current.id}`);
+              
+              // FR: Aussi replier le parent direct pour masquer les enfants
+              // EN: Also collapse the direct parent to hide children
+              const currentNode = nodes[current.id];
+              if (currentNode?.parentId && !toCollapse.includes(currentNode.parentId)) {
+                toCollapse.push(currentNode.parentId);
+                console.log(`✅ Ajouté le parent à la liste de repli: ${currentNode.parentId}`);
+              }
+            }
+
+              const children: string[] = Array.isArray(currentNode.children) ? currentNode.children : [];
+              children.forEach((cid) => {
+                queue.push({ id: cid, depth: current.depth + 1 });
+              });
+            }
+
+            // FR: Forcer l'état replié pour tous les nœuds plus profonds
+            // EN: Force collapsed state for all deeper nodes
+            console.log('📦 Nœuds à replier:', toCollapse);
+            toCollapse.forEach((nId) => {
+              console.log(`🔄 Repliage du nœud ${nId}`);
+              updateActiveFileNode(nId, { collapsed: true });
+            });
+            console.log('✅ Repliage terminé pour', toCollapse.length, 'nœuds');
+          }}
+          onExpand={(nodeId: string) => {
+            // FR: Déplier le nœud (forcer collapsed: false)
+            // EN: Expand the node (force collapsed: false)
+            updateActiveFileNode(nodeId, { collapsed: false });
+          }}
+          onExpandSiblings={(nodeId: string) => {
+            // FR: Déplier tous les frères du nœud
+            // EN: Expand all siblings of the node
+            const node = activeFile?.content?.nodes?.[nodeId];
+            if (!node || !node.parentId) return;
+            const parent = activeFile?.content?.nodes?.[node.parentId];
+            if (!parent?.children) return;
+            parent.children.forEach((cid: string) => {
+              updateActiveFileNode(cid, { collapsed: false });
+            });
+          }}
+          onExpandGeneration={(nodeId: string) => {
+            // FR: Déplier l'arbre jusqu'au niveau N (inclus) et replier tout ce qui est au-delà
+            // EN: Expand tree up to level N (inclusive) and collapse everything beyond
+            const nodes = activeFile?.content?.nodes;
+            if (!nodes) return;
+
+            // FR: Trouver la racine (nœud sans parent)
+            // EN: Find root (node without parent)
+            const rootId = Object.keys(nodes).find((id) => !nodes[id]?.parentId);
+            if (!rootId) return;
+
+            // FR: Calculer la profondeur du nœud cliqué
+            // EN: Calculate depth of clicked node
+            const getNodeDepth = (nodeId: string): number => {
+              const node = nodes[nodeId];
+              if (!node?.parentId) return 0;
+              return 1 + getNodeDepth(node.parentId);
+            };
+
+            const clickedNodeDepth = getNodeDepth(nodeId);
+            console.log('🔄 Déplier génération jusqu\'au niveau:', clickedNodeDepth);
+
+            // FR: Parcours en largeur de TOUT l'arbre
+            // EN: BFS traversal of the ENTIRE tree
+            const queue: Array<{ id: string; depth: number }> = [{ id: rootId, depth: 0 }];
+            const toExpand: string[] = [];
+            const toCollapse: string[] = [];
+
+            while (queue.length > 0) {
+              const current = queue.shift()!;
+              const currentNode = nodes[current.id];
+              if (!currentNode) continue;
+
+              if (current.depth <= clickedNodeDepth) {
+                // FR: Déplier tous les nœuds jusqu'au niveau N (inclus)
+                // EN: Expand all nodes up to level N (inclusive)
+                toExpand.push(current.id);
+                console.log(`✅ À déplier: ${current.id} (profondeur ${current.depth})`);
+              } else {
+                // FR: Replier tous les nœuds au-delà du niveau N
+                // EN: Collapse all nodes beyond level N
+                toCollapse.push(current.id);
+                console.log(`📦 À replier: ${current.id} (profondeur ${current.depth})`);
+              }
+
+              const children: string[] = Array.isArray(currentNode.children) ? currentNode.children : [];
+              children.forEach((cid) => {
+                queue.push({ id: cid, depth: current.depth + 1 });
+              });
+            }
+
+            // FR: Appliquer les changements
+            // EN: Apply changes
+            toExpand.forEach((nId) => {
+              updateActiveFileNode(nId, { collapsed: false });
+            });
+            
+            toCollapse.forEach((nId) => {
+              updateActiveFileNode(nId, { collapsed: true });
+            });
+            
+            console.log('✅ Dépliage terminé: déplié', toExpand.length, 'nœuds, replié', toCollapse.length, 'nœuds');
+          }}
+          onCopy={(nodeId: string) => copyNode(nodeId)}
+          onPaste={(nodeId: string) => pasteNode(nodeId)}
+          canPaste={canPaste()}
+        />
+      )}
     </div>
   );
 }

@@ -6,6 +6,13 @@
 import { create } from 'zustand';
 import { XMindParser } from '../parsers/XMindParser';
 import { v4 as uuidv4 } from 'uuid';
+import { HistoryManager } from '@bigmind/core/dist/commands/history';
+import {
+  AddNodeCommand,
+  DeleteNodeCommand,
+  UpdateNodeTitleCommand
+} from '@bigmind/core/dist/commands';
+import type { MindMap } from '@bigmind/core/dist/model';
 
 export interface OpenFile {
   id: string;
@@ -20,6 +27,15 @@ export interface OpenFile {
   sheets?: Array<{ id: string; title: string }>;
   activeSheetId?: string | null;
   sheetsData?: any[]; // JSON brut des feuilles pour re-swapper
+  // FR: Palette de couleurs du thème pour l'inférence de couleurs par branche
+  // EN: Theme color palette for branch color inference
+  themeColors?: string[];
+  // FR: Palette choisie pour cette carte (par onglet)
+  // EN: Selected palette for this map (per tab)
+  paletteId?: string;
+  // FR: Historique Undo/Redo
+  // EN: Undo/Redo history
+  history?: HistoryManager;
 }
 
 export interface MindMapData {
@@ -46,6 +62,23 @@ interface OpenFilesState {
   addChildToActive: (parentId: string, title?: string) => string | null;
   removeNodeFromActive: (nodeId: string) => string | null; // returns parentId if removed
   addSiblingToActive: (siblingOfId: string, title?: string) => string | null;
+  // FR: Palette par carte
+  // EN: Per-map palette
+  setActiveFilePalette: (paletteId: string) => void;
+  // FR: Actions Undo/Redo
+  // EN: Undo/Redo actions
+  undo: () => void;
+  redo: () => void;
+  // FR: États dérivés pour Undo/Redo (valeurs, pas fonctions)
+  // EN: Derived states for Undo/Redo (values, not functions)
+  canUndoValue: boolean;
+  canRedoValue: boolean;
+  // FR: Copier/Coller
+  // EN: Copy/Paste
+  copiedNode: any | null;
+  copyNode: (nodeId: string) => void;
+  pasteNode: (parentId: string) => string | null;
+  canPaste: () => boolean;
 }
 
 /**
@@ -55,6 +88,9 @@ interface OpenFilesState {
 export const useOpenFiles = create<OpenFilesState>((set, get) => ({
   openFiles: [],
   activeFileId: null,
+  canUndoValue: false,
+  canRedoValue: false,
+  copiedNode: null,
 
   // FR: Ouvrir un nouveau fichier
   // EN: Open a new file
@@ -65,6 +101,8 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       id: uuidv4(),
       lastModified: new Date(),
       isActive: true,
+      paletteId: file.paletteId || 'vibrant',
+      history: new HistoryManager(100),
     };
 
     set(state => {
@@ -85,6 +123,17 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
 
     console.warn('✅ Fichier ouvert avec ID:', newFile.id);
     return newFile.id;
+  },
+
+  // FR: Définir la palette de la carte active
+  // EN: Set active file's palette
+  setActiveFilePalette: (paletteId: string) => {
+    const state = get();
+    const fileId = state.activeFileId;
+    if (!fileId) return;
+    set({
+      openFiles: state.openFiles.map(f => f.id === fileId ? { ...f, paletteId } : f)
+    });
   },
 
   // FR: Fermer un fichier
@@ -207,6 +256,49 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     const active = state.openFiles.find(f => f.isActive);
     if (!active || !active.content || !active.content.nodes?.[nodeId]) return;
 
+    // FR: Si on change le titre, créer une commande pour l'historique
+    // EN: If changing title, create a command for history
+    if (patch.title !== undefined && patch.title !== active.content.nodes[nodeId].title) {
+      const currentMap = active.content as MindMap;
+      const command = new UpdateNodeTitleCommand(nodeId, patch.title);
+
+      // FR: Important : execute() sauvegarde previousTitle automatiquement
+      // EN: Important: execute() saves previousTitle automatically
+      const newMap = command.execute(currentMap);
+
+      if (active.history) {
+        active.history.addCommand(command);
+        console.log('📝 Command added: UpdateTitle', { nodeId, newTitle: patch.title, canUndo: active.history.canUndo() });
+      }
+
+      // Persister overlay minimal (titre, notes, style)
+      try {
+        const key = `bigmind_overlay_${active.name}`;
+        const overlay = JSON.parse(localStorage.getItem(key) || '{}');
+        overlay.nodes = overlay.nodes || {};
+        overlay.nodes[nodeId] = {
+          title: newMap.nodes[nodeId].title,
+          notes: newMap.nodes[nodeId].notes,
+          style: newMap.nodes[nodeId].style,
+        };
+        localStorage.setItem(key, JSON.stringify(overlay));
+      } catch (e) {
+        // Ignore errors
+      }
+
+      set(prev => ({
+        ...prev,
+        openFiles: prev.openFiles.map(f =>
+          f.id === active.id ? { ...f, content: newMap } : f
+        ),
+        canUndoValue: active.history?.canUndo() ?? false,
+        canRedoValue: active.history?.canRedo() ?? false,
+      }));
+      return;
+    }
+
+    // FR: Pour les autres modifications (collapsed, style, etc.), pas d'historique
+    // EN: For other modifications (collapsed, style, etc.), no history
     const updatedNode = { ...active.content.nodes[nodeId], ...patch };
     const updatedContent = {
       ...active.content,
@@ -241,19 +333,24 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     const state = get();
     const active = state.openFiles.find(f => f.isActive);
     if (!active || !active.content || !active.content.nodes?.[parentId]) return null;
-    const newId = uuidv4();
-    const nodes = { ...active.content.nodes };
-    nodes[newId] = { id: newId, title, children: [], parentId };
-    const parent = { ...nodes[parentId] };
-    parent.children = [...(parent.children || []), newId];
-    nodes[parentId] = parent;
 
-    const updatedContent = { ...active.content, nodes };
+    const newId = uuidv4();
+    const command = new AddNodeCommand(newId, parentId, title, { x: 0, y: 0 });
+    const currentMap = active.content as MindMap;
+    const newMap = command.execute(currentMap);
+
+    if (active.history) {
+      active.history.addCommand(command);
+      console.log('📝 Command added: AddNode', { nodeId: newId, canUndo: active.history.canUndo() });
+    }
+
     set(prev => ({
       ...prev,
       openFiles: prev.openFiles.map(f =>
-        f.id === active.id ? { ...f, content: updatedContent } : f
+        f.id === active.id ? { ...f, content: newMap } : f
       ),
+      canUndoValue: active.history?.canUndo() ?? false,
+      canRedoValue: active.history?.canRedo() ?? false,
     }));
     return newId;
   },
@@ -267,35 +364,23 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     // Ne pas supprimer la racine
     if (nodeId === rootId) return null;
 
-    const nodes = { ...active.content.nodes } as Record<string, any>;
-    const toDelete: string[] = [];
-    const collect = (id: string) => {
-      toDelete.push(id);
-      const n = nodes[id];
-      const children: string[] = n?.children || [];
-      children.forEach(collect);
-    };
-    collect(nodeId);
+    const parentId: string | null = active.content.nodes[nodeId]?.parentId || null;
 
-    const parentId: string | null = nodes[nodeId]?.parentId || null;
-    // Retirer du parent
-    if (parentId && nodes[parentId]) {
-      nodes[parentId] = {
-        ...nodes[parentId],
-        children: (nodes[parentId].children || []).filter((cid: string) => cid !== nodeId),
-      };
+    const command = new DeleteNodeCommand(nodeId);
+    const currentMap = active.content as MindMap;
+    const newMap = command.execute(currentMap);
+
+    if (active.history) {
+      active.history.addCommand(command);
     }
-    // Supprimer tous les nœuds collectés
-    toDelete.forEach(id => {
-      delete nodes[id];
-    });
 
-    const updatedContent = { ...active.content, nodes };
     set(prev => ({
       ...prev,
       openFiles: prev.openFiles.map(f =>
-        f.id === active.id ? { ...f, content: updatedContent } : f
+        f.id === active.id ? { ...f, content: newMap } : f
       ),
+      canUndoValue: active.history?.canUndo() ?? false,
+      canRedoValue: active.history?.canRedo() ?? false,
     }));
     return parentId;
   },
@@ -305,27 +390,163 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     const state = get();
     const active = state.openFiles.find(f => f.isActive);
     if (!active || !active.content || !active.content.nodes?.[siblingOfId]) return null;
-    const nodes = { ...active.content.nodes } as Record<string, any>;
-    const parentId: string | null = nodes[siblingOfId]?.parentId || null;
+
+    const parentId: string | null = active.content.nodes[siblingOfId]?.parentId || null;
     if (!parentId) {
       // pas de parent -> créer enfant du courant
       return get().addChildToActive(siblingOfId, title);
     }
-    const newId = uuidv4();
-    nodes[newId] = { id: newId, title, children: [], parentId };
-    const list: string[] = [...(nodes[parentId]?.children || [])];
-    const idx = list.indexOf(siblingOfId);
-    if (idx >= 0) list.splice(idx + 1, 0, newId);
-    else list.push(newId);
-    nodes[parentId] = { ...nodes[parentId], children: list };
 
-    const updatedContent = { ...active.content, nodes };
+    // FR: Utiliser addChildToActive qui gère déjà l'historique
+    // EN: Use addChildToActive which already handles history
+    return get().addChildToActive(parentId, title);
+  },
+
+  // FR: Annuler la dernière action
+  // EN: Undo last action
+  undo: () => {
+    const state = get();
+    const active = state.openFiles.find(f => f.isActive);
+    if (!active || !active.history) {
+      console.warn('❌ Undo: No active file or history');
+      return;
+    }
+
+    if (!active.history.canUndo()) {
+      console.warn('❌ Undo: Cannot undo (history empty)');
+      return;
+    }
+
+    console.log('⏪ Undo: Attempting undo...');
+    const currentMap = active.content as MindMap;
+    const newMap = active.history.undo(currentMap);
+
+    if (newMap) {
+      console.log('✅ Undo: Success, updating state');
+      set(prev => ({
+        ...prev,
+        openFiles: prev.openFiles.map(f =>
+          f.id === active.id ? { ...f, content: newMap } : f
+        ),
+        canUndoValue: active.history?.canUndo() ?? false,
+        canRedoValue: active.history?.canRedo() ?? false,
+      }));
+    } else {
+      console.warn('❌ Undo: Failed to get new map');
+    }
+  },
+
+  // FR: Refaire la dernière action annulée
+  // EN: Redo last undone action
+  redo: () => {
+    const state = get();
+    const active = state.openFiles.find(f => f.isActive);
+    if (!active || !active.history || !active.history.canRedo()) return;
+
+    console.log('⏩ Redo: Attempting redo...');
+    const currentMap = active.content as MindMap;
+    const newMap = active.history.redo(currentMap);
+
+    if (newMap) {
+      console.log('✅ Redo: Success, updating state');
+      set(prev => ({
+        ...prev,
+        openFiles: prev.openFiles.map(f =>
+          f.id === active.id ? { ...f, content: newMap } : f
+        ),
+        canUndoValue: active.history?.canUndo() ?? false,
+        canRedoValue: active.history?.canRedo() ?? false,
+      }));
+    }
+  },
+
+  // FR: Copier un nœud
+  // EN: Copy a node
+  copyNode: (nodeId: string) => {
+    const state = get();
+    const active = state.openFiles.find(f => f.isActive);
+    if (!active?.content?.nodes?.[nodeId]) return;
+
+    const node = active.content.nodes[nodeId];
+    // FR: Copier le nœud et tous ses descendants
+    // EN: Copy node and all its descendants
+    const copyNodeRecursive = (node: any): any => {
+      const copied = { ...node };
+      if (node.children && node.children.length > 0) {
+        copied.children = node.children.map((childId: string) => 
+          copyNodeRecursive(active.content.nodes[childId])
+        );
+      }
+      return copied;
+    };
+
+    const copiedNode = copyNodeRecursive(node);
+    set({ copiedNode });
+    console.log('📋 Node copied:', nodeId);
+  },
+
+  // FR: Coller un nœud
+  // EN: Paste a node
+  pasteNode: (parentId: string) => {
+    const state = get();
+    const active = state.openFiles.find(f => f.isActive);
+    if (!active?.content?.nodes?.[parentId] || !state.copiedNode) return null;
+
+    // FR: Créer un nouveau nœud avec un ID unique
+    // EN: Create new node with unique ID
+    const createNewNodeId = (node: any): any => {
+      const newNode = { ...node, id: uuidv4() };
+      if (node.children && node.children.length > 0) {
+        newNode.children = node.children.map((child: any) => createNewNodeId(child));
+      }
+      return newNode;
+    };
+
+    const newNode = createNewNodeId(state.copiedNode);
+    
+    // FR: Ajouter le nœud au parent
+    // EN: Add node to parent
+    const parentNode = active.content.nodes[parentId];
+    if (!parentNode.children) {
+      parentNode.children = [];
+    }
+    parentNode.children.push(newNode.id);
+
+    // FR: Ajouter tous les nœuds descendants
+    // EN: Add all descendant nodes
+    const addNodeRecursive = (node: any) => {
+      active.content.nodes[node.id] = node;
+      if (node.children && node.children.length > 0) {
+        node.children.forEach((child: any) => addNodeRecursive(child));
+      }
+    };
+
+    addNodeRecursive(newNode);
+
+    // FR: Mettre à jour l'historique
+    // EN: Update history
+    if (active.history) {
+      const command = new AddNodeCommand(newNode.id, parentId, newNode.title);
+      active.history.execute(command, active.content as MindMap);
+    }
+
     set(prev => ({
       ...prev,
       openFiles: prev.openFiles.map(f =>
-        f.id === active.id ? { ...f, content: updatedContent } : f
+        f.id === active.id ? { ...f, content: { ...active.content } } : f
       ),
+      canUndoValue: active.history?.canUndo() ?? false,
+      canRedoValue: active.history?.canRedo() ?? false,
     }));
-    return newId;
+
+    console.log('📋 Node pasted:', newNode.id, 'to parent:', parentId);
+    return newNode.id;
+  },
+
+  // FR: Vérifier si on peut coller
+  // EN: Check if can paste
+  canPaste: () => {
+    const state = get();
+    return state.copiedNode !== null;
   },
 }));
