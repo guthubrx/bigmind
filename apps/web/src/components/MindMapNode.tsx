@@ -172,7 +172,14 @@ function MindMapNode({ data, selected }: Props) {
       onContextMenu={handleContextMenu}
       style={{
         position: 'relative',
-        backgroundColor: data.style?.backgroundColor || 'white',
+        // FR: Couleur de fond - supporte plusieurs clés (XMind JSON/XML): backgroundColor, fill, background, bgColor
+        // EN: Background color - support multiple keys (XMind JSON/XML): backgroundColor, fill, background, bgColor
+        backgroundColor:
+          data.style?.backgroundColor ||
+          (data.style as any)?.fill ||
+          (data.style as any)?.background ||
+          (data.style as any)?.bgColor ||
+          'white',
         // FR: Couleur du texte - fallback sur style.color si textColor absent
         // EN: Text color - fallback to style.color if textColor is missing
         color: data.style?.textColor || (data.style as any)?.color || 'black',
