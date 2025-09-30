@@ -62,6 +62,16 @@ jobs:
             fi
           fi
           echo "LD_LIBRARY_PATH=$SO_DIR:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+          # FR: Rafraîchir le cache ld et valider la résolution pkg-config
+          # EN: Refresh ld cache and validate pkg-config resolution
+          sudo ldconfig
+          pkg-config --modversion webkit2gtk-4.0 || true
+          pkg-config --modversion javascriptcoregtk-4.0 || true
+          pkg-config --libs webkit2gtk-4.0 || true
+          pkg-config --libs javascriptcoregtk-4.0 || true
+          # FR: Aider le linker à trouver les libs à l’édition de liens
+          # EN: Help the linker find libraries at link time
+          echo "RUSTFLAGS=-C link-arg=-L$SO_DIR -C link-arg=-Wl,-rpath,$SO_DIR" >> $GITHUB_ENV
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
