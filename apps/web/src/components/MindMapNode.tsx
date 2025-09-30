@@ -5,9 +5,10 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { useMindmap } from '../hooks/useMindmap';
+import { useOpenFiles } from '../hooks/useOpenFiles';
 import { useSelection } from '../hooks/useSelection';
 import { useAppSettings } from '../hooks/useAppSettings';
+import { useEditMode } from '../hooks/useEditMode';
 // FR: Types locaux pour le développement
 // EN: Local types for development
 export interface MindNode {
@@ -41,10 +42,11 @@ export interface MindMapNodeData extends MindNode {
 type Props = { data: MindMapNodeData; selected?: boolean };
 
 function MindMapNode({ data, selected }: Props) {
-  const { actions } = useMindmap();
-  const selectedNodeId = useSelection((s) => s.selectedNodeId);
-  const setSelectedNodeId = useSelection((s) => s.setSelectedNodeId);
-  const accentColor = useAppSettings((s) => s.accentColor);
+  const updateActiveFileNode = useOpenFiles(s => s.updateActiveFileNode);
+  const selectedNodeId = useSelection(s => s.selectedNodeId);
+  const setSelectedNodeId = useSelection(s => s.setSelectedNodeId);
+  const accentColor = useAppSettings(s => s.accentColor);
+  const setEditMode = useEditMode(s => s.setEditMode);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(data.title);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -54,25 +56,29 @@ function MindMapNode({ data, selected }: Props) {
   const startEditing = useCallback(() => {
     setIsEditing(true);
     setEditValue(data.title);
-    actions.setEditMode(data.id, 'title');
-  }, [actions, data.id, data.title]);
+    setEditMode(true, data.id);
+  }, [data.title, data.id, setEditMode]);
 
   // FR: Arrêter l'édition
   // EN: Stop editing
   const stopEditing = useCallback(() => {
     if (editValue.trim() && editValue !== data.title) {
-      actions.updateNodeTitle(data.id, editValue.trim());
+      updateActiveFileNode(data.id, { title: editValue.trim() });
     }
     setIsEditing(false);
-    actions.setEditMode(null, null);
-  }, [actions, data.id, data.title, editValue]);
+    setEditMode(false, null);
+  }, [updateActiveFileNode, data.id, data.title, editValue, setEditMode]);
 
   // FR: Gérer la touche Entrée
   // EN: Handle Enter key
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' || e.key === 'Tab') {
+      e.preventDefault();
+      e.stopPropagation();
       stopEditing();
     } else if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
       setEditValue(data.title);
       stopEditing();
     }
@@ -82,7 +88,6 @@ function MindMapNode({ data, selected }: Props) {
   // EN: Handle click to select
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    actions.selectNodes([data.id], 'single');
     setSelectedNodeId(data.id);
   };
 
@@ -101,6 +106,14 @@ function MindMapNode({ data, selected }: Props) {
     // FR: TODO: Implémenter le menu contextuel
     // EN: TODO: Implement context menu
   };
+
+  // FR: Synchroniser editValue avec data.title quand il change (sauf si on est en train d'éditer)
+  // EN: Sync editValue with data.title when it changes (except when editing)
+  useEffect(() => {
+    if (!isEditing) {
+      setEditValue(data.title);
+    }
+  }, [data.title, isEditing]);
 
   // FR: Focus sur l'input quand l'édition commence
   // EN: Focus input when editing starts
@@ -126,6 +139,23 @@ function MindMapNode({ data, selected }: Props) {
 
   const isCurrentlySelected = !!(selected || data.isSelected || selectedNodeId === data.id);
 
+  let outline: string | undefined;
+  let outlineOffset: number | undefined;
+  if (isCurrentlySelected) {
+    outline = `3px dashed ${accentColor}`;
+    outlineOffset = 4;
+  } else if (data.isPrimary) {
+    outline = `2px solid ${accentColor}`;
+    outlineOffset = 2;
+  }
+
+  const onKeyActivate = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setSelectedNodeId(data.id);
+    }
+  };
+
   return (
     <div
       className={`
@@ -134,13 +164,18 @@ function MindMapNode({ data, selected }: Props) {
         ${isEditing ? 'editing' : ''}
         ${data.isPrimary ? '' : ''}
       `}
+      role="button"
+      tabIndex={0}
+      onKeyDown={onKeyActivate}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       style={{
         position: 'relative',
         backgroundColor: data.style?.backgroundColor || 'white',
-        color: data.style?.textColor || 'black',
+        // FR: Couleur du texte - fallback sur style.color si textColor absent
+        // EN: Text color - fallback to style.color if textColor is missing
+        color: data.style?.textColor || (data.style as any)?.color || 'black',
         fontSize: data.style?.fontSize || 14,
         fontWeight: data.style?.fontWeight || 'normal',
         borderColor: data.style?.borderColor || '#e5e7eb',
@@ -150,20 +185,13 @@ function MindMapNode({ data, selected }: Props) {
         boxSizing: 'border-box',
         width: 200,
         padding: '8px 12px',
-        outline: isCurrentlySelected
-          ? `3px dashed ${accentColor}`
-          : data.isPrimary
-          ? `2px solid ${accentColor}`
-          : undefined,
-        outlineOffset: isCurrentlySelected ? 4 : data.isPrimary ? 2 : undefined,
+        outline,
+        outlineOffset,
       }}
     >
       {/* FR: Handles d'entrée (côté logique) */}
       {/* EN: Input handles (logical side) */}
-      {data.isPrimary ? (
-        // la racine n'a pas de parent -> pas de target
-        <></>
-      ) : (
+      {data.isPrimary ? null : (
         <Handle
           id={data.direction === -1 ? 'right' : 'left'}
           type="target"
@@ -180,7 +208,7 @@ function MindMapNode({ data, selected }: Props) {
             ref={inputRef}
             type="text"
             value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
+            onChange={e => setEditValue(e.target.value)}
             onBlur={stopEditing}
             onKeyDown={handleKeyDown}
             className="w-full bg-transparent border-none outline-none text-center"
@@ -191,9 +219,7 @@ function MindMapNode({ data, selected }: Props) {
             }}
           />
         ) : (
-          <span className="text-center break-words">
-            {data.title}
-          </span>
+          <span className="text-center break-words">{data.title}</span>
         )}
       </div>
 
@@ -204,15 +230,25 @@ function MindMapNode({ data, selected }: Props) {
         if (!hasChildren) return null;
         if (data.isPrimary) {
           return (
-            <>
+            <div>
               <Handle id="left" type="source" position={Position.Left} className="opacity-0" />
               <Handle id="right" type="source" position={Position.Right} className="opacity-0" />
               <span
                 aria-label="Nombre d'enfants à gauche"
                 style={{
-                  position: 'absolute', left: -12, top: '50%', transform: 'translate(-50%, -50%)',
-                  backgroundColor: 'var(--accent-color)', color: '#fff', borderRadius: 9999,
-                  fontSize: 10, lineHeight: '14px', width: 16, height: 16, textAlign: 'center', pointerEvents: 'none'
+                  position: 'absolute',
+                  left: -12,
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  backgroundColor: 'var(--accent-color)',
+                  color: '#fff',
+                  borderRadius: 9999,
+                  fontSize: 10,
+                  lineHeight: '14px',
+                  width: 16,
+                  height: 16,
+                  textAlign: 'center',
+                  pointerEvents: 'none',
                 }}
               >
                 {(data as any).childCounts?.left ?? 0}
@@ -220,14 +256,24 @@ function MindMapNode({ data, selected }: Props) {
               <span
                 aria-label="Nombre d'enfants à droite"
                 style={{
-                  position: 'absolute', right: -12, top: '50%', transform: 'translate(50%, -50%)',
-                  backgroundColor: 'var(--accent-color)', color: '#fff', borderRadius: 9999,
-                  fontSize: 10, lineHeight: '14px', width: 16, height: 16, textAlign: 'center', pointerEvents: 'none'
+                  position: 'absolute',
+                  right: -12,
+                  top: '50%',
+                  transform: 'translate(50%, -50%)',
+                  backgroundColor: 'var(--accent-color)',
+                  color: '#fff',
+                  borderRadius: 9999,
+                  fontSize: 10,
+                  lineHeight: '14px',
+                  width: 16,
+                  height: 16,
+                  textAlign: 'center',
+                  pointerEvents: 'none',
                 }}
               >
                 {(data as any).childCounts?.right ?? 0}
               </span>
-            </>
+            </div>
           );
         }
         const isLeft = data.direction === -1;
@@ -244,12 +290,22 @@ function MindMapNode({ data, selected }: Props) {
             />
             <span
               aria-label="Nombre d'enfants"
-              style={{
-                position: 'absolute', top: '50%',
-                ...sideStyle,
-                backgroundColor: 'var(--accent-color)', color: '#fff', borderRadius: 9999,
-                fontSize: 10, lineHeight: '14px', width: 16, height: 16, textAlign: 'center', pointerEvents: 'none'
-              } as any}
+              style={
+                {
+                  position: 'absolute',
+                  top: '50%',
+                  ...sideStyle,
+                  backgroundColor: 'var(--accent-color)',
+                  color: '#fff',
+                  borderRadius: 9999,
+                  fontSize: 10,
+                  lineHeight: '14px',
+                  width: 16,
+                  height: 16,
+                  textAlign: 'center',
+                  pointerEvents: 'none',
+                } as any
+              }
             >
               {data.children?.length || 0}
             </span>
@@ -259,9 +315,12 @@ function MindMapNode({ data, selected }: Props) {
 
       {/* FR: Indicateur de sélection */}
       {/* EN: Selection indicator */}
-      {data.isSelected && (
-        <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent-500 rounded-full border-2 border-white" />
-      )}
+      {data.isSelected ? (
+        <div
+          className="absolute -top-1 -right-1 w-3 h-3 bg-accent-500 rounded-full"
+          style={{ borderWidth: 2, borderStyle: 'solid', borderColor: '#fff' }}
+        />
+      ) : null}
     </div>
   );
 }
