@@ -4,7 +4,7 @@
  */
 
 import { create } from 'zustand';
-import { XMindParser } from '../parsers/XMindParser.ts';
+import { XMindParser } from '../parsers/XMindParser';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface OpenFile {
@@ -59,27 +59,27 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
   // FR: Ouvrir un nouveau fichier
   // EN: Open a new file
   openFile: (file: Omit<OpenFile, 'id' | 'lastModified' | 'isActive'>) => {
-    console.warn('📂 Ouverture d\'un fichier:', file.name, file.type);
+    console.warn("📂 Ouverture d'un fichier:", file.name, file.type);
     const newFile: OpenFile = {
       ...file,
       id: uuidv4(),
       lastModified: new Date(),
-      isActive: true
+      isActive: true,
     };
 
-    set((state) => {
+    set(state => {
       // FR: Désactiver tous les autres fichiers et ajouter le nouveau
       // EN: Deactivate all other files and add the new one
       const updatedFiles = state.openFiles.map(f => ({ ...f, isActive: false }));
       const result = [...updatedFiles, newFile];
-      
+
       console.warn('📁 Fichiers ouverts:', result.length);
       console.warn('📁 Nouveau fichier actif:', newFile.id, newFile.isActive);
-      
+
       return {
         ...state,
         openFiles: result,
-        activeFileId: newFile.id
+        activeFileId: newFile.id,
       };
     });
 
@@ -90,9 +90,9 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
   // FR: Fermer un fichier
   // EN: Close a file
   closeFile: (fileId: string) => {
-    set((state) => {
+    set(state => {
       const filteredFiles = state.openFiles.filter(f => f.id !== fileId);
-      
+
       // FR: Si on ferme le fichier actif, activer le précédent
       // EN: If closing active file, activate the previous one
       let newActiveFileId = state.activeFileId;
@@ -105,11 +105,11 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
           newActiveFileId = null;
         }
       }
-      
+
       return {
         ...state,
         openFiles: filteredFiles,
-        activeFileId: newActiveFileId
+        activeFileId: newActiveFileId,
       };
     });
   },
@@ -117,23 +117,23 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
   // FR: Activer un fichier
   // EN: Activate a file
   activateFile: (fileId: string) => {
-    set((state) => ({
+    set(state => ({
       ...state,
       openFiles: state.openFiles.map(f => ({ ...f, isActive: f.id === fileId })),
-      activeFileId: fileId
+      activeFileId: fileId,
     }));
   },
 
   // FR: Définir la feuille active pour un fichier
   // EN: Set active sheet for a file
   setActiveSheet: (fileId: string, sheetId: string) => {
-    set((state) => {
-      const file = state.openFiles.find((f) => f.id === fileId);
+    set(state => {
+      const file = state.openFiles.find(f => f.id === fileId);
       if (!file || !file.sheets || !file.sheetsData) {
         return state;
       }
       // FR: Retrouver l'index de la feuille et reconstruire le contenu
-      const idx = file.sheets.findIndex((s) => s.id === sheetId);
+      const idx = file.sheets.findIndex(s => s.id === sheetId);
       if (idx < 0) return state;
       try {
         const sheetData = file.sheetsData[idx];
@@ -144,15 +144,15 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
           rootNode: {
             id: big.rootId,
             title: big.nodes[big.rootId]?.title || 'Racine',
-            children: big.nodes[big.rootId]?.children || []
+            children: big.nodes[big.rootId]?.children || [],
           },
           nodes: big.nodes,
         } as any;
         return {
           ...state,
-          openFiles: state.openFiles.map((f) =>
+          openFiles: state.openFiles.map(f =>
             f.id === fileId ? { ...f, activeSheetId: sheetId, content: adaptedContent } : f
-          )
+          ),
         };
       } catch (e) {
         return state;
@@ -176,7 +176,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
   createNewFile: (name: string = 'Nouvelle carte') => {
     const newFileId = uuidv4();
     const newRootId = uuidv4();
-    
+
     return get().openFile({
       name,
       type: 'new',
@@ -186,17 +186,17 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
         rootNode: {
           id: newRootId,
           title: name,
-          children: []
+          children: [],
         },
         nodes: {
           [newRootId]: {
             id: newRootId,
             title: name,
             children: [],
-            parentId: null
-          }
-        }
-      }
+            parentId: null,
+          },
+        },
+      },
     });
   },
 
@@ -210,7 +210,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     const updatedNode = { ...active.content.nodes[nodeId], ...patch };
     const updatedContent = {
       ...active.content,
-      nodes: { ...active.content.nodes, [nodeId]: updatedNode }
+      nodes: { ...active.content.nodes, [nodeId]: updatedNode },
     };
 
     // Persister overlay minimal (titre, notes, style)
@@ -228,12 +228,13 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       // Ignore errors
     }
 
-    set((prev) => ({
+    set(prev => ({
       ...prev,
-      openFiles: prev.openFiles.map(f => f.id === active.id ? { ...f, content: updatedContent } : f)
+      openFiles: prev.openFiles.map(f =>
+        f.id === active.id ? { ...f, content: updatedContent } : f
+      ),
     }));
-  }
-  ,
+  },
   // FR: Ajouter un enfant au nœud parent dans le fichier actif
   // EN: Add a child to parent in the active file
   addChildToActive: (parentId: string, title: string = 'Nouveau nœud') => {
@@ -248,13 +249,14 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     nodes[parentId] = parent;
 
     const updatedContent = { ...active.content, nodes };
-    set((prev) => ({
+    set(prev => ({
       ...prev,
-      openFiles: prev.openFiles.map(f => f.id === active.id ? { ...f, content: updatedContent } : f)
+      openFiles: prev.openFiles.map(f =>
+        f.id === active.id ? { ...f, content: updatedContent } : f
+      ),
     }));
     return newId;
-  }
-  ,
+  },
   // FR: Supprimer un nœud (et son sous-arbre) du fichier actif
   // EN: Remove a node (and its subtree) from the active file
   removeNodeFromActive: (nodeId: string) => {
@@ -270,7 +272,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     const collect = (id: string) => {
       toDelete.push(id);
       const n = nodes[id];
-      const children: string[] = (n?.children) || [];
+      const children: string[] = n?.children || [];
       children.forEach(collect);
     };
     collect(nodeId);
@@ -278,19 +280,25 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     const parentId: string | null = nodes[nodeId]?.parentId || null;
     // Retirer du parent
     if (parentId && nodes[parentId]) {
-      nodes[parentId] = { ...nodes[parentId], children: (nodes[parentId].children || []).filter((cid: string) => cid !== nodeId) };
+      nodes[parentId] = {
+        ...nodes[parentId],
+        children: (nodes[parentId].children || []).filter((cid: string) => cid !== nodeId),
+      };
     }
     // Supprimer tous les nœuds collectés
-    toDelete.forEach((id) => { delete nodes[id]; });
+    toDelete.forEach(id => {
+      delete nodes[id];
+    });
 
     const updatedContent = { ...active.content, nodes };
-    set((prev) => ({
+    set(prev => ({
       ...prev,
-      openFiles: prev.openFiles.map(f => f.id === active.id ? { ...f, content: updatedContent } : f)
+      openFiles: prev.openFiles.map(f =>
+        f.id === active.id ? { ...f, content: updatedContent } : f
+      ),
     }));
     return parentId;
-  }
-  ,
+  },
   // FR: Ajouter un frère au nœud sélectionné (même parent)
   // EN: Add a sibling to selected node (same parent)
   addSiblingToActive: (siblingOfId: string, title: string = 'Nouveau nœud') => {
@@ -307,14 +315,17 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     nodes[newId] = { id: newId, title, children: [], parentId };
     const list: string[] = [...(nodes[parentId]?.children || [])];
     const idx = list.indexOf(siblingOfId);
-    if (idx >= 0) list.splice(idx + 1, 0, newId); else list.push(newId);
+    if (idx >= 0) list.splice(idx + 1, 0, newId);
+    else list.push(newId);
     nodes[parentId] = { ...nodes[parentId], children: list };
 
     const updatedContent = { ...active.content, nodes };
-    set((prev) => ({
+    set(prev => ({
       ...prev,
-      openFiles: prev.openFiles.map(f => f.id === active.id ? { ...f, content: updatedContent } : f)
+      openFiles: prev.openFiles.map(f =>
+        f.id === active.id ? { ...f, content: updatedContent } : f
+      ),
     }));
     return newId;
-  }
+  },
 }));

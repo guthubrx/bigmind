@@ -4,17 +4,17 @@
  */
 
 import React from 'react';
-import FileTabs from './FileTabs.tsx';
+import FileTabs from './FileTabs';
 
 function TabBarTest() {
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <h2>Test de la barre d'onglets</h2>
+      <h2>Test de la barre d&apos;onglets</h2>
       <div style={{ height: '50px', border: '1px solid #ccc' }}>
         <FileTabs type="tab-bar" />
       </div>
       <div style={{ flex: 1, padding: '20px' }}>
-        <p>Contenu de test pour la barre d'onglets</p>
+        <p>Contenu de test pour la barre d&apos;onglets</p>
         <p>Ouvrez plusieurs fichiers pour tester les fonctionnalités :</p>
         <ul>
           <li>Scroll horizontal</li>

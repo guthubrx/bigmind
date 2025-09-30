@@ -4,16 +4,16 @@
  */
 
 import React, { useState, useRef, useCallback } from 'react';
-import { 
-  FileText, 
-  X, 
+import {
+  FileText,
+  X,
   ChevronLeft,
   ChevronRight,
   MoreHorizontal,
   FolderOpen,
   Plus,
 } from 'lucide-react';
-import { useOpenFiles } from '../hooks/useOpenFiles.ts';
+import { useOpenFiles } from '../hooks/useOpenFiles';
 import './FileTabs.css';
 
 interface FileTabsProps {
@@ -21,11 +21,11 @@ interface FileTabsProps {
 }
 
 function FileTabs({ type = 'file-column' }: FileTabsProps) {
-  const openFiles = useOpenFiles((state) => state.openFiles);
-  const activeFileId = useOpenFiles((state) => state.activeFileId);
-  const closeFile = useOpenFiles((state) => state.closeFile);
-  const activateFile = useOpenFiles((state) => state.activateFile);
-  const setActiveSheet = useOpenFiles((state) => state.setActiveSheet);
+  const openFiles = useOpenFiles(state => state.openFiles);
+  const activeFileId = useOpenFiles(state => state.activeFileId);
+  const closeFile = useOpenFiles(state => state.closeFile);
+  const activateFile = useOpenFiles(state => state.activateFile);
+  const setActiveSheet = useOpenFiles(state => state.setActiveSheet);
 
   // FR: États pour la barre d'onglets
   // EN: States for tab bar
@@ -34,7 +34,7 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
   const [dragStartIndex, setDragStartIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [showOverflowMenu, setShowOverflowMenu] = useState(false);
-  
+
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -92,25 +92,28 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
     setDragOverIndex(null);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent, dropIndex: number) => {
-    e.preventDefault();
-    
-    if (dragStartIndex !== null && dragStartIndex !== dropIndex) {
-      // FR: Réorganiser les onglets
-      // EN: Reorder tabs
-      const newFiles = [...openFiles];
-      const draggedFile = newFiles[dragStartIndex];
-      newFiles.splice(dragStartIndex, 1);
-      newFiles.splice(dropIndex, 0, draggedFile);
-      
-      // FR: Mettre à jour l'ordre dans le store
-      // EN: Update order in store
-      // TODO: Implémenter la réorganisation dans useOpenFiles
-      // console.log('🔄 Reordering tabs:', { from: dragStartIndex, to: dropIndex });
-    }
-    
-    handleDragEnd();
-  }, [dragStartIndex, openFiles, handleDragEnd]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent, dropIndex: number) => {
+      e.preventDefault();
+
+      if (dragStartIndex !== null && dragStartIndex !== dropIndex) {
+        // FR: Réorganiser les onglets
+        // EN: Reorder tabs
+        const newFiles = [...openFiles];
+        const draggedFile = newFiles[dragStartIndex];
+        newFiles.splice(dragStartIndex, 1);
+        newFiles.splice(dropIndex, 0, draggedFile);
+
+        // FR: Mettre à jour l'ordre dans le store
+        // EN: Update order in store
+        // TODO: Implémenter la réorganisation dans useOpenFiles
+        // console.log('🔄 Reordering tabs:', { from: dragStartIndex, to: dropIndex });
+      }
+
+      handleDragEnd();
+    },
+    [dragStartIndex, openFiles, handleDragEnd]
+  );
 
   // FR: Fonctions pour le menu de débordement
   // EN: Functions for overflow menu
@@ -125,19 +128,19 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
   // FR: Vérifier si le scroll est nécessaire
   // EN: Check if scrolling is needed
   const canScrollLeft = scrollPosition > 0;
-  const canScrollRight = scrollPosition < (openFiles.length * 200 - 400); // Approximation
+  const canScrollRight = scrollPosition < openFiles.length * 200 - 400; // Approximation
 
   if (type === 'tab-bar') {
     // FR: Affichage en barre d'onglets horizontale améliorée
     // EN: Enhanced horizontal tab bar display
-    const activeFile = openFiles.find((f) => f.id === activeFileId) || null;
+    const activeFile = openFiles.find(f => f.id === activeFileId) || null;
     const sheets = activeFile?.sheets || [];
     return (
       <div className="file-tabs-horizontal" ref={tabsContainerRef}>
         {/* FR: Boutons de scroll */}
         {/* EN: Scroll buttons */}
         {canScrollLeft && (
-          <button 
+          <button
             type="button"
             className="scroll-btn scroll-left"
             onClick={scrollLeft}
@@ -149,20 +152,24 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
 
         {/* FR: Conteneur scrollable des onglets */}
         {/* EN: Scrollable container for tabs */}
-        <div 
+        <div
           className="tabs-scroll-container"
           ref={scrollContainerRef}
-          onScroll={(e) => setScrollPosition(e.currentTarget.scrollLeft)}
+          onScroll={e => setScrollPosition(e.currentTarget.scrollLeft)}
         >
           <div className="tabs-list">
             {sheets.map((sheet, index) => (
-              <div 
+              <div
                 key={sheet.id}
-                className={`file-tab-horizontal ${activeFile?.activeSheetId === sheet.id ? 'active' : ''} ${
+                className={`file-tab-horizontal ${
+                  activeFile?.activeSheetId === sheet.id ? 'active' : ''
+                } ${
                   isDragging && dragStartIndex === index ? 'dragging' : ''
                 } ${dragOverIndex === index ? 'drag-over' : ''}`}
-                onClick={() => { if (activeFile) setActiveSheet(activeFile.id, sheet.id); }}
-                onKeyDown={(e) => {
+                onClick={() => {
+                  if (activeFile) setActiveSheet(activeFile.id, sheet.id);
+                }}
+                onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     if (activeFile) setActiveSheet(activeFile.id, sheet.id);
                   }
@@ -170,19 +177,19 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
                 role="tab"
                 tabIndex={0}
                 draggable
-                onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={(e) => handleDragOver(e, index)}
+                onDragStart={e => handleDragStart(e, index)}
+                onDragOver={e => handleDragOver(e, index)}
                 onDragEnd={handleDragEnd}
-                onDrop={(e) => handleDrop(e, index)}
+                onDrop={e => handleDrop(e, index)}
               >
                 <div className="file-tab-content">
                   <FileText className="icon-small" />
                   <span className="file-name">{sheet.title}</span>
                 </div>
-                <button 
+                <button
                   type="button"
                   className="file-tab-close"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={e => e.stopPropagation()}
                   title=""
                 >
                   <X className="icon-small" />
@@ -195,7 +202,7 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
         {/* FR: Boutons de scroll */}
         {/* EN: Scroll buttons */}
         {canScrollRight && (
-          <button 
+          <button
             type="button"
             className="scroll-btn scroll-right"
             onClick={scrollRight}
@@ -209,7 +216,7 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
         {/* EN: Overflow menu */}
         {sheets.length > 5 && (
           <div className="overflow-menu-container">
-            <button 
+            <button
               type="button"
               className="overflow-menu-btn"
               onClick={toggleOverflowMenu}
@@ -219,15 +226,17 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
             </button>
             {showOverflowMenu && (
               <div className="overflow-menu">
-                {sheets.slice(5).map((sheet) => (
-                  <div 
+                {sheets.slice(5).map(sheet => (
+                  <div
                     key={sheet.id}
-                    className={`overflow-menu-item ${activeFile?.activeSheetId === sheet.id ? 'active' : ''}`}
+                    className={`overflow-menu-item ${
+                      activeFile?.activeSheetId === sheet.id ? 'active' : ''
+                    }`}
                     onClick={() => {
                       if (activeFile) setActiveSheet(activeFile.id, sheet.id);
                       closeOverflowMenu();
                     }}
-                    onKeyDown={(e) => {
+                    onKeyDown={e => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         if (activeFile) setActiveSheet(activeFile.id, sheet.id);
                         closeOverflowMenu();
@@ -238,10 +247,10 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
                   >
                     <FileText className="icon-small" />
                     <span className="file-name">{sheet.title}</span>
-                    <button 
+                    <button
                       type="button"
                       className="file-tab-close"
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
                         closeOverflowMenu();
                       }}
@@ -271,7 +280,7 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
           <FolderOpen className="icon-small" />
           <span>Fichiers ouverts</span>
         </div>
-        <button 
+        <button
           type="button"
           className="btn btn-small"
           onClick={handleOpenNewFile}
@@ -280,14 +289,14 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
           <Plus className="icon-small" />
         </button>
       </div>
-      
+
       <div className="file-tabs-list">
-        {openFiles.map((file) => (
-          <div 
+        {openFiles.map(file => (
+          <div
             key={file.id}
             className={`file-tab ${activeFileId === file.id ? 'active' : ''}`}
             onClick={() => activateFile(file.id)}
-            onKeyDown={(e) => {
+            onKeyDown={e => {
               if (e.key === 'Enter' || e.key === ' ') {
                 activateFile(file.id);
               }
@@ -300,10 +309,10 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
               <span className="file-name">{file.name}</span>
               <span className="file-type">.{file.type}</span>
             </div>
-            <button 
+            <button
               type="button"
               className="file-tab-close"
-              onClick={(e) => handleCloseFile(file.id, e)}
+              onClick={e => handleCloseFile(file.id, e)}
               title="Fermer"
             >
               <X className="icon-small" />
@@ -313,6 +322,6 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
       </div>
     </div>
   );
-};
+}
 
 export default FileTabs;

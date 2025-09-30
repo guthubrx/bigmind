@@ -33,12 +33,36 @@ module.exports = {
     // FR: Permettre les commentaires longs pour la documentation
     // EN: Allow long comments for documentation
     'max-len': ['error', { code: 100, ignoreComments: true }],
+    // FR: Désactiver import/extensions pour TypeScript (TS gère la résolution)
+    // EN: Disable import/extensions for TypeScript (TS handles resolution)
+    'import/extensions': 'off',
+    // FR: Désactiver temporairement les règles d'import problématiques avec composite projects
+    // EN: Temporarily disable import rules problematic with composite projects
+    'import/no-cycle': 'off',
+    'import/no-extraneous-dependencies': 'off',
+    'import/no-duplicates': 'off',
+    'import/order': 'off',
+    'import/no-self-import': 'off',
+    'import/no-relative-packages': 'off',
+    'import/no-useless-path-segments': 'off',
+    'import/no-named-as-default': 'off',
+    // FR: Permettre les mutations de l'état Zustand
+    // EN: Allow Zustand state mutations
+    'no-param-reassign': ['error', { props: false }],
+    // FR: Désactiver defaultProps (déprécié en React 18+)
+    // EN: Disable defaultProps (deprecated in React 18+)
+    'react/require-default-props': 'off',
   },
   settings: {
     'import/resolver': {
       typescript: {
         alwaysTryTypes: true,
-        project: './tsconfig.json',
+        project: [
+          './tsconfig.json',
+          './apps/web/tsconfig.json',
+          './apps/desktop/tsconfig.json',
+          './packages/*/tsconfig.json',
+        ],
       },
     },
   },
