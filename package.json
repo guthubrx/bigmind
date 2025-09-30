@@ -28,7 +28,11 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "prepare": "husky install",
     "build:desktop": "cd apps/desktop && pnpm build",
-    "release": "semantic-release"
+    "release": "semantic-release",
+    "release:manual": "pnpm build && pnpm build:desktop && gh release create v$(node -p \"require('./package.json').version\") --title \"BigMind v$(node -p \"require('./package.json').version\")\" --notes \"Release BigMind v$(node -p \"require('./package.json').version\")\"",
+    "version:patch": "npm version patch && git push --follow-tags",
+    "version:minor": "npm version minor && git push --follow-tags",
+    "version:major": "npm version major && git push --follow-tags"
   },
   "devDependencies": {
     "@commitlint/cli": "^18.4.3",
