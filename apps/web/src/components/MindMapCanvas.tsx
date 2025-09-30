@@ -41,6 +41,7 @@ const edgeTypes: EdgeTypes = {
 
 function MindMapCanvas() {
   const activeFile = useOpenFiles((state) => state.openFiles.find(f => f.isActive) || null);
+  const setActiveSheet = useOpenFiles((s) => s.setActiveSheet);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<any>(null);
   const setFlowInstance = useFlowInstance((s) => s.setInstance);

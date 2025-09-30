@@ -40,11 +40,26 @@
   height: 48px;
   min-height: 48px;
   max-height: 48px;
-  background-color: theme('colors.background.DEFAULT');
-  border-bottom: 1px solid theme('colors.border.DEFAULT');
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   padding: 0 16px;
+}
+
+/* FR: Barre d'onglets horizontale */
+/* EN: Horizontal tab bar */
+.tab-bar-container {
+  height: 36px;
+  min-height: 36px;
+  max-height: 36px;
+  background-color: color-mix(in srgb, var(--accent-color) 8%, white); /* très clair, sans dégradé */
+  border-top: 1px solid #e2e8f0; /* fine séparation avec le frameset du dessus */
+  border-bottom: 1px solid #e2e8f0; /* fine séparation avant la status bar */
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  width: 100%;
 }
 
 /* FR: Frameset horizontal 2 - Zone principale */
@@ -232,6 +247,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border-bottom: none; /* supprimer la bordure basse pour coller aux onglets */
 }
 
 /* FR: Colonne de propriétés du nœud sélectionné */

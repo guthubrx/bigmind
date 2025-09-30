@@ -23,6 +23,12 @@ export interface XMindMap {
     creator: string;
     created: string;
   };
+  // FR: Métadonnées des feuilles (onglets) si présentes
+  // EN: Sheets (tabs) metadata when present
+  sheetsMeta?: Array<{ id: string; title: string }>;
+  // FR: Données brutes des feuilles si JSON fourni en tableau
+  // EN: Raw sheets data when JSON provided as an array
+  sheetsData?: any[];
 }
 
 /**
@@ -105,10 +111,33 @@ export class XMindParser {
       // FR: Le JSON peut être un tableau de sheets ou un objet
       // EN: JSON can be an array of sheets or an object
       let sheetData;
+      let sheetsMeta: Array<{ id: string; title: string }> | undefined;
       
       if (Array.isArray(jsonData)) {
         // console.warn('JSON array: taking first sheet');
         [sheetData] = jsonData;
+        // FR: Conserver la liste des feuilles pour la barre d'onglets
+        // EN: Keep list of sheets for tab bar
+        sheetsMeta = jsonData.map((s, idx) => ({
+          id: String(s.id || idx),
+          title: s.title || s.rootTopic?.title || s.topic?.title || `Feuille ${idx + 1}`,
+        }));
+        // FR: Conserver les données des feuilles
+        // EN: Keep raw sheets data
+        const sheetsData = jsonData;
+        
+        // Construire le retour avec sheetsData plus bas
+        const x = {
+          root: this.parseJSONTopic(sheetData.rootTopic || sheetData.root || sheetData.topic),
+          metadata: {
+            name: (sheetData.rootTopic || sheetData).title || 'Carte XMind JSON',
+            creator: sheetData.creator || 'XMind',
+            created: sheetData.created || new Date().toISOString()
+          },
+          sheetsMeta,
+          sheetsData,
+        } as XMindMap;
+        return x;
       } else if (jsonData.root || jsonData.topic) {
         // console.warn('JSON object with root/topic');
         sheetData = jsonData;
@@ -132,13 +161,35 @@ export class XMindParser {
           name: rootTopic.title || sheetData.title || 'Carte XMind JSON',
           creator: sheetData.creator || 'XMind',
           created: sheetData.created || new Date().toISOString()
-        }
+        },
+        sheetsMeta,
       };
     } catch (error) {
       console.error('❌ Erreur parsing JSON:', error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Erreur parsing JSON: ${message}`);
     }
+  }
+
+  /**
+   * FR: Convertir une feuille JSON (sheet) en structure BigMind
+   * EN: Convert a JSON sheet into BigMind structure
+   */
+  static convertSheetJSONToBigMind(sheetData: any): any {
+    const rootTopic = sheetData.rootTopic || sheetData.root || sheetData.topic;
+    if (!rootTopic) {
+      throw new Error('Sheet JSON invalide: rootTopic manquant');
+    }
+    const xmindRoot = this.parseJSONTopic(rootTopic);
+    const map: XMindMap = {
+      root: xmindRoot,
+      metadata: {
+        name: rootTopic.title || sheetData.title || 'Feuille',
+        creator: sheetData.creator || 'XMind',
+        created: sheetData.created || new Date().toISOString(),
+      },
+    };
+    return this.convertToBigMind(map);
   }
 
   /**
