@@ -14,10 +14,8 @@
     "bundle": {
       "active": true,
       "identifier": "com.bigmind.app",
-      "targets": ["app"],
-      "icon": [
-        "icons/icon.icns"
-      ]
+      "targets": "all",
+      "icon": ["icons/icon.icns", "icons/icon.ico", "icons/icon.png"]
     },
     "windows": [
       {
@@ -29,5 +27,3 @@
     ]
   }
 }
-
-
