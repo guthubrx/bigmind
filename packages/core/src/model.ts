@@ -114,6 +114,9 @@ export interface MindMap {
   // FR: Métadonnées
   // EN: Metadata
   meta: MindMapMeta;
+  // FR: Palette de couleurs du thème pour l'inférence de couleurs par branche
+  // EN: Theme color palette for branch color inference
+  themeColors?: string[];
 }
 
 // FR: État de sélection

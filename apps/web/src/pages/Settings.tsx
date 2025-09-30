@@ -6,16 +6,20 @@ import '../layouts/MainLayout.css';
 import { useShortcuts, ShortcutAction } from '../hooks/useShortcuts';
 import { usePlatform } from '../hooks/usePlatform';
 import { X } from 'lucide-react';
-import { useAppSettings } from '../hooks/useAppSettings';
+import { useAppSettings, COLOR_PALETTES, ColorPalette } from '../hooks/useAppSettings';
 
 function SettingsPage() {
   const navigate = useNavigate();
   const accentColor = useAppSettings((s) => s.accentColor);
   const setAccentColor = useAppSettings((s) => s.setAccentColor);
+  const selectedPalette = useAppSettings((s) => s.selectedPalette);
+  const setSelectedPalette = useAppSettings((s) => s.setSelectedPalette);
+  const dragTolerance = useAppSettings((s) => s.dragTolerance);
+  const setDragTolerance = useAppSettings((s) => s.setDragTolerance);
   const shortcuts = useShortcuts((s) => s.map);
   const setShortcut = useShortcuts((s) => s.setShortcut);
   const resetShortcuts = useShortcuts((s) => s.resetDefaults);
-  const [section, setSection] = useState<'appearance' | 'shortcuts'>('appearance');
+  const [section, setSection] = useState<'appearance' | 'interaction' | 'shortcuts'>('appearance');
   const platform = usePlatform();
   const pastelBg = (alpha: number = 0.06) => {
     const hex = (accentColor || '#3b82f6').replace('#', '');
@@ -80,6 +84,20 @@ function SettingsPage() {
                   type="button"
                   className="btn"
                   style={{
+                    width: '100%',
+                    justifyContent: 'flex-start',
+                    border: 'none',
+                    borderRadius: 0,
+                    background: section === 'interaction' ? 'rgba(0,0,0,0.04)' : 'transparent'
+                  }}
+                  onClick={() => setSection('interaction')}
+                >
+                  Interaction
+                </button>
+                <button
+                  type="button"
+                  className="btn"
+                  style={{
                     width: '100%', justifyContent: 'flex-start', border: 'none', borderRadius: 0,
                     background: section === 'shortcuts' ? 'rgba(0,0,0,0.04)' : 'transparent'
                   }}
@@ -93,7 +111,7 @@ function SettingsPage() {
             {/* Content */}
             <section style={{ flex: 1, overflow: 'auto', padding: 24 }}>
               {section === 'appearance' && (
-                <div style={{ display: 'grid', gap: 16, maxWidth: 520, border: '1px solid #e2e8f0', borderRadius: 8, padding: 16, background: pastelBg(0.03) }}>
+                <div style={{ display: 'grid', gap: 16, maxWidth: '100%', border: '1px solid #e2e8f0', borderRadius: 8, padding: 16, background: pastelBg(0.03) }}>
                   <h2 style={{ fontSize: 18, fontWeight: 600 }}>Apparence</h2>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <label htmlFor="accentColor" style={{ width: 220 }}>Couleur d&apos;accent</label>
@@ -105,6 +123,167 @@ function SettingsPage() {
                       style={{ width: 44, height: 28, padding: 0, border: '1px solid #e2e8f0', borderRadius: 6 }}
                     />
                     <span style={{ marginLeft: 8 }}>{accentColor}</span>
+                  </div>
+                  
+                  {/* FR: Sélecteur de palette de couleurs */}
+                  {/* EN: Color palette selector */}
+                  <div style={{ display: 'grid', gap: 12 }}>
+                    <label style={{ fontWeight: 500, color: '#374151' }}>Palette de couleurs pour les cartes mentales</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+                      {COLOR_PALETTES.slice().sort((a, b) => a.name.localeCompare(b.name)).map((palette: ColorPalette) => (
+                        <div
+                          key={palette.id}
+                          className="palette-card"
+                          onClick={() => setSelectedPalette(palette.id)}
+                          style={{
+                            border: selectedPalette === palette.id ? `2px solid ${accentColor}` : '1px solid #e2e8f0',
+                            borderRadius: 12,
+                            padding: 16,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            background: selectedPalette === palette.id ? pastelBg(0.08) : '#ffffff',
+                            boxShadow: selectedPalette === palette.id ? `0 4px 12px ${accentColor}20` : '0 2px 4px rgba(0,0,0,0.05)',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                            <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, color: '#1f2937' }}>
+                              {palette.name}
+                            </h3>
+                            {selectedPalette === palette.id && (
+                              <div style={{ 
+                                width: 20, 
+                                height: 20, 
+                                borderRadius: '50%', 
+                                background: accentColor,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontSize: 12,
+                                fontWeight: 'bold'
+                              }}>
+                                ✓
+                              </div>
+                            )}
+                          </div>
+                          <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 12px 0', lineHeight: 1.4 }}>
+                            {palette.description}
+                          </p>
+                          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                            {palette.colors.map((color, index) => (
+                              <div
+                                key={index}
+                                style={{
+                                  width: 24,
+                                  height: 24,
+                                  borderRadius: 6,
+                                  backgroundColor: color,
+                                  border: '1px solid rgba(0,0,0,0.1)',
+                                  boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                                }}
+                                title={color}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {section === 'interaction' && (
+                <div style={{ display: 'grid', gap: 16, maxWidth: '100%', border: '1px solid #e2e8f0', borderRadius: 8, padding: 16, background: pastelBg(0.03) }}>
+                  <h2 style={{ fontSize: 18, fontWeight: 600 }}>Interaction</h2>
+                  
+                  {/* FR: Paramètre de tolérance de drag and drop */}
+                  {/* EN: Drag and drop tolerance parameter */}
+                  <div style={{ display: 'grid', gap: 12 }}>
+                    <label htmlFor="dragTolerance" style={{ fontWeight: 500, color: '#374151' }}>
+                      Tolérance de glisser-déposer
+                    </label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <input
+                        id="dragTolerance"
+                        type="range"
+                        min="10"
+                        max="100"
+                        step="5"
+                        value={dragTolerance}
+                        onChange={(e) => setDragTolerance(parseInt(e.target.value))}
+                        style={{ flex: 1, maxWidth: 300 }}
+                      />
+                      <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 8,
+                        minWidth: 80,
+                        justifyContent: 'flex-end'
+                      }}>
+                        <span style={{ 
+                          fontSize: 14, 
+                          fontWeight: 600, 
+                          color: accentColor,
+                          minWidth: 30,
+                          textAlign: 'center'
+                        }}>
+                          {dragTolerance}px
+                        </span>
+                      </div>
+                    </div>
+                    <p style={{ 
+                      fontSize: 13, 
+                      color: '#6b7280', 
+                      margin: 0, 
+                      lineHeight: 1.4 
+                    }}>
+                      Zone de tolérance autour des nœuds pour faciliter le glisser-déposer. 
+                      Une valeur plus élevée rend le dépôt plus facile mais moins précis.
+                    </p>
+                    
+                    {/* FR: Indicateur visuel de la tolérance */}
+                    {/* EN: Visual tolerance indicator */}
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 12, 
+                      padding: 12, 
+                      background: '#f8fafc', 
+                      borderRadius: 8, 
+                      border: '1px solid #e2e8f0' 
+                    }}>
+                      <div style={{ fontSize: 13, color: '#6b7280', minWidth: 100 }}>
+                        Aperçu :
+                      </div>
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <div style={{
+                          width: 120,
+                          height: 30,
+                          background: '#ffffff',
+                          border: '2px solid #e2e8f0',
+                          borderRadius: 6,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: 10,
+                          color: '#6b7280',
+                          position: 'relative'
+                        }}>
+                          Nœud cible
+                        </div>
+                        <div style={{
+                          position: 'absolute',
+                          top: -dragTolerance,
+                          left: -dragTolerance,
+                          right: -dragTolerance,
+                          bottom: -dragTolerance,
+                          border: `2px dashed ${accentColor}`,
+                          borderRadius: 6,
+                          opacity: 0.6,
+                          pointerEvents: 'none'
+                        }} />
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

@@ -128,6 +128,7 @@ export const useFileOperations = () => {
           content: adaptedContent,
           sheets: xMindMap.sheetsMeta,
           sheetsData: xMindMap.sheetsData,
+          themeColors: xMindMap.themeColors,
           activeSheetId: xMindMap.sheetsMeta && xMindMap.sheetsMeta.length > 0 ? xMindMap.sheetsMeta[0].id : null,
         });
         return fileId;
@@ -194,7 +195,8 @@ export const useFileOperations = () => {
         return addFileToOpenFiles({
           name: file.name,
           type: 'xmind',
-          content: adaptedContent
+          content: adaptedContent,
+          themeColors: bigMindData.themeColors,
         });
       }
     } catch (error) {

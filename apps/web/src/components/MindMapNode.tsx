@@ -9,6 +9,7 @@ import { useOpenFiles } from '../hooks/useOpenFiles';
 import { useSelection } from '../hooks/useSelection';
 import { useAppSettings } from '../hooks/useAppSettings';
 import { useEditMode } from '../hooks/useEditMode';
+import NodeContextMenu from './NodeContextMenu';
 // FR: Types locaux pour le développement
 // EN: Local types for development
 export interface MindNode {
@@ -37,6 +38,12 @@ export interface MindMapNodeData extends MindNode {
   isSelected: boolean;
   isPrimary: boolean;
   direction?: number; // -1 gauche, +1 droite
+  // FR: Styles calculés dynamiquement (non destructifs)
+  // EN: Dynamically computed styles (non-destructive)
+  computedStyle?: {
+    backgroundColor?: string;
+    textColor?: string;
+  };
 }
 
 type Props = { data: MindMapNodeData; selected?: boolean };
@@ -45,11 +52,56 @@ function MindMapNode({ data, selected }: Props) {
   const updateActiveFileNode = useOpenFiles(s => s.updateActiveFileNode);
   const selectedNodeId = useSelection(s => s.selectedNodeId);
   const setSelectedNodeId = useSelection(s => s.setSelectedNodeId);
+  const copyNode = useOpenFiles(s => s.copyNode);
+  const pasteNode = useOpenFiles(s => s.pasteNode);
+  const canPaste = useOpenFiles(s => s.canPaste);
   const accentColor = useAppSettings(s => s.accentColor);
   const setEditMode = useEditMode(s => s.setEditMode);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(data.title);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // FR: Calculer la luminosité relative d'une couleur hex (0-1, 0=noir, 1=blanc)
+  // EN: Calculate relative luminance of a hex color (0-1, 0=black, 1=white)
+  const getRelativeLuminance = useCallback((hex: string): number => {
+    try {
+      const clean = hex.replace('#', '');
+      const isShort = clean.length === 3;
+      const r = parseInt(isShort ? clean[0] + clean[0] : clean.substring(0, 2), 16) / 255;
+      const g = parseInt(isShort ? clean[1] + clean[1] : clean.substring(2, 4), 16) / 255;
+      const b = parseInt(isShort ? clean[2] + clean[2] : clean.substring(4, 6), 16) / 255;
+      
+      // FR: Formule de luminosité relative selon WCAG
+      // EN: Relative luminance formula according to WCAG
+      const toLinear = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+    } catch (_e) {
+      return 0.5; // FR: Valeur par défaut si erreur de parsing
+    }
+  }, []);
+
+  // FR: Choisir la couleur de texte optimale (noir ou blanc) selon la luminosité du fond
+  // EN: Choose optimal text color (black or white) based on background luminance
+  const getOptimalTextColor = useCallback((backgroundColor: string): string => {
+    const luminance = getRelativeLuminance(backgroundColor);
+    // FR: Seuil de 0.5 : plus clair = texte noir, plus foncé = texte blanc
+    // EN: Threshold of 0.5: lighter = black text, darker = white text
+    return luminance > 0.5 ? '#000000' : '#ffffff';
+  }, [getRelativeLuminance]);
+
+  // FR: Obtenir la couleur de fond du nœud
+  // EN: Get node background color
+  const getNodeBackgroundColor = useCallback((): string => {
+    return data.isPrimary 
+      ? accentColor 
+      : (data.computedStyle?.backgroundColor ||
+         data.style?.backgroundColor ||
+         (data.style as any)?.fill ||
+         (data.style as any)?.background ||
+         (data.style as any)?.bgColor ||
+         'white');
+  }, [data.style, data.computedStyle, data.isPrimary, accentColor]);
 
   // FR: Démarrer l'édition
   // EN: Start editing
@@ -103,8 +155,14 @@ function MindMapNode({ data, selected }: Props) {
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // FR: TODO: Implémenter le menu contextuel
-    // EN: TODO: Implement context menu
+    
+    // FR: Émettre un événement personnalisé vers le canvas parent
+    // EN: Emit custom event to parent canvas
+    // La sélection du nœud sera gérée par le canvas pour synchroniser avec le mode follow
+    const event = new CustomEvent('node-context-menu', {
+      detail: { x: e.clientX, y: e.clientY, nodeId: data.id }
+    });
+    window.dispatchEvent(event);
   };
 
   // FR: Synchroniser editValue avec data.title quand il change (sauf si on est en train d'éditer)
@@ -138,10 +196,22 @@ function MindMapNode({ data, selected }: Props) {
   }, [selected, data.isSelected, startEditing]);
 
   const isCurrentlySelected = !!(selected || data.isSelected || selectedNodeId === data.id);
+  
+  // FR: Debug pour le drag target
+  // EN: Debug for drag target
+  if ((data as any).isDragTarget) {
+    console.log('🎯 Nœud drag target:', data.id, 'accentColor:', accentColor);
+  }
 
   let outline: string | undefined;
   let outlineOffset: number | undefined;
-  if (isCurrentlySelected) {
+  if ((data as any).isGhost) {
+    outline = `2px dashed #666666`;
+    outlineOffset = 2;
+  } else if ((data as any).isDragTarget) {
+    outline = `3px dashed ${accentColor}`;
+    outlineOffset = 4;
+  } else if (isCurrentlySelected) {
     outline = `3px dashed ${accentColor}`;
     outlineOffset = 4;
   } else if (data.isPrimary) {
@@ -165,26 +235,41 @@ function MindMapNode({ data, selected }: Props) {
         ${data.isPrimary ? '' : ''}
       `}
       role="button"
-      tabIndex={0}
-      onKeyDown={onKeyActivate}
-      onClick={handleClick}
-      onDoubleClick={handleDoubleClick}
-      onContextMenu={handleContextMenu}
+      tabIndex={(data as any).isGhost ? -1 : 0}
+      onKeyDown={(data as any).isGhost ? undefined : onKeyActivate}
+      onClick={(data as any).isGhost ? undefined : handleClick}
+      onDoubleClick={(data as any).isGhost ? undefined : handleDoubleClick}
+      onContextMenu={(data as any).isGhost ? undefined : handleContextMenu}
       style={{
         position: 'relative',
-        // FR: Couleur de fond - supporte plusieurs clés (XMind JSON/XML): backgroundColor, fill, background, bgColor
-        // EN: Background color - support multiple keys (XMind JSON/XML): backgroundColor, fill, background, bgColor
-        backgroundColor:
-          data.style?.backgroundColor ||
-          (data.style as any)?.fill ||
-          (data.style as any)?.background ||
-          (data.style as any)?.bgColor ||
-          'white',
-        // FR: Couleur du texte - fallback sur style.color si textColor absent
-        // EN: Text color - fallback to style.color if textColor is missing
-        color: data.style?.textColor || (data.style as any)?.color || 'black',
-        fontSize: data.style?.fontSize || 14,
-        fontWeight: data.style?.fontWeight || 'normal',
+        // FR: Style spécial pour le nœud racine
+        // EN: Special style for root node
+        backgroundColor: (data as any).isDragTarget
+          ? `${accentColor}20` // Fond semi-transparent de la couleur d'accent
+          : (data.isPrimary 
+            ? accentColor 
+            : (data.computedStyle?.backgroundColor ||
+               data.style?.backgroundColor ||
+               (data.style as any)?.fill ||
+               (data.style as any)?.background ||
+               (data.style as any)?.bgColor ||
+               'white')),
+        // FR: Effet de transparence pour les descendants du nœud qu'on glisse, le nœud fantôme et le nœud en cours de drag
+        // EN: Transparency effect for descendants of dragged node, ghost node and node being dragged
+        opacity: (data as any).isGhost ? 0.4 : 
+                 ((data as any).isBeingDragged ? 0.6 : 
+                  ((data as any).isDescendantOfDragged ? 0.3 : 1)),
+        // FR: Couleur du texte - contraste automatique pour la racine, sinon selon le style ou contraste automatique
+        // EN: Text color - automatic contrast for root, otherwise according to style or automatic contrast
+        color: data.isPrimary 
+          ? getOptimalTextColor(accentColor)
+          : (data.computedStyle?.textColor || data.style?.textColor || (data.style as any)?.color || 'black'),
+        fontSize: data.isPrimary 
+          ? (data.style?.fontSize || 24) 
+          : (data.style?.fontSize || 14),
+        fontWeight: data.isPrimary 
+          ? (data.style?.fontWeight || 'bold') 
+          : (data.style?.fontWeight || 'normal'),
         borderColor: data.style?.borderColor || '#e5e7eb',
         borderStyle: data.style?.borderStyle || 'solid',
         borderWidth: 1,
@@ -194,6 +279,9 @@ function MindMapNode({ data, selected }: Props) {
         padding: '8px 12px',
         outline,
         outlineOffset,
+        boxShadow: (data as any).isDragTarget 
+          ? `0 0 20px ${accentColor}, 0 0 40px ${accentColor}80, 0 0 60px ${accentColor}40`
+          : 'none',
       }}
     >
       {/* FR: Handles d'entrée (côté logique) */}
@@ -209,7 +297,7 @@ function MindMapNode({ data, selected }: Props) {
 
       {/* FR: Contenu du nœud */}
       {/* EN: Node content */}
-      <div className="flex items-center justify-center h-full">
+      <div className={`flex items-center h-full ${data.isPrimary ? 'justify-center' : 'justify-center'}`}>
         {isEditing ? (
           <input
             ref={inputRef}
@@ -220,15 +308,22 @@ function MindMapNode({ data, selected }: Props) {
             onKeyDown={handleKeyDown}
             className="w-full bg-transparent border-none outline-none text-center"
             style={{
-              color: data.style?.textColor || 'black',
-              fontSize: data.style?.fontSize || 14,
-              fontWeight: data.style?.fontWeight || 'normal',
+              color: data.isPrimary 
+                ? '#ffffff' 
+                : (data.style?.textColor || 'black'),
+              fontSize: data.isPrimary 
+                ? (data.style?.fontSize || 24) 
+                : (data.style?.fontSize || 14),
+              fontWeight: data.isPrimary 
+                ? (data.style?.fontWeight || 'bold') 
+                : (data.style?.fontWeight || 'normal'),
             }}
           />
         ) : (
           <span className="text-center break-words">{data.title}</span>
         )}
       </div>
+
 
       {/* FR: Handles de sortie sur le côté logique (gauche/droite) */}
       {/* EN: Output handles on logical side (left/right) */}
@@ -242,40 +337,76 @@ function MindMapNode({ data, selected }: Props) {
               <Handle id="right" type="source" position={Position.Right} className="opacity-0" />
               <span
                 aria-label="Nombre d'enfants à gauche"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const node = useOpenFiles.getState().openFiles.find(f => f.isActive)?.content?.nodes?.[data.id];
+                  if (node) {
+                    updateActiveFileNode(data.id, { collapsed: !node.collapsed });
+                  }
+                }}
                 style={{
                   position: 'absolute',
                   left: -12,
                   top: '50%',
                   transform: 'translate(-50%, -50%)',
-                  backgroundColor: 'var(--accent-color)',
-                  color: '#fff',
+                  backgroundColor: getNodeBackgroundColor(),
+                  color: getOptimalTextColor(getNodeBackgroundColor()),
                   borderRadius: 9999,
                   fontSize: 10,
                   lineHeight: '14px',
-                  width: 16,
+                  minWidth: 16,
                   height: 16,
+                  padding: '0 4px',
                   textAlign: 'center',
-                  pointerEvents: 'none',
+                  cursor: 'pointer',
+                  border: '1px solid rgba(0,0,0,0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1)';
                 }}
               >
                 {(data as any).childCounts?.left ?? 0}
               </span>
               <span
                 aria-label="Nombre d'enfants à droite"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const node = useOpenFiles.getState().openFiles.find(f => f.isActive)?.content?.nodes?.[data.id];
+                  if (node) {
+                    updateActiveFileNode(data.id, { collapsed: !node.collapsed });
+                  }
+                }}
                 style={{
                   position: 'absolute',
                   right: -12,
                   top: '50%',
                   transform: 'translate(50%, -50%)',
-                  backgroundColor: 'var(--accent-color)',
-                  color: '#fff',
+                  backgroundColor: getNodeBackgroundColor(),
+                  color: getOptimalTextColor(getNodeBackgroundColor()),
                   borderRadius: 9999,
                   fontSize: 10,
                   lineHeight: '14px',
-                  width: 16,
+                  minWidth: 16,
                   height: 16,
+                  padding: '0 4px',
                   textAlign: 'center',
-                  pointerEvents: 'none',
+                  cursor: 'pointer',
+                  border: '1px solid rgba(0,0,0,0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translate(50%, -50%) scale(1.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translate(50%, -50%) scale(1)';
                 }}
               >
                 {(data as any).childCounts?.right ?? 0}
@@ -297,24 +428,39 @@ function MindMapNode({ data, selected }: Props) {
             />
             <span
               aria-label="Nombre d'enfants"
+              onClick={(e) => {
+                e.stopPropagation();
+                const node = useOpenFiles.getState().openFiles.find(f => f.isActive)?.content?.nodes?.[data.id];
+                if (node) {
+                  updateActiveFileNode(data.id, { collapsed: !node.collapsed });
+                }
+              }}
               style={
                 {
                   position: 'absolute',
                   top: '50%',
                   ...sideStyle,
-                  backgroundColor: 'var(--accent-color)',
-                  color: '#fff',
+                  backgroundColor: getNodeBackgroundColor(),
+                  color: getOptimalTextColor(getNodeBackgroundColor()),
                   borderRadius: 9999,
                   fontSize: 10,
                   lineHeight: '14px',
                   width: 16,
                   height: 16,
                   textAlign: 'center',
-                  pointerEvents: 'none',
+                  cursor: 'pointer',
+                  border: '1px solid rgba(0,0,0,0.1)',
                 } as any
               }
+              onMouseEnter={(e) => {
+                const currentTransform = sideStyle.transform;
+                e.currentTarget.style.transform = currentTransform.replace('scale(1)', 'scale(1.1)') || currentTransform + ' scale(1.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = sideStyle.transform;
+              }}
             >
-              {data.children?.length || 0}
+              {(data as any).childCounts?.total ?? 0}
             </span>
           </>
         );

@@ -29,6 +29,9 @@ export interface XMindMap {
   // FR: Données brutes des feuilles si JSON fourni en tableau
   // EN: Raw sheets data when JSON provided as an array
   sheetsData?: any[];
+  // FR: Palette de couleurs du thème pour l'inférence de couleurs par branche
+  // EN: Theme color palette for branch color inference
+  themeColors?: string[];
 }
 
 /**
@@ -103,6 +106,28 @@ export class XMindParser {
   }
 
   /**
+   * FR: Extraire la palette de couleurs du thème XMind
+   * EN: Extract color palette from XMind theme
+   */
+  private static extractThemeColors(themeData: any): string[] {
+    if (!themeData || !themeData.map || !themeData.map.properties) {
+      return [];
+    }
+
+    const multiLineColors = themeData.map.properties['multi-line-colors'];
+    if (!multiLineColors || typeof multiLineColors !== 'string') {
+      return [];
+    }
+
+    // FR: Parser les couleurs séparées par des espaces
+    // EN: Parse colors separated by spaces
+    return multiLineColors
+      .split(' ')
+      .map(color => color.trim())
+      .filter(color => color.startsWith('#') && color.length >= 4);
+  }
+
+  /**
    * FR: Parser le JSON contenu dans le fichier .xmind (versions récentes)
    * EN: Parse JSON content in .xmind file (recent versions)
    */
@@ -130,6 +155,10 @@ export class XMindParser {
         // EN: Keep raw sheets data
         const sheetsData = jsonData;
 
+        // FR: Extraire la palette de couleurs du thème
+        // EN: Extract theme color palette
+        const themeColors = this.extractThemeColors(sheetData.theme);
+
         // Construire le retour avec sheetsData plus bas
         const x = {
           root: this.parseJSONTopic(sheetData.rootTopic || sheetData.root || sheetData.topic),
@@ -140,6 +169,7 @@ export class XMindParser {
           },
           sheetsMeta,
           sheetsData,
+          themeColors,
         } as XMindMap;
         return x;
       }
@@ -160,6 +190,10 @@ export class XMindParser {
 
       // console.warn('RootTopic trouvé:', rootTopic.title);
 
+      // FR: Extraire la palette de couleurs du thème
+      // EN: Extract theme color palette
+      const themeColors = this.extractThemeColors(sheetData.theme);
+
       return {
         root: this.parseJSONTopic(rootTopic),
         metadata: {
@@ -168,6 +202,7 @@ export class XMindParser {
           created: sheetData.created || new Date().toISOString(),
         },
         sheetsMeta,
+        themeColors,
       };
     } catch (error) {
       console.error('❌ Erreur parsing JSON:', error);
@@ -504,6 +539,9 @@ export class XMindParser {
         updatedAt: new Date().toISOString(),
         locale: 'fr',
       },
+      // FR: Inclure la palette de couleurs du thème pour l'inférence
+      // EN: Include theme color palette for inference
+      themeColors: xMindMap.themeColors,
     };
   }
 }
