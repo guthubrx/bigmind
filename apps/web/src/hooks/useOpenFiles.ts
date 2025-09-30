@@ -4,6 +4,7 @@
  */
 
 import { create } from 'zustand';
+import { XMindParser } from '../parsers/XMindParser.ts';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface OpenFile {
@@ -14,6 +15,11 @@ export interface OpenFile {
   content?: any; // Contenu parsé du fichier
   lastModified: Date;
   isActive: boolean;
+  // FR: Feuilles (onglets) pour XMind
+  // EN: Sheets (tabs) for XMind
+  sheets?: Array<{ id: string; title: string }>;
+  activeSheetId?: string | null;
+  sheetsData?: any[]; // JSON brut des feuilles pour re-swapper
 }
 
 export interface MindMapData {
@@ -34,6 +40,7 @@ interface OpenFilesState {
   closeFile: (fileId: string) => void;
   activateFile: (fileId: string) => void;
   getActiveFile: () => OpenFile | null;
+  setActiveSheet: (fileId: string, sheetId: string) => void;
   createNewFile: (name?: string) => string;
   updateActiveFileNode: (nodeId: string, patch: Partial<any>) => void;
   addChildToActive: (parentId: string, title?: string) => string | null;
@@ -115,6 +122,42 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       openFiles: state.openFiles.map(f => ({ ...f, isActive: f.id === fileId })),
       activeFileId: fileId
     }));
+  },
+
+  // FR: Définir la feuille active pour un fichier
+  // EN: Set active sheet for a file
+  setActiveSheet: (fileId: string, sheetId: string) => {
+    set((state) => {
+      const file = state.openFiles.find((f) => f.id === fileId);
+      if (!file || !file.sheets || !file.sheetsData) {
+        return state;
+      }
+      // FR: Retrouver l'index de la feuille et reconstruire le contenu
+      const idx = file.sheets.findIndex((s) => s.id === sheetId);
+      if (idx < 0) return state;
+      try {
+        const sheetData = file.sheetsData[idx];
+        const big = XMindParser.convertSheetJSONToBigMind(sheetData);
+        const adaptedContent = {
+          id: big.id,
+          name: big.name,
+          rootNode: {
+            id: big.rootId,
+            title: big.nodes[big.rootId]?.title || 'Racine',
+            children: big.nodes[big.rootId]?.children || []
+          },
+          nodes: big.nodes,
+        } as any;
+        return {
+          ...state,
+          openFiles: state.openFiles.map((f) =>
+            f.id === fileId ? { ...f, activeSheetId: sheetId, content: adaptedContent } : f
+          )
+        };
+      } catch (e) {
+        return state;
+      }
+    });
   },
 
   // FR: Obtenir le fichier actif

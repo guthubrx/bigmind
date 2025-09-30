@@ -122,11 +122,15 @@ export const useFileOperations = () => {
       // Ignore errors
     }
         
-        return addFileToOpenFiles({
+        const fileId = addFileToOpenFiles({
           name: file.name,
           type: 'xmind',
-          content: adaptedContent
+          content: adaptedContent,
+          sheets: xMindMap.sheetsMeta,
+          sheetsData: xMindMap.sheetsData,
+          activeSheetId: xMindMap.sheetsMeta && xMindMap.sheetsMeta.length > 0 ? xMindMap.sheetsMeta[0].id : null,
         });
+        return fileId;
       } catch (standardError) {
         const stdMsg = standardError instanceof Error ? standardError.message : String(standardError);
         console.warn('Parser standard échoué, tentative avec le parser simple:', stdMsg);

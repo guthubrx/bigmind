@@ -31,6 +31,8 @@ function MainLayout() {
           <MenuBar />
         </div>
 
+        
+
         {/* FR: Frameset horizontal 2 - Zone principale */}
         {/* EN: Horizontal frameset 2 - Main area */}
         <div className="frameset-horizontal-2">
@@ -107,10 +109,10 @@ function MainLayout() {
                 </div>
               </div>
 
-              {/* FR: Barre d'onglets */}
-              {/* EN: Tab bar */}
+              {/* FR: Barre d'onglets des feuilles XMind (en bas, au-dessus de la status bar) */}
+              {/* EN: XMind sheets tab bar (bottom, above status bar) */}
               <div className="tab-bar-container">
-                <FileTabs />
+                <FileTabs type="tab-bar" />
               </div>
             </div>
           </div>
