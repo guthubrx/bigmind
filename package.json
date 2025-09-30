@@ -1,6 +1,6 @@
 {
   "name": "bigmind",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "BigMind - Clone de XMind, logiciel de cartographie mentale",
   "private": true,
   "license": "AGPL-3.0",
