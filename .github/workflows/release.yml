@@ -50,6 +50,18 @@ jobs:
             sudo ln -s "$PC_DIR/webkit2gtk-4.1.pc" "$PC_DIR/webkit2gtk-4.0.pc"
           fi
           echo "PKG_CONFIG_PATH=$PC_DIR:/usr/share/pkgconfig" >> $GITHUB_ENV
+          # FR: Ajouter des liens symboliques pour les bibliothèques .so afin de satisfaire le linker (-lwebkit2gtk-4.0)
+          # EN: Add symlinks for .so libraries so the linker finds -lwebkit2gtk-4.0
+          SO_DIR=/usr/lib/x86_64-linux-gnu
+          if [ -d "$SO_DIR" ]; then
+            if ls "$SO_DIR"/libwebkit2gtk-4.1.so* >/dev/null 2>&1 && [ ! -e "$SO_DIR/libwebkit2gtk-4.0.so" ]; then
+              sudo ln -s $(ls "$SO_DIR"/libwebkit2gtk-4.1.so* | head -n1) "$SO_DIR/libwebkit2gtk-4.0.so"
+            fi
+            if ls "$SO_DIR"/libjavascriptcoregtk-4.1.so* >/dev/null 2>&1 && [ ! -e "$SO_DIR/libjavascriptcoregtk-4.0.so" ]; then
+              sudo ln -s $(ls "$SO_DIR"/libjavascriptcoregtk-4.1.so* | head -n1) "$SO_DIR/libjavascriptcoregtk-4.0.so"
+            fi
+          fi
+          echo "LD_LIBRARY_PATH=$SO_DIR:$LD_LIBRARY_PATH" >> $GITHUB_ENV
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
