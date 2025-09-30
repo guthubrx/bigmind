@@ -43,54 +43,58 @@ export class XMindParser {
   static async parse(arrayBuffer: ArrayBuffer): Promise<XMindMap> {
     try {
       console.warn('🔍 XMindParser.parse - Début du parsing, taille:', arrayBuffer.byteLength);
-      
+
       // FR: Les fichiers .xmind sont des archives ZIP
       // EN: .xmind files are ZIP archives
       const zip = await JSZip.loadAsync(arrayBuffer);
       console.warn('📦 Archive ZIP chargée');
-      
+
       // FR: Lister tous les fichiers pour diagnostic
       // EN: List all files for diagnosis
       const allFiles = Object.keys(zip.files);
-      console.warn('📁 Tous les fichiers dans l\'archive:', allFiles);
-      
+      console.warn("📁 Tous les fichiers dans l'archive:", allFiles);
+
       // FR: Chercher le fichier content.xml dans l'archive
       // EN: Look for content.xml file in the archive
       let contentFile = zip.file('content.json'); // FR: Prioriser JSON pour les versions récentes
-      
+
       // FR: Essayer différents chemins possibles
       // EN: Try different possible paths
       if (!contentFile) {
-        contentFile = zip.file('content.xml') ||
-                     zip.file('META-INF/content.xml') ||
-                     zip.file('content/content.xml') ||
-                     zip.file('document.xml') ||
-                     zip.file('data.json');
+        contentFile =
+          zip.file('content.xml') ||
+          zip.file('META-INF/content.xml') ||
+          zip.file('content/content.xml') ||
+          zip.file('document.xml') ||
+          zip.file('data.json');
       }
 
       if (!contentFile) {
         // FR: Lister tous les fichiers pour debug
         // EN: List all files for debug
         const fileNames = Object.keys(zip.files);
-        console.warn('Fichiers trouvés dans l\'archive:', fileNames);
-        throw new Error('Fichier .xmind invalide : content.xml manquant. Fichiers trouvés: ' + fileNames.join(', '));
+        console.warn("Fichiers trouvés dans l'archive:", fileNames);
+        throw new Error(
+          `Fichier .xmind invalide : content.xml manquant. Fichiers trouvés: ${fileNames.join(
+            ', '
+          )}`
+        );
       }
 
       console.warn('Fichier trouvé:', contentFile.name);
       const fileContent = await contentFile.async('text');
       // console.warn('Contenu lu, longueur:', fileContent.length);
-      
+
       // FR: Détecter le format (XML ou JSON)
       // EN: Detect format (XML or JSON)
       if (contentFile.name.endsWith('.json') || fileContent.trim().startsWith('{')) {
         // console.warn('Format JSON détecté');
         return this.parseJSON(fileContent);
-      } else {
-        // console.warn('Format XML détecté');
-        const result = this.parseXML(fileContent);
-        // console.warn('Parsing XML réussi');
-        return result;
       }
+      // console.warn('Format XML détecté');
+      const result = this.parseXML(fileContent);
+      // console.warn('Parsing XML réussi');
+      return result;
     } catch (error) {
       console.error('Erreur lors du parsing du fichier .xmind:', error);
       const message = error instanceof Error ? error.message : String(error);
@@ -107,12 +111,12 @@ export class XMindParser {
     try {
       const jsonData = JSON.parse(jsonText);
       // console.warn('Structure JSON keys:', Object.keys(jsonData));
-      
+
       // FR: Le JSON peut être un tableau de sheets ou un objet
       // EN: JSON can be an array of sheets or an object
       let sheetData;
       let sheetsMeta: Array<{ id: string; title: string }> | undefined;
-      
+
       if (Array.isArray(jsonData)) {
         // console.warn('JSON array: taking first sheet');
         [sheetData] = jsonData;
@@ -125,42 +129,43 @@ export class XMindParser {
         // FR: Conserver les données des feuilles
         // EN: Keep raw sheets data
         const sheetsData = jsonData;
-        
+
         // Construire le retour avec sheetsData plus bas
         const x = {
           root: this.parseJSONTopic(sheetData.rootTopic || sheetData.root || sheetData.topic),
           metadata: {
             name: (sheetData.rootTopic || sheetData).title || 'Carte XMind JSON',
             creator: sheetData.creator || 'XMind',
-            created: sheetData.created || new Date().toISOString()
+            created: sheetData.created || new Date().toISOString(),
           },
           sheetsMeta,
           sheetsData,
         } as XMindMap;
         return x;
-      } else if (jsonData.root || jsonData.topic) {
+      }
+      if (jsonData.root || jsonData.topic) {
         // console.warn('JSON object with root/topic');
         sheetData = jsonData;
       } else {
         throw new Error('Structure JSON non reconnue');
       }
-      
+
       // FR: Extraire le rootTopic du sheet
       // EN: Extract rootTopic from sheet
       const rootTopic = sheetData.rootTopic || sheetData.root || sheetData.topic;
-      
+
       if (!rootTopic) {
         throw new Error('Aucun rootTopic trouvé dans le JSON');
       }
-      
+
       // console.warn('RootTopic trouvé:', rootTopic.title);
-      
+
       return {
         root: this.parseJSONTopic(rootTopic),
         metadata: {
           name: rootTopic.title || sheetData.title || 'Carte XMind JSON',
           creator: sheetData.creator || 'XMind',
-          created: sheetData.created || new Date().toISOString()
+          created: sheetData.created || new Date().toISOString(),
         },
         sheetsMeta,
       };
@@ -198,12 +203,12 @@ export class XMindParser {
    */
   private static parseJSONTopic(topicData: any): XMindNode {
     // console.warn('parseJSONTopic data');
-    
+
     const title = topicData.title || topicData.text || topicData.label || '';
     const id = topicData.id || `topic_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const children: XMindNode[] = [];
-    
+
     // FR: Gérer différentes structures d'enfants
     // EN: Handle different children structures
     if (topicData.children) {
@@ -219,12 +224,26 @@ export class XMindParser {
         });
       }
     }
-    
+
+    // FR: Normaliser les styles issus de XMind JSON (fill/background/bgColor, fontColor/color, fontSize)
+    // EN: Normalize styles coming from XMind JSON (fill/background/bgColor, fontColor/color, fontSize)
+    let style: any;
+    if (topicData.style && typeof topicData.style === 'object') {
+      const s = topicData.style as any;
+      const backgroundColor = s.backgroundColor || s.fill || s.background || s.bgColor;
+      const textColor = s.textColor || s.fontColor || s.color;
+      const fontSize = s.fontSize || s.size;
+      style = {} as any;
+      if (backgroundColor) style.backgroundColor = backgroundColor;
+      if (textColor) style.textColor = textColor;
+      if (fontSize) style.fontSize = Number(fontSize);
+    }
+
     return {
       id,
       title,
       children: children.length > 0 ? children : undefined,
-      style: topicData.style
+      style,
     };
   }
 
@@ -236,41 +255,51 @@ export class XMindParser {
     console.warn('🔍 XMindParser.parseXML - Début du parsing XML');
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-    
+
     // FR: Vérifier s'il y a des erreurs de parsing
     // EN: Check for parsing errors
     const parseError = xmlDoc.querySelector('parsererror');
     if (parseError) {
       console.error('❌ Erreur de parsing XML:', parseError.textContent);
-      throw new Error('Erreur de parsing XML : ' + parseError.textContent);
+      throw new Error(`Erreur de parsing XML : ${parseError.textContent}`);
     }
 
     console.warn('📄 Document XML parsé, élément racine:', xmlDoc.documentElement.tagName);
-    
+
     // FR: Essayer différentes structures possibles
     // EN: Try different possible structures
     let workbook = xmlDoc.querySelector('workbook');
     if (!workbook) {
       // FR: Essayer avec un namespace
       // EN: Try with namespace
-      workbook = xmlDoc.querySelector('xmap-content') || 
-                 xmlDoc.querySelector('map') ||
-                 xmlDoc.querySelector('*[local-name()="workbook"]');
+      workbook =
+        xmlDoc.querySelector('xmap-content') ||
+        xmlDoc.querySelector('map') ||
+        xmlDoc.querySelector('*[local-name()="workbook"]');
     }
 
     if (!workbook) {
       // FR: Debug : afficher la structure XML pour diagnostic
       // EN: Debug: display XML structure for diagnosis
       console.warn('📄 Structure XML trouvée:', xmlDoc.documentElement.tagName);
-      console.warn('📄 Éléments racine:', Array.from(xmlDoc.documentElement.children).map(el => el.tagName));
-      throw new Error('Fichier .xmind invalide : structure XML non reconnue. Éléments trouvés: ' + 
-                     Array.from(xmlDoc.documentElement.children).map(el => el.tagName).join(', '));
+      console.warn(
+        '📄 Éléments racine:',
+        Array.from(xmlDoc.documentElement.children).map(el => el.tagName)
+      );
+      throw new Error(
+        `Fichier .xmind invalide : structure XML non reconnue. Éléments trouvés: ${Array.from(
+          xmlDoc.documentElement.children
+        )
+          .map(el => el.tagName)
+          .join(', ')}`
+      );
     }
 
     console.warn('📄 Workbook trouvé:', workbook.tagName);
-    const sheet = workbook.querySelector('sheet') || 
-                 workbook.querySelector('topic') ||
-                 workbook.querySelector('*[local-name()="sheet"]');
+    const sheet =
+      workbook.querySelector('sheet') ||
+      workbook.querySelector('topic') ||
+      workbook.querySelector('*[local-name()="sheet"]');
 
     if (!sheet) {
       console.error('❌ Aucun sheet/topic trouvé');
@@ -290,10 +319,10 @@ export class XMindParser {
       metadata: {
         name: topic.getAttribute('title') || workbook.getAttribute('title') || 'Carte sans nom',
         creator: workbook.getAttribute('creator') || 'Inconnu',
-        created: workbook.getAttribute('created') || new Date().toISOString()
-      }
+        created: workbook.getAttribute('created') || new Date().toISOString(),
+      },
     };
-    
+
     console.warn('✅ Parsing XML terminé avec succès');
     return result;
   }
@@ -303,12 +332,17 @@ export class XMindParser {
    * EN: Parse an XMind topic recursively
    */
   private static parseTopic(topicElement: Element): XMindNode {
-    console.warn('🔍 parseTopic - Élément:', topicElement.tagName, 'attributs:', Array.from(topicElement.attributes).map(a => `${a.name}="${a.value}"`));
-    
+    console.warn(
+      '🔍 parseTopic - Élément:',
+      topicElement.tagName,
+      'attributs:',
+      Array.from(topicElement.attributes).map(a => `${a.name}="${a.value}"`)
+    );
+
     // FR: Essayer différentes façons de récupérer le titre
     // EN: Try different ways to get the title
     let title = topicElement.getAttribute('title') || '';
-    
+
     // FR: Si pas d'attribut title, chercher un élément title
     // EN: If no title attribute, look for title element
     if (!title) {
@@ -318,23 +352,27 @@ export class XMindParser {
         console.warn('📄 Titre trouvé dans élément title:', title);
       }
     }
-    
+
     // FR: Si toujours pas de titre, essayer d'autres attributs
     // EN: If still no title, try other attributes
     if (!title) {
-      title = topicElement.getAttribute('text') || 
-              topicElement.getAttribute('label') || 
-              topicElement.textContent?.trim() || '';
+      title =
+        topicElement.getAttribute('text') ||
+        topicElement.getAttribute('label') ||
+        topicElement.textContent?.trim() ||
+        '';
       console.warn('📄 Titre trouvé dans autres attributs:', title);
     }
-    
+
     console.warn('📄 Titre final:', title);
-    
-    const id = topicElement.getAttribute('id') || `topic_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
+    const id =
+      topicElement.getAttribute('id') ||
+      `topic_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
     const children: XMindNode[] = [];
     const childTopics = topicElement.querySelectorAll(':scope > children > topics > topic');
-    
+
     childTopics.forEach(childTopic => {
       children.push(this.parseTopic(childTopic));
     });
@@ -342,14 +380,14 @@ export class XMindParser {
     // FR: Extraire les styles si présents
     // EN: Extract styles if present
     const styleElement = topicElement.querySelector('style');
-    let style: any = undefined;
-    
+    let style: any;
+
     if (styleElement) {
       style = {};
       const color = styleElement.getAttribute('color');
       const backgroundColor = styleElement.getAttribute('background-color');
       const fontSize = styleElement.getAttribute('font-size');
-      
+
       if (color) style.color = color;
       if (backgroundColor) style.backgroundColor = backgroundColor;
       if (fontSize) style.fontSize = parseInt(fontSize, 10);
@@ -359,7 +397,7 @@ export class XMindParser {
       id,
       title,
       children: children.length > 0 ? children : undefined,
-      style: style && Object.keys(style).length > 0 ? style : undefined
+      style: style && Object.keys(style).length > 0 ? style : undefined,
     };
   }
 
@@ -370,13 +408,13 @@ export class XMindParser {
   static async parseSimple(arrayBuffer: ArrayBuffer): Promise<XMindMap> {
     try {
       const zip = await JSZip.loadAsync(arrayBuffer);
-      
+
       // FR: Chercher n'importe quel fichier XML
       // EN: Look for any XML file
       const xmlFiles = Object.keys(zip.files).filter(name => name.endsWith('.xml'));
-      
+
       if (xmlFiles.length === 0) {
-        throw new Error('Aucun fichier XML trouvé dans l\'archive');
+        throw new Error("Aucun fichier XML trouvé dans l'archive");
       }
 
       // FR: Essayer de parser le premier fichier XML trouvé
@@ -402,11 +440,11 @@ export class XMindParser {
   private static parseXMLSimple(xmlText: string): XMindMap {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-    
+
     // FR: Chercher n'importe quel élément avec des topics
     // EN: Look for any element with topics
     const topics = xmlDoc.querySelectorAll('topic');
-    
+
     if (topics.length === 0) {
       throw new Error('Aucun topic trouvé dans le fichier XML');
     }
@@ -414,14 +452,14 @@ export class XMindParser {
     // FR: Prendre le premier topic comme racine
     // EN: Take the first topic as root
     const rootTopic = topics[0];
-    
+
     return {
       root: this.parseTopic(rootTopic),
       metadata: {
         name: rootTopic.getAttribute('title') || 'Carte XMind',
         creator: 'XMind',
-        created: new Date().toISOString()
-      }
+        created: new Date().toISOString(),
+      },
     };
   }
 
@@ -438,7 +476,7 @@ export class XMindParser {
         title: node.title,
         parentId,
         children: [] as string[],
-        style: node.style
+        style: node.style,
       };
 
       nodes[node.id] = bigMindNode;
@@ -464,8 +502,8 @@ export class XMindParser {
         name: xMindMap.metadata.name,
         createdAt: xMindMap.metadata.created,
         updatedAt: new Date().toISOString(),
-        locale: 'fr'
-      }
+        locale: 'fr',
+      },
     };
   }
 }
