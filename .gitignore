@@ -71,3 +71,9 @@ src-tauri/target/
 test-results/
 playwright-report/
 playwright/.cache/
+
+# Ignore XMind and binary archives
+*.xmind
+*.mmz
+*.zip
+!test-map.mm
