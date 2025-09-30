@@ -9,11 +9,14 @@ import { useMindmap } from './hooks/useMindmap';
 import MainLayout from './layouts/MainLayout';
 import SettingsPage from './pages/Settings';
 import { useAppSettings } from './hooks/useAppSettings';
+import { useOpenFiles } from './hooks/useOpenFiles';
 import './App.css';
 
 function App() {
   const { mindMap, actions } = useMindmap();
-  const loadAppSettings = useAppSettings((s) => s.load);
+  const loadAppSettings = useAppSettings(s => s.load);
+  const undo = useOpenFiles(s => s.undo);
+  const redo = useOpenFiles(s => s.redo);
 
   // FR: Initialiser une nouvelle carte au chargement
   // EN: Initialize a new map on load
@@ -28,6 +31,38 @@ function App() {
   useEffect(() => {
     loadAppSettings();
   }, [loadAppSettings]);
+
+  // FR: Raccourcis globaux Undo/Redo (Cmd/Ctrl+Z, Shift+Cmd/Ctrl+Z ou Ctrl+Y)
+  // EN: Global Undo/Redo shortcuts (Cmd/Ctrl+Z, Shift+Cmd/Ctrl+Z or Ctrl+Y)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // FR: Éviter si un champ de saisie est actif (inputs, textarea, contenteditable)
+      // EN: Skip when typing in inputs/textarea/contenteditable
+      const target = e.target as HTMLElement | null;
+      const isEditable =
+        !!target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+      if (isEditable) return;
+
+      const isMod = e.metaKey || e.ctrlKey;
+      // Undo: Cmd/Ctrl + Z (without Shift)
+      if (isMod && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+        return;
+      }
+      // Redo: Cmd/Ctrl + Shift + Z OR Ctrl + Y
+      if (
+        (isMod && e.key.toLowerCase() === 'z' && e.shiftKey) ||
+        (e.ctrlKey && e.key.toLowerCase() === 'y')
+      ) {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [undo, redo]);
 
   return (
     <div className="app">
