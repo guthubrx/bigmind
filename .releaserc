@@ -7,26 +7,7 @@
     ["@semantic-release/npm", {"npmPublish": false}],
     ["@semantic-release/github", {
       "assets": [
-        {
-          "path": "apps/desktop/src-tauri/target/release/bundle/macos/BigMind.app.zip",
-          "label": "BigMind for macOS (Apple Silicon)"
-        },
-        {
-          "path": "apps/desktop/src-tauri/target/release/bundle/macos/BigMind.app.tar.gz",
-          "label": "BigMind for macOS (Intel)"
-        },
-        {
-          "path": "apps/desktop/src-tauri/target/release/bundle/windows/BigMind_0.1.0_x64_en-US.msi",
-          "label": "BigMind for Windows (x64)"
-        },
-        {
-          "path": "apps/desktop/src-tauri/target/release/bundle/linux/BigMind_0.1.0_amd64.deb",
-          "label": "BigMind for Linux (Debian/Ubuntu)"
-        },
-        {
-          "path": "apps/desktop/src-tauri/target/release/bundle/linux/BigMind-0.1.0-x86_64.AppImage",
-          "label": "BigMind for Linux (AppImage)"
-        }
+        { "path": "dist/**/*.{dmg,zip,msi,exe,AppImage,deb,rpm}", "name": "BigMind-${nextRelease.version}-asset" }
       ]
     }],
     ["@semantic-release/git", {"assets": ["CHANGELOG.md", "package.json"], "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"}]
