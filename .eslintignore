@@ -1,3 +1,11 @@
 apps/web/vite.config.ts
 scripts/render-icon-from-svg.js
 
+# Fichiers générés par TypeScript
+# Generated files by TypeScript
+**/*.d.ts
+**/*.js
+!*.config.js
+!*.config.cjs
+!.eslintrc.cjs
+
