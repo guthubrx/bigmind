@@ -1,3 +1,10 @@
+## [0.1.4](https://github.com/guthubrx/bigmind/compare/v0.1.3...v0.1.4) (2025-09-30)
+
+
+### Bug Fixes
+
+* **tauri:** add multi-platform icon support and enable all bundle targets ([81a6490](https://github.com/guthubrx/bigmind/commit/81a64909f058bb5c413fed5226e652b91dc99c93))
+
 ## [0.1.3](https://github.com/guthubrx/bigmind/compare/v0.1.2...v0.1.3) (2025-09-30)
 
 
