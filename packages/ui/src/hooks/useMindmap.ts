@@ -157,7 +157,7 @@ export const useMindmapStore = create<AppState>()(
               // FR: Retirer de la sélection si nécessaire
               // EN: Remove from selection if needed
               state.selection.selectedNodes = state.selection.selectedNodes.filter(
-                id => id !== nodeId
+                (id: string) => id !== nodeId
               );
               if (state.selection.primaryNode === nodeId) {
                 state.selection.primaryNode = null;
