@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: true
@@ -78,6 +81,12 @@ jobs:
         with:
           version: 8
 
+      - name: Install Windows build tools (WiX, NSIS)
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install wixtoolset -y
+          choco install nsis -y
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
@@ -88,11 +97,21 @@ jobs:
         run: pnpm build:desktop
 
       - name: Upload artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: bigmind-${{ matrix.os }}
           path: |
-            apps/desktop/src-tauri/target/release/bundle/
+            apps/desktop/src-tauri/target/release/bundle/**/**/*.dmg
+            apps/desktop/src-tauri/target/release/bundle/**/**/*.app
+            apps/desktop/src-tauri/target/release/bundle/**/**/*.msi
+            apps/desktop/src-tauri/target/release/bundle/**/**/*.exe
+            apps/desktop/src-tauri/target/release/bundle/**/**/*.AppImage
+            apps/desktop/src-tauri/target/release/bundle/**/**/*.deb
+            apps/desktop/src-tauri/target/release/bundle/**/**/*.rpm
+            apps/desktop/src-tauri/target/release/bundle/**/**/*.zip
+            apps/desktop/src-tauri/target/release/bundle/**/**/
+          if-no-files-found: warn
           retention-days: 30
 
   semantic-release:
@@ -127,3 +146,4 @@ jobs:
         run: pnpm dlx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
