@@ -3,9 +3,11 @@
  * EN: Custom mind map node component
  */
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Handle, Position, NodeProps } from '@xyflow/react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Handle, Position } from '@xyflow/react';
 import { useMindmap } from '../hooks/useMindmap';
+import { useSelection } from '../hooks/useSelection';
+import { useAppSettings } from '../hooks/useAppSettings';
 // FR: Types locaux pour le développement
 // EN: Local types for development
 export interface MindNode {
@@ -18,6 +20,8 @@ export interface MindNode {
     backgroundColor?: string;
     textColor?: string;
     borderColor?: string;
+    borderStyle?: string;
+    borderRadius?: number;
     fontSize?: number;
     fontWeight?: 'normal' | 'medium' | 'semibold' | 'bold';
   };
@@ -28,35 +32,40 @@ export interface MindNode {
   height?: number;
 }
 
-interface MindMapNodeData extends MindNode {
+export interface MindMapNodeData extends MindNode {
   isSelected: boolean;
   isPrimary: boolean;
   direction?: number; // -1 gauche, +1 droite
 }
 
-const MindMapNode: React.FC<NodeProps<MindMapNodeData>> = ({ data, selected }) => {
-  const { actions, editMode } = useMindmap();
+type Props = { data: MindMapNodeData; selected?: boolean };
+
+function MindMapNode({ data, selected }: Props) {
+  const { actions } = useMindmap();
+  const selectedNodeId = useSelection((s) => s.selectedNodeId);
+  const setSelectedNodeId = useSelection((s) => s.setSelectedNodeId);
+  const accentColor = useAppSettings((s) => s.accentColor);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(data.title);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // FR: Démarrer l'édition
   // EN: Start editing
-  const startEditing = () => {
+  const startEditing = useCallback(() => {
     setIsEditing(true);
     setEditValue(data.title);
     actions.setEditMode(data.id, 'title');
-  };
+  }, [actions, data.id, data.title]);
 
   // FR: Arrêter l'édition
   // EN: Stop editing
-  const stopEditing = () => {
+  const stopEditing = useCallback(() => {
     if (editValue.trim() && editValue !== data.title) {
       actions.updateNodeTitle(data.id, editValue.trim());
     }
     setIsEditing(false);
     actions.setEditMode(null, null);
-  };
+  }, [actions, data.id, data.title, editValue]);
 
   // FR: Gérer la touche Entrée
   // EN: Handle Enter key
@@ -74,6 +83,7 @@ const MindMapNode: React.FC<NodeProps<MindMapNodeData>> = ({ data, selected }) =
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     actions.selectNodes([data.id], 'single');
+    setSelectedNodeId(data.id);
   };
 
   // FR: Gérer le double-clic pour éditer
@@ -112,7 +122,9 @@ const MindMapNode: React.FC<NodeProps<MindMapNodeData>> = ({ data, selected }) =
 
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [selected, data.isSelected]);
+  }, [selected, data.isSelected, startEditing]);
+
+  const isCurrentlySelected = !!(selected || data.isSelected || selectedNodeId === data.id);
 
   return (
     <div
@@ -120,31 +132,37 @@ const MindMapNode: React.FC<NodeProps<MindMapNodeData>> = ({ data, selected }) =
         mindmap-node
         ${data.isSelected ? 'selected' : ''}
         ${isEditing ? 'editing' : ''}
-        ${data.isPrimary ? 'ring-2 ring-accent-500' : ''}
+        ${data.isPrimary ? '' : ''}
       `}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       style={{
+        position: 'relative',
         backgroundColor: data.style?.backgroundColor || 'white',
         color: data.style?.textColor || 'black',
         fontSize: data.style?.fontSize || 14,
         fontWeight: data.style?.fontWeight || 'normal',
         borderColor: data.style?.borderColor || '#e5e7eb',
         borderStyle: data.style?.borderStyle || 'solid',
+        borderWidth: 1,
         borderRadius: data.style?.borderRadius || 8,
+        boxSizing: 'border-box',
         width: 200,
         padding: '8px 12px',
+        outline: isCurrentlySelected
+          ? `3px dashed ${accentColor}`
+          : data.isPrimary
+          ? `2px solid ${accentColor}`
+          : undefined,
+        outlineOffset: isCurrentlySelected ? 4 : data.isPrimary ? 2 : undefined,
       }}
     >
       {/* FR: Handles d'entrée (côté logique) */}
       {/* EN: Input handles (logical side) */}
       {data.isPrimary ? (
-        // La racine peut recevoir des liens des deux côtés
-        <>
-          <Handle id="left" type="target" position={Position.Left} className="opacity-0" />
-          <Handle id="right" type="target" position={Position.Right} className="opacity-0" />
-        </>
+        // la racine n'a pas de parent -> pas de target
+        <></>
       ) : (
         <Handle
           id={data.direction === -1 ? 'right' : 'left'}
@@ -181,19 +199,63 @@ const MindMapNode: React.FC<NodeProps<MindMapNodeData>> = ({ data, selected }) =
 
       {/* FR: Handles de sortie sur le côté logique (gauche/droite) */}
       {/* EN: Output handles on logical side (left/right) */}
-      {data.isPrimary ? (
-        <>
-          <Handle id="left" type="source" position={Position.Left} className="opacity-0" />
-          <Handle id="right" type="source" position={Position.Right} className="opacity-0" />
-        </>
-      ) : (
-        <Handle
-          id={data.direction === -1 ? 'left' : 'right'}
-          type="source"
-          position={data.direction === -1 ? Position.Left : Position.Right}
-          className="opacity-0"
-        />
-      )}
+      {(() => {
+        const hasChildren = Array.isArray(data.children) && data.children.length > 0;
+        if (!hasChildren) return null;
+        if (data.isPrimary) {
+          return (
+            <>
+              <Handle id="left" type="source" position={Position.Left} className="opacity-0" />
+              <Handle id="right" type="source" position={Position.Right} className="opacity-0" />
+              <span
+                aria-label="Nombre d'enfants à gauche"
+                style={{
+                  position: 'absolute', left: -12, top: '50%', transform: 'translate(-50%, -50%)',
+                  backgroundColor: 'var(--accent-color)', color: '#fff', borderRadius: 9999,
+                  fontSize: 10, lineHeight: '14px', width: 16, height: 16, textAlign: 'center', pointerEvents: 'none'
+                }}
+              >
+                {(data as any).childCounts?.left ?? 0}
+              </span>
+              <span
+                aria-label="Nombre d'enfants à droite"
+                style={{
+                  position: 'absolute', right: -12, top: '50%', transform: 'translate(50%, -50%)',
+                  backgroundColor: 'var(--accent-color)', color: '#fff', borderRadius: 9999,
+                  fontSize: 10, lineHeight: '14px', width: 16, height: 16, textAlign: 'center', pointerEvents: 'none'
+                }}
+              >
+                {(data as any).childCounts?.right ?? 0}
+              </span>
+            </>
+          );
+        }
+        const isLeft = data.direction === -1;
+        const sideStyle = isLeft
+          ? { left: -12, transform: 'translate(-50%, -50%)' }
+          : { right: -12, transform: 'translate(50%, -50%)' };
+        return (
+          <>
+            <Handle
+              id={isLeft ? 'left' : 'right'}
+              type="source"
+              position={isLeft ? Position.Left : Position.Right}
+              className="opacity-0"
+            />
+            <span
+              aria-label="Nombre d'enfants"
+              style={{
+                position: 'absolute', top: '50%',
+                ...sideStyle,
+                backgroundColor: 'var(--accent-color)', color: '#fff', borderRadius: 9999,
+                fontSize: 10, lineHeight: '14px', width: 16, height: 16, textAlign: 'center', pointerEvents: 'none'
+              } as any}
+            >
+              {data.children?.length || 0}
+            </span>
+          </>
+        );
+      })()}
 
       {/* FR: Indicateur de sélection */}
       {/* EN: Selection indicator */}
@@ -202,6 +264,6 @@ const MindMapNode: React.FC<NodeProps<MindMapNodeData>> = ({ data, selected }) =
       )}
     </div>
   );
-};
+}
 
 export default MindMapNode;

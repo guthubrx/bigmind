@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   FileText, 
   Edit, 
@@ -17,11 +18,14 @@ import {
 import { usePlatform, formatShortcut } from '../hooks/usePlatform';
 import { useFileOperations } from '../hooks/useFileOperations';
 import './MenuBar.css';
+// import { useAppSettings } from '../hooks/useAppSettings.ts';
 
-const MenuBar: React.FC = () => {
+function MenuBar() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  // const accentColor = useAppSettings((s) => s.accentColor);
   const platformInfo = usePlatform();
   const { openFileDialog, openFile, createNew } = useFileOperations();
+  const navigate = useNavigate();
 
   // FR: Raccourcis adaptés selon la plateforme
   // EN: Shortcuts adapted according to platform
@@ -31,29 +35,30 @@ const MenuBar: React.FC = () => {
   // EN: Handler for menu actions
   const handleMenuAction = async (action: string) => {
     try {
-      console.log(`🔄 Action de menu: ${action}`);
+      // console.warn(`Action menu: ${action}`);
       switch (action) {
         case 'Nouveau':
-          console.log('📝 Création d\'un nouveau fichier...');
+          // console.warn('Create new file');
           createNew();
           break;
         case 'Ouvrir...':
-          console.log('📂 Ouverture d\'un fichier...');
+          // console.warn('Open file...');
           const file = await openFileDialog();
           if (file) {
-            console.log(`📄 Fichier sélectionné: ${file.name} (${file.size} bytes)`);
+            // console.warn(`Selected file: ${file.name} (${file.size} bytes)`);
             await openFile(file);
-            console.log('✅ Fichier ouvert avec succès');
+            // console.warn('File opened');
           } else {
-            console.log('❌ Aucun fichier sélectionné');
+            // console.warn('No file selected');
           }
           break;
         default:
-          console.log(`Action: ${action}`);
+          // console.warn(`Action: ${action}`);
       }
     } catch (error) {
       console.error(`❌ Erreur lors de l'action ${action}:`, error);
-      alert(`Erreur: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      alert(`Erreur: ${message}`);
     }
     setActiveMenu(null);
   };
@@ -145,7 +150,8 @@ const MenuBar: React.FC = () => {
   ];
 
   return (
-    <div className="menu-bar">
+    <div className="menu-bar" style={{ justifyContent: 'flex-start' }}>
+      <div className="menu-logo" />
       {menuItems.map((menu) => (
         <div 
           key={menu.id}
@@ -153,7 +159,7 @@ const MenuBar: React.FC = () => {
           onMouseEnter={() => setActiveMenu(menu.id)}
           onMouseLeave={() => setActiveMenu(null)}
         >
-          <button className="menu-button">
+          <button type="button" className="menu-button">
             <menu.icon className="icon-small" />
             <span>{menu.label}</span>
             <ChevronDown className="icon-small" />
@@ -165,7 +171,13 @@ const MenuBar: React.FC = () => {
                 <div 
                   key={index} 
                   className="menu-item-option"
-                  onClick={() => handleMenuAction(item.label)}
+                  onClick={() => {
+                    if (menu.id === 'tools' && item.label.startsWith('Préférences')) {
+                      navigate('/settings');
+                    } else {
+                      handleMenuAction(item.label);
+                    }
+                  }}
                 >
                   <span className="menu-item-label">{item.label}</span>
                   <span className="menu-item-shortcut">{item.shortcut}</span>
@@ -177,6 +189,6 @@ const MenuBar: React.FC = () => {
       ))}
     </div>
   );
-};
+}
 
 export default MenuBar;

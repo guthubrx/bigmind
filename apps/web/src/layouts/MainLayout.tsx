@@ -4,32 +4,26 @@
  */
 
 import React from 'react';
-import TopBar from '../components/TopBar';
 import MenuBar from '../components/MenuBar';
 import FileTabs from '../components/FileTabs';
 import NodeExplorer from '../components/NodeExplorer';
 import MindMapCanvas from '../components/MindMapCanvas';
 import NodeProperties from '../components/NodeProperties';
 import StatusBar from '../components/StatusBar';
-import PlatformDebug from '../components/PlatformDebug';
-import TestComponent from '../components/TestComponent';
 import CollapseButton from '../components/CollapseButton';
 import { useColumnCollapse } from '../hooks/useColumnCollapse';
 import './MainLayout.css';
 
-const MainLayout: React.FC = () => {
-  const { collapsedColumns, toggleColumn, isCollapsed } = useColumnCollapse();
+function MainLayout() {
+  const { toggleColumn, isCollapsed } = useColumnCollapse();
 
   return (
     <div className="main-layout">
       {/* FR: Frameset vertical 1 - Layout principal */}
       {/* EN: Vertical frameset 1 - Main layout */}
       <div className="frameset-vertical-1">
-        {/* FR: Top Bar */}
-        {/* EN: Top Bar */}
-        <div className="top-bar-container">
-          <TopBar />
-        </div>
+        {/* FR: Top Bar supprimée */}
+        {/* EN: Top Bar removed */}
 
         {/* FR: Barre de menu */}
         {/* EN: Menu bar */}
@@ -134,6 +128,6 @@ const MainLayout: React.FC = () => {
       {/* <PlatformDebug /> */}
     </div>
   );
-};
+}
 
 export default MainLayout;

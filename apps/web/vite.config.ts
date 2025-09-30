@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * FR: Configuration Vite pour l'application web BigMind
  * EN: Vite configuration for BigMind web application
@@ -13,8 +14,8 @@ export default defineConfig({
     tsconfigPaths(), // FR: Support des paths TypeScript / EN: TypeScript paths support
   ],
   server: {
-    port: 3000,
-    open: true, // FR: Ouvrir automatiquement le navigateur / EN: Auto-open browser
+    port: 5173,
+    open: false, // FR: Ouvrir automatiquement le navigateur / EN: Auto-open browser
   },
   build: {
     outDir: 'dist',

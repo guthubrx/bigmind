@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { useAppSettings } from '../hooks/useAppSettings';
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 
 interface CollapseButtonProps {
@@ -13,12 +14,12 @@ interface CollapseButtonProps {
   className?: string;
 }
 
-const CollapseButton: React.FC<CollapseButtonProps> = ({ 
+function CollapseButton({ 
   isCollapsed, 
   onToggle, 
   direction = 'left',
   className = ''
-}) => {
+}: CollapseButtonProps) {
   const getIcon = () => {
     switch (direction) {
       case 'left':
@@ -34,24 +35,25 @@ const CollapseButton: React.FC<CollapseButtonProps> = ({
     }
   };
 
+  const accentColor = useAppSettings((s) => s.accentColor);
   return (
     <button
+      type="button"
       onClick={onToggle}
-      className={`
-        collapse-button
-        flex items-center justify-center
-        w-3 h-5
-        bg-gray-100 hover:bg-gray-200
-        border border-gray-300
-        rounded-sm
-        transition-colors duration-200
-        ${className}
-      `}
+      className={`collapse-button flex items-center justify-center w-3 h-5 rounded-sm transition-colors duration-200 ${className}`}
+      style={{
+        border: `1px solid ${accentColor}`,
+        background: [
+          'linear-gradient(90deg, ',
+          `color-mix(in srgb, ${accentColor} 28%, white) 0%, `,
+          `color-mix(in srgb, ${accentColor} 18%, white) 100%)`,
+        ].join(''),
+      }}
       title={isCollapsed ? 'Expand column' : 'Collapse column'}
     >
       {getIcon()}
     </button>
   );
-};
+}
 
 export default CollapseButton;

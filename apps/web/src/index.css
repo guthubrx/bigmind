@@ -132,3 +132,12 @@ body {
     @apply bg-gray-900 text-white;
   }
 }
+
+:root {
+  --accent-color: #3b82f6;
+}
+
+/* Utility to access accent CSS variable directly when needed */
+.accent-var {
+  color: var(--accent-color);
+}

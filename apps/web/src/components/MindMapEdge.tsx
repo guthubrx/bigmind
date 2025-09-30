@@ -4,13 +4,25 @@
  */
 
 import React from 'react';
-import { Edge, EdgeProps, getBezierPath } from '@xyflow/react';
+import { getBezierPath } from '@xyflow/react';
 
 interface MindMapEdgeData {
   isSelected: boolean;
 }
 
-const MindMapEdge: React.FC<EdgeProps<MindMapEdgeData>> = ({
+type EdgeCompProps = {
+  id: string;
+  sourceX: number;
+  sourceY: number;
+  targetX: number;
+  targetY: number;
+  sourcePosition?: any;
+  targetPosition?: any;
+  data?: MindMapEdgeData;
+  selected?: boolean;
+};
+
+function MindMapEdge({
   id,
   sourceX,
   sourceY,
@@ -20,7 +32,7 @@ const MindMapEdge: React.FC<EdgeProps<MindMapEdgeData>> = ({
   targetPosition,
   data,
   selected,
-}) => {
+}: EdgeCompProps) {
   // FR: Calculer le chemin de l'arête
   // EN: Calculate edge path
   const [edgePath] = getBezierPath({
@@ -73,6 +85,6 @@ const MindMapEdge: React.FC<EdgeProps<MindMapEdgeData>> = ({
       />
     </>
   );
-};
+}
 
 export default MindMapEdge;

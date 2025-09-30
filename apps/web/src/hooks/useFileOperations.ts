@@ -7,6 +7,9 @@ import { useCallback } from 'react';
 import { useOpenFiles } from './useOpenFiles';
 import { FreeMindParser } from '../parsers/FreeMindParser';
 import { XMindParser } from '../parsers/XMindParser';
+import JSZip from 'jszip';
+import { useViewport } from './useViewport';
+import { useCanvasOptions } from './useCanvasOptions';
 
 /**
  * FR: Hook pour gérer l'ouverture de fichiers
@@ -14,6 +17,7 @@ import { XMindParser } from '../parsers/XMindParser';
  */
 export const useFileOperations = () => {
   const { openFile: addFileToOpenFiles, createNewFile } = useOpenFiles();
+  const getActiveFile = useOpenFiles.getState().getActiveFile;
 
   /**
    * FR: Ouvrir un fichier .mm (FreeMind)
@@ -65,7 +69,7 @@ export const useFileOperations = () => {
         
         // FR: Adapter la structure pour useOpenFiles
         // EN: Adapt structure for useOpenFiles
-        const adaptedContent = {
+        const adaptedContent: any = {
           id: bigMindData.id,
           name: bigMindData.name,
           rootNode: {
@@ -75,6 +79,48 @@ export const useFileOperations = () => {
           },
           nodes: bigMindData.nodes
         };
+
+        // FR: Appliquer un overlay local persisté (titre/notes/style par id)
+        try {
+          const key = `bigmind_overlay_${file.name}`;
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const overlay = JSON.parse(raw);
+            if (overlay?.nodes) {
+              Object.entries(overlay.nodes).forEach(([id, patch]: any) => {
+                if (adaptedContent.nodes?.[id]) {
+                  adaptedContent.nodes[id] = { ...adaptedContent.nodes[id], ...patch };
+                }
+              });
+              // Mettre à jour aussi le titre du root affiché si modifié
+              const rid = adaptedContent.rootNode.id;
+              if (overlay.nodes[rid]?.title) {
+                adaptedContent.rootNode.title = overlay.nodes[rid].title;
+              }
+            }
+          }
+        } catch (e) {
+      // Ignore errors
+    }
+
+        // FR: Appliquer bigmind.json embarqué si présent dans l'archive
+        try {
+          const zip = await JSZip.loadAsync(arrayBuffer);
+          const sidecar = zip.file('bigmind.json');
+          if (sidecar) {
+            const text = await sidecar.async('text');
+            const data = JSON.parse(text);
+            if (data?.nodes) {
+              Object.entries(data.nodes).forEach(([id, patch]: any) => {
+                if (adaptedContent.nodes?.[id]) {
+                  adaptedContent.nodes[id] = { ...adaptedContent.nodes[id], ...patch };
+                }
+              });
+            }
+          }
+        } catch (e) {
+      // Ignore errors
+    }
         
         return addFileToOpenFiles({
           name: file.name,
@@ -82,7 +128,8 @@ export const useFileOperations = () => {
           content: adaptedContent
         });
       } catch (standardError) {
-        console.warn('Parser standard échoué, tentative avec le parser simple:', standardError.message);
+        const stdMsg = standardError instanceof Error ? standardError.message : String(standardError);
+        console.warn('Parser standard échoué, tentative avec le parser simple:', stdMsg);
         
         // FR: Essayer le parser de fallback
         // EN: Try fallback parser
@@ -91,7 +138,7 @@ export const useFileOperations = () => {
         
         // FR: Adapter la structure pour useOpenFiles
         // EN: Adapt structure for useOpenFiles
-        const adaptedContent = {
+        const adaptedContent: any = {
           id: bigMindData.id,
           name: bigMindData.name,
           rootNode: {
@@ -101,6 +148,44 @@ export const useFileOperations = () => {
           },
           nodes: bigMindData.nodes
         };
+        try {
+          const key = `bigmind_overlay_${file.name}`;
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const overlay = JSON.parse(raw);
+            if (overlay?.nodes) {
+              Object.entries(overlay.nodes).forEach(([id, patch]: any) => {
+                if (adaptedContent.nodes?.[id]) {
+                  adaptedContent.nodes[id] = { ...adaptedContent.nodes[id], ...patch };
+                }
+              });
+              const rid = adaptedContent.rootNode.id;
+              if (overlay.nodes[rid]?.title) {
+                adaptedContent.rootNode.title = overlay.nodes[rid].title;
+              }
+            }
+          }
+        } catch (e) {
+      // Ignore errors
+    }
+
+        try {
+          const zip = await JSZip.loadAsync(arrayBuffer);
+          const sidecar = zip.file('bigmind.json');
+          if (sidecar) {
+            const text = await sidecar.async('text');
+            const data = JSON.parse(text);
+            if (data?.nodes) {
+              Object.entries(data.nodes).forEach(([id, patch]: any) => {
+                if (adaptedContent.nodes?.[id]) {
+                  adaptedContent.nodes[id] = { ...adaptedContent.nodes[id], ...patch };
+                }
+              });
+            }
+          }
+        } catch (e) {
+      // Ignore errors
+    }
         
         return addFileToOpenFiles({
           name: file.name,
@@ -160,11 +245,58 @@ export const useFileOperations = () => {
     });
   }, []);
 
+  // FR: Exporter le fichier actif en .xmind en fusionnant l'overlay local dans content.json
+  // EN: Export the active file to .xmind merging overlay into content.json
+  const exportActiveXMind = useCallback(async () => {
+    const active = getActiveFile();
+    if (!active || active.type !== 'xmind' || !active.content) throw new Error('Aucun fichier XMind actif');
+
+    const zip = new JSZip();
+    // Recréer un content.json minimal pour la sauvegarde (topic tree à partir de nodes)
+    // Ici, on sérialise simple: rootTopic avec children.attached récursifs
+    const buildTopic = (id: string): any => {
+      const n = active.content.nodes[id];
+      if (!n) return null;
+      return {
+        id: n.id,
+        title: n.title,
+        notes: n.notes ? { plain: n.notes } : undefined,
+        style: n.style,
+        children: n.children && n.children.length > 0 ? { attached: n.children.map(buildTopic).filter(Boolean) } : undefined,
+      };
+    };
+    const json = [{ class: 'sheet', rootTopic: buildTopic(active.content.rootNode.id) }];
+    zip.file('content.json', JSON.stringify(json, null, 2));
+
+    // FR: Ecrire le sidecar embarqué
+    try {
+      const overlay: any = { nodes: {} };
+      Object.values(active.content.nodes).forEach((n: any) => {
+        overlay.nodes[n.id] = { title: n.title, notes: n.notes, style: n.style };
+      });
+      overlay.options = {
+        zoom: useViewport.getState().zoom,
+        nodesDraggable: useCanvasOptions.getState().nodesDraggable,
+      };
+      zip.file('bigmind.json', JSON.stringify(overlay, null, 2));
+    } catch (e) {
+      // Ignore errors
+    }
+
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = active.name.replace(/\.xmind$/i, '') + '.xmind';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 0);
+  }, []);
+
   return {
     openFile,
     openFreeMindFile,
     openXMindFile,
     createNew,
-    openFileDialog
+    openFileDialog,
+    exportActiveXMind
   };
 };

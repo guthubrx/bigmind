@@ -6,7 +6,7 @@
 .top-bar {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   height: 100%;
   padding: 0 16px;
   background-color: theme('colors.background.secondary');
@@ -16,8 +16,8 @@
 .top-bar-left {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 100%;
+  justify-content: flex-start;
+  width: auto;
 }
 
 .logo {
@@ -33,6 +33,16 @@
   height: 40px;
   flex-shrink: 0;
   object-fit: contain;
+}
+
+/* FR: Icône logo recolorable via CSS var accent */
+/* EN: Logo icon colored by CSS var accent */
+.logo-icon-colored {
+  width: 40px;
+  height: 40px;
+  -webkit-mask: url('/logo.svg') center/contain no-repeat;
+  mask: url('/logo.svg') center/contain no-repeat;
+  background-color: var(--accent-color, #3b82f6);
 }
 
 .app-name {

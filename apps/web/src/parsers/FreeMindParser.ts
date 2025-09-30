@@ -57,7 +57,8 @@ export class FreeMindParser {
       };
     } catch (error) {
       console.error('Erreur lors du parsing du fichier .mm:', error);
-      throw new Error(`Impossible de parser le fichier .mm: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Impossible de parser le fichier .mm: ${message}`);
     }
   }
 
@@ -99,16 +100,15 @@ export class FreeMindParser {
    */
   static convertToBigMind(freeMindMap: FreeMindMap): any {
     const nodes: Record<string, any> = {};
-    let nodeCounter = 0;
 
     const convertNode = (node: FreeMindNode, parentId: string | null = null): any => {
       const bigMindNode = {
         id: node.id,
         title: node.text,
         parentId,
-        children: [],
+        children: [] as string[],
         collapsed: node.attributes?.FOLDED === 'true',
-        style: node.attributes?.COLOR ? { color: node.attributes.COLOR } : undefined
+        style: node.attributes?.COLOR ? { backgroundColor: node.attributes.COLOR } : undefined
       };
 
       nodes[node.id] = bigMindNode;

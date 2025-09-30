@@ -6,11 +6,12 @@
 .status-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   height: 100%;
+  width: 100%;
   padding: 0 16px;
-  background-color: theme('colors.background.secondary');
-  border-top: 1px solid theme('colors.border.DEFAULT');
+  background-color: #fde2e4; /* rose pâle sur toute la barre */
+  border-top: 1px solid #fecdd3;
   font-size: 11px;
   color: theme('colors.foreground.secondary');
 }
@@ -21,6 +22,15 @@
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.zoom-group {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  background: transparent; /* couleur retirée, la barre entière est rose */
+  border: none;
+  border-radius: 6px;
 }
 
 .status-item {

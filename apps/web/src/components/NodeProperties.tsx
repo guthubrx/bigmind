@@ -13,18 +13,21 @@ import {
   Bold,
   Italic,
   Underline,
-  Image,
-  Link,
   Settings
 } from 'lucide-react';
 import { useMindmap } from '../hooks/useMindmap';
+import { useOpenFiles } from '../hooks/useOpenFiles';
+import { useSelection } from '../hooks/useSelection';
 import './NodeProperties.css';
 
-const NodeProperties: React.FC = () => {
-  const { mindMap, selection } = useMindmap();
+function NodeProperties() {
+  const { selection } = useMindmap();
+  const activeFile = useOpenFiles((state) => state.openFiles.find(f => f.isActive) || null);
+  const selectedNodeId = useSelection((s) => s.selectedNodeId) || selection.primaryNode;
+  const updateActiveFileNode = useOpenFiles((s) => s.updateActiveFileNode);
   const [activeTab, setActiveTab] = useState<'content' | 'style' | 'advanced'>('content');
 
-  const selectedNode = selection.primaryNode ? mindMap?.nodes[selection.primaryNode] : null;
+  const selectedNode = selectedNodeId ? activeFile?.content?.nodes?.[selectedNodeId] : null;
 
   if (!selectedNode) {
     return (
@@ -54,6 +57,7 @@ const NodeProperties: React.FC = () => {
         {/* EN: Tabs */}
         <div className="properties-tabs">
           <button
+            type="button"
             className={`tab ${activeTab === 'content' ? 'active' : ''}`}
             onClick={() => setActiveTab('content')}
           >
@@ -61,6 +65,7 @@ const NodeProperties: React.FC = () => {
             Contenu
           </button>
           <button
+            type="button"
             className={`tab ${activeTab === 'style' ? 'active' : ''}`}
             onClick={() => setActiveTab('style')}
           >
@@ -68,6 +73,7 @@ const NodeProperties: React.FC = () => {
             Style
           </button>
           <button
+            type="button"
             className={`tab ${activeTab === 'advanced' ? 'active' : ''}`}
             onClick={() => setActiveTab('advanced')}
           >
@@ -82,35 +88,39 @@ const NodeProperties: React.FC = () => {
           {activeTab === 'content' && (
             <div className="content-tab">
               <div className="form-group">
-                <label>Titre</label>
+                <label htmlFor="np-title">Titre</label>
                 <input
+                  id="np-title"
                   type="text"
                   value={selectedNode.title}
                   className="input"
                   placeholder="Titre du nœud"
+                  onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { title: e.target.value })}
                 />
               </div>
               
               <div className="form-group">
-                <label>Notes</label>
+                <label htmlFor="np-notes">Notes</label>
                 <textarea
+                  id="np-notes"
                   value={selectedNode.notes || ''}
                   className="input textarea"
                   placeholder="Notes additionnelles..."
                   rows={4}
+                  onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { notes: e.target.value })}
                 />
               </div>
 
               <div className="form-group">
-                <label>Alignement</label>
+                <label htmlFor="np-alignment">Alignement</label>
                 <div className="alignment-buttons">
-                  <button className="btn" title="Gauche">
+                  <button type="button" className="btn" title="Gauche">
                     <AlignLeft className="icon-small" />
                   </button>
-                  <button className="btn" title="Centre">
+                  <button type="button" className="btn" title="Centre">
                     <AlignCenter className="icon-small" />
                   </button>
-                  <button className="btn" title="Droite">
+                  <button type="button" className="btn" title="Droite">
                     <AlignRight className="icon-small" />
                   </button>
                 </div>
@@ -121,58 +131,66 @@ const NodeProperties: React.FC = () => {
           {activeTab === 'style' && (
             <div className="style-tab">
               <div className="form-group">
-                <label>Couleur de fond</label>
+                <label htmlFor="np-bg">Couleur de fond</label>
                 <div className="color-input-group">
                   <input
+                    id="np-bg"
                     type="color"
                     value={selectedNode.style?.backgroundColor || '#ffffff'}
                     className="color-input"
+                    onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, backgroundColor: e.target.value } })}
                   />
                   <input
                     type="text"
                     value={selectedNode.style?.backgroundColor || '#ffffff'}
                     className="input"
+                    onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, backgroundColor: e.target.value } })}
                   />
                 </div>
               </div>
 
               <div className="form-group">
-                <label>Couleur du texte</label>
+                <label htmlFor="np-fg">Couleur du texte</label>
                 <div className="color-input-group">
                   <input
+                    id="np-fg"
                     type="color"
                     value={selectedNode.style?.textColor || '#000000'}
                     className="color-input"
+                    onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, textColor: e.target.value } })}
                   />
                   <input
                     type="text"
                     value={selectedNode.style?.textColor || '#000000'}
                     className="input"
+                    onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, textColor: e.target.value } })}
                   />
                 </div>
               </div>
 
               <div className="form-group">
-                <label>Taille de police</label>
+                <label htmlFor="np-fontsize">Taille de police</label>
                 <input
+                  id="np-fontsize"
                   type="number"
                   value={selectedNode.style?.fontSize || 14}
                   className="input"
                   min="8"
                   max="72"
+                  onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, fontSize: Number(e.target.value) } })}
                 />
               </div>
 
               <div className="form-group">
-                <label>Style de police</label>
+                <label htmlFor="np-fontstyle">Style de police</label>
                 <div className="font-style-buttons">
-                  <button className="btn" title="Gras">
+                  <button type="button" className="btn" title="Gras">
                     <Bold className="icon-small" />
                   </button>
-                  <button className="btn" title="Italique">
+                  <button type="button" className="btn" title="Italique">
                     <Italic className="icon-small" />
                   </button>
-                  <button className="btn" title="Souligné">
+                  <button type="button" className="btn" title="Souligné">
                     <Underline className="icon-small" />
                   </button>
                 </div>
@@ -183,7 +201,7 @@ const NodeProperties: React.FC = () => {
           {activeTab === 'advanced' && (
             <div className="advanced-tab">
               <div className="form-group">
-                <label>ID du nœud</label>
+                <label htmlFor="np-nodeid">ID du nœud</label>
                 <input
                   type="text"
                   value={selectedNode.id}
@@ -193,7 +211,7 @@ const NodeProperties: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label>Nœud parent</label>
+                <label htmlFor="np-parent">Nœud parent</label>
                 <input
                   type="text"
                   value={selectedNode.parentId || 'Aucun'}
@@ -203,7 +221,7 @@ const NodeProperties: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label>Position</label>
+                <label htmlFor="np-position">Position</label>
                 <div className="position-inputs">
                   <input
                     type="number"
@@ -221,7 +239,7 @@ const NodeProperties: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label>Taille</label>
+                <label htmlFor="np-size">Taille</label>
                 <div className="size-inputs">
                   <input
                     type="number"
@@ -243,6 +261,6 @@ const NodeProperties: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
 export default NodeProperties;

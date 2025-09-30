@@ -264,7 +264,7 @@ export const useMindmap = () => {
     
     // FR: Sélectionner des nœuds
     // EN: Select nodes
-    selectNodes: (nodeIds: NodeID[], mode = 'single') => {
+    selectNodes: (nodeIds: NodeID[], mode: 'single' | 'multiple' = 'single') => {
       setSelection({
         selectedNodes: mode === 'single' ? [nodeIds[0]] : nodeIds,
         primaryNode: nodeIds[0] || null,
@@ -277,7 +277,7 @@ export const useMindmap = () => {
     undo: () => {
       // FR: TODO: Implémenter l'historique
       // EN: TODO: Implement history
-      console.log('Undo not implemented yet');
+      console.warn('Undo not implemented yet');
     },
     
     // FR: Refaire la dernière action (simplifié)
@@ -285,7 +285,7 @@ export const useMindmap = () => {
     redo: () => {
       // FR: TODO: Implémenter l'historique
       // EN: TODO: Implement history
-      console.log('Redo not implemented yet');
+      console.warn('Redo not implemented yet');
     },
     
     // FR: Basculer le mode d'édition
