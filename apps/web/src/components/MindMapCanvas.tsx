@@ -419,6 +419,14 @@ function MindMapCanvas() {
             // Ignore selection errors
           }
         }}
+        onViewportChange={(viewport) => {
+          // FR: Émettre un événement personnalisé pour notifier les changements de viewport
+          // EN: Emit custom event to notify viewport changes
+          const viewportEvent = new CustomEvent('viewport-change', {
+            detail: { viewport },
+          });
+          window.dispatchEvent(viewportEvent);
+        }}
         onInit={inst => {
           instanceRef.current = inst;
           setFlowInstance(inst);

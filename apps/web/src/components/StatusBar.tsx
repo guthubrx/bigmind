@@ -25,6 +25,22 @@ function StatusBar() {
     if (!isNaN(z)) setZoomDraft(String(Math.round(z * 100)));
   }, [inst]);
 
+  // FR: Écouter les changements de viewport pour mettre à jour le zoom affiché
+  // EN: Listen for viewport changes to update displayed zoom
+  useEffect(() => {
+    const handleViewportChange = (event: CustomEvent) => {
+      const { viewport } = event.detail;
+      if (viewport && typeof viewport.zoom === 'number') {
+        setZoomDraft(String(Math.round(viewport.zoom * 100)));
+      }
+    };
+
+    window.addEventListener('viewport-change', handleViewportChange as EventListener);
+    return () => {
+      window.removeEventListener('viewport-change', handleViewportChange as EventListener);
+    };
+  }, []);
+
   const applyZoomDraft = () => {
     const num = parseFloat(zoomDraft);
     if (isNaN(num)) return;
