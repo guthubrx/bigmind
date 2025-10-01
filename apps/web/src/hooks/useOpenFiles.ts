@@ -4,7 +4,7 @@
  */
 
 import { create } from 'zustand';
-import { XMindParser } from '../parsers/XMindParser';
+import { XMindParser } from '@bigmind/core';
 import { v4 as uuidv4 } from 'uuid';
 import { HistoryManager } from '@bigmind/core/dist/commands/history';
 import {

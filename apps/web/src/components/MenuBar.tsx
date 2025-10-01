@@ -5,20 +5,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  FileText, 
-  Edit, 
-  Eye, 
-  Plus, 
-  Palette, 
-  Settings, 
+import {
+  FileText,
+  Edit,
+  Eye,
+  Plus,
+  Palette,
+  Settings,
   HelpCircle,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
 } from 'lucide-react';
 import { usePlatform, formatShortcut } from '../hooks/usePlatform';
 import { useFileOperations } from '../hooks/useFileOperations';
 import { useOpenFiles } from '../hooks/useOpenFiles';
+import { toast } from '../utils/toast';
 import './MenuBar.css';
 // import { useAppSettings } from '../hooks/useAppSettings.ts';
 
@@ -27,7 +28,15 @@ function MenuBar() {
   const [menuTimeout, setMenuTimeout] = useState<NodeJS.Timeout | null>(null);
   // const accentColor = useAppSettings((s) => s.accentColor);
   const platformInfo = usePlatform();
-  const { openFileDialog, openFile, createNew, exportActiveXMind, saveAsXMind, exportXMind, exportToFreeMind, exportToPDF } = useFileOperations();
+  const {
+    openFileDialog,
+    openFile,
+    createNew,
+    exportActiveXMind,
+    saveAsXMind,
+    exportToFreeMind,
+    exportToPDF,
+  } = useFileOperations();
   const { closeFile, getActiveFile } = useOpenFiles();
   const navigate = useNavigate();
 
@@ -106,8 +115,9 @@ function MenuBar() {
             await exportActiveXMind();
             // console.warn('File saved');
           } catch (error) {
-            console.error('Erreur lors de la sauvegarde:', error);
-            alert('Erreur lors de la sauvegarde du fichier');
+            const message =
+              error instanceof Error ? error.message : String(error);
+            toast.error(`Erreur lors de la sauvegarde: ${message}`);
           }
           break;
         case 'Sauvegarder sous...':
@@ -116,52 +126,37 @@ function MenuBar() {
             await saveAsXMind();
             // console.warn('File saved as');
           } catch (error) {
-            console.error('Erreur lors de la sauvegarde sous:', error);
-            alert('Erreur lors de la sauvegarde du fichier');
+            const message =
+              error instanceof Error ? error.message : String(error);
+            toast.error(`Erreur lors de la sauvegarde: ${message}`);
           }
           break;
         case 'Exporter vers FreeMind (.mm)':
-          // console.warn('Export to FreeMind...');
           try {
-            console.log('🧪 Test de téléchargement simple...');
-            // FR: Test simple de téléchargement
-            // EN: Simple download test
-            const testBlob = new Blob(['Test content'], { type: 'text/plain' });
-            const testUrl = URL.createObjectURL(testBlob);
-            const testLink = document.createElement('a');
-            testLink.href = testUrl;
-            testLink.download = 'test.txt';
-            testLink.style.display = 'none';
-            document.body.appendChild(testLink);
-            testLink.click();
-            document.body.removeChild(testLink);
-            URL.revokeObjectURL(testUrl);
-            console.log('🧪 Test de téléchargement terminé');
-            
             await exportToFreeMind();
-            alert('✅ Fichier .mm téléchargé avec succès !');
+            toast.success('Fichier .mm téléchargé avec succès !');
           } catch (error) {
-            console.error('Erreur lors de l\'export FreeMind:', error);
-            alert('❌ Erreur lors de l\'export vers FreeMind: ' + (error instanceof Error ? error.message : String(error)));
+            const message =
+              error instanceof Error ? error.message : String(error);
+            toast.error(`Erreur lors de l'export vers FreeMind: ${message}`);
           }
           break;
         case 'Exporter vers PDF':
-          // console.warn('Export to PDF...');
           try {
             await exportToPDF();
-            alert('✅ Fichier PDF téléchargé avec succès !');
+            toast.success('Fichier PDF téléchargé avec succès !');
           } catch (error) {
-            console.error('Erreur lors de l\'export PDF:', error);
-            alert('❌ Erreur lors de l\'export vers PDF: ' + (error instanceof Error ? error.message : String(error)));
+            const message =
+              error instanceof Error ? error.message : String(error);
+            toast.error(`Erreur lors de l'export vers PDF: ${message}`);
           }
           break;
         default:
-          // console.warn(`Action: ${action}`);
+        // console.warn(`Action: ${action}`);
       }
     } catch (error) {
-      console.error(`❌ Erreur lors de l'action ${action}:`, error);
       const message = error instanceof Error ? error.message : String(error);
-      alert(`Erreur: ${message}`);
+      toast.error(`Erreur lors de l'action "${action}": ${message}`);
     }
     setActiveMenu(null);
   };
@@ -177,16 +172,13 @@ function MenuBar() {
         { label: 'Fermer', shortcut: getShortcut('Ctrl+W') },
         { label: 'Sauvegarder', shortcut: getShortcut('Ctrl+S') },
         { label: 'Sauvegarder sous...', shortcut: getShortcut('Ctrl+Shift+S') },
-        { 
-          label: 'Exporter vers', 
+        {
+          label: 'Exporter vers',
           shortcut: getShortcut('Ctrl+E'),
-          submenu: [
-            { label: 'FreeMind (.mm)' },
-            { label: 'PDF' },
-          ]
+          submenu: [{ label: 'FreeMind (.mm)' }, { label: 'PDF' }],
         },
         { label: 'Imprimer...', shortcut: getShortcut('Ctrl+P') },
-      ]
+      ],
     },
     {
       id: 'edit',
@@ -200,7 +192,7 @@ function MenuBar() {
         { label: 'Coller', shortcut: getShortcut('Ctrl+V') },
         { label: 'Supprimer', shortcut: 'Suppr' },
         { label: 'Sélectionner tout', shortcut: getShortcut('Ctrl+A') },
-      ]
+      ],
     },
     {
       id: 'view',
@@ -212,7 +204,7 @@ function MenuBar() {
         { label: 'Zoom normal', shortcut: getShortcut('Ctrl+0') },
         { label: 'Ajuster à la fenêtre', shortcut: getShortcut('Ctrl+Shift+0') },
         { label: 'Plein écran', shortcut: 'F11' },
-      ]
+      ],
     },
     {
       id: 'insert',
@@ -224,7 +216,7 @@ function MenuBar() {
         { label: 'Nouveau nœud parent', shortcut: 'Shift+Tab' },
         { label: 'Image...', shortcut: getShortcut('Ctrl+I') },
         { label: 'Lien...', shortcut: getShortcut('Ctrl+L') },
-      ]
+      ],
     },
     {
       id: 'format',
@@ -235,7 +227,7 @@ function MenuBar() {
         { label: 'Couleur...', shortcut: getShortcut('Ctrl+Shift+C') },
         { label: 'Style...', shortcut: getShortcut('Ctrl+Shift+S') },
         { label: 'Alignement...', shortcut: getShortcut('Ctrl+Shift+A') },
-      ]
+      ],
     },
     {
       id: 'tools',
@@ -245,7 +237,7 @@ function MenuBar() {
         { label: 'Préférences...', shortcut: getShortcut('Ctrl+,') },
         { label: 'Thèmes...', shortcut: getShortcut('Ctrl+Shift+T') },
         { label: 'Plugins...', shortcut: getShortcut('Ctrl+Shift+P') },
-      ]
+      ],
     },
     {
       id: 'help',
@@ -255,15 +247,15 @@ function MenuBar() {
         { label: 'Documentation', shortcut: 'F1' },
         { label: 'Raccourcis clavier', shortcut: getShortcut('Ctrl+?') },
         { label: 'À propos', shortcut: getShortcut('Ctrl+Shift+A') },
-      ]
-    }
+      ],
+    },
   ];
 
   return (
     <div className="menu-bar" style={{ justifyContent: 'flex-start' }}>
       <div className="menu-logo" />
-      {menuItems.map((menu) => (
-        <div 
+      {menuItems.map(menu => (
+        <div
           key={menu.id}
           className={`menu-item ${activeMenu === menu.id ? 'active' : ''}`}
           onMouseEnter={() => handleMenuEnter(menu.id)}
@@ -274,34 +266,35 @@ function MenuBar() {
             <span>{menu.label}</span>
             <ChevronDown className="icon-small" />
           </button>
-          
+
           {activeMenu === menu.id && (
             <div className="menu-dropdown">
-              {menu.items.map((item, index) => (
-                <div key={index}>
+              {menu.items.map((item) => (
+                <div key={item.label}>
                   {item.submenu ? (
                     // FR: Élément avec sous-menu
                     // EN: Item with submenu
-                    <div 
-                      className="menu-item-option menu-item-with-submenu"
-                      onMouseEnter={handleSubmenuEnter}
-                    >
+                    <div className="menu-item-option has-submenu">
                       <span className="menu-item-label">{item.label}</span>
-                      <span className="menu-item-shortcut">{item.shortcut}</span>
-                      <ChevronRight className="icon-small" />
-                      
+                      <ChevronRight className="chevron" />
+
                       {/* FR: Sous-menu */}
                       {/* EN: Submenu */}
-                      <div 
-                        className="menu-submenu"
-                        onMouseEnter={handleSubmenuEnter}
-                      >
-                        {item.submenu.map((subItem, subIndex) => (
-                          <div 
-                            key={subIndex}
+                      <div className="menu-submenu" onMouseEnter={handleSubmenuEnter}>
+                        {item.submenu.map((subItem) => (
+                          <div
+                            key={subItem.label}
                             className="menu-item-option"
+                            role="menuitem"
+                            tabIndex={0}
                             onClick={() => {
                               handleMenuAction(subItem.label);
+                            }}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                handleMenuAction(subItem.label);
+                              }
                             }}
                           >
                             <span className="menu-item-label">{subItem.label}</span>
@@ -312,8 +305,20 @@ function MenuBar() {
                   ) : (
                     // FR: Élément normal
                     // EN: Normal item
-                    <div 
+                    <div
                       className="menu-item-option"
+                      role="menuitem"
+                      tabIndex={0}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          if (menu.id === 'tools' && item.label.startsWith('Préférences')) {
+                            navigate('/settings');
+                          } else {
+                            handleMenuAction(item.label);
+                          }
+                        }
+                      }}
                       onClick={() => {
                         if (menu.id === 'tools' && item.label.startsWith('Préférences')) {
                           navigate('/settings');

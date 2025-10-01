@@ -14,11 +14,11 @@ interface CollapseButtonProps {
   className?: string;
 }
 
-function CollapseButton({ 
-  isCollapsed, 
-  onToggle, 
+function CollapseButton({
+  isCollapsed,
+  onToggle,
   direction = 'left',
-  className = ''
+  className = '',
 }: CollapseButtonProps) {
   const getIcon = () => {
     switch (direction) {
@@ -35,12 +35,13 @@ function CollapseButton({
     }
   };
 
-  const accentColor = useAppSettings((s) => s.accentColor);
+  const accentColor = useAppSettings(s => s.accentColor);
   return (
     <button
       type="button"
       onClick={onToggle}
-      className={`collapse-button flex items-center justify-center w-3 h-5 rounded-sm transition-colors duration-200 ${className}`}
+      className={`collapse-button flex items-center justify-center w-3 h-5 rounded-sm 
+        transition-colors duration-200 ${className}`}
       style={{
         border: `1px solid ${accentColor}`,
         background: [
