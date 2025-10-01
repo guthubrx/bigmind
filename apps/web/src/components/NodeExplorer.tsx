@@ -37,6 +37,19 @@ function NodeExplorer() {
     window.dispatchEvent(blinkEvent);
   };
 
+  // FR: Fonction pour sélectionner un nœud et le centrer avec zoom à 100%
+  // EN: Function to select a node and center it with 100% zoom
+  const focusNode = (nodeId: string) => {
+    // Sélectionner le nœud
+    setSelectedNodeId(nodeId);
+
+    // Déclencher un événement personnalisé pour le focus avec zoom
+    const focusEvent = new CustomEvent('node-focus', {
+      detail: { nodeId },
+    });
+    window.dispatchEvent(focusEvent);
+  };
+
   // FR: Initialiser l'expansion du nœud racine quand un fichier est ouvert
   // EN: Initialize root node expansion when a file is opened
   useEffect(() => {
@@ -185,6 +198,11 @@ function NodeExplorer() {
             // EN: Select the node and trigger blinking effect
             // Select node
             selectNode(nodeId);
+          }}
+          onDoubleClick={() => {
+            // FR: Double-clic pour centrer et zoomer à 100% sur le nœud
+            // EN: Double-click to center and zoom to 100% on the node
+            focusNode(nodeId);
           }}
           onKeyDown={e => {
             if (e.key === 'Enter' || e.key === ' ') {

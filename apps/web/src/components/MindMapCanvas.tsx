@@ -285,6 +285,38 @@ function MindMapCanvas() {
     };
   }, []);
 
+  // FR: Écouter les événements de focus depuis l'explorateur pour centrer et zoomer à 100%
+  // EN: Listen for focus events from the explorer to center and zoom to 100%
+  useEffect(() => {
+    const handleNodeFocus = (event: CustomEvent) => {
+      const { nodeId } = event.detail;
+      if (!instanceRef.current) return;
+
+      const inst = instanceRef.current;
+      const node = inst.getNode(nodeId);
+      if (!node) return;
+
+      // Centrer sur le nœud avec zoom à 100% (1.0)
+      const width = (node.data as any)?.width || 200;
+      const height = (node.data as any)?.height || 40;
+      const x = (node.position?.x || 0) + width / 2;
+      const y = (node.position?.y || 0) + height / 2;
+
+      try {
+        if (typeof inst.setCenter === 'function') {
+          inst.setCenter(x, y, { zoom: 1.0, duration: 500 });
+        }
+      } catch (e) {
+        // Ignore errors
+      }
+    };
+
+    window.addEventListener('node-focus', handleNodeFocus as EventListener);
+    return () => {
+      window.removeEventListener('node-focus', handleNodeFocus as EventListener);
+    };
+  }, []);
+
   // FR: Synchroniser le zoom avec l'instance ReactFlow (toujours appelé, indépendamment du fichier actif)
   // EN: Sync zoom with ReactFlow instance (always called, regardless of active file)
   // FR: Désactiver la synchronisation directe du zoom pour éviter l'erreur setZoom inexistante
