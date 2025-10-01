@@ -1,3 +1,10 @@
+## [0.2.1](https://github.com/guthubrx/bigmind/compare/v0.2.0...v0.2.1) (2025-09-30)
+
+
+### Bug Fixes
+
+* resolve TypeScript build errors ([e27e9db](https://github.com/guthubrx/bigmind/commit/e27e9db490f5a5cc5d74168e56351bb7ecc84d22))
+
 # [0.2.0](https://github.com/guthubrx/bigmind/compare/v0.1.4...v0.2.0) (2025-09-30)
 
 ### Bug Fixes
