@@ -15,6 +15,7 @@ import {
   NodeTypes,
   EdgeTypes,
   SelectionMode,
+  PanOnScrollMode,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useOpenFiles } from '../hooks/useOpenFiles';
@@ -345,7 +346,7 @@ function MindMapCanvas() {
         // FR: Panning avec la molette
         // EN: Panning with mouse wheel
         panOnScroll
-        panOnScrollMode="free"
+        panOnScrollMode={PanOnScrollMode.Free}
         panOnScrollSpeed={0.8}
         zoomOnScroll={false}
         // FR: Box selection
@@ -361,12 +362,12 @@ function MindMapCanvas() {
             setSelectedNodeIds(nodeIds);
           }
         }}
-        onPaneMouseDown={e => {
+        onMouseDown={(e: any) => {
           if (e.button === 0) {
             document.body.classList.add('dragging');
           }
         }}
-        onPaneMouseUp={() => {
+        onMouseUp={() => {
           document.body.classList.remove('dragging');
           try {
             const sel = window.getSelection && window.getSelection();
@@ -376,7 +377,7 @@ function MindMapCanvas() {
             // Ignore selection errors
           }
         }}
-        onPaneMouseLeave={() => {
+        onMouseLeave={() => {
           document.body.classList.remove('dragging');
           try {
             const sel = window.getSelection && window.getSelection();

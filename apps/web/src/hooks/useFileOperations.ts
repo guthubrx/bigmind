@@ -6,7 +6,7 @@
 import { useCallback } from 'react';
 import { useOpenFiles } from './useOpenFiles';
 import { FreeMindParser } from '../parsers/FreeMindParser';
-import { XMindParser } from '../parsers/XMindParser';
+import { XMindParser } from '@bigmind/core';
 import JSZip from 'jszip';
 import { useViewport } from './useViewport';
 import { useCanvasOptions } from './useCanvasOptions';
@@ -123,7 +123,7 @@ export const useFileOperations = () => {
         // EN: Adapt structure for useOpenFiles
         const adaptedContent: any = {
           id: bigMindData.id,
-          name: bigMindData.name,
+          name: bigMindData.meta.name,
           rootNode: {
             id: bigMindData.rootId,
             title: bigMindData.nodes[bigMindData.rootId]?.title || 'Racine',
@@ -218,7 +218,7 @@ export const useFileOperations = () => {
         // EN: Adapt structure for useOpenFiles
         const adaptedContent: any = {
           id: bigMindData.id,
-          name: bigMindData.name,
+          name: bigMindData.meta.name,
           rootNode: {
             id: bigMindData.rootId,
             title: bigMindData.nodes[bigMindData.rootId]?.title || 'Racine',
