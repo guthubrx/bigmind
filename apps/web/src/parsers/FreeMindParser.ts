@@ -130,16 +130,20 @@ export class FreeMindParser {
       // EN: Build children
       let childrenXML = '';
       if (node.children && node.children.length > 0) {
-        childrenXML = '\n' + node.children
-          .map(childId => buildNodeXML(childId, level + 1))
-          .join('\n') + '\n' + indent;
+        childrenXML =
+          '\n' +
+          node.children
+            .map((childId: string) => buildNodeXML(childId, level + 1))
+            .join('\n') +
+          '\n' +
+          indent;
       }
 
       return `${indent}<node ${attributesStr}>${childrenXML}</node>`;
     };
 
     const rootNodeXML = buildNodeXML(content.rootId, 1);
-    const mapName = content.name || 'Carte mentale';
+    // const mapName = content.name || 'Carte mentale'; // Not used in FreeMind format
     
     return `<?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0.1">
