@@ -34,7 +34,6 @@ function MenuBar() {
     createNew,
     exportActiveXMind,
     saveAsXMind,
-    exportXMind,
     exportToFreeMind,
     exportToPDF,
   } = useFileOperations();
@@ -270,28 +269,32 @@ function MenuBar() {
 
           {activeMenu === menu.id && (
             <div className="menu-dropdown">
-              {menu.items.map((item, index) => (
-                <div key={index}>
+              {menu.items.map((item) => (
+                <div key={item.label}>
                   {item.submenu ? (
                     // FR: Élément avec sous-menu
                     // EN: Item with submenu
-                    <div
-                      className="menu-item-option menu-item-with-submenu"
-                      onMouseEnter={handleSubmenuEnter}
-                    >
+                    <div className="menu-item-option has-submenu">
                       <span className="menu-item-label">{item.label}</span>
-                      <span className="menu-item-shortcut">{item.shortcut}</span>
-                      <ChevronRight className="icon-small" />
+                      <ChevronRight className="chevron" />
 
                       {/* FR: Sous-menu */}
                       {/* EN: Submenu */}
                       <div className="menu-submenu" onMouseEnter={handleSubmenuEnter}>
-                        {item.submenu.map((subItem, subIndex) => (
+                        {item.submenu.map((subItem) => (
                           <div
-                            key={subIndex}
+                            key={subItem.label}
                             className="menu-item-option"
+                            role="menuitem"
+                            tabIndex={0}
                             onClick={() => {
                               handleMenuAction(subItem.label);
+                            }}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                handleMenuAction(subItem.label);
+                              }
                             }}
                           >
                             <span className="menu-item-label">{subItem.label}</span>
@@ -304,6 +307,18 @@ function MenuBar() {
                     // EN: Normal item
                     <div
                       className="menu-item-option"
+                      role="menuitem"
+                      tabIndex={0}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          if (menu.id === 'tools' && item.label.startsWith('Préférences')) {
+                            navigate('/settings');
+                          } else {
+                            handleMenuAction(item.label);
+                          }
+                        }
+                      }}
                       onClick={() => {
                         if (menu.id === 'tools' && item.label.startsWith('Préférences')) {
                           navigate('/settings');
