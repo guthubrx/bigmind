@@ -29,6 +29,18 @@ import { useShortcuts } from '../hooks/useShortcuts';
 import { useAppSettings, COLOR_PALETTES } from '../hooks/useAppSettings';
 import { ReparentNodeCommand } from '@bigmind/core';
 import { shouldIgnoreShortcut } from '../utils/inputUtils';
+import {
+  lightenHexColor,
+  getRelativeLuminance,
+  getOptimalTextColor,
+} from '../utils/colorUtils';
+import {
+  getAllDescendants,
+  getTotalDescendantsCount,
+  getNodeDepth,
+  isDescendant,
+} from '../utils/nodeUtils';
+import { getBackgroundPatternStyle } from '../utils/backgroundPatterns';
 import NodeContextMenu from './NodeContextMenu';
 
 // FR: Types de nœuds personnalisés
@@ -118,57 +130,7 @@ function MindMapCanvas() {
     useOpenFiles(s => s.openFiles.find(f => f.isActive)?.paletteId) || selectedPaletteGlobal;
 
   // Debug logs removed for cleanliness
-
-  // FR: Éclaircir une couleur hex (mélange vers blanc)
-  // EN: Lighten a hex color (blend towards white)
-  const lightenHexColor = useCallback((hex: string, ratio: number = 0.6): string => {
-    try {
-      const clean = hex.replace('#', '');
-      const isShort = clean.length === 3;
-      const r = parseInt(isShort ? clean[0] + clean[0] : clean.substring(0, 2), 16);
-      const g = parseInt(isShort ? clean[1] + clean[1] : clean.substring(2, 4), 16);
-      const b = parseInt(isShort ? clean[2] + clean[2] : clean.substring(4, 6), 16);
-      const lr = Math.round(r + (255 - r) * ratio);
-      const lg = Math.round(g + (255 - g) * ratio);
-      const lb = Math.round(b + (255 - b) * ratio);
-      const toHex = (n: number) => n.toString(16).padStart(2, '0');
-      return `#${toHex(lr)}${toHex(lg)}${toHex(lb)}`;
-    } catch (_e) {
-      return hex;
-    }
-  }, []);
-
-  // FR: Calculer la luminosité relative d'une couleur hex (0-1, 0=noir, 1=blanc)
-  // EN: Calculate relative luminance of a hex color (0-1, 0=black, 1=white)
-  const getRelativeLuminance = useCallback((hex: string): number => {
-    try {
-      const clean = hex.replace('#', '');
-      const isShort = clean.length === 3;
-      const r = parseInt(isShort ? clean[0] + clean[0] : clean.substring(0, 2), 16) / 255;
-      const g = parseInt(isShort ? clean[1] + clean[1] : clean.substring(2, 4), 16) / 255;
-      const b = parseInt(isShort ? clean[2] + clean[2] : clean.substring(4, 6), 16) / 255;
-
-      // FR: Formule de luminosité relative selon WCAG
-      // EN: Relative luminance formula according to WCAG
-      const toLinear = (c: number) =>
-        c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-      return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
-    } catch (_e) {
-      return 0.5; // FR: Valeur par défaut si erreur de parsing
-    }
-  }, []);
-
-  // FR: Choisir la couleur de texte optimale (noir ou blanc) selon la luminosité du fond
-  // EN: Choose optimal text color (black or white) based on background luminance
-  const getOptimalTextColor = useCallback(
-    (backgroundColor: string): string => {
-      const luminance = getRelativeLuminance(backgroundColor);
-      // FR: Seuil de 0.5 : plus clair = texte noir, plus foncé = texte blanc
-      // EN: Threshold of 0.5: lighter = black text, darker = white text
-      return luminance > 0.5 ? '#000000' : '#ffffff';
-    },
-    [getRelativeLuminance]
-  );
+  // Color utilities imported from utils/colorUtils.ts
 
   // FR: Appliquer l'inférence de couleurs par branche basée sur la palette sélectionnée
   // EN: Apply branch color inference based on selected palette
@@ -255,7 +217,7 @@ function MindMapCanvas() {
 
       return updatedNodes;
     },
-    [lightenHexColor, getOptimalTextColor, perMapPaletteId]
+    [perMapPaletteId]
   );
 
   // FR: Nœuds avec inférence de couleurs appliquée
@@ -267,58 +229,7 @@ function MindMapCanvas() {
     return applyColorInference(activeFile.content.nodes, activeFile.themeColors);
   }, [activeFile?.content?.nodes, activeFile?.themeColors, applyColorInference, perMapPaletteId]);
 
-  // FR: Calculer tous les descendants d'un nœud
-  // EN: Calculate all descendants of a node
-  const getAllDescendants = useCallback(
-    (nodeId: string): string[] => {
-      if (!activeFile?.content?.nodes) return [];
-
-      const descendants: string[] = [];
-      const node = activeFile.content.nodes[nodeId];
-      if (!node?.children) return descendants;
-
-      const traverse = (currentNodeId: string) => {
-        const currentNode = activeFile.content.nodes[currentNodeId];
-        if (currentNode?.children) {
-          currentNode.children.forEach((childId: string) => {
-            descendants.push(childId);
-            traverse(childId);
-          });
-        }
-      };
-
-      traverse(nodeId);
-      return descendants;
-    },
-    [activeFile?.content?.nodes]
-  );
-
-  // FR: Calculer le nombre total de descendants d'un nœud (récursif)
-  // EN: Calculate total number of descendants of a node (recursive)
-  const getTotalDescendantsCount = useCallback(
-    (nodeId: string): number => {
-      if (!activeFile?.content?.nodes) return 0;
-
-      const node = activeFile.content.nodes[nodeId];
-      if (!node?.children || node.children.length === 0) return 0;
-
-      let totalCount = 0;
-
-      const countRecursively = (currentNodeId: string) => {
-        const currentNode = activeFile.content.nodes[currentNodeId];
-        if (currentNode?.children) {
-          currentNode.children.forEach((childId: string) => {
-            totalCount++; // Compter ce descendant
-            countRecursively(childId); // Compter récursivement ses descendants
-          });
-        }
-      };
-
-      countRecursively(nodeId);
-      return totalCount;
-    },
-    [activeFile?.content?.nodes]
-  );
+  // Node utilities imported from utils/nodeUtils.ts
 
   // FR: Convertir les nœuds du fichier actif en nœuds ReactFlow
   // EN: Convert active file nodes to ReactFlow nodes
@@ -426,7 +337,9 @@ function MindMapCanvas() {
           isSelected: false,
           isPrimary: level === 0,
           direction,
-          childCounts: { total: getTotalDescendantsCount(node.id) },
+          childCounts: {
+            total: getTotalDescendantsCount(node.id, nodesWithColors),
+          },
           isDragTarget: dragTarget === node.id,
           isDescendantOfDragged: draggedDescendants.includes(node.id),
           isBeingDragged: draggedNodeId === node.id,
@@ -465,9 +378,12 @@ function MindMapCanvas() {
         if (rootIndex !== -1) {
           // FR: Calculer le nombre total de descendants pour chaque côté
           // EN: Calculate total number of descendants for each side
-          const leftTotal = leftIds.reduce((sum, id) => sum + getTotalDescendantsCount(id) + 1, 0);
+          const leftTotal = leftIds.reduce(
+            (sum, id) => sum + getTotalDescendantsCount(id, nodesWithColors) + 1,
+            0
+          );
           const rightTotal = rightIds.reduce(
-            (sum, id) => sum + getTotalDescendantsCount(id) + 1,
+            (sum, id) => sum + getTotalDescendantsCount(id, nodesWithColors) + 1,
             0
           );
           (nodes[rootIndex].data as any).childCounts = {
@@ -662,10 +578,10 @@ function MindMapCanvas() {
           // FR: Ne pas créer de lien si le nœud enfant est en cours de drag OU si le nœud parent est en cours de drag
           // EN: Don't create edge if child node is being dragged OR if parent node is being dragged
           if (draggedNodeId !== childId && draggedNodeId !== node.id) {
-            edges.push({
+          edges.push({
               id: `edge-${node.id}-${childId}`,
-              source: node.id,
-              target: childId,
+            source: node.id,
+            target: childId,
               sourceHandle: 'right',
               type: getEdgeType(),
               style: { stroke: edgeColor, strokeWidth: 2 },
@@ -836,45 +752,7 @@ function MindMapCanvas() {
   const backgroundPatternStyle = useMemo(() => {
     const pattern = activeFile?.mapStyle?.backgroundPattern;
     const opacity = activeFile?.mapStyle?.backgroundPatternOpacity || 0.3;
-
-    if (!pattern || pattern === 'none') return {};
-
-    const baseStyle = {
-      position: 'absolute' as const,
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      pointerEvents: 'none' as const,
-      opacity,
-      zIndex: 0,
-    };
-
-    switch (pattern) {
-      case 'dots':
-        return {
-          ...baseStyle,
-          backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)',
-          backgroundSize: '20px 20px',
-        };
-      case 'grid':
-        return {
-          ...baseStyle,
-          backgroundImage: `
-            linear-gradient(to right, #000 1px, transparent 1px),
-            linear-gradient(to bottom, #000 1px, transparent 1px)
-          `,
-          backgroundSize: '20px 20px',
-        };
-      case 'lines':
-        return {
-          ...baseStyle,
-          backgroundImage: 'linear-gradient(to right, #000 1px, transparent 1px)',
-          backgroundSize: '20px 20px',
-        };
-      default:
-        return {};
-    }
+    return getBackgroundPatternStyle(pattern as any, opacity);
   }, [activeFile?.mapStyle?.backgroundPattern, activeFile?.mapStyle?.backgroundPatternOpacity]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -917,7 +795,8 @@ function MindMapCanvas() {
 
       // FR: Calculer les descendants du nœud qu'on glisse pour l'effet de transparence
       // EN: Calculate descendants of dragged node for transparency effect
-      const descendants = getAllDescendants(node.id);
+      if (!activeFile?.content?.nodes) return;
+      const descendants = getAllDescendants(node.id, activeFile.content.nodes);
       setDraggedDescendants(descendants);
       console.log('👥 Dragged node descendants:', descendants);
 
@@ -935,7 +814,7 @@ function MindMapCanvas() {
       setGhostNode(ghost);
       console.log('👻 Ghost node created:', ghost.id);
     },
-    [getAllDescendants]
+    [activeFile?.content?.nodes]
   );
 
   // FR: Gérer le drag des nœuds pour afficher l'indicateur visuel
@@ -1008,14 +887,10 @@ function MindMapCanvas() {
 
       // FR: Vérifier que le nœud cible n'est pas un descendant du nœud déplacé
       // EN: Check that target node is not a descendant of the moved node
-      const isDescendant = (nodeId: string, ancestorId: string): boolean => {
-        const currentNode = activeFile?.content?.nodes?.[nodeId];
-        if (!currentNode?.parentId) return false;
-        if (currentNode.parentId === ancestorId) return true;
-        return isDescendant(currentNode.parentId, ancestorId);
-      };
-
-      if (isDescendant(targetNode.id, node.id)) {
+      if (
+        activeFile?.content?.nodes &&
+        isDescendant(targetNode.id, node.id, activeFile.content.nodes)
+      ) {
         console.log('❌ Target node is a descendant of dragged node');
         setDragTarget(null);
         return;
@@ -1528,13 +1403,7 @@ function MindMapCanvas() {
 
             // FR: Calculer la profondeur du nœud cliqué
             // EN: Calculate depth of clicked node
-            const getNodeDepth = (nodeId: string): number => {
-              const node = nodes[nodeId];
-              if (!node?.parentId) return 0;
-              return 1 + getNodeDepth(node.parentId);
-            };
-
-            const clickedNodeDepth = getNodeDepth(nodeId);
+            const clickedNodeDepth = getNodeDepth(nodeId, nodes);
             console.log('📍 Profondeur du nœud cliqué:', clickedNodeDepth);
 
             // FR: Parcours en largeur pour trouver tous les nœuds de profondeur > clickedNodeDepth
@@ -1612,13 +1481,7 @@ function MindMapCanvas() {
 
             // FR: Calculer la profondeur du nœud cliqué
             // EN: Calculate depth of clicked node
-            const getNodeDepth = (nodeId: string): number => {
-              const node = nodes[nodeId];
-              if (!node?.parentId) return 0;
-              return 1 + getNodeDepth(node.parentId);
-            };
-
-            const clickedNodeDepth = getNodeDepth(nodeId);
+            const clickedNodeDepth = getNodeDepth(nodeId, nodes);
             console.log("🔄 Déplier génération jusqu'au niveau:", clickedNodeDepth);
 
             // FR: Parcours en largeur de TOUT l'arbre
