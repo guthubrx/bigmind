@@ -45,7 +45,6 @@ const edgeTypes: EdgeTypes = {
 
 function MindMapCanvas() {
   const activeFile = useOpenFiles(state => state.openFiles.find(f => f.isActive) || null);
-  const setActiveSheet = useOpenFiles(s => s.setActiveSheet);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<any>(null);
   const setFlowInstance = useFlowInstance(s => s.setInstance);
@@ -152,7 +151,7 @@ function MindMapCanvas() {
       // FR: Formule de luminosité relative selon WCAG
       // EN: Relative luminance formula according to WCAG
       const toLinear = (c: number) =>
-        c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
       return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
     } catch (_e) {
       return 0.5; // FR: Valeur par défaut si erreur de parsing
@@ -955,7 +954,6 @@ function MindMapCanvas() {
 
       // FR: Obtenir la position de la souris dans le système de coordonnées de React Flow
       // EN: Get mouse position in React Flow coordinate system
-      const reactFlowBounds = instanceRef.current.getViewport();
       const position = instanceRef.current.screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
@@ -987,8 +985,8 @@ function MindMapCanvas() {
           position.y <= nodeY + nodeHeight + tolerance
         ) {
           const distance = Math.sqrt(
-            Math.pow(position.x - (nodeX + nodeWidth / 2), 2) +
-              Math.pow(position.y - (nodeY + nodeHeight / 2), 2)
+            (position.x - (nodeX + nodeWidth / 2)) ** 2 +
+              (position.y - (nodeY + nodeHeight / 2)) ** 2
           );
 
           if (distance < minDistance) {
