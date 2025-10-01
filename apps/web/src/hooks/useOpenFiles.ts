@@ -33,6 +33,14 @@ export interface OpenFile {
   // FR: Palette choisie pour cette carte (par onglet)
   // EN: Selected palette for this map (per tab)
   paletteId?: string;
+  // FR: Style de la carte (couleur de fond, style des liens, motif de fond)
+  // EN: Map style (background color, link style, background pattern)
+  mapStyle?: {
+    backgroundColor?: string;
+    linkStyle?: 'straight' | 'curved' | 'rounded' | 'orthogonal';
+    backgroundPattern?: 'none' | 'dots' | 'grid' | 'lines';
+    backgroundPatternOpacity?: number;
+  };
   // FR: Historique Undo/Redo
   // EN: Undo/Redo history
   history?: HistoryManager;
@@ -65,6 +73,9 @@ interface OpenFilesState {
   // FR: Palette par carte
   // EN: Per-map palette
   setActiveFilePalette: (paletteId: string) => void;
+  // FR: Style de la carte
+  // EN: Map style
+  updateActiveFileMapStyle: (styleUpdates: Partial<OpenFile['mapStyle']>) => void;
   // FR: Actions Undo/Redo
   // EN: Undo/Redo actions
   undo: () => void;
@@ -110,10 +121,10 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       // EN: Deactivate all other files and add the new one
       const updatedFiles = state.openFiles.map(f => ({ ...f, isActive: false }));
       const result = [...updatedFiles, newFile];
-
+      
       console.warn('📁 Fichiers ouverts:', result.length);
       console.warn('📁 Nouveau fichier actif:', newFile.id, newFile.isActive);
-
+      
       return {
         ...state,
         openFiles: result,
@@ -136,12 +147,34 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     });
   },
 
+  // FR: Mettre à jour le style de la carte active
+  // EN: Update active file's map style
+  updateActiveFileMapStyle: (styleUpdates: Partial<OpenFile['mapStyle']>) => {
+    const state = get();
+    const fileId = state.activeFileId;
+    if (!fileId) return;
+    
+    set({
+      openFiles: state.openFiles.map(f => 
+        f.id === fileId 
+          ? { 
+              ...f, 
+              mapStyle: { 
+                ...f.mapStyle, 
+                ...styleUpdates 
+              } 
+            } 
+          : f
+      )
+    });
+  },
+
   // FR: Fermer un fichier
   // EN: Close a file
   closeFile: (fileId: string) => {
     set(state => {
       const filteredFiles = state.openFiles.filter(f => f.id !== fileId);
-
+      
       // FR: Si on ferme le fichier actif, activer le précédent
       // EN: If closing active file, activate the previous one
       let newActiveFileId = state.activeFileId;
@@ -154,7 +187,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
           newActiveFileId = null;
         }
       }
-
+      
       return {
         ...state,
         openFiles: filteredFiles,
@@ -225,7 +258,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
   createNewFile: (name: string = 'Nouvelle carte') => {
     const newFileId = uuidv4();
     const newRootId = uuidv4();
-
+    
     return get().openFile({
       name,
       type: 'new',

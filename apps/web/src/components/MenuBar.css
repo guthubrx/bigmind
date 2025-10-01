@@ -65,6 +65,9 @@
   transform: translateY(-8px);
   transition: all 0.2s ease;
   pointer-events: none;
+  /* FR: Ajouter une marge pour éviter que le menu disparaisse */
+  /* EN: Add margin to prevent menu from disappearing */
+  margin-top: 4px;
 }
 
 .menu-item.active .menu-dropdown {
@@ -102,4 +105,47 @@
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
   font-weight: 400;
   opacity: 0.8;
+}
+
+/* FR: Styles pour les sous-menus */
+/* EN: Styles for submenus */
+.menu-item-with-submenu {
+  position: relative;
+}
+
+.menu-item-with-submenu:hover .menu-submenu {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.menu-submenu {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  min-width: 160px;
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 1px solid theme('colors.border.DEFAULT');
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), 0 4px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  padding: 6px 0;
+  backdrop-filter: blur(12px);
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: all 0.2s ease;
+  pointer-events: none;
+  margin-left: 8px; /* FR: Augmenter la marge pour plus d'espace */
+  margin-top: -4px; /* FR: Ajuster la position verticale */
+}
+
+.menu-submenu .menu-item-option {
+  margin: 2px 4px;
+  padding: 6px 12px;
+}
+
+.menu-submenu .menu-item-option:hover {
+  background-color: theme('colors.accent.100');
+  color: theme('colors.accent.900');
+  transform: translateX(2px);
 }

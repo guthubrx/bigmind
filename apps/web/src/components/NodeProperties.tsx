@@ -13,7 +13,13 @@ import {
   Bold,
   Italic,
   Underline,
-  Settings
+  Settings,
+  Paintbrush,
+  Link,
+  Grid3X3,
+  Circle,
+  Square,
+  Minus
 } from 'lucide-react';
 import { useMindmap } from '../hooks/useMindmap';
 import { COLOR_PALETTES } from '../hooks/useAppSettings';
@@ -28,6 +34,7 @@ function NodeProperties() {
   const updateActiveFileNode = useOpenFiles((s) => s.updateActiveFileNode);
   const [activeTab, setActiveTab] = useState<'content' | 'style' | 'advanced'>('content');
   const setActiveFilePalette = useOpenFiles((s) => s.setActiveFilePalette);
+  const updateActiveFileMapStyle = useOpenFiles((s) => s.updateActiveFileMapStyle);
   const activePaletteId = activeFile?.paletteId || (activeFile?.themeColors && activeFile.themeColors.length > 0 ? 'xmind' : 'vibrant');
   
   // FR: Créer une palette XMind basée sur les couleurs du thème XMind
@@ -210,6 +217,130 @@ function NodeProperties() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* FR: Couleur de fond de la carte */}
+            {/* EN: Map background color */}
+            <div>
+              <div style={{ fontSize: 12, color: '#475569', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Paintbrush className="icon-small" />
+                Couleur de fond
+              </div>
+              <input
+                type="color"
+                value={activeFile?.mapStyle?.backgroundColor || '#ffffff'}
+                onChange={(e) => updateActiveFileMapStyle({ backgroundColor: e.target.value })}
+                style={{
+                  width: '100%',
+                  height: 36,
+                  border: '1px solid #e2e8f0',
+                  borderRadius: 6,
+                  cursor: 'pointer'
+                }}
+              />
+            </div>
+
+            {/* FR: Style des liens */}
+            {/* EN: Link style */}
+            <div>
+              <div style={{ fontSize: 12, color: '#475569', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Link className="icon-small" />
+                Style des liens
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                {[
+                  { id: 'straight', label: 'Droits', icon: Minus },
+                  { id: 'curved', label: 'Courbés', icon: Circle },
+                  { id: 'rounded', label: 'Arrondis', icon: Square },
+                  { id: 'orthogonal', label: 'Orthogonaux', icon: Grid3X3 }
+                ].map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => updateActiveFileMapStyle({ linkStyle: id as any })}
+                    style={{
+                      padding: '8px 12px',
+                      border: `1px solid ${activeFile?.mapStyle?.linkStyle === id ? 'var(--accent-color)' : '#e2e8f0'}`,
+                      borderRadius: 6,
+                      background: activeFile?.mapStyle?.linkStyle === id ? 'rgba(0,0,0,0.02)' : '#fff',
+                      fontSize: 12,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      cursor: 'pointer',
+                      color: '#374151'
+                    }}
+                  >
+                    <Icon className="icon-small" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* FR: Motif de fond */}
+            {/* EN: Background pattern */}
+            <div>
+              <div style={{ fontSize: 12, color: '#475569', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Grid3X3 className="icon-small" />
+                Motif de fond
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 }}>
+                {[
+                  { id: 'none', label: 'Aucun', icon: Minus },
+                  { id: 'dots', label: 'Points', icon: Circle },
+                  { id: 'grid', label: 'Grille', icon: Grid3X3 },
+                  { id: 'lines', label: 'Lignes', icon: Minus }
+                ].map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => updateActiveFileMapStyle({ backgroundPattern: id as any })}
+                    style={{
+                      padding: '8px 12px',
+                      border: `1px solid ${activeFile?.mapStyle?.backgroundPattern === id ? 'var(--accent-color)' : '#e2e8f0'}`,
+                      borderRadius: 6,
+                      background: activeFile?.mapStyle?.backgroundPattern === id ? 'rgba(0,0,0,0.02)' : '#fff',
+                      fontSize: 12,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      cursor: 'pointer',
+                      color: '#374151'
+                    }}
+                  >
+                    <Icon className="icon-small" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+              
+              {/* FR: Transparence du motif */}
+              {/* EN: Pattern transparency */}
+              {activeFile?.mapStyle?.backgroundPattern && activeFile?.mapStyle?.backgroundPattern !== 'none' && (
+                <div>
+                  <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Transparence</div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={activeFile?.mapStyle?.backgroundPatternOpacity || 0.3}
+                    onChange={(e) => updateActiveFileMapStyle({ backgroundPatternOpacity: parseFloat(e.target.value) })}
+                    style={{
+                      width: '100%',
+                      height: 4,
+                      background: '#e2e8f0',
+                      borderRadius: 2,
+                      outline: 'none',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  <div style={{ fontSize: 10, color: '#64748b', textAlign: 'center', marginTop: 2 }}>
+                    {Math.round((activeFile?.mapStyle?.backgroundPatternOpacity || 0.3) * 100)}%
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

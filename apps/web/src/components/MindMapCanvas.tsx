@@ -585,6 +585,25 @@ function MindMapCanvas() {
       return getNodeColor(parentId);
     };
 
+    // FR: Obtenir le type d'arête selon le style configuré
+    // EN: Get edge type based on configured style
+    const getEdgeType = (): string => {
+      const linkStyle = activeFile?.mapStyle?.linkStyle || 'curved';
+      
+      switch (linkStyle) {
+        case 'straight':
+          return 'straight';
+        case 'curved':
+          return 'smoothstep';
+        case 'rounded':
+          return 'step';
+        case 'orthogonal':
+          return 'straight';
+        default:
+          return 'smoothstep';
+      }
+    };
+
     // FR: Fonction récursive pour créer les connexions en respectant la direction (gauche/droite)
     // EN: Recursive function to create connections respecting direction (left/right)
     const createConnections = (node: any, level: number, direction: number): void => {
@@ -611,7 +630,7 @@ function MindMapCanvas() {
               source: node.id,
               target: childId,
               sourceHandle: 'right',
-              type: 'smoothstep',
+              type: getEdgeType(),
               style: { stroke: edgeColor, strokeWidth: 2 },
               data: { isSelected: false, parentId: node.id, childId },
             });
@@ -634,7 +653,7 @@ function MindMapCanvas() {
               source: node.id,
               target: childId,
               sourceHandle: 'left',
-              type: 'smoothstep',
+              type: getEdgeType(),
               style: { stroke: edgeColor, strokeWidth: 2 },
               data: { isSelected: false, parentId: node.id, childId },
             });
@@ -657,7 +676,7 @@ function MindMapCanvas() {
               source: node.id,
               target: childId,
               sourceHandle: handleId,
-              type: 'smoothstep',
+              type: getEdgeType(),
               style: { stroke: edgeColor, strokeWidth: 2 },
               data: { isSelected: false, parentId: node.id, childId },
             });
@@ -700,7 +719,7 @@ function MindMapCanvas() {
               source: ghostNodeId,
               target: childId,
               sourceHandle: 'right',
-              type: 'smoothstep',
+              type: getEdgeType(),
               style: { 
                 stroke: edgeColor, 
                 strokeWidth: 2,
@@ -723,7 +742,7 @@ function MindMapCanvas() {
               source: ghostNodeId,
               target: childId,
               sourceHandle: 'left',
-              type: 'smoothstep',
+              type: getEdgeType(),
               style: { 
                 stroke: edgeColor, 
                 strokeWidth: 2,
@@ -749,7 +768,7 @@ function MindMapCanvas() {
               source: ghostNodeId,
               target: childId,
               sourceHandle: handleId,
-              type: 'smoothstep',
+              type: getEdgeType(),
               style: { 
                 stroke: edgeColor, 
                 strokeWidth: 2,
@@ -770,10 +789,56 @@ function MindMapCanvas() {
 
     // console.warn('Edges created:', edges.length);
     return edges;
-  }, [activeFile, draggedNodeId, ghostNode, draggedDescendants]);
+  }, [activeFile, draggedNodeId, ghostNode, draggedDescendants, activeFile?.mapStyle?.linkStyle]);
 
   const initialNodes = useMemo(() => convertToReactFlowNodes(), [convertToReactFlowNodes]);
   const initialEdges = useMemo(() => convertToReactFlowEdges(), [convertToReactFlowEdges]);
+
+  // FR: Générer les styles CSS pour les motifs de fond
+  // EN: Generate CSS styles for background patterns
+  const backgroundPatternStyle = useMemo(() => {
+    const pattern = activeFile?.mapStyle?.backgroundPattern;
+    const opacity = activeFile?.mapStyle?.backgroundPatternOpacity || 0.3;
+    
+    if (!pattern || pattern === 'none') return {};
+    
+    const baseStyle = {
+      position: 'absolute' as const,
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      pointerEvents: 'none' as const,
+      opacity,
+      zIndex: 0
+    };
+    
+    switch (pattern) {
+      case 'dots':
+        return {
+          ...baseStyle,
+          backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)',
+          backgroundSize: '20px 20px'
+        };
+      case 'grid':
+        return {
+          ...baseStyle,
+          backgroundImage: `
+            linear-gradient(to right, #000 1px, transparent 1px),
+            linear-gradient(to bottom, #000 1px, transparent 1px)
+          `,
+          backgroundSize: '20px 20px'
+        };
+      case 'lines':
+        return {
+          ...baseStyle,
+          backgroundImage: 'linear-gradient(to right, #000 1px, transparent 1px)',
+          backgroundSize: '20px 20px'
+        };
+      default:
+        return {};
+    }
+  }, [activeFile?.mapStyle?.backgroundPattern, activeFile?.mapStyle?.backgroundPatternOpacity]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -1231,7 +1296,23 @@ function MindMapCanvas() {
   }
 
   return (
-    <div className="mindmap-canvas" ref={reactFlowWrapper} style={{ width: '100%', height: '100%', minHeight: '400px' }}>
+    <div 
+      className="mindmap-canvas" 
+      ref={reactFlowWrapper} 
+      style={{ 
+        width: '100%', 
+        height: '100%', 
+        minHeight: '400px',
+        backgroundColor: activeFile?.mapStyle?.backgroundColor || '#ffffff',
+        position: 'relative'
+      }}
+    >
+      {/* FR: Motif de fond */}
+      {/* EN: Background pattern */}
+      {activeFile?.mapStyle?.backgroundPattern && activeFile?.mapStyle?.backgroundPattern !== 'none' && (
+        <div style={backgroundPatternStyle} />
+      )}
+      
       <ReactFlow
         nodes={nodes}
         edges={edges}

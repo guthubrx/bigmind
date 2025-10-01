@@ -95,6 +95,72 @@ export class FreeMindParser {
   }
 
   /**
+   * FR: Convertir un BigMind vers le format FreeMind .mm
+   * EN: Convert BigMind to FreeMind .mm format
+   */
+  static convertFromBigMind(bigMindData: any): string {
+    const { content } = bigMindData;
+    if (!content || !content.nodes || !content.rootNode) {
+      throw new Error('Données BigMind invalides pour la conversion FreeMind');
+    }
+
+    const buildNodeXML = (nodeId: string, level: number = 0): string => {
+      const node = content.nodes[nodeId];
+      if (!node) return '';
+
+      const indent = '  '.repeat(level);
+      const text = node.title || '';
+      const id = node.id || `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // FR: Construire les attributs
+      // EN: Build attributes
+      const attributes: string[] = [`TEXT="${this.escapeXml(text)}"`, `ID="${id}"`];
+      
+      if (node.collapsed) {
+        attributes.push('FOLDED="true"');
+      }
+      
+      if (node.style?.backgroundColor) {
+        attributes.push(`COLOR="${node.style.backgroundColor}"`);
+      }
+
+      const attributesStr = attributes.join(' ');
+      
+      // FR: Construire les enfants
+      // EN: Build children
+      let childrenXML = '';
+      if (node.children && node.children.length > 0) {
+        childrenXML = '\n' + node.children
+          .map(childId => buildNodeXML(childId, level + 1))
+          .join('\n') + '\n' + indent;
+      }
+
+      return `${indent}<node ${attributesStr}>${childrenXML}</node>`;
+    };
+
+    const rootNodeXML = buildNodeXML(content.rootId, 1);
+    const mapName = content.name || 'Carte mentale';
+    
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0.1">
+${rootNodeXML}
+</map>`;
+  }
+
+  /**
+   * FR: Échapper les caractères XML spéciaux
+   * EN: Escape special XML characters
+   */
+  private static escapeXml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  /**
    * FR: Convertir un FreeMindMap vers le format interne BigMind
    * EN: Convert FreeMindMap to internal BigMind format
    */
