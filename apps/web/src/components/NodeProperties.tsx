@@ -19,10 +19,12 @@ import {
   Grid3X3,
   Circle,
   Square,
-  Minus
+  Minus,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 import { useMindmap } from '../hooks/useMindmap';
-import { COLOR_PALETTES } from '../hooks/useAppSettings';
+import { COLOR_PALETTES, useAppSettings } from '../hooks/useAppSettings';
 import { useOpenFiles } from '../hooks/useOpenFiles';
 import { useSelection } from '../hooks/useSelection';
 import './NodeProperties.css';
@@ -36,6 +38,13 @@ function NodeProperties() {
   const setActiveFilePalette = useOpenFiles((s) => s.setActiveFilePalette);
   const updateActiveFileMapStyle = useOpenFiles((s) => s.updateActiveFileMapStyle);
   const activePaletteId = activeFile?.paletteId || (activeFile?.themeColors && activeFile.themeColors.length > 0 ? 'xmind' : 'vibrant');
+  
+  // FR: États pour gérer le collapse des sous-sections (depuis le store global)
+  // EN: States to manage subsection collapse (from global store)
+  const colorsCollapsed = useAppSettings((s) => s.colorsSectionCollapsed);
+  const setColorsCollapsed = useAppSettings((s) => s.setColorsSectionCollapsed);
+  const linksCollapsed = useAppSettings((s) => s.linksSectionCollapsed);
+  const setLinksCollapsed = useAppSettings((s) => s.setLinksSectionCollapsed);
   
   // FR: Créer une palette XMind basée sur les couleurs du thème XMind
   // EN: Create an XMind palette based on XMind theme colors
@@ -107,239 +116,315 @@ function NodeProperties() {
             display: 'flex', 
             alignItems: 'center', 
             gap: 8, 
-            marginBottom: 12,
+            marginBottom: 16,
             paddingBottom: 8,
             borderBottom: '1px solid #e2e8f0'
           }}>
             <Settings className="icon-small" style={{ color: '#64748b' }} />
             <span style={{ fontWeight: 600, fontSize: 14, color: '#374151' }}>Paramètres de la carte</span>
           </div>
-          <div style={{ display: 'grid', gap: 8 }}>
-            <div>
-              <div style={{ fontSize: 12, color: '#475569', marginBottom: 6 }}>Palette de couleurs</div>
-              <div ref={paletteRef} style={{ position: 'relative' }}>
-                <button
-                  type="button"
-                  className="input"
-                  onClick={() => setPaletteOpen((o) => !o)}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: 6,
-                    background: '#fff',
-                    fontSize: 14,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 8,
-                    cursor: 'pointer'
-                  }}
-                  aria-haspopup="listbox"
-                  aria-expanded={paletteOpen}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span>{(activePaletteId === 'xmind' ? xmindPalette : COLOR_PALETTES.find(p => p.id === activePaletteId))?.name || 'Sélectionner'}</span>
-                    <span style={{ display: 'flex', gap: 4 }}>
-                      {(activePaletteId === 'xmind' ? xmindPalette : COLOR_PALETTES.find(p => p.id === activePaletteId))?.colors.slice(0,5).map((c, i) => (
-                        <span key={i} style={{ width: 14, height: 14, borderRadius: 3, background: c, border: '1px solid rgba(0,0,0,0.1)' }} />
-                      ))}
-                    </span>
-                  </span>
-                  <span style={{ color: '#64748b' }}>▾</span>
-                </button>
-                {paletteOpen && (
-                  <div
-                    role="listbox"
-                    style={{
-                      position: 'absolute',
-                      top: '100%',
-                      left: 0,
-                      right: 0,
-                      marginTop: 6,
-                      maxHeight: 280,
-                      overflowY: 'auto',
-                      overflowX: 'hidden',
-                      background: '#fff',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: 8,
-                      boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
-                      zIndex: 20,
-                      padding: 6
-                    }}
-                  >
-                    {(() => {
-                      // FR: Créer la liste des palettes avec la palette XMind en premier si elle existe
-                      // EN: Create palette list with XMind palette first if it exists
-                      const allPalettes = [...COLOR_PALETTES];
-                      if (xmindPalette) {
-                        allPalettes.unshift(xmindPalette);
-                      }
-                      
-                      // FR: Trier les palettes (sauf la XMind qui reste en premier)
-                      // EN: Sort palettes (except XMind which stays first)
-                      const sortedPalettes = [
-                        ...(xmindPalette ? [xmindPalette] : []),
-                        ...COLOR_PALETTES.slice().sort((a,b)=>a.name.localeCompare(b.name))
-                      ];
-                      
-                      return sortedPalettes.map((p) => (
-                        <button
-                          key={p.id}
-                          type="button"
-                          role="option"
-                          aria-selected={activePaletteId === p.id}
-                          onClick={() => { setActiveFilePalette(p.id); setPaletteOpen(false); }}
-                          className="btn"
-                          style={{
-                            width: '100%',
-                            textAlign: 'left',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            gap: 8,
-                            padding: 8,
-                            borderRadius: 6,
-                            border: activePaletteId === p.id ? '2px solid var(--accent-color)' : '1px solid transparent',
-                            background: activePaletteId === p.id ? 'rgba(0,0,0,0.02)' : 'transparent'
-                          }}
-                          title={p.name}
-                        >
-                          <span style={{ fontSize: 14, color: '#111827' }}>{p.name}</span>
-                          <span style={{ display: 'flex', gap: 4, flexWrap: 'wrap', maxWidth: '60%' }}>
-                            {p.colors.map((c, i) => (
-                              <span key={i} style={{ width: 14, height: 14, borderRadius: 3, background: c, border: '1px solid rgba(0,0,0,0.1)' }} />
-                            ))}
-                          </span>
-                        </button>
-                      ));
-                    })()}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* FR: Couleur de fond de la carte */}
-            {/* EN: Map background color */}
-            <div>
-              <div style={{ fontSize: 12, color: '#475569', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Paintbrush className="icon-small" />
-                Couleur de fond
-              </div>
-              <input
-                type="color"
-                value={activeFile?.mapStyle?.backgroundColor || '#ffffff'}
-                onChange={(e) => updateActiveFileMapStyle({ backgroundColor: e.target.value })}
+          
+          <div style={{ display: 'grid', gap: 12 }}>
+            {/* FR: Sous-section Couleurs */}
+            {/* EN: Colors subsection */}
+            <div style={{
+              border: '1px solid #e2e8f0',
+              borderRadius: 8,
+              padding: colorsCollapsed ? 8 : 12,
+              background: '#fafbfc'
+            }}>
+              <button
+                type="button"
+                onClick={() => setColorsCollapsed(!colorsCollapsed)}
                 style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  marginBottom: colorsCollapsed ? 0 : 12,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: '#374151',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
                   width: '100%',
-                  height: 36,
-                  border: '1px solid #e2e8f0',
-                  borderRadius: 6,
-                  cursor: 'pointer'
+                  textAlign: 'left',
+                  padding: 0
                 }}
-              />
-            </div>
-
-            {/* FR: Style des liens */}
-            {/* EN: Link style */}
-            <div>
-              <div style={{ fontSize: 12, color: '#475569', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Link className="icon-small" />
-                Style des liens
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                {[
-                  { id: 'straight', label: 'Droits', icon: Minus },
-                  { id: 'curved', label: 'Courbés', icon: Circle },
-                  { id: 'rounded', label: 'Arrondis', icon: Square },
-                  { id: 'orthogonal', label: 'Orthogonaux', icon: Grid3X3 }
-                ].map(({ id, label, icon: Icon }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => updateActiveFileMapStyle({ linkStyle: id as any })}
-                    style={{
-                      padding: '8px 12px',
-                      border: `1px solid ${activeFile?.mapStyle?.linkStyle === id ? 'var(--accent-color)' : '#e2e8f0'}`,
-                      borderRadius: 6,
-                      background: activeFile?.mapStyle?.linkStyle === id ? 'rgba(0,0,0,0.02)' : '#fff',
-                      fontSize: 12,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      cursor: 'pointer',
-                      color: '#374151'
-                    }}
-                  >
-                    <Icon className="icon-small" />
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* FR: Motif de fond */}
-            {/* EN: Background pattern */}
-            <div>
-              <div style={{ fontSize: 12, color: '#475569', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Grid3X3 className="icon-small" />
-                Motif de fond
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 }}>
-                {[
-                  { id: 'none', label: 'Aucun', icon: Minus },
-                  { id: 'dots', label: 'Points', icon: Circle },
-                  { id: 'grid', label: 'Grille', icon: Grid3X3 },
-                  { id: 'lines', label: 'Lignes', icon: Minus }
-                ].map(({ id, label, icon: Icon }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => updateActiveFileMapStyle({ backgroundPattern: id as any })}
-                    style={{
-                      padding: '8px 12px',
-                      border: `1px solid ${activeFile?.mapStyle?.backgroundPattern === id ? 'var(--accent-color)' : '#e2e8f0'}`,
-                      borderRadius: 6,
-                      background: activeFile?.mapStyle?.backgroundPattern === id ? 'rgba(0,0,0,0.02)' : '#fff',
-                      fontSize: 12,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      cursor: 'pointer',
-                      color: '#374151'
-                    }}
-                  >
-                    <Icon className="icon-small" />
-                    {label}
-                  </button>
-                ))}
-              </div>
+              >
+                {colorsCollapsed ? (
+                  <ChevronRight className="icon-small" style={{ color: '#64748b' }} />
+                ) : (
+                  <ChevronDown className="icon-small" style={{ color: '#64748b' }} />
+                )}
+                <Palette className="icon-small" style={{ color: '#64748b' }} />
+                Couleurs
+              </button>
               
-              {/* FR: Transparence du motif */}
-              {/* EN: Pattern transparency */}
-              {activeFile?.mapStyle?.backgroundPattern && activeFile?.mapStyle?.backgroundPattern !== 'none' && (
+              {!colorsCollapsed && (
+                <div style={{ display: 'grid', gap: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 12, color: '#475569', marginBottom: 6 }}>Palette de couleurs</div>
+                  <div ref={paletteRef} style={{ position: 'relative' }}>
+                    <button
+                      type="button"
+                      className="input"
+                      onClick={() => setPaletteOpen((o) => !o)}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: 6,
+                        background: '#fff',
+                        fontSize: 14,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 8,
+                        cursor: 'pointer'
+                      }}
+                      aria-haspopup="listbox"
+                      aria-expanded={paletteOpen}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span>{(activePaletteId === 'xmind' ? xmindPalette : COLOR_PALETTES.find(p => p.id === activePaletteId))?.name || 'Sélectionner'}</span>
+                        <span style={{ display: 'flex', gap: 4 }}>
+                          {(activePaletteId === 'xmind' ? xmindPalette : COLOR_PALETTES.find(p => p.id === activePaletteId))?.colors.slice(0,5).map((c, i) => (
+                            <span key={i} style={{ width: 14, height: 14, borderRadius: 3, background: c, border: '1px solid rgba(0,0,0,0.1)' }} />
+                          ))}
+                        </span>
+                      </span>
+                      <span style={{ color: '#64748b' }}>▾</span>
+                    </button>
+                    {paletteOpen && (
+                      <div
+                        role="listbox"
+                        style={{
+                          position: 'absolute',
+                          top: '100%',
+                          left: 0,
+                          right: 0,
+                          marginTop: 6,
+                          maxHeight: 280,
+                          overflowY: 'auto',
+                          overflowX: 'hidden',
+                          background: '#fff',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: 8,
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+                          zIndex: 20,
+                          padding: 6
+                        }}
+                      >
+                        {(() => {
+                          // FR: Créer la liste des palettes avec la palette XMind en premier si elle existe
+                          // EN: Create palette list with XMind palette first if it exists
+                          const allPalettes = [...COLOR_PALETTES];
+                          if (xmindPalette) {
+                            allPalettes.unshift(xmindPalette);
+                          }
+                          
+                          // FR: Trier les palettes (sauf la XMind qui reste en premier)
+                          // EN: Sort palettes (except XMind which stays first)
+                          const sortedPalettes = [
+                            ...(xmindPalette ? [xmindPalette] : []),
+                            ...COLOR_PALETTES.slice().sort((a,b)=>a.name.localeCompare(b.name))
+                          ];
+                          
+                          return sortedPalettes.map((p) => (
+                            <button
+                              key={p.id}
+                              type="button"
+                              role="option"
+                              aria-selected={activePaletteId === p.id}
+                              onClick={() => { setActiveFilePalette(p.id); setPaletteOpen(false); }}
+                              className="btn"
+                              style={{
+                                width: '100%',
+                                textAlign: 'left',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: 8,
+                                padding: 8,
+                                borderRadius: 6,
+                                border: activePaletteId === p.id ? '2px solid var(--accent-color)' : '1px solid transparent',
+                                background: activePaletteId === p.id ? 'rgba(0,0,0,0.02)' : 'transparent'
+                              }}
+                              title={p.name}
+                            >
+                              <span style={{ fontSize: 14, color: '#111827' }}>{p.name}</span>
+                              <span style={{ display: 'flex', gap: 4, flexWrap: 'wrap', maxWidth: '60%' }}>
+                                {p.colors.map((c, i) => (
+                                  <span key={i} style={{ width: 14, height: 14, borderRadius: 3, background: c, border: '1px solid rgba(0,0,0,0.1)' }} />
+                                ))}
+                              </span>
+                            </button>
+                          ));
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* FR: Couleur de fond de la carte */}
+                {/* EN: Map background color */}
                 <div>
-                  <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Transparence</div>
+                  <div style={{ fontSize: 12, color: '#475569', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Paintbrush className="icon-small" />
+                    Couleur de fond
+                  </div>
                   <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={activeFile?.mapStyle?.backgroundPatternOpacity || 0.3}
-                    onChange={(e) => updateActiveFileMapStyle({ backgroundPatternOpacity: parseFloat(e.target.value) })}
+                    type="color"
+                    value={activeFile?.mapStyle?.backgroundColor || '#ffffff'}
+                    onChange={(e) => updateActiveFileMapStyle({ backgroundColor: e.target.value })}
                     style={{
                       width: '100%',
-                      height: 4,
-                      background: '#e2e8f0',
-                      borderRadius: 2,
-                      outline: 'none',
+                      height: 36,
+                      border: '1px solid #e2e8f0',
+                      borderRadius: 6,
                       cursor: 'pointer'
                     }}
                   />
-                  <div style={{ fontSize: 10, color: '#64748b', textAlign: 'center', marginTop: 2 }}>
-                    {Math.round((activeFile?.mapStyle?.backgroundPatternOpacity || 0.3) * 100)}%
-                  </div>
                 </div>
+
+                {/* FR: Motif de fond */}
+                {/* EN: Background pattern */}
+                <div>
+                  <div style={{ fontSize: 12, color: '#475569', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Grid3X3 className="icon-small" />
+                    Motif de fond
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 }}>
+                    {[
+                      { id: 'none', label: 'Aucun', icon: Minus },
+                      { id: 'dots', label: 'Points', icon: Circle },
+                      { id: 'grid', label: 'Grille', icon: Grid3X3 },
+                      { id: 'lines', label: 'Lignes', icon: Minus }
+                    ].map(({ id, label, icon: Icon }) => (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => updateActiveFileMapStyle({ backgroundPattern: id as any })}
+                        style={{
+                          padding: '8px 12px',
+                          border: `1px solid ${activeFile?.mapStyle?.backgroundPattern === id ? 'var(--accent-color)' : '#e2e8f0'}`,
+                          borderRadius: 6,
+                          background: activeFile?.mapStyle?.backgroundPattern === id ? 'rgba(0,0,0,0.02)' : '#fff',
+                          fontSize: 12,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          cursor: 'pointer',
+                          color: '#374151'
+                        }}
+                      >
+                        <Icon className="icon-small" />
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  {/* FR: Transparence du motif */}
+                  {/* EN: Pattern transparency */}
+                  {activeFile?.mapStyle?.backgroundPattern && activeFile?.mapStyle?.backgroundPattern !== 'none' && (
+                    <div>
+                      <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Transparence</div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={activeFile?.mapStyle?.backgroundPatternOpacity || 0.3}
+                        onChange={(e) => updateActiveFileMapStyle({ backgroundPatternOpacity: parseFloat(e.target.value) })}
+                        style={{
+                          width: '100%',
+                          height: 4,
+                          background: '#e2e8f0',
+                          borderRadius: 2,
+                          outline: 'none',
+                          cursor: 'pointer'
+                        }}
+                      />
+                      <div style={{ fontSize: 10, color: '#64748b', textAlign: 'center', marginTop: 2 }}>
+                        {Math.round((activeFile?.mapStyle?.backgroundPatternOpacity || 0.3) * 100)}%
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              )}
+            </div>
+
+            {/* FR: Sous-section Liens */}
+            {/* EN: Links subsection */}
+            <div style={{
+              border: '1px solid #e2e8f0',
+              borderRadius: 8,
+              padding: linksCollapsed ? 8 : 12,
+              background: '#fafbfc'
+            }}>
+              <button
+                type="button"
+                onClick={() => setLinksCollapsed(!linksCollapsed)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  marginBottom: linksCollapsed ? 0 : 12,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: '#374151',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  width: '100%',
+                  textAlign: 'left',
+                  padding: 0
+                }}
+              >
+                {linksCollapsed ? (
+                  <ChevronRight className="icon-small" style={{ color: '#64748b' }} />
+                ) : (
+                  <ChevronDown className="icon-small" style={{ color: '#64748b' }} />
+                )}
+                <Link className="icon-small" style={{ color: '#64748b' }} />
+                Liens
+              </button>
+              
+              {!linksCollapsed && (
+                <div>
+                  <div style={{ fontSize: 12, color: '#475569', marginBottom: 6 }}>Style des liens</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                  {[
+                    { id: 'straight', label: 'Droits', icon: Minus },
+                    { id: 'curved', label: 'Courbés', icon: Circle },
+                    { id: 'rounded', label: 'Arrondis', icon: Square },
+                    { id: 'orthogonal', label: 'Orthogonaux', icon: Grid3X3 }
+                  ].map(({ id, label, icon: Icon }) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => updateActiveFileMapStyle({ linkStyle: id as any })}
+                      style={{
+                        padding: '8px 12px',
+                        border: `1px solid ${activeFile?.mapStyle?.linkStyle === id ? 'var(--accent-color)' : '#e2e8f0'}`,
+                        borderRadius: 6,
+                        background: activeFile?.mapStyle?.linkStyle === id ? 'rgba(0,0,0,0.02)' : '#fff',
+                        fontSize: 12,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        cursor: 'pointer',
+                        color: '#374151'
+                      }}
+                    >
+                      <Icon className="icon-small" />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               )}
             </div>
           </div>

@@ -10,6 +10,7 @@ import MainLayout from './layouts/MainLayout';
 import SettingsPage from './pages/Settings';
 import { useAppSettings } from './hooks/useAppSettings';
 import { useOpenFiles } from './hooks/useOpenFiles';
+import { shouldIgnoreShortcut } from './utils/inputUtils';
 import './App.css';
 
 function App() {
@@ -36,13 +37,11 @@ function App() {
   // EN: Global Undo/Redo shortcuts (Cmd/Ctrl+Z, Shift+Cmd/Ctrl+Z or Ctrl+Y)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // FR: Éviter si un champ de saisie est actif (inputs, textarea, contenteditable)
-      // EN: Skip when typing in inputs/textarea/contenteditable
-      const target = e.target as HTMLElement | null;
-      const isEditable =
-        !!target &&
-        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
-      if (isEditable) return;
+      // FR: Ignorer les raccourcis sans modificateurs si on tape dans un champ
+      // EN: Ignore shortcuts without modifiers when typing in a field
+      if (shouldIgnoreShortcut(e)) {
+        return;
+      }
 
       const isMod = e.metaKey || e.ctrlKey;
       // Undo: Cmd/Ctrl + Z (without Shift)

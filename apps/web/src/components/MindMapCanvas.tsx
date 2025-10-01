@@ -28,6 +28,7 @@ import { useFlowInstance } from '../hooks/useFlowInstance';
 import { useShortcuts } from '../hooks/useShortcuts';
 import { useAppSettings, COLOR_PALETTES } from '../hooks/useAppSettings';
 import { ReparentNodeCommand } from '@bigmind/core';
+import { shouldIgnoreShortcut } from '../utils/inputUtils';
 import NodeContextMenu from './NodeContextMenu';
 
 // FR: Types de nœuds personnalisés
@@ -1032,6 +1033,13 @@ function MindMapCanvas() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (!activeFile?.content?.nodes) return;
+      
+      // FR: Ignorer les raccourcis sans modificateurs si on tape dans un champ
+      // EN: Ignore shortcuts without modifiers when typing in a field
+      if (shouldIgnoreShortcut(e)) {
+        return;
+      }
+      
       const key = e.key;
       // toggle follow
       if (key.toLowerCase() === (getShortcut('view.follow') || 'F').toLowerCase()) {
@@ -1229,6 +1237,13 @@ function MindMapCanvas() {
     const handler = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return;
       if (!activeFile?.content?.nodes) return;
+      
+      // FR: Ignorer les raccourcis sans modificateurs si on tape dans un champ
+      // EN: Ignore shortcuts without modifiers when typing in a field
+      if (shouldIgnoreShortcut(e)) {
+        return;
+      }
+      
       const parentId: string = selectedNodeId || activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
       if (!parentId) return;
       e.preventDefault();
@@ -1245,6 +1260,13 @@ function MindMapCanvas() {
     const handler = (e: KeyboardEvent) => {
       if (e.key !== 'Backspace' && e.key !== 'Delete') return;
       if (!activeFile?.content?.nodes) return;
+      
+      // FR: Ignorer les raccourcis sans modificateurs si on tape dans un champ
+      // EN: Ignore shortcuts without modifiers when typing in a field
+      if (shouldIgnoreShortcut(e)) {
+        return;
+      }
+      
       const currentId: string | undefined = selectedNodeId || activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
       if (!currentId) return;
       // Ne pas supprimer la racine
@@ -1277,6 +1299,38 @@ function MindMapCanvas() {
       // Ignore errors
     }
   }, [selectedNodeId, followSelection]);
+
+  // FR: Écouter les événements de clignotement depuis l'explorateur pour centrer sur le nœud
+  // EN: Listen for blinking events from the explorer to center on the node
+  useEffect(() => {
+    const handleNodeBlink = (event: CustomEvent) => {
+      const { nodeId } = event.detail;
+      if (!instanceRef.current) return;
+
+      const inst = instanceRef.current;
+      const node = inst.getNode(nodeId);
+      if (!node) return;
+
+      // Centrer sur le nœud avec une animation fluide
+      const width = ((node.data as any)?.width || 200);
+      const height = ((node.data as any)?.height || 40);
+      const x = (node.position?.x || 0) + width / 2;
+      const y = (node.position?.y || 0) + height / 2;
+      
+      try {
+        if (typeof inst.setCenter === 'function') {
+          inst.setCenter(x, y, { zoom: inst.getZoom?.() || 1, duration: 500 });
+        }
+      } catch (e) {
+        // Ignore errors
+      }
+    };
+
+    window.addEventListener('node-blink', handleNodeBlink as EventListener);
+    return () => {
+      window.removeEventListener('node-blink', handleNodeBlink as EventListener);
+    };
+  }, []);
 
   // FR: Synchroniser le zoom avec l'instance ReactFlow (toujours appelé, indépendamment du fichier actif)
   // EN: Sync zoom with ReactFlow instance (always called, regardless of active file)

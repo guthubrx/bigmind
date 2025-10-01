@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useOpenFiles } from '../hooks/useOpenFiles';
 import { useSelection } from '../hooks/useSelection';
+import { shouldIgnoreShortcut } from '../utils/inputUtils';
 
 const Toolbar: React.FC = () => {
   const activeFile = useOpenFiles((state) => state.openFiles.find(f => f.isActive));
@@ -35,6 +36,12 @@ const Toolbar: React.FC = () => {
   // EN: Handle keyboard shortcuts
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // FR: Ignorer les raccourcis sans modificateurs si on tape dans un champ
+      // EN: Ignore shortcuts without modifiers when typing in a field
+      if (shouldIgnoreShortcut(e)) {
+        return;
+      }
+      
       // FR: Ctrl/Cmd + Z pour annuler
       // EN: Ctrl/Cmd + Z to undo
       if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {

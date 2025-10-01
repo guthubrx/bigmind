@@ -60,6 +60,7 @@ function MindMapNode({ data, selected }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(data.title);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [isBlinking, setIsBlinking] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // FR: Calculer la luminosité relative d'une couleur hex (0-1, 0=noir, 1=blanc)
@@ -195,6 +196,25 @@ function MindMapNode({ data, selected }: Props) {
     return () => document.removeEventListener('keydown', handleKeyPress);
   }, [selected, data.isSelected, startEditing]);
 
+  // FR: Écouter les événements de clignotement depuis l'explorateur
+  // EN: Listen for blinking events from the explorer
+  useEffect(() => {
+    const handleNodeBlink = (event: CustomEvent) => {
+      if (event.detail.nodeId === data.id) {
+        setIsBlinking(true);
+        // Arrêter le clignotement après 1.5 secondes
+        setTimeout(() => {
+          setIsBlinking(false);
+        }, 1500);
+      }
+    };
+
+    window.addEventListener('node-blink', handleNodeBlink as EventListener);
+    return () => {
+      window.removeEventListener('node-blink', handleNodeBlink as EventListener);
+    };
+  }, [data.id]);
+
   const isCurrentlySelected = !!(selected || data.isSelected || selectedNodeId === data.id);
   
   // FR: Debug pour le drag target
@@ -233,6 +253,7 @@ function MindMapNode({ data, selected }: Props) {
         ${data.isSelected ? 'selected' : ''}
         ${isEditing ? 'editing' : ''}
         ${data.isPrimary ? '' : ''}
+        ${isBlinking ? 'blinking' : ''}
       `}
       role="button"
       tabIndex={(data as any).isGhost ? -1 : 0}

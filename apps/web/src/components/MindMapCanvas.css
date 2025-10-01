@@ -43,3 +43,30 @@
   font-style: italic;
   color: theme('colors.foreground.tertiary');
 }
+
+/* FR: Animation de clignotement pour les nœuds sélectionnés depuis l'explorateur */
+/* EN: Blinking animation for nodes selected from the explorer */
+@keyframes node-blink {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  25% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 12px rgba(59, 130, 246, 0.1);
+  }
+  75% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.3);
+  }
+}
+
+.mindmap-node.blinking {
+  animation: node-blink 0.6s ease-in-out 3;
+  z-index: 1000;
+  position: relative;
+}

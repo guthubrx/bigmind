@@ -173,6 +173,12 @@ type AppSettingsState = {
   setSelectedPalette: (paletteId: string) => void;
   dragTolerance: number;
   setDragTolerance: (tolerance: number) => void;
+  // FR: États de collapse des sous-sections des paramètres de carte
+  // EN: Collapse states for map settings subsections
+  colorsSectionCollapsed: boolean;
+  setColorsSectionCollapsed: (collapsed: boolean) => void;
+  linksSectionCollapsed: boolean;
+  setLinksSectionCollapsed: (collapsed: boolean) => void;
   load: () => void;
 };
 
@@ -182,6 +188,10 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
   accentColor: '#3b82f6',
   selectedPalette: 'vibrant',
   dragTolerance: 30,
+  // FR: Par défaut, les sous-sections sont fermées
+  // EN: By default, subsections are collapsed
+  colorsSectionCollapsed: true,
+  linksSectionCollapsed: true,
   setAccentColor: (color: string) => {
     set({ accentColor: color });
     try {
@@ -221,6 +231,28 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
       // Ignore localStorage errors
     }
   },
+  setColorsSectionCollapsed: (collapsed: boolean) => {
+    set({ colorsSectionCollapsed: collapsed });
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      obj.colorsSectionCollapsed = collapsed;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+  },
+  setLinksSectionCollapsed: (collapsed: boolean) => {
+    set({ linksSectionCollapsed: collapsed });
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      obj.linksSectionCollapsed = collapsed;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+  },
   load: () => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -234,6 +266,12 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
         }
         if (obj.dragTolerance !== undefined) {
           set({ dragTolerance: obj.dragTolerance });
+        }
+        if (obj.colorsSectionCollapsed !== undefined) {
+          set({ colorsSectionCollapsed: obj.colorsSectionCollapsed });
+        }
+        if (obj.linksSectionCollapsed !== undefined) {
+          set({ linksSectionCollapsed: obj.linksSectionCollapsed });
         }
       } else {
         // initialize CSS var with default
