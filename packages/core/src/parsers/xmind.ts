@@ -277,6 +277,7 @@ export class XMindParser {
       xmlDoc = parser.parseFromString(xmlText, 'text/xml');
     } else {
       // Node.js - utiliser jsdom
+      // eslint-disable-next-line global-require
       const { JSDOM } = require('jsdom');
       const dom = new JSDOM(xmlText, { contentType: 'text/xml' });
       xmlDoc = dom.window.document;
@@ -306,7 +307,8 @@ export class XMindParser {
       // EN: Debug: display XML structure for diagnosis
       const rootElements = Array.from(xmlDoc.documentElement.children).map(el => el.tagName);
       throw new Error(
-        `Fichier .xmind invalide : structure XML non reconnue. Éléments trouvés: ${rootElements.join(', ')}`
+        `Fichier .xmind invalide : structure XML non reconnue. ` +
+        `Éléments trouvés: ${rootElements.join(', ')}`
       );
     }
 
@@ -443,6 +445,7 @@ export class XMindParser {
       xmlDoc = parser.parseFromString(xmlText, 'text/xml');
     } else {
       // Node.js - utiliser jsdom
+      // eslint-disable-next-line global-require
       const { JSDOM } = require('jsdom');
       const dom = new JSDOM(xmlText, { contentType: 'text/xml' });
       xmlDoc = dom.window.document;
@@ -554,7 +557,8 @@ export class XMindParser {
     x: number,
     y: number
   ): void {
-    const nodeId = xmindNode.id || `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const nodeId = xmindNode.id || 
+      `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     // FR: Créer le nœud
     // EN: Create the node
