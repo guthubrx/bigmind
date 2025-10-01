@@ -180,14 +180,7 @@ function MindMapCanvas() {
       const palette = COLOR_PALETTES.find(p => p.id === perMapPaletteId);
       const colors = palette?.colors || themeColors || [];
 
-      // Debug: Log palette selection
-      console.log('🎨 Color inference:', {
-        perMapPaletteId,
-        paletteName: palette?.name,
-        colorsCount: colors.length,
-        themeColorsCount: themeColors?.length || 0,
-        sampleColors: colors.slice(0, 3),
-      });
+      // Color palette inference completed
 
       // FR: Créer une copie non destructive et préparer computedStyle
       // EN: Create non-destructive copy and prepare computedStyle
@@ -331,10 +324,7 @@ function MindMapCanvas() {
   // FR: Convertir les nœuds du fichier actif en nœuds ReactFlow
   // EN: Convert active file nodes to ReactFlow nodes
   const convertToReactFlowNodes = useCallback((): Node[] => {
-    // console.warn('convertToReactFlowNodes called');
-    if (dragTarget) {
-      console.log('🔄 convertToReactFlowNodes called with dragTarget:', dragTarget);
-    }
+    // Converting nodes to ReactFlow format
     if (!activeFile?.content?.nodes) {
       // console.warn('No nodes in activeFile.content');
       return [];

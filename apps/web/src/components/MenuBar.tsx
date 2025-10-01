@@ -19,6 +19,7 @@ import {
 import { usePlatform, formatShortcut } from '../hooks/usePlatform';
 import { useFileOperations } from '../hooks/useFileOperations';
 import { useOpenFiles } from '../hooks/useOpenFiles';
+import { toast } from '../utils/toast';
 import './MenuBar.css';
 // import { useAppSettings } from '../hooks/useAppSettings.ts';
 
@@ -115,8 +116,9 @@ function MenuBar() {
             await exportActiveXMind();
             // console.warn('File saved');
           } catch (error) {
-            console.error('Erreur lors de la sauvegarde:', error);
-            alert('Erreur lors de la sauvegarde du fichier');
+            const message =
+              error instanceof Error ? error.message : String(error);
+            toast.error(`Erreur lors de la sauvegarde: ${message}`);
           }
           break;
         case 'Sauvegarder sous...':
@@ -125,58 +127,37 @@ function MenuBar() {
             await saveAsXMind();
             // console.warn('File saved as');
           } catch (error) {
-            console.error('Erreur lors de la sauvegarde sous:', error);
-            alert('Erreur lors de la sauvegarde du fichier');
+            const message =
+              error instanceof Error ? error.message : String(error);
+            toast.error(`Erreur lors de la sauvegarde: ${message}`);
           }
           break;
         case 'Exporter vers FreeMind (.mm)':
-          // console.warn('Export to FreeMind...');
           try {
-            console.log('🧪 Test de téléchargement simple...');
-            // FR: Test simple de téléchargement
-            // EN: Simple download test
-            const testBlob = new Blob(['Test content'], { type: 'text/plain' });
-            const testUrl = URL.createObjectURL(testBlob);
-            const testLink = document.createElement('a');
-            testLink.href = testUrl;
-            testLink.download = 'test.txt';
-            testLink.style.display = 'none';
-            document.body.appendChild(testLink);
-            testLink.click();
-            document.body.removeChild(testLink);
-            URL.revokeObjectURL(testUrl);
-            console.log('🧪 Test de téléchargement terminé');
-
             await exportToFreeMind();
-            alert('✅ Fichier .mm téléchargé avec succès !');
+            toast.success('Fichier .mm téléchargé avec succès !');
           } catch (error) {
-            console.error("Erreur lors de l'export FreeMind:", error);
-            alert(
-              "❌ Erreur lors de l'export vers FreeMind: " +
-                (error instanceof Error ? error.message : String(error))
-            );
+            const message =
+              error instanceof Error ? error.message : String(error);
+            toast.error(`Erreur lors de l'export vers FreeMind: ${message}`);
           }
           break;
         case 'Exporter vers PDF':
-          // console.warn('Export to PDF...');
           try {
             await exportToPDF();
-            alert('✅ Fichier PDF téléchargé avec succès !');
+            toast.success('Fichier PDF téléchargé avec succès !');
           } catch (error) {
-            console.error("Erreur lors de l'export PDF:", error);
-            alert(
-              "❌ Erreur lors de l'export vers PDF: " +
-                (error instanceof Error ? error.message : String(error))
-            );
+            const message =
+              error instanceof Error ? error.message : String(error);
+            toast.error(`Erreur lors de l'export vers PDF: ${message}`);
           }
           break;
         default:
         // console.warn(`Action: ${action}`);
       }
     } catch (error) {
-      console.error(`❌ Erreur lors de l'action ${action}:`, error);
       const message = error instanceof Error ? error.message : String(error);
-      alert(`Erreur: ${message}`);
+      toast.error(`Erreur lors de l'action "${action}": ${message}`);
     }
     setActiveMenu(null);
   };
