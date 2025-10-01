@@ -44,6 +44,7 @@ import { getBackgroundPatternStyle } from '../utils/backgroundPatterns';
 import { useReactFlowNodes } from '../hooks/useReactFlowNodes';
 import { useReactFlowEdges } from '../hooks/useReactFlowEdges';
 import { useDragAndDrop } from '../hooks/useDragAndDrop';
+import { useContextMenuHandlers } from '../hooks/useContextMenuHandlers';
 import NodeContextMenu from './NodeContextMenu';
 
 // FR: Types de nœuds personnalisés
@@ -68,6 +69,7 @@ function MindMapCanvas() {
   );
   const setSelectedNodeId = useSelection(s => s.setSelectedNodeId);
   const followSelection = useCanvasOptions(s => s.followSelection);
+  const updateActiveFileNode = useOpenFiles(s => s.updateActiveFileNode);
 
   // FR: Hook pour le drag & drop
   // EN: Hook for drag & drop
@@ -82,6 +84,20 @@ function MindMapCanvas() {
   } = useDragAndDrop({
     activeFile,
     instanceRef,
+  });
+
+  // FR: Hook pour les handlers du menu contextuel
+  // EN: Hook for context menu handlers
+  const {
+    onToggleCollapse,
+    onToggleCollapseSiblings,
+    onToggleCollapseGeneration,
+    onExpand,
+    onExpandSiblings,
+    onExpandGeneration,
+  } = useContextMenuHandlers({
+    activeFile,
+    updateActiveFileNode,
   });
 
   // FR: Écouter les événements de menu contextuel des nœuds
@@ -130,7 +146,6 @@ function MindMapCanvas() {
   const nodesDraggable = useCanvasOptions(s => s.nodesDraggable);
   const selectedNodeId = useSelection(s => s.selectedNodeId);
   const addChildToActive = useOpenFiles(s => s.addChildToActive);
-  const updateActiveFileNode = useOpenFiles(s => s.updateActiveFileNode);
   const addSiblingToActive = useOpenFiles(s => s.addSiblingToActive);
   const removeNodeFromActive = useOpenFiles(s => s.removeNodeFromActive);
   const copyNode = useOpenFiles(s => s.copyNode);
@@ -726,166 +741,12 @@ function MindMapCanvas() {
           }
           position={{ x: contextMenu.x, y: contextMenu.y }}
           onClose={() => setContextMenu(null)}
-          onToggleCollapse={(nodeId: string) => {
-            const node = activeFile?.content?.nodes?.[nodeId];
-            if (!node) return;
-            updateActiveFileNode(nodeId, { collapsed: !node.collapsed });
-          }}
-          onToggleCollapseSiblings={(nodeId: string) => {
-            const node = activeFile?.content?.nodes?.[nodeId];
-            if (!node || !node.parentId) return;
-            const parent = activeFile?.content?.nodes?.[node.parentId];
-            if (!parent?.children) return;
-            parent.children.forEach((cid: string) => {
-              const child = activeFile?.content?.nodes?.[cid];
-              if (!child) return;
-              updateActiveFileNode(cid, { collapsed: !child.collapsed });
-            });
-          }}
-          onToggleCollapseGeneration={(nodeId: string) => {
-            // FR: Replier tous les nœuds de niveau > N (où N est le niveau du nœud cliqué)
-            // EN: Collapse all nodes at depth > N (where N is the clicked node's depth)
-            console.log('🔄 Replier génération pour nœud:', nodeId);
-            const nodes = activeFile?.content?.nodes;
-            if (!nodes) return;
-
-            // FR: Trouver la racine (nœud sans parent)
-            // EN: Find root (node without parent)
-            const rootId = Object.keys(nodes).find(id => !nodes[id]?.parentId);
-            if (!rootId) return;
-
-            // FR: Calculer la profondeur du nœud cliqué
-            // EN: Calculate depth of clicked node
-            const clickedNodeDepth = getNodeDepth(nodeId, nodes);
-            console.log('📍 Profondeur du nœud cliqué:', clickedNodeDepth);
-
-            // FR: Parcours en largeur pour trouver tous les nœuds de profondeur > clickedNodeDepth
-            // EN: BFS traversal to find all nodes at depth > clickedNodeDepth
-            const queue: Array<{ id: string; depth: number }> = [{ id: rootId, depth: 0 }];
-            const toCollapse: string[] = [];
-
-            while (queue.length > 0) {
-              const current = queue.shift()!;
-              const currentNode = nodes[current.id];
-              if (!currentNode) continue;
-
-              console.log(
-                `🔍 Nœud ${current.id} à profondeur ${current.depth} (cible: >${clickedNodeDepth})`
-              );
-
-              // FR: Replier les nœuds plus profonds que le nœud cliqué ET leurs parents directs
-              // EN: Collapse nodes deeper than the clicked node AND their direct parents
-              if (current.depth > clickedNodeDepth) {
-                toCollapse.push(current.id);
-                console.log(`✅ Ajouté à la liste de repli: ${current.id}`);
-
-                // FR: Aussi replier le parent direct pour masquer les enfants
-                // EN: Also collapse the direct parent to hide children
-                const currentNode = nodes[current.id];
-                if (currentNode?.parentId && !toCollapse.includes(currentNode.parentId)) {
-                  toCollapse.push(currentNode.parentId);
-                  console.log(`✅ Ajouté le parent à la liste de repli: ${currentNode.parentId}`);
-                }
-              }
-
-              const children: string[] = Array.isArray(currentNode.children)
-                ? currentNode.children
-                : [];
-              children.forEach(cid => {
-                queue.push({ id: cid, depth: current.depth + 1 });
-              });
-            }
-
-            // FR: Forcer l'état replié pour tous les nœuds plus profonds
-            // EN: Force collapsed state for all deeper nodes
-            console.log('📦 Nœuds à replier:', toCollapse);
-            toCollapse.forEach(nId => {
-              console.log(`🔄 Repliage du nœud ${nId}`);
-              updateActiveFileNode(nId, { collapsed: true });
-            });
-            console.log('✅ Repliage terminé pour', toCollapse.length, 'nœuds');
-          }}
-          onExpand={(nodeId: string) => {
-            // FR: Déplier le nœud (forcer collapsed: false)
-            // EN: Expand the node (force collapsed: false)
-            updateActiveFileNode(nodeId, { collapsed: false });
-          }}
-          onExpandSiblings={(nodeId: string) => {
-            // FR: Déplier tous les frères du nœud
-            // EN: Expand all siblings of the node
-            const node = activeFile?.content?.nodes?.[nodeId];
-            if (!node || !node.parentId) return;
-            const parent = activeFile?.content?.nodes?.[node.parentId];
-            if (!parent?.children) return;
-            parent.children.forEach((cid: string) => {
-              updateActiveFileNode(cid, { collapsed: false });
-            });
-          }}
-          onExpandGeneration={(nodeId: string) => {
-            // FR: Déplier l'arbre jusqu'au niveau N (inclus) et replier tout ce qui est au-delà
-            // EN: Expand tree up to level N (inclusive) and collapse everything beyond
-            const nodes = activeFile?.content?.nodes;
-            if (!nodes) return;
-
-            // FR: Trouver la racine (nœud sans parent)
-            // EN: Find root (node without parent)
-            const rootId = Object.keys(nodes).find(id => !nodes[id]?.parentId);
-            if (!rootId) return;
-
-            // FR: Calculer la profondeur du nœud cliqué
-            // EN: Calculate depth of clicked node
-            const clickedNodeDepth = getNodeDepth(nodeId, nodes);
-            console.log("🔄 Déplier génération jusqu'au niveau:", clickedNodeDepth);
-
-            // FR: Parcours en largeur de TOUT l'arbre
-            // EN: BFS traversal of the ENTIRE tree
-            const queue: Array<{ id: string; depth: number }> = [{ id: rootId, depth: 0 }];
-            const toExpand: string[] = [];
-            const toCollapse: string[] = [];
-
-            while (queue.length > 0) {
-              const current = queue.shift()!;
-              const currentNode = nodes[current.id];
-              if (!currentNode) continue;
-
-              if (current.depth <= clickedNodeDepth) {
-                // FR: Déplier tous les nœuds jusqu'au niveau N (inclus)
-                // EN: Expand all nodes up to level N (inclusive)
-                toExpand.push(current.id);
-                console.log(`✅ À déplier: ${current.id} (profondeur ${current.depth})`);
-              } else {
-                // FR: Replier tous les nœuds au-delà du niveau N
-                // EN: Collapse all nodes beyond level N
-                toCollapse.push(current.id);
-                console.log(`📦 À replier: ${current.id} (profondeur ${current.depth})`);
-              }
-
-              const children: string[] = Array.isArray(currentNode.children)
-                ? currentNode.children
-                : [];
-              children.forEach(cid => {
-                queue.push({ id: cid, depth: current.depth + 1 });
-              });
-            }
-
-            // FR: Appliquer les changements
-            // EN: Apply changes
-            toExpand.forEach(nId => {
-              updateActiveFileNode(nId, { collapsed: false });
-            });
-
-            toCollapse.forEach(nId => {
-              updateActiveFileNode(nId, { collapsed: true });
-            });
-
-            console.log(
-              '✅ Dépliage terminé: déplié',
-              toExpand.length,
-              'nœuds, replié',
-              toCollapse.length,
-              'nœuds'
-            );
-          }}
+          onToggleCollapse={onToggleCollapse}
+          onToggleCollapseSiblings={onToggleCollapseSiblings}
+          onToggleCollapseGeneration={onToggleCollapseGeneration}
+          onExpand={onExpand}
+          onExpandSiblings={onExpandSiblings}
+          onExpandGeneration={onExpandGeneration}
           onCopy={(nodeId: string) => copyNode(nodeId)}
           onPaste={(nodeId: string) => pasteNode(nodeId)}
           canPaste={canPaste()}
