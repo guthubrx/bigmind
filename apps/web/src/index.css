@@ -141,3 +141,70 @@ body {
 .accent-var {
   color: var(--accent-color);
 }
+
+/* FR: Désactiver complètement la sélection native pour éviter le halo bleu */
+/* EN: Completely disable native selection to prevent blue halo */
+*::selection {
+  background: transparent !important;
+}
+
+*::-moz-selection {
+  background: transparent !important;
+}
+
+*::-webkit-selection {
+  background: transparent !important;
+}
+
+/* FR: Désactiver la sélection sur le canvas de carte mentale */
+/* EN: Disable selection on mind map canvas */
+.mindmap-canvas,
+.mindmap-canvas * {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* FR: Masquer le rectangle de sélection ReactFlow par défaut */
+/* EN: Hide ReactFlow selection rectangle by default */
+.react-flow__selection,
+.react-flow__selection-rect,
+.react-flow__selection-rect-border,
+.react-flow__nodesselection,
+.react-flow__nodesselection-rect {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.05s ease-out !important;
+}
+
+/* FR: Masquer l'overlay de sélection du panneau sans affecter le panneau */
+/* EN: Hide pane selection overlay without affecting the pane */
+.react-flow__pane.selection {
+  background: transparent !important; /* Ensure pane background is transparent when not dragging */
+}
+
+.react-flow__pane.selection::after,
+.react-flow__pane.selection::before {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* FR: Afficher le halo pendant le drag uniquement */
+/* EN: Show halo during drag only */
+body.dragging .react-flow__selection,
+body.dragging .react-flow__selection-rect,
+body.dragging .react-flow__selection-rect-border,
+body.dragging .react-flow__nodesselection,
+body.dragging .react-flow__nodesselection-rect {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+body.dragging .react-flow__pane.selection::after,
+body.dragging .react-flow__pane.selection::before {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}

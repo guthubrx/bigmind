@@ -6,8 +6,6 @@
 import React, { useCallback, useRef, useMemo, useEffect, useState } from 'react';
 import {
   ReactFlow,
-  Node,
-  Edge,
   addEdge,
   Connection,
   useNodesState,
@@ -16,6 +14,7 @@ import {
   MiniMap,
   NodeTypes,
   EdgeTypes,
+  SelectionMode,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useOpenFiles } from '../hooks/useOpenFiles';
@@ -27,14 +26,6 @@ import MindMapEdge from './MindMapEdge';
 import { useFlowInstance } from '../hooks/useFlowInstance';
 import { useShortcuts } from '../hooks/useShortcuts';
 import { useAppSettings } from '../hooks/useAppSettings';
-import { ReparentNodeCommand } from '@bigmind/core';
-import { shouldIgnoreShortcut } from '../utils/inputUtils';
-import {
-  getAllDescendants,
-  getTotalDescendantsCount,
-  getNodeDepth,
-  isDescendant,
-} from '../utils/nodeUtils';
 import { getBackgroundPatternStyle } from '../utils/backgroundPatterns';
 import { useReactFlowNodes } from '../hooks/useReactFlowNodes';
 import { useReactFlowEdges } from '../hooks/useReactFlowEdges';
@@ -65,6 +56,8 @@ function MindMapCanvas() {
     null
   );
   const setSelectedNodeId = useSelection(s => s.setSelectedNodeId);
+  const setSelectedNodeIds = useSelection(s => s.setSelectedNodeIds);
+  const selectedNodeIds = useSelection(s => s.selectedNodeIds);
   const followSelection = useCanvasOptions(s => s.followSelection);
   const updateActiveFileNode = useOpenFiles(s => s.updateActiveFileNode);
 
@@ -312,12 +305,18 @@ function MindMapCanvas() {
     <div
       className="mindmap-canvas"
       ref={reactFlowWrapper}
+      role="application"
+      aria-label="Mind map canvas"
       style={{
         width: '100%',
         height: '100%',
         minHeight: '400px',
         backgroundColor: activeFile?.mapStyle?.backgroundColor || '#ffffff',
         position: 'relative',
+        userSelect: 'none',
+        WebkitUserSelect: 'none' as any,
+        msUserSelect: 'none' as any,
+        MozUserSelect: 'none' as any,
       }}
     >
       {/* FR: Motif de fond */}
@@ -343,6 +342,50 @@ function MindMapCanvas() {
         minZoom={0.1}
         attributionPosition="bottom-left"
         style={{ width: '100%', height: '100%', minHeight: '400px' }}
+        // FR: Panning avec la molette
+        // EN: Panning with mouse wheel
+        panOnScroll
+        panOnScrollMode="free"
+        panOnScrollSpeed={0.8}
+        zoomOnScroll={false}
+        // FR: Box selection
+        // EN: Box selection
+        selectionOnDrag
+        selectionMode={SelectionMode.Partial}
+        panOnDrag={false}
+        onSelectionChange={({ nodes: selNodes }) => {
+          const nodeIds = selNodes ? selNodes.map(node => node.id) : [];
+          // FR: Éviter les mises à jour inutiles si la sélection n'a pas changé
+          // EN: Avoid unnecessary updates if selection hasn't changed
+          if (JSON.stringify(nodeIds.sort()) !== JSON.stringify(selectedNodeIds.sort())) {
+            setSelectedNodeIds(nodeIds);
+          }
+        }}
+        onPaneMouseDown={e => {
+          if (e.button === 0) {
+            document.body.classList.add('dragging');
+          }
+        }}
+        onPaneMouseUp={() => {
+          document.body.classList.remove('dragging');
+          try {
+            const sel = window.getSelection && window.getSelection();
+            if (sel && sel.removeAllRanges) sel.removeAllRanges();
+            if ((sel as any)?.empty) (sel as any).empty();
+          } catch (_e) {
+            // Ignore selection errors
+          }
+        }}
+        onPaneMouseLeave={() => {
+          document.body.classList.remove('dragging');
+          try {
+            const sel = window.getSelection && window.getSelection();
+            if (sel && sel.removeAllRanges) sel.removeAllRanges();
+            if ((sel as any)?.empty) (sel as any).empty();
+          } catch (_e) {
+            // Ignore selection errors
+          }
+        }}
         onInit={inst => {
           instanceRef.current = inst;
           setFlowInstance(inst);
