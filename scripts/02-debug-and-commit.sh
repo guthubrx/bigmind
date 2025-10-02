@@ -164,6 +164,157 @@ run_command() {
     fi
 }
 
+# Fonction de diagnostic et réparation automatique avancée
+auto_diagnose_and_repair() {
+    local description="$1"
+    local command="$2"
+    local temp_log=$(mktemp)
+    
+    log "INFO" "🔍 DIAGNOSTIC AUTOMATIQUE: $description"
+    
+    # Exécuter la commande et capturer la sortie
+    if eval "$command" > "$temp_log" 2>&1; then
+        log "INFO" "✅ $description - Succès"
+        rm -f "$temp_log"
+        return 0
+    fi
+    
+    local exit_code=$?
+    log "ERROR" "❌ $description - Échec (code: $exit_code)"
+    
+    # Analyser le type d'erreur et proposer une réparation automatique
+    local error_type=""
+    local auto_fix_available=false
+    
+    # Détection intelligente du type d'erreur
+    if grep -q "Cannot find module\|Module not found\|ERR_MODULE_NOT_FOUND" "$temp_log"; then
+        error_type="missing_module"
+        auto_fix_available=true
+    elif grep -q "ENOENT.*node_modules\|pnpm-lock.yaml" "$temp_log"; then
+        error_type="missing_dependencies"
+        auto_fix_available=true
+    elif grep -q "Type error\|TS[0-9]\|TypeScript" "$temp_log"; then
+        error_type="typescript_error"
+        auto_fix_available=false
+    elif grep -q "ERESOLVE\|peer dep\|version conflict" "$temp_log"; then
+        error_type="dependency_conflict"
+        auto_fix_available=true
+    elif grep -q "EACCES\|permission denied" "$temp_log"; then
+        error_type="permission_error"
+        auto_fix_available=true
+    elif grep -q "ENOSPC\|no space left" "$temp_log"; then
+        error_type="disk_space"
+        auto_fix_available=false
+    else
+        error_type="unknown"
+        auto_fix_available=false
+    fi
+    
+    log "ERROR" "🎯 Type d'erreur: $error_type"
+    
+    # Tentative de réparation automatique
+    if [ "$auto_fix_available" = true ]; then
+        log "INFO" "🔧 RÉPARATION AUTOMATIQUE DISPONIBLE"
+        
+        case "$error_type" in
+            "missing_module"|"missing_dependencies")
+                log "INFO" "   Réinstallation des dépendances..."
+                if rm -rf node_modules && pnpm install; then
+                    log "INFO" "✅ Dépendances réinstallées"
+                    # Tester à nouveau
+                    if eval "$command" > /dev/null 2>&1; then
+                        log "INFO" "🎉 RÉPARATION RÉUSSIE !"
+                        rm -f "$temp_log"
+                        return 0
+                    fi
+                fi
+                ;;
+                
+            "dependency_conflict")
+                log "INFO" "   Résolution des conflits de dépendances..."
+                if rm -rf node_modules pnpm-lock.yaml && pnpm install; then
+                    log "INFO" "✅ Conflits résolus"
+                    # Tester à nouveau
+                    if eval "$command" > /dev/null 2>&1; then
+                        log "INFO" "🎉 RÉPARATION RÉUSSIE !"
+                        rm -f "$temp_log"
+                        return 0
+                    fi
+                fi
+                ;;
+                
+            "permission_error")
+                log "INFO" "   Correction des permissions..."
+                if sudo chown -R $(whoami) node_modules 2>/dev/null; then
+                    log "INFO" "✅ Permissions corrigées"
+                    # Tester à nouveau
+                    if eval "$command" > /dev/null 2>&1; then
+                        log "INFO" "🎉 RÉPARATION RÉUSSIE !"
+                        rm -f "$temp_log"
+                        return 0
+                    fi
+                fi
+                ;;
+        esac
+        
+        log "WARN" "⚠️ La réparation automatique n'a pas résolu le problème"
+    fi
+    
+    # Afficher les diagnostics détaillés
+    log "ERROR" ""
+    log "ERROR" "🔧 DIAGNOSTICS DÉTAILLÉS :"
+    log "ERROR" ""
+    
+    case "$error_type" in
+        "typescript_error")
+            log "ERROR" "📋 Erreurs TypeScript détectées:"
+            grep -E "(TS[0-9]+|Type error|error TS)" "$temp_log" | head -10 | while read -r line; do
+                log "ERROR" "   $line"
+            done
+            log "ERROR" ""
+            log "ERROR" "🔧 COMMANDES DE RÉPARATION MANUELLE :"
+            log "ERROR" "   1. Vérifier la syntaxe TypeScript:"
+            log "ERROR" "      pnpm type-check --filter bigmind-web"
+            log "ERROR" "   2. Corriger les erreurs dans le code source"
+            log "ERROR" "   3. Relancer: $command"
+            ;;
+            
+        "disk_space")
+            log "ERROR" "💾 Problème d'espace disque détecté"
+            log "ERROR" "🔧 COMMANDES DE NETTOYAGE :"
+            log "ERROR" "   1. Vérifier l'espace disponible:"
+            log "ERROR" "      df -h"
+            log "ERROR" "   2. Nettoyer les caches:"
+            log "ERROR" "      pnpm store prune"
+            log "ERROR" "      rm -rf ~/.npm/_cacache"
+            log "ERROR" "   3. Nettoyer les node_modules:"
+            log "ERROR" "      find . -name 'node_modules' -type d -exec rm -rf {} +"
+            ;;
+            
+        *)
+            log "ERROR" "📋 Erreurs complètes (20 premières lignes):"
+            cat "$temp_log" | head -20 | while read -r line; do
+                log "ERROR" "   $line"
+            done
+            log "ERROR" ""
+            log "ERROR" "🔧 COMMANDES DE DIAGNOSTIC GÉNÉRAL :"
+            log "ERROR" "   1. Voir toutes les erreurs:"
+            log "ERROR" "      cat $temp_log"
+            log "ERROR" "   2. Nettoyage complet:"
+            log "ERROR" "      rm -rf node_modules packages/*/node_modules apps/*/node_modules"
+            log "ERROR" "      pnpm install"
+            log "ERROR" "   3. Relancer: $command"
+            ;;
+    esac
+    
+    log "ERROR" ""
+    log "ERROR" "📝 Log complet sauvegardé: $temp_log"
+    log "ERROR" "📝 Log principal: $LOG_FILE"
+    log "ERROR" ""
+    
+    return $exit_code
+}
+
 # Fonction pour collecter les informations système
 collect_system_info() {
     log "INFO" "📊 Collecte des informations système"
@@ -247,13 +398,13 @@ build_project() {
     
     cd "$PROJECT_ROOT"
     
-    # Build des packages core
-    run_command "Build du package core" "pnpm build --filter @bigmind/core"
-    run_command "Build du package design" "pnpm build --filter @bigmind/design"
-    run_command "Build du package ui" "pnpm build --filter @bigmind/ui"
+    # Build des packages avec diagnostic automatique
+    auto_diagnose_and_repair "Build du package core" "pnpm build --filter @bigmind/core"
+    auto_diagnose_and_repair "Build du package design" "pnpm build --filter @bigmind/design"
+    auto_diagnose_and_repair "Build du package ui" "pnpm build --filter @bigmind/ui"
     
     # Build de l'application web
-    run_command "Build de l'application web" "pnpm build --filter bigmind-web"
+    auto_diagnose_and_repair "Build de l'application web" "pnpm build --filter bigmind-web"
 }
 
 # Fonction pour exécuter les tests
@@ -262,11 +413,11 @@ run_tests() {
     
     cd "$PROJECT_ROOT"
     
-    # Lint
-    if run_command "Linting" "pnpm lint --filter bigmind-web"; then
+    # Lint avec diagnostic automatique
+    if auto_diagnose_and_repair "Linting" "pnpm lint --filter bigmind-web"; then
         log "INFO" "✅ Linting réussi"
     else
-        log "WARN" "⚠️ Problèmes de linting détectés"
+        log "WARN" "⚠️ Problèmes de linting détectés - voir diagnostics ci-dessus"
     fi
     
     # Tests unitaires (si disponibles)
