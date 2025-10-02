@@ -3,14 +3,25 @@ name: Release
 on:
   push:
     branches: [main]
+    # FR: Ignorer les commits de release automatiques
+    # EN: Ignore automatic release commits
+    paths-ignore:
+      - 'CHANGELOG.md'
+    tags:
+      - 'v*'
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build (leave empty for current branch)'
+        required: false
+        type: string
 
 permissions:
   contents: write
 
 concurrency:
   group: release-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -117,6 +128,9 @@ jobs:
   semantic-release:
     needs: release
     runs-on: ubuntu-latest
+    # FR: Éviter les doubles releases en ignorant les commits de release
+    # EN: Avoid double releases by ignoring release commits
+    if: "!contains(github.event.head_commit.message, 'chore(release):') && github.event_name != 'workflow_dispatch'"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -152,3 +166,58 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HUSKY: 0
+
+  # FR: Job pour ajouter des binaires à une release existante
+  # EN: Job to add binaries to an existing release
+  update-existing-release:
+    needs: release
+    runs-on: ubuntu-latest
+    if: "github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/
+          pattern: bigmind-*
+          merge-multiple: true
+
+      - name: Get release tag
+        id: get_tag
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            if [[ -n "${{ github.event.inputs.tag }}" ]]; then
+              echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+            else
+              echo "tag=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload binaries to existing release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.get_tag.outputs.tag }}"
+          echo "🚀 Uploading binaries to release $TAG"
+          
+          # Vérifier si la release existe
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "✅ Release $TAG found, uploading binaries..."
+            
+            # Supprimer les anciens binaires s'ils existent
+            gh release delete-asset "$TAG" --yes || true
+            
+            # Upload des nouveaux binaires
+            find dist/ -type f \( -name "*.dmg" -o -name "*.msi" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" -o -name "*.zip" -o -name "*.exe" \) -exec gh release upload "$TAG" {} \;
+            
+            echo "✅ Binaries uploaded successfully to $TAG"
+          else
+            echo "❌ Release $TAG not found"
+            exit 1
+          fi
