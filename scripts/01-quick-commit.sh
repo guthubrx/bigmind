@@ -55,7 +55,7 @@ main() {
             log "INFO" "✅ Compilation réussie"
         else
             log "ERROR" "❌ Échec de la compilation"
-            log "INFO" "💡 Utilisez ./scripts/debug-and-commit.sh pour plus de détails"
+            log "INFO" "💡 Utilisez ./scripts/02-debug-and-commit.sh pour plus de détails"
             exit 1
         fi
         

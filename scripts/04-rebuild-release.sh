@@ -2,9 +2,15 @@
 
 # FR: Script pour reconstruire les binaires d'une release existante
 # EN: Script to rebuild binaries for an existing release
-# Usage: ./scripts/rebuild-release.sh v0.2.0
+# Usage: ./scripts/04-rebuild-release.sh v0.2.0
 
 set -e
+
+# Configuration des logs
+LOG_DIR="logs"
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+LOG_FILE="$LOG_DIR/rebuild_$TIMESTAMP.log"
+mkdir -p "$LOG_DIR"
 
 # Couleurs
 GREEN='\033[0;32m'
@@ -17,7 +23,12 @@ log() {
     local level=$1
     shift
     local message="$*"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     
+    # Log vers fichier avec timestamp
+    echo "[$timestamp] [$level] $message" >> "$LOG_FILE"
+    
+    # Affichage console avec couleurs
     case $level in
         "INFO")
             echo -e "${GREEN}[INFO]${NC} $message"
@@ -27,9 +38,13 @@ log() {
             ;;
         "ERROR")
             echo -e "${RED}[ERROR]${NC} $message"
+            echo -e "${RED}[ERROR]${NC} 📝 Logs détaillés: $LOG_FILE"
             ;;
         "DEBUG")
             echo -e "${BLUE}[DEBUG]${NC} $message"
+            ;;
+        "SUCCESS")
+            echo -e "${GREEN}[SUCCESS]${NC} $message"
             ;;
     esac
 }
