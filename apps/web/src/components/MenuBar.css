@@ -7,8 +7,9 @@
   display: flex;
   align-items: center;
   height: 100%;
-  background-color: theme('colors.background.DEFAULT');
-  border-bottom: 1px solid theme('colors.border.DEFAULT');
+  width: 100%;
+  background-color: transparent;
+  position: relative;
 }
 
 .menu-logo {
@@ -47,6 +48,31 @@
 .menu-item.active .menu-button {
   background-color: theme('colors.accent.100');
   color: theme('colors.accent.900');
+}
+
+/* FR: Icône des paramètres complètement à droite */
+/* EN: Settings icon completely on the right */
+.menu-settings-icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+/* FR: Style pour le bouton paramètres utilisant la classe .btn standard */
+/* EN: Style for settings button using standard .btn class */
+.menu-settings-icon .btn {
+  padding: 6px 8px;
+  font-size: 12px;
+  min-width: auto;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 .menu-dropdown {

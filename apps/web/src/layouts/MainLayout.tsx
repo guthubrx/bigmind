@@ -11,7 +11,10 @@ import MindMapCanvas from '../components/MindMapCanvas';
 import NodeProperties from '../components/NodeProperties';
 import StatusBar from '../components/StatusBar';
 import CollapseButton from '../components/CollapseButton';
+import { ResizeHandle } from '../components/ResizeHandle';
 import { useColumnCollapse } from '../hooks/useColumnCollapse';
+import { useColumnResize } from '../hooks/useColumnResize';
+import { cn } from '../utils/cn';
 import './MainLayout.css';
 
 // Constants for column keys
@@ -31,39 +34,173 @@ interface LayoutColumnProps {
   children: React.ReactNode;
   direction?: 'left' | 'right';
   ariaLabel?: string;
+  width?: number;
+  minWidth?: number;
+  maxWidth?: number;
+  onResize?: (event: React.MouseEvent) => void;
+  isResizing?: boolean;
+  showResizeHandle?: boolean;
+  resizeHandlePosition?: 'left' | 'right';
 }
 
 const LayoutColumn: React.FC<LayoutColumnProps> = React.memo(
-  ({ title, columnKey, isCollapsed, onToggle, children, direction = 'left', ariaLabel }) => (
-    <div
-      className={`layout-column ${isCollapsed ? 'collapsed' : ''}`}
-      role="region"
-      aria-label={ariaLabel || title}
-    >
-      <div className="column-header">
-        <span className="column-title">{title}</span>
-        <CollapseButton
-          isCollapsed={isCollapsed}
-          onToggle={() => onToggle(columnKey)}
-          direction={direction}
-          aria-label={`${isCollapsed ? 'Développer' : 'Réduire'} ${title}`}
-        />
-      </div>
-      {isCollapsed ? (
-        <div className="vertical-title">
-          <span className="vertical-text">{title.toUpperCase()}</span>
+  ({
+    title,
+    columnKey,
+    isCollapsed,
+    onToggle,
+    children,
+    direction = 'left',
+    ariaLabel,
+    width,
+    minWidth,
+    maxWidth,
+    onResize,
+    isResizing = false,
+    showResizeHandle = true,
+    resizeHandlePosition = 'right',
+  }) => {
+    const [isNearBorder, setIsNearBorder] = React.useState(false);
+    const [borderSide, setBorderSide] = React.useState<'left' | 'right' | null>(null);
+
+    // Zone de tolérance en pixels autour de la bordure
+    const TOLERANCE = 15;
+
+    const handleMouseMove = React.useCallback((e: React.MouseEvent) => {
+      if (isCollapsed || !showResizeHandle) return;
+
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const columnWidth = rect.width;
+
+      // Vérifier si on est proche de la bordure (à l'intérieur de la colonne)
+      const nearLeft = x <= TOLERANCE && resizeHandlePosition === 'left';
+      const nearRight = x >= columnWidth - TOLERANCE && resizeHandlePosition === 'right';
+
+      if (nearLeft || nearRight) {
+        setIsNearBorder(true);
+        setBorderSide(nearLeft ? 'left' : 'right');
+      } else {
+        setIsNearBorder(false);
+        setBorderSide(null);
+      }
+    }, [isCollapsed, showResizeHandle, resizeHandlePosition, TOLERANCE]);
+
+    const handleMouseLeave = React.useCallback(() => {
+      setIsNearBorder(false);
+      setBorderSide(null);
+    }, []);
+
+    // Ajouter des zones de détection invisibles autour des bordures
+    const renderBorderZones = () => {
+      if (isCollapsed || !showResizeHandle) return null;
+
+      return (
+        <>
+          {resizeHandlePosition === 'left' && (
+            <div
+              className="border-detection-zone border-detection-left"
+              onMouseEnter={() => {
+                setIsNearBorder(true);
+                setBorderSide('left');
+              }}
+              onMouseLeave={handleMouseLeave}
+              style={{
+                position: 'absolute',
+                left: '-15px',
+                top: 0,
+                bottom: 0,
+                width: '15px',
+                zIndex: 45,
+                cursor: 'col-resize'
+              }}
+            />
+          )}
+          {resizeHandlePosition === 'right' && (
+            <div
+              className="border-detection-zone border-detection-right"
+              onMouseEnter={() => {
+                setIsNearBorder(true);
+                setBorderSide('right');
+              }}
+              onMouseLeave={handleMouseLeave}
+              style={{
+                position: 'absolute',
+                right: '-15px',
+                top: 0,
+                bottom: 0,
+                width: '15px',
+                zIndex: 45,
+                cursor: 'col-resize'
+              }}
+            />
+          )}
+        </>
+      );
+    };
+
+    const columnStyle: React.CSSProperties = isCollapsed
+      ? {}
+      : {
+          width: width ? `${width}px` : undefined,
+          minWidth: minWidth ? `${minWidth}px` : undefined,
+          maxWidth: maxWidth ? `${maxWidth}px` : undefined,
+        };
+
+    return (
+      <div
+        className={cn(
+          'layout-column',
+          `${columnKey}-column`,
+          isCollapsed ? 'collapsed' : '',
+          'resizable-column',
+          isResizing && 'resizing',
+          isNearBorder && 'near-border'
+        )}
+        role="region"
+        aria-label={ariaLabel || title}
+        style={columnStyle}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
+        {renderBorderZones()}
+        {showResizeHandle && resizeHandlePosition === 'left' && !isCollapsed && onResize && (
+          <ResizeHandle onMouseDown={onResize} isDragging={isResizing} isHovered={isNearBorder && borderSide === 'left'} position="left" />
+        )}
+
+        <div className="column-header">
+          <span className="column-title">{title}</span>
+          <CollapseButton
+            isCollapsed={isCollapsed}
+            onToggle={() => onToggle(columnKey)}
+            direction={direction}
+            aria-label={`${isCollapsed ? 'Développer' : 'Réduire'} ${title}`}
+          />
         </div>
-      ) : (
-        children
-      )}
-    </div>
-  )
+
+        {isCollapsed ? (
+          <div className="vertical-title">
+            <span className="vertical-text">{title.toUpperCase()}</span>
+          </div>
+        ) : (
+          <div className="column-content" style={{ flex: 1, overflow: 'hidden' }}>
+            {children}
+          </div>
+        )}
+
+        {showResizeHandle && resizeHandlePosition === 'right' && !isCollapsed && onResize && (
+          <ResizeHandle onMouseDown={onResize} isDragging={isResizing} isHovered={isNearBorder && borderSide === 'right'} position="right" />
+        )}
+      </div>
+    );
+  }
 );
 
 LayoutColumn.displayName = 'LayoutColumn';
 
 const MainLayout: React.FC = React.memo(() => {
   const { toggleColumn, isCollapsed } = useColumnCollapse();
+  const { columnSizes, isDragging, startResize, COLUMN_SIZE_LIMITS, borderThickness } = useColumnResize();
 
   const handleToggleColumn = React.useCallback(
     (columnKey: ColumnKey) => {
@@ -73,7 +210,12 @@ const MainLayout: React.FC = React.memo(() => {
   );
 
   return (
-    <div className="main-layout" role="application" aria-label="BigMind Application">
+    <div
+      className="main-layout"
+      role="application"
+      aria-label="BigMind Application"
+      style={{ '--column-border-thickness': `${borderThickness}px` } as React.CSSProperties}
+    >
       {/* FR: Frameset vertical 1 - Layout principal */}
       {/* EN: Vertical frameset 1 - Main layout */}
       <div className="frameset-vertical-1">
@@ -98,6 +240,13 @@ const MainLayout: React.FC = React.memo(() => {
             onToggle={handleToggleColumn}
             direction="left"
             ariaLabel="Fichiers ouverts"
+            width={columnSizes.files}
+            minWidth={COLUMN_SIZE_LIMITS.files.min}
+            maxWidth={COLUMN_SIZE_LIMITS.files.max}
+            onResize={e => startResize('files', e)}
+            isResizing={isDragging === 'files'}
+            showResizeHandle
+            resizeHandlePosition="right"
           >
             <FileTabs />
           </LayoutColumn>
@@ -120,6 +269,13 @@ const MainLayout: React.FC = React.memo(() => {
                   onToggle={handleToggleColumn}
                   direction="left"
                   ariaLabel="Explorateur de nœuds"
+                  width={columnSizes.explorer}
+                  minWidth={COLUMN_SIZE_LIMITS.explorer.min}
+                  maxWidth={COLUMN_SIZE_LIMITS.explorer.max}
+                  onResize={e => startResize('explorer', e)}
+                  isResizing={isDragging === 'explorer'}
+                  showResizeHandle
+                  resizeHandlePosition="right"
                 >
                   <NodeExplorer />
                 </LayoutColumn>
@@ -139,6 +295,13 @@ const MainLayout: React.FC = React.memo(() => {
                   onToggle={handleToggleColumn}
                   direction="right"
                   ariaLabel="Propriétés du nœud"
+                  width={columnSizes.properties}
+                  minWidth={COLUMN_SIZE_LIMITS.properties.min}
+                  maxWidth={COLUMN_SIZE_LIMITS.properties.max}
+                  onResize={e => startResize('properties', e)}
+                  isResizing={isDragging === 'properties'}
+                  showResizeHandle
+                  resizeHandlePosition="left"
                 >
                   <NodeProperties />
                 </LayoutColumn>

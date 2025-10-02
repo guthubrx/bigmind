@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MenuBar from '../components/MenuBar';
 import StatusBar from '../components/StatusBar';
-import '../layouts/MainLayout.css';
+import FileTabs from '../components/FileTabs';
+import { ColumnSizeSettings } from '../components/ColumnSizeSettings';
 import { useShortcuts, ShortcutAction } from '../hooks/useShortcuts';
 import { usePlatform } from '../hooks/usePlatform';
-import { X } from 'lucide-react';
 import { useAppSettings, COLOR_PALETTES, ColorPalette } from '../hooks/useAppSettings';
+import { useColumnResize } from '../hooks/useColumnResize';
+import '../layouts/MainLayout.css';
 
 function SettingsPage() {
   const navigate = useNavigate();
@@ -19,7 +21,19 @@ function SettingsPage() {
   const shortcuts = useShortcuts((s) => s.map);
   const setShortcut = useShortcuts((s) => s.setShortcut);
   const resetShortcuts = useShortcuts((s) => s.resetDefaults);
-  const [section, setSection] = useState<'appearance' | 'interaction' | 'shortcuts'>('appearance');
+  const [section, setSection] = useState<'appearance' | 'interface' | 'interaction' | 'shortcuts'>('appearance');
+
+  // Hook pour le redimensionnement des colonnes
+  const {
+    columnSizes,
+    updateColumnSize,
+    resetColumnSizes,
+    COLUMN_SIZE_LIMITS
+  } = useColumnResize();
+
+  // Paramètres d'épaisseur des bordures
+  const columnBorderThickness = useAppSettings((s) => s.columnBorderThickness);
+  const setColumnBorderThickness = useAppSettings((s) => s.setColumnBorderThickness);
   const platform = usePlatform();
   const pastelBg = (alpha: number = 0.06) => {
     const hex = (accentColor || '#3b82f6').replace('#', '');
@@ -50,18 +64,17 @@ function SettingsPage() {
     <div className="main-layout">
       <div className="frameset-vertical-1">
         <div className="menu-bar-container">
-          <MenuBar />
+          <MenuBar isSettingsPage={true} onBack={() => navigate('/')} />
         </div>
+
+        {/* FR: Barre d'onglets normale pour l'écran des paramètres */}
+        {/* EN: Normal tab bar for settings screen */}
+        <div className="tab-bar-container">
+          <FileTabs type="tab-bar" />
+        </div>
+
         <div style={{ padding: 16, flex: '1 1 auto', overflow: 'hidden' }}>
           <div style={{ display: 'flex', height: '100%', border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden', position: 'relative' }}>
-            <button
-              aria-label="Fermer les paramètres"
-              className="btn"
-              onClick={() => navigate('/')}
-              style={{ position: 'absolute', top: 8, right: 8, padding: 6, lineHeight: 0 }}
-            >
-              <X className="icon-small" />
-            </button>
             {/* Sidebar */}
             <aside style={{ width: 240, background: '#f8fafc', borderRight: '1px solid #e2e8f0' }}>
               <div style={{ padding: 12, borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Paramètres</div>
@@ -79,6 +92,20 @@ function SettingsPage() {
                   onClick={() => setSection('appearance')}
                 >
                   Apparence
+                </button>
+                <button
+                  type="button"
+                  className="btn"
+                  style={{
+                    width: '100%',
+                    justifyContent: 'flex-start',
+                    border: 'none',
+                    borderRadius: 0,
+                    background: section === 'interface' ? 'rgba(0,0,0,0.04)' : 'transparent'
+                  }}
+                  onClick={() => setSection('interface')}
+                >
+                  Interface
                 </button>
                 <button
                   type="button"
@@ -128,13 +155,21 @@ function SettingsPage() {
                   {/* FR: Sélecteur de palette de couleurs */}
                   {/* EN: Color palette selector */}
                   <div style={{ display: 'grid', gap: 12 }}>
-                    <label style={{ fontWeight: 500, color: '#374151' }}>Palette de couleurs pour les cartes mentales</label>
+                    <div style={{ fontWeight: 500, color: '#374151' }}>Palette de couleurs pour les cartes mentales</div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
                       {COLOR_PALETTES.slice().sort((a, b) => a.name.localeCompare(b.name)).map((palette: ColorPalette) => (
                         <div
                           key={palette.id}
                           className="palette-card"
                           onClick={() => setSelectedPalette(palette.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              setSelectedPalette(palette.id);
+                            }
+                          }}
+                          role="button"
+                          tabIndex={0}
                           style={{
                             border: selectedPalette === palette.id ? `2px solid ${accentColor}` : '1px solid #e2e8f0',
                             borderRadius: 12,
@@ -172,7 +207,7 @@ function SettingsPage() {
                           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                             {palette.colors.map((color, index) => (
                               <div
-                                key={index}
+                                key={`${palette.id}-color-${index}`}
                                 style={{
                                   width: 24,
                                   height: 24,
@@ -190,6 +225,18 @@ function SettingsPage() {
                     </div>
                   </div>
                 </div>
+              )}
+
+              {section === 'interface' && (
+                <ColumnSizeSettings
+                  columnSizes={columnSizes}
+                  onSizeChange={updateColumnSize}
+                  onReset={resetColumnSizes}
+                  sizeLimits={COLUMN_SIZE_LIMITS}
+                  accentColor={accentColor}
+                  borderThickness={columnBorderThickness}
+                  onBorderThicknessChange={setColumnBorderThickness}
+                />
               )}
 
               {section === 'interaction' && (
@@ -210,7 +257,7 @@ function SettingsPage() {
                         max="100"
                         step="5"
                         value={dragTolerance}
-                        onChange={(e) => setDragTolerance(parseInt(e.target.value))}
+                        onChange={(e) => setDragTolerance(parseInt(e.target.value, 10))}
                         style={{ flex: 1, maxWidth: 300 }}
                       />
                       <div style={{ 

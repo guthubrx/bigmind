@@ -15,6 +15,7 @@ import {
   HelpCircle,
   ChevronDown,
   ChevronRight,
+  ArrowLeft,
 } from 'lucide-react';
 import { usePlatform, formatShortcut } from '../hooks/usePlatform';
 import { useFileOperations } from '../hooks/useFileOperations';
@@ -23,7 +24,12 @@ import { toast } from '../utils/toast';
 import './MenuBar.css';
 // import { useAppSettings } from '../hooks/useAppSettings.ts';
 
-function MenuBar() {
+interface MenuBarProps {
+  isSettingsPage?: boolean;
+  onBack?: () => void;
+}
+
+function MenuBar({ isSettingsPage = false, onBack }: MenuBarProps) {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [menuTimeout, setMenuTimeout] = useState<NodeJS.Timeout | null>(null);
   // const accentColor = useAppSettings((s) => s.accentColor);
@@ -101,7 +107,7 @@ function MenuBar() {
           // console.warn('Create new file');
           createNew();
           break;
-        case 'Ouvrir...':
+        case 'Ouvrir...': {
           // console.warn('Open file...');
           const file = await openFileDialog();
           if (file) {
@@ -112,7 +118,8 @@ function MenuBar() {
             // console.warn('No file selected');
           }
           break;
-        case 'Fermer':
+        }
+        case 'Fermer': {
           // console.warn('Close file...');
           const activeFile = getActiveFile();
           if (activeFile) {
@@ -122,6 +129,7 @@ function MenuBar() {
             // console.warn('No active file to close');
           }
           break;
+        }
         case 'Sauvegarder':
           // console.warn('Save file...');
           try {
@@ -164,7 +172,7 @@ function MenuBar() {
             toast.error(`Erreur lors de l'export vers PDF: ${message}`);
           }
           break;
-        case 'PNG':
+        case 'PNG': {
           try {
             await exportToPNG();
             toast.success('Fichier PNG téléchargé avec succès !');
@@ -174,7 +182,8 @@ function MenuBar() {
             toast.error(`Erreur lors de l'export vers PNG: ${message}`);
           }
           break;
-        case 'JPEG':
+        }
+        case 'JPEG': {
           try {
             await exportToJPEG();
             toast.success('Fichier JPEG téléchargé avec succès !');
@@ -184,6 +193,7 @@ function MenuBar() {
             toast.error(`Erreur lors de l'export vers JPEG: ${message}`);
           }
           break;
+        }
         case 'SVG':
           try {
             await exportToSVG();
@@ -334,7 +344,7 @@ function MenuBar() {
   ];
 
   return (
-    <div className="menu-bar" style={{ justifyContent: 'flex-start' }}>
+    <div className="menu-bar" style={{ justifyContent: 'flex-start', padding: '0 16px', width: '100%' }}>
       <div className="menu-logo" />
       {menuItems.map(menu => (
         <div
@@ -419,6 +429,54 @@ function MenuBar() {
           )}
         </div>
       ))}
+
+      {/* FR: Bouton paramètres ou retour selon le contexte */}
+      {/* EN: Settings or back button depending on context */}
+      <div className="menu-settings-icon">
+        {isSettingsPage ? (
+          <button
+            type="button"
+            className="btn"
+            onClick={onBack}
+            title="Retour aux cartes"
+            aria-label="Retour aux cartes"
+            style={{
+              padding: '6px 8px',
+              fontSize: '12px',
+              minWidth: 'auto',
+              height: '28px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px'
+            }}
+          >
+            <ArrowLeft className="icon-small" />
+            <span style={{ fontSize: '11px' }}>Retour</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="btn"
+            onClick={() => navigate('/settings')}
+            title="Paramètres"
+            aria-label="Ouvrir les paramètres"
+            style={{
+              padding: '6px 8px',
+              fontSize: '12px',
+              minWidth: 'auto',
+              height: '28px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px'
+            }}
+          >
+            <Settings className="icon-small" />
+            <span style={{ fontSize: '11px' }}>Paramètres</span>
+          </button>
+        )}
+      </div>
     </div>
   );
 }
