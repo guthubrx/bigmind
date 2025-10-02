@@ -55,14 +55,43 @@ check_prerequisites() {
     # Vérifier que GitHub CLI est installé
     if ! command -v gh &> /dev/null; then
         log "ERROR" "❌ GitHub CLI (gh) n'est pas installé"
-        log "INFO" "💡 Installez avec: brew install gh"
+        log "ERROR" ""
+        log "ERROR" "🔧 INSTALLATION GITHUB CLI :"
+        log "ERROR" ""
+        log "ERROR" "1️⃣ Sur macOS :"
+        log "ERROR" "   brew install gh"
+        log "ERROR" ""
+        log "ERROR" "2️⃣ Sur Ubuntu/Debian :"
+        log "ERROR" "   curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg"
+        log "ERROR" "   echo \"deb [arch=\$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main\" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null"
+        log "ERROR" "   sudo apt update"
+        log "ERROR" "   sudo apt install gh"
+        log "ERROR" ""
+        log "ERROR" "3️⃣ Autres systèmes :"
+        log "ERROR" "   https://github.com/cli/cli#installation"
+        log "ERROR" ""
         exit 1
     fi
     
     # Vérifier qu'on est authentifié
     if ! gh auth status &> /dev/null; then
         log "ERROR" "❌ Vous n'êtes pas authentifié avec GitHub CLI"
-        log "INFO" "💡 Exécutez: gh auth login"
+        log "ERROR" ""
+        log "ERROR" "🔧 AUTHENTIFICATION GITHUB :"
+        log "ERROR" ""
+        log "ERROR" "1️⃣ Authentification interactive :"
+        log "ERROR" "   gh auth login"
+        log "ERROR" "   # Choisir: GitHub.com > HTTPS > Yes > Login with browser"
+        log "ERROR" ""
+        log "ERROR" "2️⃣ Avec un token personnel :"
+        log "ERROR" "   # Créer un token sur: https://github.com/settings/tokens"
+        log "ERROR" "   # Permissions requises: repo, workflow, write:packages"
+        log "ERROR" "   gh auth login --with-token < token.txt"
+        log "ERROR" ""
+        log "ERROR" "3️⃣ Vérifier l'authentification :"
+        log "ERROR" "   gh auth status"
+        log "ERROR" "   gh repo view"
+        log "ERROR" ""
         exit 1
     fi
     
@@ -86,16 +115,48 @@ validate_tag() {
     
     # Vérifier que le tag existe
     if ! git tag -l | grep -q "^$tag$"; then
-        log "ERROR" "❌ Le tag '$tag' n'existe pas"
-        log "INFO" "💡 Tags disponibles:"
-        git tag --sort=-version:refname | head -10
+        log "ERROR" "❌ Le tag '$tag' n'existe pas localement"
+        log "ERROR" ""
+        log "ERROR" "🔧 RÉCUPÉRATION DES TAGS :"
+        log "ERROR" ""
+        log "ERROR" "1️⃣ Synchroniser les tags depuis GitHub :"
+        log "ERROR" "   git fetch --tags"
+        log "ERROR" "   git tag --sort=-version:refname | head -10"
+        log "ERROR" ""
+        log "ERROR" "2️⃣ Vérifier les tags disponibles :"
+        log "ERROR" "   git tag -l"
+        log "ERROR" ""
+        log "ERROR" "3️⃣ Tags récents disponibles :"
+        git tag --sort=-version:refname | head -10 | while read -r t; do
+            log "ERROR" "   $t"
+        done
+        log "ERROR" ""
+        log "ERROR" "4️⃣ Si le tag n'existe pas, créer une release :"
+        log "ERROR" "   ./scripts/03-create-release.sh"
+        log "ERROR" ""
         exit 1
     fi
     
     # Vérifier que la release existe sur GitHub
     if ! gh release view "$tag" &> /dev/null; then
         log "ERROR" "❌ La release '$tag' n'existe pas sur GitHub"
-        list_releases
+        log "ERROR" ""
+        log "ERROR" "🔧 CRÉATION DE LA RELEASE GITHUB :"
+        log "ERROR" ""
+        log "ERROR" "1️⃣ Créer la release manuellement :"
+        log "ERROR" "   gh release create $tag --title \"Release $tag\" --notes \"Release $tag\""
+        log "ERROR" ""
+        log "ERROR" "2️⃣ Ou utiliser le script de release :"
+        log "ERROR" "   ./scripts/03-create-release.sh"
+        log "ERROR" ""
+        log "ERROR" "3️⃣ Vérifier les releases existantes :"
+        log "ERROR" "   gh release list"
+        log "ERROR" ""
+        log "ERROR" "4️⃣ Releases disponibles :"
+        gh release list --limit 10 | while IFS=$'\t' read -r title tag_name status date; do
+            log "ERROR" "   $tag_name - $title ($status)"
+        done 2>/dev/null || log "ERROR" "   Aucune release trouvée"
+        log "ERROR" ""
         exit 1
     fi
     
@@ -122,6 +183,27 @@ trigger_workflow() {
         
     else
         log "ERROR" "❌ Échec du déclenchement du workflow"
+        log "ERROR" ""
+        log "ERROR" "🔧 DIAGNOSTIC DU WORKFLOW :"
+        log "ERROR" ""
+        log "ERROR" "1️⃣ Vérifier l'existence du workflow :"
+        log "ERROR" "   gh workflow list"
+        log "ERROR" "   gh workflow view release.yml"
+        log "ERROR" ""
+        log "ERROR" "2️⃣ Vérifier les permissions :"
+        log "ERROR" "   gh auth status"
+        log "ERROR" "   gh auth refresh -s workflow"
+        log "ERROR" ""
+        log "ERROR" "3️⃣ Déclencher manuellement via l'interface :"
+        log "ERROR" "   https://github.com/$(gh repo view --json owner,name -q '.owner.login + "/" + .name')/actions/workflows/release.yml"
+        log "ERROR" "   # Cliquer sur 'Run workflow' et sélectionner le tag $tag"
+        log "ERROR" ""
+        log "ERROR" "4️⃣ Vérifier les workflows récents :"
+        log "ERROR" "   gh run list --limit 10"
+        log "ERROR" ""
+        log "ERROR" "5️⃣ Alternative - créer une nouvelle release :"
+        log "ERROR" "   ./scripts/03-create-release.sh"
+        log "ERROR" ""
         exit 1
     fi
 }

@@ -64,6 +64,102 @@ run_command() {
     else
         local exit_code=$?
         log "ERROR" "❌ $description - Échec (code: $exit_code)"
+        log "ERROR" "Commande échouée: $command"
+        log "ERROR" ""
+        
+        # Diagnostics spécifiques selon le type de commande
+        case "$command" in
+            *"pnpm build --filter @bigmind/core"*)
+                log "ERROR" "🔧 RÉPARATION PACKAGE CORE :"
+                log "ERROR" "1️⃣ Diagnostic immédiat :"
+                log "ERROR" "   cd packages/core"
+                log "ERROR" "   pnpm build --verbose"
+                log "ERROR" "   pnpm type-check"
+                log "ERROR" ""
+                log "ERROR" "2️⃣ Nettoyer et rebuilder :"
+                log "ERROR" "   rm -rf packages/core/node_modules packages/core/dist"
+                log "ERROR" "   pnpm install --filter @bigmind/core"
+                log "ERROR" "   pnpm build --filter @bigmind/core"
+                ;;
+            *"pnpm build --filter @bigmind/design"*)
+                log "ERROR" "🔧 RÉPARATION PACKAGE DESIGN :"
+                log "ERROR" "1️⃣ Diagnostic immédiat :"
+                log "ERROR" "   cd packages/design"
+                log "ERROR" "   pnpm build --verbose"
+                log "ERROR" "   pnpm type-check"
+                log "ERROR" ""
+                log "ERROR" "2️⃣ Vérifier les dépendances :"
+                log "ERROR" "   pnpm list --filter @bigmind/design"
+                log "ERROR" "   rm -rf packages/design/node_modules packages/design/dist"
+                log "ERROR" "   pnpm install --filter @bigmind/design"
+                ;;
+            *"pnpm build --filter @bigmind/ui"*)
+                log "ERROR" "🔧 RÉPARATION PACKAGE UI :"
+                log "ERROR" "1️⃣ Diagnostic immédiat :"
+                log "ERROR" "   cd packages/ui"
+                log "ERROR" "   pnpm build --verbose"
+                log "ERROR" "   pnpm type-check"
+                log "ERROR" ""
+                log "ERROR" "2️⃣ Nettoyer et rebuilder :"
+                log "ERROR" "   rm -rf packages/ui/node_modules packages/ui/dist"
+                log "ERROR" "   pnpm install --filter @bigmind/ui"
+                ;;
+            *"pnpm build --filter bigmind-web"*)
+                log "ERROR" "🔧 RÉPARATION APPLICATION WEB :"
+                log "ERROR" "1️⃣ Diagnostic immédiat :"
+                log "ERROR" "   cd apps/web"
+                log "ERROR" "   pnpm build --verbose"
+                log "ERROR" "   pnpm type-check"
+                log "ERROR" ""
+                log "ERROR" "2️⃣ Vérifier les dépendances des packages :"
+                log "ERROR" "   pnpm build --filter @bigmind/core"
+                log "ERROR" "   pnpm build --filter @bigmind/design"
+                log "ERROR" "   pnpm build --filter @bigmind/ui"
+                log "ERROR" "   pnpm build --filter bigmind-web"
+                ;;
+            *"pnpm lint"*)
+                log "ERROR" "🔧 RÉPARATION LINTING :"
+                log "ERROR" "1️⃣ Voir les erreurs détaillées :"
+                log "ERROR" "   pnpm lint --filter bigmind-web"
+                log "ERROR" ""
+                log "ERROR" "2️⃣ Auto-fix des erreurs simples :"
+                log "ERROR" "   pnpm lint --filter bigmind-web --fix"
+                log "ERROR" ""
+                log "ERROR" "3️⃣ Vérifier la config ESLint :"
+                log "ERROR" "   cat apps/web/.eslintrc.cjs"
+                ;;
+            *"pnpm install"*)
+                log "ERROR" "🔧 RÉPARATION INSTALLATION :"
+                log "ERROR" "1️⃣ Nettoyer le cache :"
+                log "ERROR" "   pnpm store prune"
+                log "ERROR" "   rm -rf node_modules pnpm-lock.yaml"
+                log "ERROR" "   pnpm install"
+                log "ERROR" ""
+                log "ERROR" "2️⃣ Si problème persiste :"
+                log "ERROR" "   rm -rf ~/.pnpm-store"
+                log "ERROR" "   pnpm install"
+                ;;
+            *)
+                log "ERROR" "🔧 RÉPARATION GÉNÉRALE :"
+                log "ERROR" "1️⃣ Réexécuter avec plus de détails :"
+                log "ERROR" "   $command --verbose"
+                log "ERROR" ""
+                log "ERROR" "2️⃣ Vérifier les prérequis :"
+                log "ERROR" "   node --version"
+                log "ERROR" "   pnpm --version"
+                log "ERROR" "   git status"
+                ;;
+        esac
+        
+        log "ERROR" ""
+        log "ERROR" "3️⃣ NETTOYAGE COMPLET (si tout échoue) :"
+        log "ERROR" "   rm -rf node_modules packages/*/node_modules apps/*/node_modules"
+        log "ERROR" "   rm -rf packages/*/dist apps/*/dist"
+        log "ERROR" "   pnpm install"
+        log "ERROR" ""
+        log "ERROR" "📝 Logs détaillés dans: $LOG_FILE"
+        log "ERROR" ""
+        
         return $exit_code
     fi
 }

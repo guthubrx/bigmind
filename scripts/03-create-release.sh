@@ -117,7 +117,26 @@ check_prerequisites() {
     
     if [[ "$local_commit" != "$remote_commit" ]]; then
         log "ERROR" "❌ Votre branche main n'est pas à jour avec origin/main"
-        log "INFO" "💡 Exécutez: git pull origin main"
+        log "ERROR" ""
+        log "ERROR" "🔧 COMMANDES DE SYNCHRONISATION :"
+        log "ERROR" ""
+        log "ERROR" "1️⃣ Mettre à jour votre branche :"
+        log "ERROR" "   git pull origin main"
+        log "ERROR" ""
+        log "ERROR" "2️⃣ Si vous avez des conflits :"
+        log "ERROR" "   git status"
+        log "ERROR" "   # Résoudre les conflits manuellement"
+        log "ERROR" "   git add ."
+        log "ERROR" "   git commit -m 'resolve: conflits de merge'"
+        log "ERROR" ""
+        log "ERROR" "3️⃣ Si vous voulez forcer (ATTENTION) :"
+        log "ERROR" "   git reset --hard origin/main"
+        log "ERROR" "   # ⚠️ Cela supprimera vos changements locaux !"
+        log "ERROR" ""
+        log "ERROR" "4️⃣ Vérifier l'état après mise à jour :"
+        log "ERROR" "   git status"
+        log "ERROR" "   git log --oneline -5"
+        log "ERROR" ""
         exit 1
     fi
     
@@ -190,12 +209,63 @@ build_project() {
         
         if ! run_cmd "pnpm build --filter $package" "Build $package"; then
             log "ERROR" "❌ Échec du build du package $package"
-            log "ERROR" "💡 Diagnostics suggérés:"
-            log "ERROR" "   1. Vérifier les erreurs TypeScript: pnpm type-check --filter $package"
-            log "ERROR" "   2. Vérifier les dépendances: pnpm install"
-            log "ERROR" "   3. Nettoyer: rm -rf node_modules dist && pnpm install"
-            log "ERROR" "   4. Vérifier les imports/exports dans le code source"
-            log "ERROR" "   5. Consulter les logs détaillés: $LOG_FILE"
+            log "ERROR" ""
+            log "ERROR" "🔧 COMMANDES DE RÉPARATION IMMÉDIATE :"
+            log "ERROR" ""
+            log "ERROR" "1️⃣ DIAGNOSTIC DÉTAILLÉ :"
+            log "ERROR" "   cd $(pwd)"
+            log "ERROR" "   pnpm build --filter $package --verbose"
+            log "ERROR" "   pnpm type-check --filter $package"
+            log "ERROR" ""
+            log "ERROR" "2️⃣ VÉRIFIER LES DÉPENDANCES :"
+            log "ERROR" "   pnpm list --filter $package"
+            log "ERROR" "   pnpm install --filter $package"
+            log "ERROR" ""
+            log "ERROR" "3️⃣ NETTOYER LE PACKAGE SPÉCIFIQUE :"
+            case "$package" in
+                "@bigmind/core")
+                    log "ERROR" "   rm -rf packages/core/node_modules packages/core/dist"
+                    log "ERROR" "   pnpm install --filter @bigmind/core"
+                    log "ERROR" "   pnpm build --filter @bigmind/core"
+                    ;;
+                "@bigmind/design")
+                    log "ERROR" "   rm -rf packages/design/node_modules packages/design/dist"
+                    log "ERROR" "   pnpm install --filter @bigmind/design"
+                    log "ERROR" "   pnpm build --filter @bigmind/design"
+                    ;;
+                "@bigmind/ui")
+                    log "ERROR" "   rm -rf packages/ui/node_modules packages/ui/dist"
+                    log "ERROR" "   pnpm install --filter @bigmind/ui"
+                    log "ERROR" "   pnpm build --filter @bigmind/ui"
+                    ;;
+                "bigmind-web")
+                    log "ERROR" "   rm -rf apps/web/node_modules apps/web/dist"
+                    log "ERROR" "   pnpm install --filter bigmind-web"
+                    log "ERROR" "   # Rebuilder les dépendances d'abord :"
+                    log "ERROR" "   pnpm build --filter @bigmind/core"
+                    log "ERROR" "   pnpm build --filter @bigmind/design"
+                    log "ERROR" "   pnpm build --filter @bigmind/ui"
+                    log "ERROR" "   pnpm build --filter bigmind-web"
+                    ;;
+            esac
+            log "ERROR" ""
+            log "ERROR" "4️⃣ NETTOYAGE COMPLET (dernier recours) :"
+            log "ERROR" "   rm -rf node_modules packages/*/node_modules apps/*/node_modules"
+            log "ERROR" "   rm -rf packages/*/dist apps/*/dist"
+            log "ERROR" "   pnpm install"
+            log "ERROR" "   pnpm build --filter @bigmind/core"
+            log "ERROR" "   pnpm build --filter @bigmind/design"
+            log "ERROR" "   pnpm build --filter @bigmind/ui"
+            log "ERROR" "   pnpm build --filter bigmind-web"
+            log "ERROR" ""
+            log "ERROR" "5️⃣ VÉRIFICATIONS SUPPLÉMENTAIRES :"
+            log "ERROR" "   - Syntaxe TypeScript dans le code source"
+            log "ERROR" "   - Imports/exports manquants ou incorrects"
+            log "ERROR" "   - Versions des dépendances dans package.json"
+            log "ERROR" "   - Conflits de versions entre packages"
+            log "ERROR" ""
+            log "ERROR" "📝 Logs détaillés: $LOG_FILE"
+            log "ERROR" ""
             exit 1
         fi
     done
