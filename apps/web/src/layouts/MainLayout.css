@@ -44,7 +44,8 @@
   border-bottom: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  width: 100%;
+  padding: 0;
 }
 
 /* FR: Barre d'onglets horizontale */
@@ -114,7 +115,7 @@
   display: none;
 }
 
-.node-explorer-column.collapsed {
+.explorer-column.collapsed {
   width: 32px;
   min-width: 32px;
   max-width: 32px;
@@ -122,12 +123,12 @@
   position: relative;
 }
 
-.node-explorer-column.collapsed .column-header {
+.explorer-column.collapsed .column-header {
   padding: 8px 4px;
   justify-content: center;
 }
 
-.node-explorer-column.collapsed .column-title {
+.explorer-column.collapsed .column-title {
   display: none;
 }
 
@@ -220,7 +221,7 @@
 
 /* FR: Colonne explorateur de nœuds */
 /* EN: Node explorer column */
-.node-explorer-column {
+.explorer-column {
   width: 280px;
   min-width: 280px;
   max-width: 400px;
@@ -325,7 +326,7 @@
   overflow: auto;
 }
 
-.node-explorer-column.resizable {
+.explorer-column.resizable {
   resize: horizontal;
   overflow: auto;
 }
@@ -355,6 +356,105 @@
 .resize-bar.horizontal {
   height: 4px;
   cursor: row-resize;
+}
+
+/* FR: Zones de détection de bordure - invisibles mais actives */
+/* EN: Border detection zones - invisible but active */
+.border-detection-zone {
+  background: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.border-detection-zone:hover {
+  background-color: color-mix(in srgb, var(--accent-color) 2%, transparent);
+}
+
+/* FR: Styles pour les poignées de redimensionnement - visibles au survol */
+/* EN: Styles for resize handles - visible on hover */
+.resize-handle {
+  background-color: transparent;
+  transition: all 0.15s ease;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+}
+
+.resize-handle.hovered,
+.resize-handle:hover {
+  background-color: color-mix(in srgb, var(--accent-color) 5%, transparent);
+  opacity: 1;
+}
+
+.resize-handle.dragging {
+  background-color: color-mix(in srgb, var(--accent-color) 10%, transparent);
+  opacity: 1;
+}
+
+.resize-handle.vertical {
+  width: 4px;
+  cursor: col-resize;
+}
+
+.resize-handle.left-position {
+  left: -2px;
+}
+
+.resize-handle.right-position {
+  right: -2px;
+}
+
+.resize-handle-indicator {
+  width: 1px;
+  height: 16px;
+  background-color: theme('colors.border.DEFAULT');
+  border-radius: 0.5px;
+  transition: all 0.15s ease;
+}
+
+.resize-handle.hovered .resize-handle-indicator,
+.resize-handle:hover .resize-handle-indicator,
+.resize-handle.dragging .resize-handle-indicator {
+  background-color: var(--accent-color);
+  width: 2px;
+}
+
+/* FR: Styles pour les colonnes redimensionnables avec bordures d'accent discrètes - épaisseur configurable */
+/* EN: Styles for resizable columns with discreet accent borders - configurable thickness */
+.resizable-column {
+  position: relative;
+  border-style: solid;
+  border-width: 0;
+  transition: border-color 0.15s ease;
+}
+
+.resizable-column.resizing {
+  border-color: color-mix(in srgb, var(--accent-color) 40%, transparent);
+  border-width: 0 var(--column-border-thickness, 1.5px) 0 var(--column-border-thickness, 1.5px); /* Épaisseur configurable */
+}
+
+.resizable-column.files-column {
+  border-left-width: 0;
+}
+
+.resizable-column.explorer-column {
+  border-width: 0 var(--column-border-thickness, 1.5px) 0 var(--column-border-thickness, 1.5px);
+}
+
+.resizable-column.properties-column {
+  border-right-width: 0;
+}
+
+.resizable-column:hover {
+  border-color: color-mix(in srgb, var(--accent-color) 20%, transparent);
+}
+
+.resizable-column.resizing:hover {
+  border-color: color-mix(in srgb, var(--accent-color) 50%, transparent);
 }
 
 /* FR: Styles pour les panneaux */
