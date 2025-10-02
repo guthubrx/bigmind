@@ -36,6 +36,12 @@ function MenuBar() {
     saveAsXMind,
     exportToFreeMind,
     exportToPDF,
+    exportToPNG,
+    exportToJPEG,
+    exportToSVG,
+    exportToMarkdown,
+    exportToWord,
+    exportToExcel,
   } = useFileOperations();
   const { closeFile, getActiveFile } = useOpenFiles();
   const navigate = useNavigate();
@@ -57,7 +63,7 @@ function MenuBar() {
   const handleMenuLeave = () => {
     const timeout = setTimeout(() => {
       setActiveMenu(null);
-    }, 300); // FR: 300ms de délai avant de fermer
+    }, 800); // FR: 800ms de délai avant de fermer (augmenté pour permettre la navigation vers les sous-menus)
     setMenuTimeout(timeout);
   };
 
@@ -66,6 +72,13 @@ function MenuBar() {
       clearTimeout(menuTimeout);
       setMenuTimeout(null);
     }
+  };
+
+  const handleSubmenuLeave = () => {
+    const timeout = setTimeout(() => {
+      setActiveMenu(null);
+    }, 200); // FR: Délai plus court pour fermer quand on quitte le sous-menu
+    setMenuTimeout(timeout);
   };
 
   // FR: Nettoyer le timeout au démontage du composant
@@ -131,7 +144,7 @@ function MenuBar() {
             toast.error(`Erreur lors de la sauvegarde: ${message}`);
           }
           break;
-        case 'Exporter vers FreeMind (.mm)':
+        case 'FreeMind (.mm)':
           try {
             await exportToFreeMind();
             toast.success('Fichier .mm téléchargé avec succès !');
@@ -141,7 +154,7 @@ function MenuBar() {
             toast.error(`Erreur lors de l'export vers FreeMind: ${message}`);
           }
           break;
-        case 'Exporter vers PDF':
+        case 'PDF':
           try {
             await exportToPDF();
             toast.success('Fichier PDF téléchargé avec succès !');
@@ -149,6 +162,66 @@ function MenuBar() {
             const message =
               error instanceof Error ? error.message : String(error);
             toast.error(`Erreur lors de l'export vers PDF: ${message}`);
+          }
+          break;
+        case 'PNG':
+          try {
+            await exportToPNG();
+            toast.success('Fichier PNG téléchargé avec succès !');
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : String(error);
+            toast.error(`Erreur lors de l'export vers PNG: ${message}`);
+          }
+          break;
+        case 'JPEG':
+          try {
+            await exportToJPEG();
+            toast.success('Fichier JPEG téléchargé avec succès !');
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : String(error);
+            toast.error(`Erreur lors de l'export vers JPEG: ${message}`);
+          }
+          break;
+        case 'SVG':
+          try {
+            await exportToSVG();
+            toast.success('Fichier SVG téléchargé avec succès !');
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : String(error);
+            toast.error(`Erreur lors de l'export vers SVG: ${message}`);
+          }
+          break;
+        case 'Markdown':
+          try {
+            await exportToMarkdown();
+            toast.success('Fichier Markdown téléchargé avec succès !');
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : String(error);
+            toast.error(`Erreur lors de l'export vers Markdown: ${message}`);
+          }
+          break;
+        case 'Word (.docx)':
+          try {
+            await exportToWord();
+            toast.success('Fichier Word téléchargé avec succès !');
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : String(error);
+            toast.error(`Erreur lors de l'export vers Word: ${message}`);
+          }
+          break;
+        case 'Excel (.xlsx)':
+          try {
+            await exportToExcel();
+            toast.success('Fichier Excel téléchargé avec succès !');
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : String(error);
+            toast.error(`Erreur lors de l'export vers Excel: ${message}`);
           }
           break;
         default:
@@ -172,11 +245,20 @@ function MenuBar() {
         { label: 'Fermer', shortcut: getShortcut('Ctrl+W') },
         { label: 'Sauvegarder', shortcut: getShortcut('Ctrl+S') },
         { label: 'Sauvegarder sous...', shortcut: getShortcut('Ctrl+Shift+S') },
-        {
-          label: 'Exporter vers',
-          shortcut: getShortcut('Ctrl+E'),
-          submenu: [{ label: 'FreeMind (.mm)' }, { label: 'PDF' }],
-        },
+               {
+                 label: 'Exporter vers',
+                 shortcut: getShortcut('Ctrl+E'),
+                 submenu: [
+                   { label: 'FreeMind (.mm)' },
+                   { label: 'PDF' },
+                   { label: 'PNG' },
+                   { label: 'JPEG' },
+                   { label: 'SVG' },
+                   { label: 'Markdown' },
+                   { label: 'Word (.docx)' },
+                   { label: 'Excel (.xlsx)' }
+                 ],
+               },
         { label: 'Imprimer...', shortcut: getShortcut('Ctrl+P') },
       ],
     },
@@ -274,13 +356,13 @@ function MenuBar() {
                   {item.submenu ? (
                     // FR: Élément avec sous-menu
                     // EN: Item with submenu
-                    <div className="menu-item-option has-submenu">
+                    <div className="menu-item-option has-submenu" onMouseEnter={handleSubmenuEnter}>
                       <span className="menu-item-label">{item.label}</span>
                       <ChevronRight className="chevron" />
 
                       {/* FR: Sous-menu */}
                       {/* EN: Submenu */}
-                      <div className="menu-submenu" onMouseEnter={handleSubmenuEnter}>
+                      <div className="menu-submenu" onMouseEnter={handleSubmenuEnter} onMouseLeave={handleSubmenuLeave}>
                         {item.submenu.map((subItem) => (
                           <div
                             key={subItem.label}

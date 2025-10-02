@@ -12,6 +12,393 @@ import { useViewport } from './useViewport';
 import { useCanvasOptions } from './useCanvasOptions';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { saveAs } from 'file-saver';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
+import * as XLSX from 'xlsx';
+
+/**
+ * FR: Générer du SVG à partir de la structure de carte mentale
+ * EN: Generate SVG from mind map structure
+ */
+function generateSVGFromMindMap(content: any, mapStyle: any): string {
+  if (!content || !content.nodes) {
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><text x="200" y="150" text-anchor="middle" font-family="Arial" font-size="16">Carte mentale vide</text></svg>';
+  }
+
+  const nodes = content.nodes;
+  const rootNodeId = content.rootNode?.id;
+  
+  if (!rootNodeId || !nodes[rootNodeId]) {
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><text x="200" y="150" text-anchor="middle" font-family="Arial" font-size="16">Aucun nœud racine trouvé</text></svg>';
+  }
+
+  // FR: Calculer les positions et dimensions
+  // EN: Calculate positions and dimensions
+  const nodePositions = new Map();
+  const nodeDimensions = new Map();
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+
+  // FR: Parcourir tous les nœuds pour calculer les dimensions
+  // EN: Traverse all nodes to calculate dimensions
+  Object.values(nodes).forEach((node: any) => {
+    const width = Math.max(node.title?.length * 8 || 100, 80);
+    const height = 40;
+    nodeDimensions.set(node.id, { width, height });
+    
+    // FR: Position approximative basée sur la hiérarchie
+    // EN: Approximate position based on hierarchy
+    const level = getNodeLevel(node.id, nodes, rootNodeId);
+    const siblingIndex = getSiblingIndex(node.id, nodes);
+    const x = level * 200 + 50;
+    const y = siblingIndex * 60 + 50;
+    
+    nodePositions.set(node.id, { x, y });
+    
+    minX = Math.min(minX, x);
+    maxX = Math.max(maxX, x + width);
+    minY = Math.min(minY, y);
+    maxY = Math.max(maxY, y + height);
+  });
+
+  // FR: Ajouter des marges
+  // EN: Add margins
+  const margin = 50;
+  const svgWidth = maxX - minX + margin * 2;
+  const svgHeight = maxY - minY + margin * 2;
+
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}">`;
+  
+  // FR: Arrière-plan
+  // EN: Background
+  const bgColor = mapStyle?.backgroundColor || '#ffffff';
+  svg += `<rect width="100%" height="100%" fill="${bgColor}"/>`;
+
+  // FR: Dessiner les connexions
+  // EN: Draw connections
+  Object.values(nodes).forEach((node: any) => {
+    if (node.children && node.children.length > 0) {
+      const parentPos = nodePositions.get(node.id);
+      const parentDims = nodeDimensions.get(node.id);
+      
+      node.children.forEach((childId: string) => {
+        const childPos = nodePositions.get(childId);
+        if (parentPos && childPos) {
+          const x1 = parentPos.x + parentDims.width - margin;
+          const y1 = parentPos.y + parentDims.height / 2 - margin;
+          const x2 = childPos.x - margin;
+          const y2 = childPos.y + nodeDimensions.get(childId).height / 2 - margin;
+          
+          svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#666" stroke-width="2"/>`;
+        }
+      });
+    }
+  });
+
+  // FR: Dessiner les nœuds
+  // EN: Draw nodes
+  Object.values(nodes).forEach((node: any) => {
+    const pos = nodePositions.get(node.id);
+    const dims = nodeDimensions.get(node.id);
+    
+    if (pos && dims) {
+      const x = pos.x - margin;
+      const y = pos.y - margin;
+      const width = dims.width;
+      const height = dims.height;
+      
+      // FR: Couleur du nœud basée sur le niveau
+      // EN: Node color based on level
+      const level = getNodeLevel(node.id, nodes, rootNodeId);
+      const colors = ['#e3f2fd', '#f3e5f5', '#e8f5e8', '#fff3e0', '#fce4ec'];
+      const fillColor = colors[level % colors.length];
+      
+      // FR: Rectangle du nœud
+      // EN: Node rectangle
+      svg += `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="${fillColor}" stroke="#333" stroke-width="1" rx="5"/>`;
+      
+      // FR: Texte du nœud
+      // EN: Node text
+      const textX = x + width / 2;
+      const textY = y + height / 2 + 5;
+      svg += `<text x="${textX}" y="${textY}" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#333">${escapeXml(node.title || '')}</text>`;
+    }
+  });
+
+  svg += '</svg>';
+  return svg;
+}
+
+/**
+ * FR: Échapper les caractères XML
+ * EN: Escape XML characters
+ */
+function escapeXml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * FR: Obtenir le niveau d'un nœud dans la hiérarchie
+ * EN: Get node level in hierarchy
+ */
+function getNodeLevel(nodeId: string, nodes: any, rootId: string): number {
+  if (nodeId === rootId) return 0;
+  
+  for (const node of Object.values(nodes) as any[]) {
+    if (node.children && node.children.includes(nodeId)) {
+      return 1 + getNodeLevel(node.id, nodes, rootId);
+    }
+  }
+  return 0;
+}
+
+/**
+ * FR: Obtenir l'index d'un nœud parmi ses frères
+ * EN: Get node index among siblings
+ */
+function getSiblingIndex(nodeId: string, nodes: any): number {
+  for (const node of Object.values(nodes) as any[]) {
+    if (node.children && node.children.includes(nodeId)) {
+      return node.children.indexOf(nodeId);
+    }
+  }
+  return 0;
+}
+
+/**
+ * FR: Générer du Markdown à partir de la structure de carte mentale
+ * EN: Generate Markdown from mind map structure
+ */
+function generateMarkdownFromMindMap(content: any): string {
+  if (!content || !content.nodes) {
+    return '# Carte mentale vide\n\nAucun contenu à exporter.';
+  }
+
+  const nodes = content.nodes;
+  const rootNodeId = content.rootNode?.id;
+  
+  if (!rootNodeId || !nodes[rootNodeId]) {
+    return '# Carte mentale\n\nAucun nœud racine trouvé.';
+  }
+
+  let markdown = `# ${nodes[rootNodeId].title || 'Carte mentale'}\n\n`;
+  
+  // FR: Parcourir récursivement la structure
+  // EN: Recursively traverse the structure
+  markdown += generateMarkdownNode(nodes[rootNodeId], nodes, 1);
+  
+  return markdown;
+}
+
+/**
+ * FR: Générer le Markdown pour un nœud et ses enfants
+ * EN: Generate Markdown for a node and its children
+ */
+function generateMarkdownNode(node: any, nodes: any, level: number): string {
+  let markdown = '';
+  
+  if (node.children && node.children.length > 0) {
+    node.children.forEach((childId: string) => {
+      const childNode = nodes[childId];
+      if (childNode) {
+        const indent = '  '.repeat(level - 1);
+        const bullet = level === 1 ? '- ' : '  - ';
+        markdown += `${indent}${bullet}${childNode.title || 'Sans titre'}\n`;
+        
+        // FR: Récursion pour les enfants
+        // EN: Recursion for children
+        markdown += generateMarkdownNode(childNode, nodes, level + 1);
+      }
+    });
+  }
+  
+  return markdown;
+}
+
+/**
+ * FR: Générer un document Word à partir de la structure de carte mentale
+ * EN: Generate Word document from mind map structure
+ */
+function generateWordFromMindMap(content: any): Document {
+  if (!content || !content.nodes) {
+    return new Document({
+      sections: [{
+        properties: {},
+        children: [
+          new Paragraph({
+            children: [new TextRun({ text: "Carte mentale vide", bold: true })],
+            heading: HeadingLevel.HEADING_1,
+          }),
+          new Paragraph({
+            children: [new TextRun({ text: "Aucun contenu à exporter." })],
+          }),
+        ],
+      }],
+    });
+  }
+
+  const nodes = content.nodes;
+  const rootNodeId = content.rootNode?.id;
+  
+  if (!rootNodeId || !nodes[rootNodeId]) {
+    return new Document({
+      sections: [{
+        properties: {},
+        children: [
+          new Paragraph({
+            children: [new TextRun({ text: "Carte mentale", bold: true })],
+            heading: HeadingLevel.HEADING_1,
+          }),
+          new Paragraph({
+            children: [new TextRun({ text: "Aucun nœud racine trouvé." })],
+          }),
+        ],
+      }],
+    });
+  }
+
+  const children: Paragraph[] = [];
+  
+  // FR: Titre principal
+  // EN: Main title
+  children.push(new Paragraph({
+    children: [new TextRun({ text: nodes[rootNodeId].title || 'Carte mentale', bold: true })],
+    heading: HeadingLevel.HEADING_1,
+  }));
+  
+  // FR: Parcourir récursivement la structure
+  // EN: Recursively traverse the structure
+  children.push(...generateWordNodes(nodes[rootNodeId], nodes, 1));
+  
+  return new Document({
+    sections: [{
+      properties: {},
+      children,
+    }],
+  });
+}
+
+/**
+ * FR: Générer les paragraphes Word pour un nœud et ses enfants
+ * EN: Generate Word paragraphs for a node and its children
+ */
+function generateWordNodes(node: any, nodes: any, level: number): Paragraph[] {
+  const paragraphs: Paragraph[] = [];
+  
+  if (node.children && node.children.length > 0) {
+    node.children.forEach((childId: string) => {
+      const childNode = nodes[childId];
+      if (childNode) {
+        const indent = level * 0.5; // Indentation en pouces
+        const headingLevel = level === 1 ? HeadingLevel.HEADING_2 : 
+                           level === 2 ? HeadingLevel.HEADING_3 : 
+                           level === 3 ? HeadingLevel.HEADING_4 : 
+                           HeadingLevel.HEADING_5;
+        
+        paragraphs.push(new Paragraph({
+          children: [new TextRun({ text: childNode.title || 'Sans titre' })],
+          heading: headingLevel,
+          indent: { left: indent * 1440 }, // Conversion en twips (1/20 de point)
+        }));
+        
+        // FR: Récursion pour les enfants
+        // EN: Recursion for children
+        paragraphs.push(...generateWordNodes(childNode, nodes, level + 1));
+      }
+    });
+  }
+  
+  return paragraphs;
+}
+
+/**
+ * FR: Générer un classeur Excel à partir de la structure de carte mentale
+ * EN: Generate Excel workbook from mind map structure
+ */
+function generateExcelFromMindMap(content: any): XLSX.WorkBook {
+  if (!content || !content.nodes) {
+    const ws = XLSX.utils.aoa_to_sheet([
+      ['Carte mentale vide'],
+      ['Aucun contenu à exporter.']
+    ]);
+    return XLSX.utils.book_new();
+  }
+
+  const nodes = content.nodes;
+  const rootNodeId = content.rootNode?.id;
+  
+  if (!rootNodeId || !nodes[rootNodeId]) {
+    const ws = XLSX.utils.aoa_to_sheet([
+      ['Carte mentale'],
+      ['Aucun nœud racine trouvé.']
+    ]);
+    return XLSX.utils.book_new();
+  }
+
+  // FR: Créer les données pour la feuille de calcul
+  // EN: Create data for the spreadsheet
+  const data: any[][] = [];
+  
+  // FR: En-têtes
+  // EN: Headers
+  data.push(['Niveau', 'Titre', 'ID', 'Parent', 'Enfants']);
+  
+  // FR: Parcourir récursivement la structure
+  // EN: Recursively traverse the structure
+  generateExcelRows(nodes[rootNodeId], nodes, 0, '', data);
+  
+  // FR: Créer la feuille de calcul
+  // EN: Create the worksheet
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  
+  // FR: Ajuster la largeur des colonnes
+  // EN: Adjust column widths
+  ws['!cols'] = [
+    { wch: 10 }, // Niveau
+    { wch: 30 }, // Titre
+    { wch: 20 }, // ID
+    { wch: 20 }, // Parent
+    { wch: 20 }, // Enfants
+  ];
+  
+  // FR: Créer le classeur
+  // EN: Create workbook
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, ws, 'Carte mentale');
+  
+  return workbook;
+}
+
+/**
+ * FR: Générer les lignes Excel pour un nœud et ses enfants
+ * EN: Generate Excel rows for a node and its children
+ */
+function generateExcelRows(node: any, nodes: any, level: number, parentId: string, data: any[][]): void {
+  // FR: Ajouter la ligne pour ce nœud
+  // EN: Add row for this node
+  data.push([
+    level,
+    node.title || 'Sans titre',
+    node.id || '',
+    parentId || '',
+    node.children ? node.children.join(', ') : ''
+  ]);
+  
+  // FR: Parcourir les enfants
+  // EN: Traverse children
+  if (node.children && node.children.length > 0) {
+    node.children.forEach((childId: string) => {
+      const childNode = nodes[childId];
+      if (childNode) {
+        generateExcelRows(childNode, nodes, level + 1, node.id, data);
+      }
+    });
+  }
+}
 
 /**
  * FR: Fonction utilitaire pour télécharger un fichier dans le navigateur
@@ -614,36 +1001,304 @@ export const useFileOperations = () => {
     console.log('📁 Fichier actif:', active);
 
     try {
-      // FR: Trouver l'élément React Flow
-      // EN: Find React Flow element
+      // FR: Créer le PDF
+      // EN: Create PDF
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      // FR: Vérifier si c'est un fichier XMind avec plusieurs feuilles
+      // EN: Check if it's an XMind file with multiple sheets
+      if (active.type === 'xmind' && active.sheets && active.sheets.length > 1) {
+        console.log('📚 Export de toutes les feuilles XMind:', active.sheets.length);
+        
+        // FR: Sauvegarder la feuille originale
+        // EN: Save original sheet
+        const originalSheetId = active.activeSheetId;
+        
+        // FR: Exporter chaque feuille sur une page séparée
+        // EN: Export each sheet on a separate page
+        for (let i = 0; i < active.sheets.length; i++) {
+          const sheet = active.sheets[i];
+          console.log(`📄 Export de la feuille ${i + 1}/${active.sheets.length}: ${sheet.title}`);
+          
+          // FR: Basculer vers cette feuille temporairement
+          // EN: Switch to this sheet temporarily
+          const { setActiveSheet } = useOpenFiles.getState();
+          
+          if (active.sheetsData && active.sheetsData[i]) {
+            // FR: Convertir les données de la feuille en format BigMind
+            // EN: Convert sheet data to BigMind format
+            const sheetData = active.sheetsData[i];
+            const bigMindData = XMindParser.convertSheetJSONToBigMind(sheetData);
+            
+            // FR: Créer un contenu temporaire pour cette feuille
+            // EN: Create temporary content for this sheet
+            const tempContent = {
+              id: bigMindData.id,
+              name: bigMindData.meta.name || sheet.title,
+              rootNode: {
+                id: bigMindData.rootId,
+                title: bigMindData.nodes[bigMindData.rootId]?.title || 'Racine',
+                children: bigMindData.nodes[bigMindData.rootId]?.children || []
+              },
+              nodes: bigMindData.nodes,
+            };
+
+            // FR: Mettre à jour temporairement le contenu actif
+            // EN: Temporarily update active content
+            const { openFiles } = useOpenFiles.getState();
+            const updatedFiles = openFiles.map(f => 
+              f.id === active.id ? { ...f, content: tempContent } : f
+            );
+            useOpenFiles.setState({ openFiles: updatedFiles });
+
+            // FR: Attendre que React mette à jour l'affichage
+            // EN: Wait for React to update the display
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // FR: Masquer la mini-map et l'attribution pour l'export
+            // EN: Hide mini-map and attribution for export
+            const mindmapCanvas = document.querySelector('.mindmap-canvas');
+            const reactFlowElement = document.querySelector('.react-flow');
+            const minimap = document.querySelector('.react-flow__minimap');
+            const attribution = document.querySelector('.react-flow__attribution');
+            const panels = document.querySelectorAll('.react-flow__panel');
+            
+            // FR: Stocker les styles originaux pour les restaurer après
+            // EN: Store original styles to restore them after
+            const elementsToHide: Array<{ element: HTMLElement; originalDisplay: string }> = [];
+            
+            if (mindmapCanvas) {
+              mindmapCanvas.classList.add('exporting');
+            }
+            if (reactFlowElement) {
+              reactFlowElement.classList.add('exporting');
+            }
+            
+            // FR: Masquer directement avec JavaScript pour être sûr
+            // EN: Hide directly with JavaScript to be sure
+            if (minimap) {
+              const el = minimap as HTMLElement;
+              elementsToHide.push({ element: el, originalDisplay: el.style.display });
+              el.style.display = 'none';
+            }
+            
+            if (attribution) {
+              const el = attribution as HTMLElement;
+              elementsToHide.push({ element: el, originalDisplay: el.style.display });
+              el.style.display = 'none';
+            }
+            
+            panels.forEach(panel => {
+              const el = panel as HTMLElement;
+              elementsToHide.push({ element: el, originalDisplay: el.style.display });
+              el.style.display = 'none';
+            });
+
+            // FR: Attendre un peu pour que les changements prennent effet
+            // EN: Wait a bit for changes to take effect
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // FR: Capturer cette feuille
+            // EN: Capture this sheet
+            if (reactFlowElement) {
+              let canvas;
+              try {
+                // FR: Calculer les dimensions optimales pour faire tenir la carte sur la page
+                // EN: Calculate optimal dimensions to fit the map on the page
+                const reactFlowRect = reactFlowElement.getBoundingClientRect();
+                const reactFlowWidth = reactFlowElement.scrollWidth;
+                const reactFlowHeight = reactFlowElement.scrollHeight;
+                
+                // FR: Dimensions de la page PDF (A4 paysage en mm, converties en pixels à 96 DPI)
+                // EN: PDF page dimensions (A4 landscape in mm, converted to pixels at 96 DPI)
+                const pdfWidthMM = 297; // A4 landscape width
+                const pdfHeightMM = 210; // A4 landscape height
+                const mmToPx = 96 / 25.4; // 96 DPI conversion
+                const pdfWidthPx = pdfWidthMM * mmToPx;
+                const pdfHeightPx = pdfHeightMM * mmToPx;
+                
+                // FR: Calculer le facteur d'échelle pour faire tenir la carte
+                // EN: Calculate scale factor to fit the map
+                const scaleX = pdfWidthPx / reactFlowWidth;
+                const scaleY = pdfHeightPx / reactFlowHeight;
+                const optimalScale = Math.min(scaleX, scaleY, 1); // Ne pas agrandir, seulement réduire
+                
+                console.log(`📐 Dimensions carte: ${reactFlowWidth}x${reactFlowHeight}px`);
+                console.log(`📐 Dimensions PDF: ${pdfWidthPx}x${pdfHeightPx}px`);
+                console.log(`📐 Échelle optimale: ${optimalScale.toFixed(3)}`);
+                
+                canvas = await html2canvas(reactFlowElement as HTMLElement, {
+                  backgroundColor: active.mapStyle?.backgroundColor || '#ffffff',
+                  scale: optimalScale,
+                  useCORS: true,
+                  allowTaint: true,
+                  logging: false,
+                  width: reactFlowWidth,
+                  height: reactFlowHeight,
+                });
+              } catch (html2canvasError) {
+                console.warn('⚠️ html2canvas échoué pour la feuille:', sheet.title, html2canvasError);
+                // FR: Créer un canvas de fallback
+                // EN: Create fallback canvas
+                canvas = document.createElement('canvas');
+                canvas.width = 800;
+                canvas.height = 600;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                  ctx.fillStyle = active.mapStyle?.backgroundColor || '#ffffff';
+                  ctx.fillRect(0, 0, canvas.width, canvas.height);
+                  ctx.fillStyle = '#000000';
+                  ctx.font = '24px Arial';
+                  ctx.textAlign = 'center';
+                  ctx.fillText('Export PDF - BigMind', canvas.width / 2, canvas.height / 2);
+                  ctx.fillText('Feuille: ' + sheet.title, canvas.width / 2, canvas.height / 2 + 40);
+                }
+              }
+
+              // FR: Ajouter une nouvelle page si ce n'est pas la première
+              // EN: Add new page if not the first one
+              if (i > 0) {
+                pdf.addPage();
+              }
+
+              // FR: Calculer les dimensions et centrer l'image
+              // EN: Calculate dimensions and center image
+              const pdfWidth = pdf.internal.pageSize.getWidth();
+              const pdfHeight = pdf.internal.pageSize.getHeight();
+              const imgWidth = canvas.width;
+              const imgHeight = canvas.height;
+              const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+              const finalWidth = imgWidth * ratio;
+              const finalHeight = imgHeight * ratio;
+              const x = (pdfWidth - finalWidth) / 2;
+              const y = (pdfHeight - finalHeight) / 2;
+
+              // FR: Ajouter l'image à la page
+              // EN: Add image to page
+              pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, finalWidth, finalHeight);
+
+              // FR: Ajouter le titre de la feuille en bas de page
+              // EN: Add sheet title at bottom of page
+              pdf.setFontSize(10);
+              pdf.setTextColor(100, 100, 100);
+              pdf.text(sheet.title, pdfWidth / 2, pdfHeight - 10, { align: 'center' });
+            }
+
+            // FR: Restaurer les éléments masqués
+            // EN: Restore hidden elements
+            elementsToHide.forEach(({ element, originalDisplay }) => {
+              element.style.display = originalDisplay;
+            });
+            
+            // FR: Retirer la classe d'export pour réafficher la mini-map
+            // EN: Remove export class to show mini-map again
+            if (mindmapCanvas) {
+              mindmapCanvas.classList.remove('exporting');
+            }
+            if (reactFlowElement) {
+              reactFlowElement.classList.remove('exporting');
+            }
+          }
+        }
+
+        // FR: Restaurer la feuille originale
+        // EN: Restore original sheet
+        if (originalSheetId) {
+          const { setActiveSheet } = useOpenFiles.getState();
+          setActiveSheet(active.id, originalSheetId);
+        }
+      } else {
+        // FR: Export simple pour un seul contenu (FreeMind ou XMind avec une seule feuille)
+        // EN: Simple export for single content (FreeMind or XMind with single sheet)
+        console.log('📄 Export simple (une seule feuille)');
+        
       const reactFlowElement = document.querySelector('.react-flow');
       if (!reactFlowElement) {
         throw new Error('Élément React Flow non trouvé');
       }
 
-      console.log('📸 Élément React Flow trouvé:', reactFlowElement);
+        // FR: Masquer la mini-map et l'attribution pour l'export
+        // EN: Hide mini-map and attribution for export
+        const mindmapCanvas = document.querySelector('.mindmap-canvas');
+        const minimap = document.querySelector('.react-flow__minimap');
+        const attribution = document.querySelector('.react-flow__attribution');
+        const panels = document.querySelectorAll('.react-flow__panel');
+        
+        // FR: Stocker les styles originaux pour les restaurer après
+        // EN: Store original styles to restore them after
+        const elementsToHide: Array<{ element: HTMLElement; originalDisplay: string }> = [];
+        
+        if (mindmapCanvas) {
+          mindmapCanvas.classList.add('exporting');
+        }
+        if (reactFlowElement) {
+          reactFlowElement.classList.add('exporting');
+        }
+        
+        // FR: Masquer directement avec JavaScript pour être sûr
+        // EN: Hide directly with JavaScript to be sure
+        if (minimap) {
+          const el = minimap as HTMLElement;
+          elementsToHide.push({ element: el, originalDisplay: el.style.display });
+          el.style.display = 'none';
+        }
+        
+        if (attribution) {
+          const el = attribution as HTMLElement;
+          elementsToHide.push({ element: el, originalDisplay: el.style.display });
+          el.style.display = 'none';
+        }
+        
+        panels.forEach(panel => {
+          const el = panel as HTMLElement;
+          elementsToHide.push({ element: el, originalDisplay: el.style.display });
+          el.style.display = 'none';
+        });
 
-      // FR: Capturer le canvas avec html2canvas
-      // EN: Capture canvas with html2canvas
-      console.log('📸 Capture du canvas...');
+        // FR: Attendre un peu pour que les changements prennent effet
+        // EN: Wait a bit for changes to take effect
+        await new Promise(resolve => setTimeout(resolve, 100));
       
       let canvas;
       try {
+          // FR: Calculer les dimensions optimales pour faire tenir la carte sur la page
+          // EN: Calculate optimal dimensions to fit the map on the page
+          const reactFlowWidth = reactFlowElement.scrollWidth;
+          const reactFlowHeight = reactFlowElement.scrollHeight;
+          
+          // FR: Dimensions de la page PDF (A4 paysage en mm, converties en pixels à 96 DPI)
+          // EN: PDF page dimensions (A4 landscape in mm, converted to pixels at 96 DPI)
+          const pdfWidthMM = 297; // A4 landscape width
+          const pdfHeightMM = 210; // A4 landscape height
+          const mmToPx = 96 / 25.4; // 96 DPI conversion
+          const pdfWidthPx = pdfWidthMM * mmToPx;
+          const pdfHeightPx = pdfHeightMM * mmToPx;
+          
+          // FR: Calculer le facteur d'échelle pour faire tenir la carte
+          // EN: Calculate scale factor to fit the map
+          const scaleX = pdfWidthPx / reactFlowWidth;
+          const scaleY = pdfHeightPx / reactFlowHeight;
+          const optimalScale = Math.min(scaleX, scaleY, 1); // Ne pas agrandir, seulement réduire
+          
+          console.log(`📐 Dimensions carte: ${reactFlowWidth}x${reactFlowHeight}px`);
+          console.log(`📐 Dimensions PDF: ${pdfWidthPx}x${pdfHeightPx}px`);
+          console.log(`📐 Échelle optimale: ${optimalScale.toFixed(3)}`);
+          
         canvas = await html2canvas(reactFlowElement as HTMLElement, {
           backgroundColor: active.mapStyle?.backgroundColor || '#ffffff',
-          scale: 1, // FR: Réduire le scale pour éviter les problèmes
+            scale: optimalScale,
           useCORS: true,
           allowTaint: true,
-          logging: true, // FR: Activer les logs pour debug
-          width: reactFlowElement.scrollWidth,
-          height: reactFlowElement.scrollHeight,
-        });
-        console.log('✅ Canvas capturé avec html2canvas, dimensions:', canvas.width, 'x', canvas.height);
+            logging: false,
+            width: reactFlowWidth,
+            height: reactFlowHeight,
+          });
       } catch (html2canvasError) {
         console.warn('⚠️ html2canvas échoué, tentative de fallback:', html2canvasError);
-        
-        // FR: Fallback: créer un canvas simple avec du texte
-        // EN: Fallback: create simple canvas with text
         canvas = document.createElement('canvas');
         canvas.width = 800;
         canvas.height = 600;
@@ -657,37 +1312,35 @@ export const useFileOperations = () => {
           ctx.fillText('Export PDF - BigMind', canvas.width / 2, canvas.height / 2);
           ctx.fillText('Carte: ' + (active.name || 'Sans nom'), canvas.width / 2, canvas.height / 2 + 40);
         }
-        console.log('✅ Canvas de fallback créé');
-      }
+        }
 
-      // FR: Créer le PDF
-      // EN: Create PDF
-      const pdf = new jsPDF({
-        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-
-      // FR: Calculer les dimensions pour ajuster l'image au format A4
-      // EN: Calculate dimensions to fit image to A4 format
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
-      
-      // FR: Calculer le ratio pour ajuster l'image
-      // EN: Calculate ratio to fit image
       const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
       const finalWidth = imgWidth * ratio;
       const finalHeight = imgHeight * ratio;
-      
-      // FR: Centrer l'image sur la page
-      // EN: Center image on page
       const x = (pdfWidth - finalWidth) / 2;
       const y = (pdfHeight - finalHeight) / 2;
 
-      console.log('📄 Ajout de l\'image au PDF...');
       pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, finalWidth, finalHeight);
+
+        // FR: Restaurer les éléments masqués
+        // EN: Restore hidden elements
+        elementsToHide.forEach(({ element, originalDisplay }) => {
+          element.style.display = originalDisplay;
+        });
+
+        // FR: Retirer la classe d'export pour réafficher la mini-map
+        // EN: Remove export class to show mini-map again
+        if (mindmapCanvas) {
+          mindmapCanvas.classList.remove('exporting');
+        }
+        if (reactFlowElement) {
+          reactFlowElement.classList.remove('exporting');
+        }
+      }
 
       // FR: Ajouter des métadonnées
       // EN: Add metadata
@@ -705,8 +1358,6 @@ export const useFileOperations = () => {
       
       console.log('💾 Téléchargement du PDF:', fileName);
       
-      // FR: Utiliser la fonction utilitaire de téléchargement
-      // EN: Use utility download function
       const pdfBlob = pdf.output('blob');
       const success = downloadFile(pdfBlob, fileName, 'application/pdf');
       if (!success) {
@@ -716,6 +1367,17 @@ export const useFileOperations = () => {
     } catch (error) {
       console.error('❌ Erreur lors de l\'export PDF:', error);
       throw error;
+    } finally {
+      // FR: S'assurer que la classe d'export est retirée même en cas d'erreur
+      // EN: Ensure export class is removed even on error
+      const mindmapCanvas = document.querySelector('.mindmap-canvas');
+      const reactFlowElement = document.querySelector('.react-flow');
+      if (mindmapCanvas) {
+        mindmapCanvas.classList.remove('exporting');
+      }
+      if (reactFlowElement) {
+        reactFlowElement.classList.remove('exporting');
+      }
     }
   }, []);
 
@@ -735,6 +1397,260 @@ export const useFileOperations = () => {
     await exportActiveXMind(exportFileName);
   }, [exportActiveXMind]);
 
+  // FR: Exporter vers PNG
+  // EN: Export to PNG
+  const exportToPNG = useCallback(async () => {
+    const active = getActiveFile();
+    if (!active || !active.content) {
+      alert('Aucun fichier ouvert. Veuillez ouvrir une carte mentale avant d\'exporter.');
+      throw new Error('Aucun fichier actif');
+    }
+
+    console.log('🔄 exportToPNG - Début de l\'export vers PNG');
+
+    try {
+      const reactFlowElement = document.querySelector('.react-flow');
+      if (!reactFlowElement) {
+        throw new Error('Élément React Flow non trouvé');
+      }
+
+      // FR: Masquer la mini-map et l'attribution pour l'export
+      // EN: Hide mini-map and attribution for export
+      const mindmapCanvas = document.querySelector('.mindmap-canvas');
+      const minimap = document.querySelector('.react-flow__minimap');
+      const attribution = document.querySelector('.react-flow__attribution');
+      const panels = document.querySelectorAll('.react-flow__panel');
+      
+      const elementsToHide: Array<{ element: HTMLElement; originalDisplay: string }> = [];
+      
+      if (mindmapCanvas) {
+        mindmapCanvas.classList.add('exporting');
+      }
+      if (reactFlowElement) {
+        reactFlowElement.classList.add('exporting');
+      }
+      
+      if (minimap) {
+        const el = minimap as HTMLElement;
+        elementsToHide.push({ element: el, originalDisplay: el.style.display });
+        el.style.display = 'none';
+      }
+      
+      if (attribution) {
+        const el = attribution as HTMLElement;
+        elementsToHide.push({ element: el, originalDisplay: el.style.display });
+        el.style.display = 'none';
+      }
+      
+      panels.forEach(panel => {
+        const el = panel as HTMLElement;
+        elementsToHide.push({ element: el, originalDisplay: el.style.display });
+        el.style.display = 'none';
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      let canvas;
+      try {
+        const reactFlowWidth = reactFlowElement.scrollWidth;
+        const reactFlowHeight = reactFlowElement.scrollHeight;
+        
+        canvas = await html2canvas(reactFlowElement as HTMLElement, {
+          backgroundColor: active.mapStyle?.backgroundColor || '#ffffff',
+          scale: 1,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          width: reactFlowWidth,
+          height: reactFlowHeight,
+        });
+      } catch (html2canvasError) {
+        console.warn('⚠️ html2canvas échoué, tentative de fallback:', html2canvasError);
+        canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = 600;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = active.mapStyle?.backgroundColor || '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = '#000000';
+          ctx.font = '24px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('Export PNG - BigMind', canvas.width / 2, canvas.height / 2);
+          ctx.fillText('Carte: ' + (active.name || 'Sans nom'), canvas.width / 2, canvas.height / 2 + 40);
+        }
+      }
+
+      // FR: Restaurer les éléments masqués
+      // EN: Restore hidden elements
+      elementsToHide.forEach(({ element, originalDisplay }) => {
+        element.style.display = originalDisplay;
+      });
+
+      if (mindmapCanvas) {
+        mindmapCanvas.classList.remove('exporting');
+      }
+      if (reactFlowElement) {
+        reactFlowElement.classList.remove('exporting');
+      }
+
+      // FR: Télécharger le PNG
+      // EN: Download PNG
+      const baseName = active.name.replace(/\.(xmind|mm)$/i, '');
+      const fileName = `${baseName}.png`;
+      
+      console.log('💾 Téléchargement du PNG:', fileName);
+      
+      // FR: Convertir data URL en Blob
+      // EN: Convert data URL to Blob
+      const dataUrl = canvas.toDataURL('image/png');
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      const success = downloadFile(blob, fileName, 'image/png');
+      if (!success) {
+        throw new Error('Échec du téléchargement du fichier PNG');
+      }
+      console.log('✅ Export PNG terminé avec succès');
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'export PNG:', error);
+      throw error;
+    } finally {
+      // FR: S'assurer que la classe d'export est retirée même en cas d'erreur
+      // EN: Ensure export class is removed even on error
+      const mindmapCanvas = document.querySelector('.mindmap-canvas');
+      if (mindmapCanvas) {
+        mindmapCanvas.classList.remove('exporting');
+      }
+    }
+  }, []);
+
+  // FR: Exporter vers JPEG
+  // EN: Export to JPEG
+  const exportToJPEG = useCallback(async () => {
+    const active = getActiveFile();
+    if (!active || !active.content) {
+      alert('Aucun fichier ouvert. Veuillez ouvrir une carte mentale avant d\'exporter.');
+      throw new Error('Aucun fichier actif');
+    }
+
+    console.log('🔄 exportToJPEG - Début de l\'export vers JPEG');
+
+    try {
+      const reactFlowElement = document.querySelector('.react-flow');
+      if (!reactFlowElement) {
+        throw new Error('Élément React Flow non trouvé');
+      }
+
+      // FR: Masquer la mini-map et l'attribution pour l'export
+      // EN: Hide mini-map and attribution for export
+      const mindmapCanvas = document.querySelector('.mindmap-canvas');
+      const minimap = document.querySelector('.react-flow__minimap');
+      const attribution = document.querySelector('.react-flow__attribution');
+      const panels = document.querySelectorAll('.react-flow__panel');
+      
+      const elementsToHide: Array<{ element: HTMLElement; originalDisplay: string }> = [];
+      
+      if (mindmapCanvas) {
+        mindmapCanvas.classList.add('exporting');
+      }
+      if (reactFlowElement) {
+        reactFlowElement.classList.add('exporting');
+      }
+      
+      if (minimap) {
+        const el = minimap as HTMLElement;
+        elementsToHide.push({ element: el, originalDisplay: el.style.display });
+        el.style.display = 'none';
+      }
+      
+      if (attribution) {
+        const el = attribution as HTMLElement;
+        elementsToHide.push({ element: el, originalDisplay: el.style.display });
+        el.style.display = 'none';
+      }
+      
+      panels.forEach(panel => {
+        const el = panel as HTMLElement;
+        elementsToHide.push({ element: el, originalDisplay: el.style.display });
+        el.style.display = 'none';
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      let canvas;
+      try {
+        const reactFlowWidth = reactFlowElement.scrollWidth;
+        const reactFlowHeight = reactFlowElement.scrollHeight;
+        
+        canvas = await html2canvas(reactFlowElement as HTMLElement, {
+          backgroundColor: active.mapStyle?.backgroundColor || '#ffffff',
+          scale: 1,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          width: reactFlowWidth,
+          height: reactFlowHeight,
+        });
+      } catch (html2canvasError) {
+        console.warn('⚠️ html2canvas échoué, tentative de fallback:', html2canvasError);
+        canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = 600;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = active.mapStyle?.backgroundColor || '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = '#000000';
+          ctx.font = '24px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('Export JPEG - BigMind', canvas.width / 2, canvas.height / 2);
+          ctx.fillText('Carte: ' + (active.name || 'Sans nom'), canvas.width / 2, canvas.height / 2 + 40);
+        }
+      }
+
+      // FR: Restaurer les éléments masqués
+      // EN: Restore hidden elements
+      elementsToHide.forEach(({ element, originalDisplay }) => {
+        element.style.display = originalDisplay;
+      });
+
+      if (mindmapCanvas) {
+        mindmapCanvas.classList.remove('exporting');
+      }
+      if (reactFlowElement) {
+        reactFlowElement.classList.remove('exporting');
+      }
+
+      // FR: Télécharger le JPEG
+      // EN: Download JPEG
+      const baseName = active.name.replace(/\.(xmind|mm)$/i, '');
+      const fileName = `${baseName}.jpg`;
+      
+      console.log('💾 Téléchargement du JPEG:', fileName);
+      
+      // FR: Convertir data URL en Blob
+      // EN: Convert data URL to Blob
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      const success = downloadFile(blob, fileName, 'image/jpeg');
+      if (!success) {
+        throw new Error('Échec du téléchargement du fichier JPEG');
+      }
+      console.log('✅ Export JPEG terminé avec succès');
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'export JPEG:', error);
+      throw error;
+    } finally {
+      // FR: S'assurer que la classe d'export est retirée même en cas d'erreur
+      // EN: Ensure export class is removed even on error
+      const mindmapCanvas = document.querySelector('.mindmap-canvas');
+      if (mindmapCanvas) {
+        mindmapCanvas.classList.remove('exporting');
+      }
+    }
+  }, []);
+
   return {
     openFile,
     openFreeMindFile,
@@ -745,6 +1661,144 @@ export const useFileOperations = () => {
     saveAsXMind,
     exportXMind,
     exportToFreeMind,
-    exportToPDF
+    exportToPDF,
+    exportToPNG,
+    exportToJPEG,
+    exportToSVG: useCallback(async () => {
+      const active = getActiveFile();
+      if (!active || !active.content) {
+        alert('Aucun fichier ouvert. Veuillez ouvrir une carte mentale avant d\'exporter.');
+        throw new Error('Aucun fichier actif');
+      }
+
+      console.log('🔄 exportToSVG - Début de l\'export vers SVG');
+
+      try {
+        // FR: Générer le SVG à partir de la structure de la carte mentale
+        // EN: Generate SVG from mind map structure
+        const svgContent = generateSVGFromMindMap(active.content, active.mapStyle);
+        
+        // FR: Créer un Blob avec le contenu SVG
+        // EN: Create Blob with SVG content
+        const svgBlob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+        
+        // FR: Télécharger le SVG
+        // EN: Download SVG
+        const baseName = active.name.replace(/\.(xmind|mm)$/i, '');
+        const fileName = `${baseName}.svg`;
+        
+        console.log('💾 Téléchargement du SVG:', fileName);
+        
+        saveAs(svgBlob, fileName);
+        console.log('✅ Export SVG terminé avec succès');
+      } catch (error) {
+        console.error('❌ Erreur lors de l\'export SVG:', error);
+        throw error;
+      }
+    }, []),
+    exportToMarkdown: useCallback(async () => {
+      const active = getActiveFile();
+      if (!active || !active.content) {
+        alert('Aucun fichier ouvert. Veuillez ouvrir une carte mentale avant d\'exporter.');
+        throw new Error('Aucun fichier actif');
+      }
+
+      console.log('🔄 exportToMarkdown - Début de l\'export vers Markdown');
+
+      try {
+        // FR: Générer le Markdown à partir de la structure de la carte mentale
+        // EN: Generate Markdown from mind map structure
+        const markdownContent = generateMarkdownFromMindMap(active.content);
+        
+        // FR: Créer un Blob avec le contenu Markdown
+        // EN: Create Blob with Markdown content
+        const markdownBlob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+        
+        // FR: Télécharger le Markdown
+        // EN: Download Markdown
+        const baseName = active.name.replace(/\.(xmind|mm)$/i, '');
+        const fileName = `${baseName}.md`;
+        
+        console.log('💾 Téléchargement du Markdown:', fileName);
+        
+        saveAs(markdownBlob, fileName);
+        console.log('✅ Export Markdown terminé avec succès');
+      } catch (error) {
+        console.error('❌ Erreur lors de l\'export Markdown:', error);
+        throw error;
+      }
+    }, []),
+    exportToWord: useCallback(async () => {
+      const active = getActiveFile();
+      if (!active || !active.content) {
+        alert('Aucun fichier ouvert. Veuillez ouvrir une carte mentale avant d\'exporter.');
+        throw new Error('Aucun fichier actif');
+      }
+
+      console.log('🔄 exportToWord - Début de l\'export vers Word');
+
+      try {
+        // FR: Générer le document Word à partir de la structure de la carte mentale
+        // EN: Generate Word document from mind map structure
+        const doc = generateWordFromMindMap(active.content);
+        
+        // FR: Générer le buffer du document
+        // EN: Generate document buffer
+        const buffer = await Packer.toBuffer(doc);
+        
+        // FR: Créer un Blob avec le contenu Word
+        // EN: Create Blob with Word content
+        const wordBlob = new Blob([new Uint8Array(buffer)], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+        
+        // FR: Télécharger le Word
+        // EN: Download Word
+        const baseName = active.name.replace(/\.(xmind|mm)$/i, '');
+        const fileName = `${baseName}.docx`;
+        
+        console.log('💾 Téléchargement du Word:', fileName);
+        
+        saveAs(wordBlob, fileName);
+        console.log('✅ Export Word terminé avec succès');
+      } catch (error) {
+        console.error('❌ Erreur lors de l\'export Word:', error);
+        throw error;
+      }
+    }, []),
+    exportToExcel: useCallback(async () => {
+      const active = getActiveFile();
+      if (!active || !active.content) {
+        alert('Aucun fichier ouvert. Veuillez ouvrir une carte mentale avant d\'exporter.');
+        throw new Error('Aucun fichier actif');
+      }
+
+      console.log('🔄 exportToExcel - Début de l\'export vers Excel');
+
+      try {
+        // FR: Générer le classeur Excel à partir de la structure de la carte mentale
+        // EN: Generate Excel workbook from mind map structure
+        const workbook = generateExcelFromMindMap(active.content);
+        
+        // FR: Générer le buffer du classeur
+        // EN: Generate workbook buffer
+        const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        
+        // FR: Créer un Blob avec le contenu Excel
+        // EN: Create Blob with Excel content
+        const excelBlob = new Blob([new Uint8Array(buffer)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        
+        // FR: Télécharger l'Excel
+        // EN: Download Excel
+        const baseName = active.name.replace(/\.(xmind|mm)$/i, '');
+        const fileName = `${baseName}.xlsx`;
+        
+        console.log('💾 Téléchargement de l\'Excel:', fileName);
+        
+        saveAs(excelBlob, fileName);
+        console.log('✅ Export Excel terminé avec succès');
+      } catch (error) {
+        console.error('❌ Erreur lors de l\'export Excel:', error);
+        throw error;
+      }
+    }, []),
   };
 };

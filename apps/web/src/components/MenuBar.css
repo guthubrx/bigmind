@@ -109,11 +109,11 @@
 
 /* FR: Styles pour les sous-menus */
 /* EN: Styles for submenus */
-.menu-item-with-submenu {
+.has-submenu {
   position: relative;
 }
 
-.menu-item-with-submenu:hover .menu-submenu {
+.has-submenu:hover .menu-submenu {
   opacity: 1;
   transform: translateX(0);
   pointer-events: auto;
@@ -135,8 +135,22 @@
   transform: translateX(-8px);
   transition: all 0.2s ease;
   pointer-events: none;
-  margin-left: 8px; /* FR: Augmenter la marge pour plus d'espace */
+  margin-left: 4px; /* FR: Réduire la marge pour faciliter la navigation */
   margin-top: -4px; /* FR: Ajuster la position verticale */
+}
+
+/* FR: Zone de transition invisible pour faciliter la navigation vers le sous-menu */
+/* EN: Invisible transition zone to facilitate navigation to submenu */
+.menu-submenu::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background: transparent;
+  pointer-events: auto;
+  z-index: -1;
 }
 
 .menu-submenu .menu-item-option {

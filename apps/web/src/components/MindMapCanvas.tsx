@@ -285,26 +285,80 @@ function MindMapCanvas() {
     };
   }, []);
 
-  // FR: Écouter les événements de focus depuis l'explorateur pour centrer et zoomer à 100%
-  // EN: Listen for focus events from the explorer to center and zoom to 100%
+  // FR: Écouter les événements de focus depuis l'explorateur pour centrer et zoomer optimalement
+  // EN: Listen for focus events from the explorer to center and zoom optimally
   useEffect(() => {
     const handleNodeFocus = (event: CustomEvent) => {
       const { nodeId } = event.detail;
-      if (!instanceRef.current) return;
+      if (!instanceRef.current || !activeFile) return;
 
       const inst = instanceRef.current;
       const node = inst.getNode(nodeId);
       if (!node) return;
 
-      // Centrer sur le nœud avec zoom à 100% (1.0)
-      const width = (node.data as any)?.width || 200;
-      const height = (node.data as any)?.height || 40;
-      const x = (node.position?.x || 0) + width / 2;
-      const y = (node.position?.y || 0) + height / 2;
-
       try {
+        // FR: Trouver le nœud dans la carte mentale pour accéder à ses enfants
+        // EN: Find the node in the mind map to access its children
+        const mindMapNode = activeFile.content?.nodes?.[nodeId];
+        if (!mindMapNode) return;
+
+        // FR: Calculer la bounding box du nœud et de ses enfants de premier niveau
+        // EN: Calculate bounding box of node and its first-level children
+        const allNodesToShow = [nodeId, ...mindMapNode.children];
+        const nodesToShow = allNodesToShow.map(id => inst.getNode(id)).filter(Boolean);
+        
+        if (nodesToShow.length === 0) return;
+
+        // FR: Calculer les limites de la zone à afficher
+        // EN: Calculate bounds of the area to display
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        
+        nodesToShow.forEach(n => {
+          if (!n.position) return;
+          const width = (n.data as any)?.width || 200;
+          const height = (n.data as any)?.height || 40;
+          
+          minX = Math.min(minX, n.position.x);
+          maxX = Math.max(maxX, n.position.x + width);
+          minY = Math.min(minY, n.position.y);
+          maxY = Math.max(maxY, n.position.y + height);
+        });
+
+        // FR: Ajouter une marge de 20% autour de la zone
+        // EN: Add 20% margin around the area
+        const margin = 0.2;
+        const totalWidth = maxX - minX;
+        const totalHeight = maxY - minY;
+        const marginX = totalWidth * margin;
+        const marginY = totalHeight * margin;
+        
+        minX -= marginX;
+        maxX += marginX;
+        minY -= marginY;
+        maxY += marginY;
+
+        // FR: Calculer le centre de la zone
+        // EN: Calculate center of the area
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
+
+        // FR: Obtenir la taille du viewport
+        // EN: Get viewport size
+        const viewport = inst.getViewport();
+        const viewportWidth = reactFlowWrapper.current?.clientWidth || 800;
+        const viewportHeight = reactFlowWrapper.current?.clientHeight || 600;
+
+        // FR: Calculer le zoom optimal pour faire tenir la zone dans le viewport
+        // EN: Calculate optimal zoom to fit the area in the viewport
+        const zoomX = viewportWidth / (maxX - minX);
+        const zoomY = viewportHeight / (maxY - minY);
+        const optimalZoom = Math.min(zoomX, zoomY, 2.0); // Limiter à 200% max
+        const finalZoom = Math.max(optimalZoom, 0.1); // Limiter à 10% min
+
+        // FR: Centrer sur la zone avec le zoom optimal
+        // EN: Center on the area with optimal zoom
         if (typeof inst.setCenter === 'function') {
-          inst.setCenter(x, y, { zoom: 1.0, duration: 500 });
+          inst.setCenter(centerX, centerY, { zoom: finalZoom, duration: 500 });
         }
       } catch (e) {
         // Ignore errors
@@ -315,7 +369,7 @@ function MindMapCanvas() {
     return () => {
       window.removeEventListener('node-focus', handleNodeFocus as EventListener);
     };
-  }, []);
+  }, [activeFile]);
 
   // FR: Synchroniser le zoom avec l'instance ReactFlow (toujours appelé, indépendamment du fichier actif)
   // EN: Sync zoom with ReactFlow instance (always called, regardless of active file)

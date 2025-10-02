@@ -70,3 +70,17 @@
   z-index: 1000;
   position: relative;
 }
+
+/* FR: Masquer la mini-map pendant l'export */
+/* EN: Hide mini-map during export */
+.exporting .react-flow__minimap,
+.mindmap-canvas.exporting .react-flow__minimap {
+  display: none !important;
+}
+
+/* FR: Masquer l'attribution ReactFlow pendant l'export */
+/* EN: Hide ReactFlow attribution during export */
+.exporting .react-flow__attribution,
+.mindmap-canvas.exporting .react-flow__attribution {
+  display: none !important;
+}
