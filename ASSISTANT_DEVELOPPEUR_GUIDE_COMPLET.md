@@ -65,7 +65,7 @@ graph TD
 cd /path/to/your/project
 
 # 2. Lancer l'installation automatique
-./scripts/08-setup-dev-environment.sh
+./scripts/01-setup-dev-environment.sh
 ```
 
 **Ce que fait l'installation automatique :**
@@ -84,13 +84,13 @@ cd /path/to/your/project
 chmod +x scripts/*.sh
 
 # 2. Configurer les alias Git
-git config --local alias.quick-commit "!./scripts/01-quick-commit.sh"
-git config --local alias.fix-eslint "!./scripts/05-fix-eslint.sh"
-git config --local alias.check-refactor "!./scripts/06-detect-refactor.sh"
-git config --local alias.safe-commit "!./scripts/07-smart-pre-commit.sh && git commit"
+git config --local alias.quick-commit "!./scripts/05-quick-commit.sh"
+git config --local alias.fix-eslint "!./scripts/02-fix-eslint.sh"
+git config --local alias.check-refactor "!./scripts/03-detect-refactor.sh"
+git config --local alias.safe-commit "!./scripts/04-smart-pre-commit.sh && git commit"
 
 # 3. Installer le pre-commit hook
-cp scripts/07-smart-pre-commit.sh .git/hooks/pre-commit
+cp scripts/04-smart-pre-commit.sh .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
 ```
 
@@ -113,14 +113,14 @@ ls -la .git/hooks/pre-commit
 
 ### 🎯 Scripts Principaux (Nouveaux)
 
-#### **Script 05 : `fix-eslint.sh`**
+#### **Script 02 : `fix-eslint.sh`**
 
 **🔧 Correction Automatique ESLint**
 
 ```bash
 # Usage
-./scripts/05-fix-eslint.sh                    # Tout le projet
-./scripts/05-fix-eslint.sh src/App.tsx        # Fichier spécifique
+./scripts/02-fix-eslint.sh                    # Tout le projet
+./scripts/02-fix-eslint.sh src/App.tsx        # Fichier spécifique
 git fix-eslint                                # Via alias Git
 ```
 
@@ -144,14 +144,14 @@ git fix-eslint                                # Via alias Git
 🎉 TOUTES LES ERREURS ESLINT RÉSOLUES !
 ```
 
-#### **Script 06 : `detect-refactor.sh`**
+#### **Script 03 : `detect-refactor.sh`**
 
 **🔍 Détection Automatique de Refactoring**
 
 ```bash
 # Usage
-./scripts/06-detect-refactor.sh               # Analyser src/
-./scripts/06-detect-refactor.sh apps/web/src  # Dossier spécifique
+./scripts/03-detect-refactor.sh               # Analyser src/
+./scripts/03-detect-refactor.sh apps/web/src  # Dossier spécifique
 git check-refactor apps/web/src               # Via alias Git
 ```
 
@@ -181,7 +181,7 @@ git check-refactor apps/web/src               # Via alias Git
    💡 Solution: Utiliser useReducer ou diviser le composant
 ```
 
-#### **Script 07 : `smart-pre-commit.sh`**
+#### **Script 04 : `smart-pre-commit.sh`**
 
 **🛡️ Pre-commit Hook Intelligent**
 
@@ -205,7 +205,7 @@ git commit -m "feat: nouvelle fonctionnalité"
 # ✅ Commit créé avec succès
 ```
 
-#### **Script 08 : `setup-dev-environment.sh`**
+#### **Script 01 : `setup-dev-environment.sh`**
 
 **⚙️ Configuration Automatique de l'Environnement**
 
@@ -219,7 +219,7 @@ git commit -m "feat: nouvelle fonctionnalité"
 
 ### 🎯 Scripts Existants (Améliorés)
 
-#### **Script 01 : `quick-commit.sh`**
+#### **Script 05 : `quick-commit.sh`**
 
 **⚡ Commit Rapide avec Diagnostic Automatique**
 
@@ -229,15 +229,15 @@ git commit -m "feat: nouvelle fonctionnalité"
 - 🔧 Réparation automatique (dépendances, conflits, permissions)
 - 📋 Handoff IA optimisé avec contexte complet
 
-#### **Script 02 : `debug-and-commit.sh`**
+#### **Script 06 : `debug-and-commit.sh`**
 
 **🐛 Debug Avancé avec Réparation Intelligente**
 
-#### **Script 03 : `create-release.sh`**
+#### **Script 07 : `create-release.sh`**
 
 **🚀 Création de Release avec Diagnostic**
 
-#### **Script 04 : `rebuild-release.sh`**
+#### **Script 08 : `rebuild-release.sh`**
 
 **🔄 Reconstruction de Release GitHub**
 
@@ -344,9 +344,9 @@ git commit --no-verify               # Ignore toutes les vérifications
 | `git ci`                 | `git commit`                      | Commit                  |
 | `git unstage`            | `git reset HEAD --`               | Retirer du staging      |
 | `git last`               | `git log -1 HEAD`                 | Dernier commit          |
-| **`git quick-commit`**   | `./scripts/01-quick-commit.sh`    | **Commit intelligent**  |
-| **`git fix-eslint`**     | `./scripts/05-fix-eslint.sh`      | **Correction ESLint**   |
-| **`git check-refactor`** | `./scripts/06-detect-refactor.sh` | **Analyse refactoring** |
+| **`git quick-commit`**   | `./scripts/05-quick-commit.sh`    | **Commit intelligent**  |
+| **`git fix-eslint`**     | `./scripts/02-fix-eslint.sh`      | **Correction ESLint**   |
+| **`git check-refactor`** | `./scripts/03-detect-refactor.sh` | **Analyse refactoring** |
 | **`git safe-commit`**    | Pre-commit + commit               | **Commit sécurisé**     |
 
 ### 💻 Configuration VS Code
@@ -419,9 +419,9 @@ chmod +x scripts/*.sh
 #### Alias Git non configurés
 
 ```bash
-./scripts/08-setup-dev-environment.sh
+./scripts/01-setup-dev-environment.sh
 # Ou manuellement :
-git config --local alias.fix-eslint "!./scripts/05-fix-eslint.sh"
+git config --local alias.fix-eslint "!./scripts/02-fix-eslint.sh"
 ```
 
 ### Problèmes de Fonctionnement
@@ -433,7 +433,7 @@ git config --local alias.fix-eslint "!./scripts/05-fix-eslint.sh"
 git config --local --list | grep alias
 
 # Reconfigurer si nécessaire
-./scripts/08-setup-dev-environment.sh
+./scripts/01-setup-dev-environment.sh
 ```
 
 #### ESLint ne se corrige pas automatiquement
@@ -456,7 +456,7 @@ git fix-eslint
 ls -la .git/hooks/pre-commit
 
 # Réinstaller
-cp scripts/07-smart-pre-commit.sh .git/hooks/pre-commit
+cp scripts/04-smart-pre-commit.sh .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
 ```
 

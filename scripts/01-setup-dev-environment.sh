@@ -58,7 +58,7 @@ setup_pre_commit_hook() {
     cat > .git/hooks/pre-commit << 'EOF'
 #!/bin/bash
 # Pre-commit hook intelligent généré automatiquement
-exec ./scripts/07-smart-pre-commit.sh
+exec ./scripts/04-smart-pre-commit.sh
 EOF
     
     # Rendre le hook exécutable
@@ -86,10 +86,10 @@ setup_git_aliases() {
     git config --local alias.dump "cat-file -p"
     
     # Alias spécifiques au projet
-    git config --local alias.quick-commit "!./scripts/01-quick-commit.sh"
-    git config --local alias.fix-eslint "!./scripts/05-fix-eslint.sh"
-    git config --local alias.check-refactor "!./scripts/06-detect-refactor.sh"
-    git config --local alias.safe-commit "!./scripts/07-smart-pre-commit.sh && git commit"
+    git config --local alias.quick-commit "!./scripts/05-quick-commit.sh"
+    git config --local alias.fix-eslint "!./scripts/02-fix-eslint.sh"
+    git config --local alias.check-refactor "!./scripts/03-detect-refactor.sh"
+    git config --local alias.safe-commit "!./scripts/04-smart-pre-commit.sh && git commit"
     
     log "SUCCESS" "✅ Alias Git configurés"
     log "INFO" "   - git st (status)"
@@ -157,9 +157,9 @@ EOF
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Fix ESLint",
-      "type": "shell",
-      "command": "./scripts/05-fix-eslint.sh",
+            "label": "Fix ESLint",
+            "type": "shell",
+            "command": "./scripts/02-fix-eslint.sh",
       "group": "build",
       "presentation": {
         "echo": true,
@@ -169,9 +169,9 @@ EOF
       }
     },
     {
-      "label": "Check Refactor",
-      "type": "shell",
-      "command": "./scripts/06-detect-refactor.sh",
+            "label": "Check Refactor",
+            "type": "shell",
+            "command": "./scripts/03-detect-refactor.sh",
       "group": "build",
       "presentation": {
         "echo": true,
@@ -181,9 +181,9 @@ EOF
       }
     },
     {
-      "label": "Quick Commit",
-      "type": "shell",
-      "command": "./scripts/01-quick-commit.sh",
+            "label": "Quick Commit",
+            "type": "shell",
+            "command": "./scripts/05-quick-commit.sh",
       "group": "build",
       "presentation": {
         "echo": true,
@@ -347,14 +347,14 @@ test_scripts() {
     log "INFO" "🧪 Test des scripts installés..."
     
     # Tester le script ESLint
-    if [ -f "scripts/05-fix-eslint.sh" ]; then
+    if [ -f "scripts/02-fix-eslint.sh" ]; then
         log "SUCCESS" "✅ Script ESLint disponible"
     else
         log "ERROR" "❌ Script ESLint manquant"
     fi
     
     # Tester le script de refactoring
-    if [ -f "scripts/06-detect-refactor.sh" ]; then
+    if [ -f "scripts/03-detect-refactor.sh" ]; then
         log "SUCCESS" "✅ Script refactoring disponible"
     else
         log "ERROR" "❌ Script refactoring manquant"

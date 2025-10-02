@@ -8,7 +8,7 @@
 
 ```bash
 # Installation complète en une commande
-./scripts/08-setup-dev-environment.sh
+./scripts/01-setup-dev-environment.sh
 ```
 
 **✅ En 2 minutes, vous aurez :**
@@ -50,17 +50,17 @@ git quick-commit "feat: ma fonctionnalité"
 
 ### 🎯 Scripts d'Assistance (Nouveaux)
 
-- **`05-fix-eslint.sh`** - Correction automatique ESLint
-- **`06-detect-refactor.sh`** - Détection de refactoring nécessaire
-- **`07-smart-pre-commit.sh`** - Pre-commit hook intelligent
-- **`08-setup-dev-environment.sh`** - Configuration automatique
+- **`01-setup-dev-environment.sh`** - Configuration automatique
+- **`02-fix-eslint.sh`** - Correction automatique ESLint
+- **`03-detect-refactor.sh`** - Détection de refactoring nécessaire
+- **`04-smart-pre-commit.sh`** - Pre-commit hook intelligent
 
 ### 🚀 Scripts de Projet (Améliorés)
 
-- **`01-quick-commit.sh`** - Commit rapide avec diagnostic
-- **`02-debug-and-commit.sh`** - Debug avancé
-- **`03-create-release.sh`** - Création de release
-- **`04-rebuild-release.sh`** - Reconstruction GitHub
+- **`05-quick-commit.sh`** - Commit rapide avec diagnostic
+- **`06-debug-and-commit.sh`** - Debug avancé
+- **`07-create-release.sh`** - Création de release
+- **`08-rebuild-release.sh`** - Reconstruction GitHub
 
 ---
 
@@ -114,7 +114,7 @@ git fix-eslint --help
 ### 1️⃣ Installation (2 minutes)
 
 ```bash
-./scripts/08-setup-dev-environment.sh
+./scripts/01-setup-dev-environment.sh
 ```
 
 ### 2️⃣ Premier Test

@@ -4,10 +4,11 @@
 
 ### Scripts Principaux
 
-- `./scripts/01-quick-commit.sh "message"` - Commit rapide avec vérifications
-- `./scripts/05-fix-eslint.sh` - Correction automatique ESLint
-- `./scripts/06-detect-refactor.sh` - Détection de refactoring nécessaire
-- `./scripts/07-smart-pre-commit.sh` - Hook pre-commit intelligent
+- `./scripts/01-setup-dev-environment.sh` - Configuration de l'environnement
+- `./scripts/02-fix-eslint.sh` - Correction automatique ESLint
+- `./scripts/03-detect-refactor.sh` - Détection de refactoring nécessaire
+- `./scripts/04-smart-pre-commit.sh` - Hook pre-commit intelligent
+- `./scripts/05-quick-commit.sh "message"` - Commit rapide avec vérifications
 
 ### Alias Git Configurés
 
@@ -53,7 +54,7 @@ git quick-commit "feat: ma nouvelle fonctionnalité"
 ### ESLint bloque le commit
 
 ```bash
-./scripts/05-fix-eslint.sh    # Correction automatique
+./scripts/02-fix-eslint.sh    # Correction automatique
 # Ou voir les erreurs détaillées :
 pnpm lint
 ```
@@ -68,7 +69,7 @@ pnpm type-check              # Voir toutes les erreurs
 ### Code trop complexe
 
 ```bash
-./scripts/06-detect-refactor.sh    # Analyse automatique
+./scripts/03-detect-refactor.sh    # Analyse automatique
 # Suivre les recommandations affichées
 ```
 
