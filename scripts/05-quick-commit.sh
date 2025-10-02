@@ -320,7 +320,32 @@ main() {
     local commit_message="$1"
     
     if [[ -z "$commit_message" ]]; then
-        commit_message="feat: quick commit - $(date '+%Y-%m-%d %H:%M:%S')"
+        log "INFO" "🤖 Génération automatique du message de commit..."
+        
+        # Vérifier si le session logger est disponible
+        if [ -f "scripts/09-session-logger.sh" ]; then
+            commit_message=$(./scripts/09-session-logger.sh generate)
+            log "INFO" "💡 Message généré: $commit_message"
+            
+            # Demander confirmation à l'utilisateur
+            echo ""
+            echo -e "${YELLOW}🎯 Message de commit généré automatiquement :${NC}"
+            echo -e "${GREEN}\"$commit_message\"${NC}"
+            echo ""
+            read -p "Utiliser ce message ? [Y/n] " -n 1 -r
+            echo ""
+            
+            if [[ $REPLY =~ ^[Nn]$ ]]; then
+                echo "Veuillez fournir un message de commit :"
+                read -r commit_message
+                if [ -z "$commit_message" ]; then
+                    commit_message="feat: quick commit - $(date '+%Y-%m-%d %H:%M:%S')"
+                fi
+            fi
+        else
+            commit_message="feat: quick commit - $(date '+%Y-%m-%d %H:%M:%S')"
+            log "INFO" "💡 Message par défaut utilisé (installez le session logger pour l'auto-génération)"
+        fi
     fi
     
     cd "$PROJECT_ROOT"
@@ -351,6 +376,12 @@ main() {
         local commit_hash=$(git rev-parse HEAD)
         log "INFO" "✅ Commit créé: $commit_hash"
         log "INFO" "📋 Message: $commit_message"
+        
+        # Sauvegarder le contexte de commit et nettoyer la session
+        if [ -f "scripts/09-session-logger.sh" ]; then
+            ./scripts/09-session-logger.sh save "$commit_message"
+            ./scripts/09-session-logger.sh cleanup
+        fi
         
     else
         log "WARN" "⚠️ Aucun changement à commiter"
