@@ -186,28 +186,47 @@ auto_diagnose_and_repair() {
     local error_type=""
     local auto_fix_available=false
     
-    # Détection intelligente du type d'erreur
+    # Détection intelligente du type d'erreur avec extraction de détails spécifiques
+    local specific_modules=""
+    local specific_files=""
+    local specific_errors=""
+    local specific_conflicts=""
+    
     if grep -q "Cannot find module\|Module not found\|ERR_MODULE_NOT_FOUND" "$temp_log"; then
         error_type="missing_module"
         auto_fix_available=true
+        specific_modules=$(grep -o "Cannot find module '[^']*'\|Module not found: [^ ]*\|ERR_MODULE_NOT_FOUND.*'[^']*'" "$temp_log" | sed "s/.*'\([^']*\)'.*/\1/" | head -5)
     elif grep -q "ENOENT.*node_modules\|pnpm-lock.yaml" "$temp_log"; then
         error_type="missing_dependencies"
         auto_fix_available=true
+        specific_modules=$(grep -o "ENOENT.*node_modules/[^/]*/[^/]*" "$temp_log" | sed "s/.*node_modules\/\([^\/]*\).*/\1/" | head -3)
     elif grep -q "Type error\|TS[0-9]\|TypeScript" "$temp_log"; then
         error_type="typescript_error"
         auto_fix_available=false
+        specific_files=$(grep -o "[^(]*\.tsx\?([0-9]*,[0-9]*)" "$temp_log" | head -5)
+        specific_errors=$(grep -E "TS[0-9]+.*" "$temp_log" | head -5)
     elif grep -q "ERESOLVE\|peer dep\|version conflict" "$temp_log"; then
         error_type="dependency_conflict"
         auto_fix_available=true
+        specific_conflicts=$(grep -E "ERESOLVE.*|peer dep.*|version conflict.*" "$temp_log" | head -5)
+        specific_modules=$(echo "$specific_conflicts" | grep -o "[a-zA-Z0-9@/-]*" | grep -E "^[a-zA-Z]" | head -5)
     elif grep -q "EACCES\|permission denied" "$temp_log"; then
         error_type="permission_error"
         auto_fix_available=true
+        specific_files=$(grep -o "EACCES.*[^ ]*\|permission denied.*[^ ]*" "$temp_log" | head -3)
     elif grep -q "ENOSPC\|no space left" "$temp_log"; then
         error_type="disk_space"
         auto_fix_available=false
+        specific_errors=$(grep -E "ENOSPC|no space left" "$temp_log" | head -3)
+    elif grep -q "lint.*error\|ESLint" "$temp_log"; then
+        error_type="linting_error"
+        auto_fix_available=true
+        specific_files=$(grep -o "[^ ]*\.tsx\?:[0-9]*:[0-9]*" "$temp_log" | head -10)
+        specific_errors=$(grep -E "error.*" "$temp_log" | head -10)
     else
         error_type="unknown"
         auto_fix_available=false
+        specific_errors=$(head -15 "$temp_log" | grep -E "(error|Error|ERROR|fail|FAIL)" | head -5)
     fi
     
     log "ERROR" "🎯 Type d'erreur: $error_type"
@@ -219,40 +238,110 @@ auto_diagnose_and_repair() {
         case "$error_type" in
             "missing_module"|"missing_dependencies")
                 log "INFO" "   Réinstallation des dépendances..."
-                if rm -rf node_modules && pnpm install; then
+                if [ -n "$specific_modules" ]; then
+                    log "INFO" "📋 Modules manquants identifiés:"
+                    echo "$specific_modules" | while read -r module; do
+                        [ -n "$module" ] && log "INFO" "   - $module"
+                    done
+                fi
+                if rm -rf node_modules && pnpm install 2>&1 | tee -a "$temp_log.fix"; then
                     log "INFO" "✅ Dépendances réinstallées"
                     # Tester à nouveau
                     if eval "$command" > /dev/null 2>&1; then
                         log "INFO" "🎉 RÉPARATION RÉUSSIE !"
-                        rm -f "$temp_log"
+                        rm -f "$temp_log" "$temp_log.fix"
                         return 0
                     fi
+                else
+                    log "ERROR" "❌ Échec de la réinstallation"
+                    log "ERROR" "📋 Erreurs de réinstallation:"
+                    tail -10 "$temp_log.fix" | while read -r line; do
+                        log "ERROR" "   $line"
+                    done
                 fi
                 ;;
                 
             "dependency_conflict")
                 log "INFO" "   Résolution des conflits de dépendances..."
-                if rm -rf node_modules pnpm-lock.yaml && pnpm install; then
+                if [ -n "$specific_conflicts" ]; then
+                    log "INFO" "📋 Conflits détectés:"
+                    echo "$specific_conflicts" | while read -r conflict; do
+                        [ -n "$conflict" ] && log "INFO" "   - $conflict"
+                    done
+                fi
+                if [ -n "$specific_modules" ]; then
+                    log "INFO" "📦 Modules en conflit:"
+                    echo "$specific_modules" | while read -r module; do
+                        [ -n "$module" ] && log "INFO" "   - $module"
+                    done
+                fi
+                if rm -rf node_modules pnpm-lock.yaml && pnpm install 2>&1 | tee -a "$temp_log.conflict"; then
                     log "INFO" "✅ Conflits résolus"
                     # Tester à nouveau
                     if eval "$command" > /dev/null 2>&1; then
                         log "INFO" "🎉 RÉPARATION RÉUSSIE !"
-                        rm -f "$temp_log"
+                        rm -f "$temp_log" "$temp_log.conflict"
                         return 0
                     fi
+                else
+                    log "ERROR" "❌ Échec de la résolution des conflits"
+                    log "ERROR" "📋 Conflits persistants:"
+                    grep -E "(ERESOLVE|peer dep|conflict)" "$temp_log.conflict" | head -5 | while read -r line; do
+                        log "ERROR" "   $line"
+                    done
                 fi
                 ;;
                 
             "permission_error")
                 log "INFO" "   Correction des permissions..."
-                if sudo chown -R $(whoami) node_modules 2>/dev/null; then
+                if [ -n "$specific_files" ]; then
+                    log "INFO" "📁 Fichiers avec problèmes de permissions:"
+                    echo "$specific_files" | while read -r file; do
+                        [ -n "$file" ] && log "INFO" "   - $file"
+                    done
+                fi
+                if sudo chown -R $(whoami) node_modules 2>&1 | tee -a "$temp_log.perms"; then
                     log "INFO" "✅ Permissions corrigées"
                     # Tester à nouveau
                     if eval "$command" > /dev/null 2>&1; then
                         log "INFO" "🎉 RÉPARATION RÉUSSIE !"
-                        rm -f "$temp_log"
+                        rm -f "$temp_log" "$temp_log.perms"
                         return 0
                     fi
+                else
+                    log "ERROR" "❌ Échec de la correction des permissions"
+                    log "ERROR" "📋 Erreurs de permissions:"
+                    cat "$temp_log.perms" | while read -r line; do
+                        log "ERROR" "   $line"
+                    done
+                fi
+                ;;
+                
+            "linting_error")
+                log "INFO" "   Tentative de correction automatique du linting..."
+                if [ -n "$specific_files" ]; then
+                    log "INFO" "📁 Fichiers avec erreurs de linting:"
+                    echo "$specific_files" | while read -r file; do
+                        [ -n "$file" ] && log "INFO" "   - $file"
+                    done
+                fi
+                if [ -n "$specific_errors" ]; then
+                    log "INFO" "📋 Types d'erreurs de linting:"
+                    echo "$specific_errors" | head -5 | while read -r error; do
+                        [ -n "$error" ] && log "INFO" "   - $error"
+                    done
+                fi
+                # Tentative de fix automatique
+                if pnpm lint --filter bigmind-web --fix 2>&1 | tee -a "$temp_log.lint"; then
+                    log "INFO" "✅ Corrections automatiques appliquées"
+                    # Tester à nouveau
+                    if eval "$command" > /dev/null 2>&1; then
+                        log "INFO" "🎉 RÉPARATION RÉUSSIE !"
+                        rm -f "$temp_log" "$temp_log.lint"
+                        return 0
+                    fi
+                else
+                    log "WARN" "⚠️ Certaines erreurs nécessitent une correction manuelle"
                 fi
                 ;;
         esac
@@ -268,42 +357,108 @@ auto_diagnose_and_repair() {
     case "$error_type" in
         "typescript_error")
             log "ERROR" "📋 Erreurs TypeScript détectées:"
-            grep -E "(TS[0-9]+|Type error|error TS)" "$temp_log" | head -10 | while read -r line; do
-                log "ERROR" "   $line"
-            done
+            if [ -n "$specific_files" ]; then
+                log "ERROR" "📁 Fichiers à corriger:"
+                echo "$specific_files" | while read -r file; do
+                    [ -n "$file" ] && log "ERROR" "   - $file"
+                done
+            fi
+            if [ -n "$specific_errors" ]; then
+                log "ERROR" "🔧 Erreurs spécifiques:"
+                echo "$specific_errors" | while read -r error; do
+                    [ -n "$error" ] && log "ERROR" "   - $error"
+                done
+            fi
             log "ERROR" ""
             log "ERROR" "🔧 COMMANDES DE RÉPARATION MANUELLE :"
-            log "ERROR" "   1. Vérifier la syntaxe TypeScript:"
-            log "ERROR" "      pnpm type-check --filter bigmind-web"
-            log "ERROR" "   2. Corriger les erreurs dans le code source"
+            log "ERROR" "   1. Diagnostic TypeScript détaillé:"
+            log "ERROR" "      pnpm type-check --filter bigmind-web --pretty"
+            log "ERROR" "   2. Ouvrir les fichiers problématiques et corriger:"
+            if [ -n "$specific_files" ]; then
+                echo "$specific_files" | head -3 | while read -r file; do
+                    [ -n "$file" ] && log "ERROR" "      code $file"
+                done
+            fi
             log "ERROR" "   3. Relancer: $command"
+            ;;
+            
+        "linting_error")
+            log "ERROR" "📋 Erreurs de linting détectées:"
+            if [ -n "$specific_files" ]; then
+                log "ERROR" "📁 Fichiers avec erreurs:"
+                echo "$specific_files" | while read -r file; do
+                    [ -n "$file" ] && log "ERROR" "   - $file"
+                done
+            fi
+            if [ -n "$specific_errors" ]; then
+                log "ERROR" "🔧 Erreurs spécifiques:"
+                echo "$specific_errors" | head -10 | while read -r error; do
+                    [ -n "$error" ] && log "ERROR" "   - $error"
+                done
+            fi
+            log "ERROR" ""
+            log "ERROR" "🔧 COMMANDES DE RÉPARATION :"
+            log "ERROR" "   1. Correction automatique:"
+            log "ERROR" "      pnpm lint --filter bigmind-web --fix"
+            log "ERROR" "   2. Voir erreurs détaillées:"
+            log "ERROR" "      pnpm lint --filter bigmind-web"
+            log "ERROR" "   3. Corriger manuellement les fichiers listés ci-dessus"
             ;;
             
         "disk_space")
             log "ERROR" "💾 Problème d'espace disque détecté"
-            log "ERROR" "🔧 COMMANDES DE NETTOYAGE :"
+            if [ -n "$specific_errors" ]; then
+                log "ERROR" "📋 Erreurs spécifiques:"
+                echo "$specific_errors" | while read -r error; do
+                    [ -n "$error" ] && log "ERROR" "   - $error"
+                done
+            fi
+            log "ERROR" "🔧 COMMANDES DE NETTOYAGE IMMÉDIAT :"
             log "ERROR" "   1. Vérifier l'espace disponible:"
-            log "ERROR" "      df -h"
-            log "ERROR" "   2. Nettoyer les caches:"
+            log "ERROR" "      df -h ."
+            log "ERROR" "      du -sh node_modules packages/*/node_modules apps/*/node_modules"
+            log "ERROR" "   2. Nettoyer les caches pnpm:"
             log "ERROR" "      pnpm store prune"
-            log "ERROR" "      rm -rf ~/.npm/_cacache"
+            log "ERROR" "      rm -rf ~/.pnpm-store"
             log "ERROR" "   3. Nettoyer les node_modules:"
-            log "ERROR" "      find . -name 'node_modules' -type d -exec rm -rf {} +"
+            log "ERROR" "      rm -rf node_modules packages/*/node_modules apps/*/node_modules"
+            log "ERROR" "   4. Nettoyer les fichiers de build:"
+            log "ERROR" "      rm -rf packages/*/dist apps/*/dist"
             ;;
             
         *)
-            log "ERROR" "📋 Erreurs complètes (20 premières lignes):"
-            cat "$temp_log" | head -20 | while read -r line; do
-                log "ERROR" "   $line"
-            done
+            log "ERROR" "📋 DIAGNOSTIC POUR IA - Erreur non reconnue:"
+            log "ERROR" ""
+            log "ERROR" "🤖 CONTEXTE TECHNIQUE :"
+            log "ERROR" "   - Commande: $command"
+            log "ERROR" "   - Description: $description"
+            log "ERROR" "   - Code de sortie: $exit_code"
+            log "ERROR" "   - OS: $(uname -s) $(uname -r)"
+            log "ERROR" "   - Node: $(node -v 2>/dev/null || echo 'N/A')"
+            log "ERROR" "   - pnpm: $(pnpm -v 2>/dev/null || echo 'N/A')"
+            log "ERROR" "   - PWD: $(pwd)"
+            log "ERROR" ""
+            if [ -n "$specific_errors" ]; then
+                log "ERROR" "🔍 ERREURS EXTRAITES :"
+                echo "$specific_errors" | while read -r error; do
+                    [ -n "$error" ] && log "ERROR" "   ERROR: $error"
+                done
+            else
+                log "ERROR" "📋 LOG BRUT (20 premières lignes):"
+                head -20 "$temp_log" | while read -r line; do
+                    log "ERROR" "   RAW: $line"
+                done
+            fi
             log "ERROR" ""
             log "ERROR" "🔧 COMMANDES DE DIAGNOSTIC GÉNÉRAL :"
-            log "ERROR" "   1. Voir toutes les erreurs:"
+            log "ERROR" "   1. Log complet:"
             log "ERROR" "      cat $temp_log"
-            log "ERROR" "   2. Nettoyage complet:"
+            log "ERROR" "   2. Commande avec verbose:"
+            log "ERROR" "      $command --verbose"
+            log "ERROR" "   3. Nettoyage complet:"
             log "ERROR" "      rm -rf node_modules packages/*/node_modules apps/*/node_modules"
             log "ERROR" "      pnpm install"
-            log "ERROR" "   3. Relancer: $command"
+            log "ERROR" "   4. Relancer: $command"
             ;;
     esac
     

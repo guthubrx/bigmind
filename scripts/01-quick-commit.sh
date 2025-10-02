@@ -47,20 +47,32 @@ auto_diagnose_and_fix() {
     pnpm build --filter bigmind-web > "$temp_log" 2>&1
     local build_exit_code=$?
     
-    # Analyser le type d'erreur
+    # Analyser le type d'erreur avec détection précise des modules
     local error_type=""
     local fix_attempted=false
+    local specific_modules=""
+    local specific_errors=""
     
-    if grep -q "Cannot find module\|Module not found" "$temp_log"; then
+    # Extraire les modules spécifiques qui posent problème
+    if grep -q "Cannot find module\|Module not found\|ERR_MODULE_NOT_FOUND" "$temp_log"; then
         error_type="missing_dependencies"
-    elif grep -q "Type error\|TS[0-9]" "$temp_log"; then
+        specific_modules=$(grep -o "Cannot find module '[^']*'\|Module not found: [^ ]*\|ERR_MODULE_NOT_FOUND.*'[^']*'" "$temp_log" | head -5)
+    elif grep -q "Type error\|TS[0-9]\|TypeScript" "$temp_log"; then
         error_type="typescript_error"
-    elif grep -q "ENOENT\|node_modules" "$temp_log"; then
+        specific_errors=$(grep -E "(TS[0-9]+|Type error)" "$temp_log" | head -5)
+    elif grep -q "ENOENT.*node_modules\|pnpm-lock.yaml" "$temp_log"; then
         error_type="missing_node_modules"
-    elif grep -q "version\|peer dep\|ERESOLVE" "$temp_log"; then
+        specific_modules=$(grep -o "ENOENT.*node_modules/[^/]*/[^/]*" "$temp_log" | head -3)
+    elif grep -q "ERESOLVE\|peer dep\|version conflict\|ENOTFOUND" "$temp_log"; then
         error_type="dependency_conflict"
+        specific_modules=$(grep -o "ERESOLVE.*[a-zA-Z0-9@/-]*\|peer dep.*[a-zA-Z0-9@/-]*" "$temp_log" | head -3)
+    elif grep -q "EACCES\|permission denied" "$temp_log"; then
+        error_type="permission_error"
+        specific_modules=$(grep -o "EACCES.*[^ ]*\|permission denied.*[^ ]*" "$temp_log" | head -3)
     else
         error_type="unknown"
+        # Capturer les premières lignes d'erreur pour diagnostic IA
+        specific_errors=$(head -10 "$temp_log" | grep -E "(error|Error|ERROR)" | head -5)
     fi
     
     log "INFO" "🎯 Type d'erreur détecté: $error_type"
@@ -70,51 +82,164 @@ auto_diagnose_and_fix() {
     case "$error_type" in
         "missing_node_modules")
             log "INFO" "2️⃣ RÉPARATION: Installation des dépendances manquantes..."
+            if [ -n "$specific_modules" ]; then
+                log "INFO" "📋 Modules manquants détectés:"
+                echo "$specific_modules" | while read -r module; do
+                    [ -n "$module" ] && log "INFO" "   - $module"
+                done
+            fi
             log "INFO" "   Commande: pnpm install"
-            if pnpm install; then
+            if pnpm install 2>&1 | tee -a "$temp_log.install"; then
                 log "INFO" "✅ Installation réussie"
                 fix_attempted=true
             else
                 log "ERROR" "❌ Échec de l'installation"
+                log "ERROR" "📋 Erreurs d'installation spécifiques:"
+                tail -10 "$temp_log.install" | while read -r line; do
+                    log "ERROR" "   $line"
+                done
+                log "ERROR" "🔧 Commandes de réparation spécifiques:"
+                log "ERROR" "   pnpm install --force"
+                log "ERROR" "   pnpm install --no-frozen-lockfile"
             fi
             ;;
             
         "missing_dependencies")
             log "INFO" "2️⃣ RÉPARATION: Réinstallation complète des dépendances..."
+            if [ -n "$specific_modules" ]; then
+                log "INFO" "📋 Modules problématiques identifiés:"
+                echo "$specific_modules" | while read -r module; do
+                    [ -n "$module" ] && log "INFO" "   - $module"
+                done
+            fi
             log "INFO" "   Commandes: rm -rf node_modules && pnpm install"
             rm -rf node_modules
-            if pnpm install; then
+            if pnpm install 2>&1 | tee -a "$temp_log.reinstall"; then
                 log "INFO" "✅ Réinstallation réussie"
                 fix_attempted=true
             else
                 log "ERROR" "❌ Échec de la réinstallation"
+                log "ERROR" "📋 Erreurs de réinstallation:"
+                tail -15 "$temp_log.reinstall" | while read -r line; do
+                    log "ERROR" "   $line"
+                done
+                log "ERROR" "🔧 Commandes de diagnostic spécifiques:"
+                log "ERROR" "   pnpm why <module-name>  # Pour chaque module problématique"
+                log "ERROR" "   pnpm install --force --no-frozen-lockfile"
+                log "ERROR" "   rm -rf ~/.pnpm-store && pnpm install"
             fi
             ;;
             
         "dependency_conflict")
             log "INFO" "2️⃣ RÉPARATION: Résolution des conflits de dépendances..."
+            if [ -n "$specific_modules" ]; then
+                log "INFO" "📋 Conflits de dépendances détectés:"
+                echo "$specific_modules" | while read -r conflict; do
+                    [ -n "$conflict" ] && log "INFO" "   - $conflict"
+                done
+            fi
             log "INFO" "   Commandes: rm -rf node_modules pnpm-lock.yaml && pnpm install"
             rm -rf node_modules pnpm-lock.yaml
-            if pnpm install; then
+            if pnpm install 2>&1 | tee -a "$temp_log.resolve"; then
                 log "INFO" "✅ Conflits résolus"
                 fix_attempted=true
             else
-                log "ERROR" "❌ Échec de la résolution"
+                log "ERROR" "❌ Échec de la résolution des conflits"
+                log "ERROR" "📋 Conflits persistants:"
+                grep -E "(ERESOLVE|peer dep|conflict)" "$temp_log.resolve" | head -10 | while read -r line; do
+                    log "ERROR" "   $line"
+                done
+                log "ERROR" "🔧 Commandes de résolution manuelle:"
+                log "ERROR" "   pnpm install --force"
+                log "ERROR" "   pnpm install --legacy-peer-deps"
+                log "ERROR" "   pnpm add <package>@latest  # Pour chaque package en conflit"
+            fi
+            ;;
+            
+        "permission_error")
+            log "INFO" "2️⃣ RÉPARATION: Correction des permissions..."
+            if [ -n "$specific_modules" ]; then
+                log "INFO" "📋 Problèmes de permissions détectés:"
+                echo "$specific_modules" | while read -r perm; do
+                    [ -n "$perm" ] && log "INFO" "   - $perm"
+                done
+            fi
+            log "INFO" "   Commandes: sudo chown -R $(whoami) node_modules"
+            if sudo chown -R $(whoami) node_modules 2>&1 | tee -a "$temp_log.perms"; then
+                log "INFO" "✅ Permissions corrigées"
+                fix_attempted=true
+            else
+                log "ERROR" "❌ Échec de la correction des permissions"
+                log "ERROR" "📋 Erreurs de permissions:"
+                cat "$temp_log.perms" | while read -r line; do
+                    log "ERROR" "   $line"
+                done
+                log "ERROR" "🔧 Commandes alternatives:"
+                log "ERROR" "   sudo rm -rf node_modules && pnpm install"
+                log "ERROR" "   chown -R $(whoami):$(id -gn) node_modules"
             fi
             ;;
             
         "typescript_error")
             log "INFO" "2️⃣ DIAGNOSTIC: Vérification TypeScript détaillée..."
+            if [ -n "$specific_errors" ]; then
+                log "ERROR" "📋 Erreurs TypeScript spécifiques:"
+                echo "$specific_errors" | while read -r error; do
+                    [ -n "$error" ] && log "ERROR" "   - $error"
+                done
+                log "ERROR" ""
+            fi
             log "INFO" "   Commande: pnpm type-check --filter bigmind-web"
-            pnpm type-check --filter bigmind-web
+            pnpm type-check --filter bigmind-web 2>&1 | tee -a "$temp_log.typecheck"
+            
+            # Extraire les fichiers et erreurs spécifiques
+            local ts_files=$(grep -o "[^(]*\.tsx\?([0-9]*,[0-9]*)" "$temp_log.typecheck" | head -5)
+            local ts_errors=$(grep -E "TS[0-9]+" "$temp_log.typecheck" | head -5)
+            
             log "WARN" "⚠️ Erreurs TypeScript détectées - correction manuelle requise"
-            log "INFO" "💡 Vérifiez les erreurs ci-dessus et corrigez le code source"
+            if [ -n "$ts_files" ]; then
+                log "ERROR" "📁 Fichiers à corriger:"
+                echo "$ts_files" | while read -r file; do
+                    [ -n "$file" ] && log "ERROR" "   - $file"
+                done
+            fi
+            if [ -n "$ts_errors" ]; then
+                log "ERROR" "🔧 Types d'erreurs:"
+                echo "$ts_errors" | while read -r error; do
+                    [ -n "$error" ] && log "ERROR" "   - $error"
+                done
+            fi
+            log "ERROR" "🔧 Commandes de diagnostic TypeScript:"
+            log "ERROR" "   pnpm type-check --filter bigmind-web --pretty"
+            log "ERROR" "   # Puis corriger manuellement les fichiers listés ci-dessus"
             ;;
             
         *)
             log "WARN" "⚠️ Type d'erreur non reconnu - diagnostic approfondi requis"
-            log "INFO" "📋 Erreurs détectées:"
-            cat "$temp_log" | head -20
+            log "ERROR" "📋 Erreurs brutes détectées (pour diagnostic IA):"
+            if [ -n "$specific_errors" ]; then
+                echo "$specific_errors" | while read -r error; do
+                    [ -n "$error" ] && log "ERROR" "   ERROR: $error"
+                done
+            else
+                head -20 "$temp_log" | while read -r line; do
+                    log "ERROR" "   RAW: $line"
+                done
+            fi
+            log "ERROR" ""
+            log "ERROR" "🤖 INFORMATIONS POUR DIAGNOSTIC IA:"
+            log "ERROR" "   - Commande échouée: pnpm build --filter bigmind-web"
+            log "ERROR" "   - Code de sortie: $build_exit_code"
+            log "ERROR" "   - Log complet: $temp_log"
+            log "ERROR" "   - OS: $(uname -s)"
+            log "ERROR" "   - Node: $(node -v 2>/dev/null || echo 'N/A')"
+            log "ERROR" "   - pnpm: $(pnpm -v 2>/dev/null || echo 'N/A')"
+            log "ERROR" "   - Répertoire: $(pwd)"
+            log "ERROR" ""
+            log "ERROR" "🔧 Commandes de diagnostic général:"
+            log "ERROR" "   cat $temp_log  # Voir le log complet"
+            log "ERROR" "   pnpm build --filter bigmind-web --verbose"
+            log "ERROR" "   ./scripts/02-debug-and-commit.sh \"$commit_message\""
             ;;
     esac
     
