@@ -13,8 +13,7 @@ import {
   TagGraph,
   TagRelationType,
   TagDagState,
-  TagGraphOptions,
-  SAMPLE_TAG_GRAPH
+  TagGraphOptions
 } from '../types/dag';
 import { eventBus } from '../utils/eventBus';
 import { useNodeTags } from './useNodeTags';
@@ -24,7 +23,7 @@ import { useNodeTags } from './useNodeTags';
 const useTagGraphStore = create<TagDagState>()(
   persist(
     immer((set, get) => ({
-      tags: SAMPLE_TAG_GRAPH.tags,
+      tags: [], // FR: Initialisé vide - sera synchronisé avec la carte
       links: [],
       selectedTagId: null,
       hoveredTagId: null,

@@ -12,14 +12,17 @@ import {
   List,
   Plus,
   Search,
-  X
+  X,
+  FileWarning
 } from 'lucide-react';
 import { useTagGraph } from '../hooks/useTagGraph';
 import { TagGraph } from './TagGraph';
 import { DagTag, TagRelationType } from '../types/dag';
+import { useMindMapStore } from '../hooks/useMindMap';
 import './TagLayersPanel.css';
 
 export function TagLayersPanelDAG() {
+  const mindMap = useMindMapStore();
   const {
     tags,
     selectedTagId,
@@ -89,6 +92,10 @@ export function TagLayersPanelDAG() {
 
   // FR: Rendu de la vue liste avec lignes d'arborescence
   // EN: Render list view with tree lines
+  // FR: Vérifier si une carte est chargée
+  // EN: Check if a map is loaded
+  const isMapLoaded = mindMap.mindMap !== null;
+
   const renderListView = () => {
     const renderTag = (tag: DagTag, level = 0, isLast = false, parentLines: boolean[] = []) => {
       const children = tags.filter(t => t.parents?.includes(tag.id));
@@ -267,7 +274,15 @@ export function TagLayersPanelDAG() {
       {/* FR: Contenu principal */}
       {/* EN: Main content */}
       <div className="panel-content">
-        {graphView === 'list' ? (
+        {!isMapLoaded ? (
+          <div className="empty-state">
+            <FileWarning size={32} />
+            <p style={{ fontWeight: 600 }}>Aucune carte chargée</p>
+            <p style={{ fontSize: '13px', color: '#64748b', marginTop: '8px' }}>
+              Chargez ou créez une carte mentale pour gérer les tags
+            </p>
+          </div>
+        ) : graphView === 'list' ? (
           renderListView()
         ) : (
           <div className="graph-container">
@@ -397,13 +412,16 @@ export function TagLayersPanelDAG() {
 
       {/* FR: Bouton flottant pour ajouter un tag */}
       {/* EN: Floating button to add a tag */}
-      <button
-        className="fab"
-        onClick={() => setShowNewTagForm(true)}
-        title="Créer un tag"
-      >
-        <Plus size={20} />
-      </button>
+      {isMapLoaded && (
+        <button
+          type="button"
+          className="fab"
+          onClick={() => setShowNewTagForm(true)}
+          title="Créer un tag"
+        >
+          <Plus size={20} />
+        </button>
+      )}
     </div>
   );
 }

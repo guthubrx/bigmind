@@ -434,5 +434,10 @@ export const useMindmap = () => {
     canUndo: false, // FR: TODO: Implémenter / EN: TODO: Implement
     canRedo: false, // FR: TODO: Implémenter / EN: TODO: Implement
     actions: actions(),
+    nodes: mindMap?.nodes ? Object.values(mindMap.nodes) : [],
   };
 };
+
+// FR: Export pour utilisation avec les stores Zustand existants
+// EN: Export for use with existing Zustand stores
+export const useMindMapStore = useMindMap;
