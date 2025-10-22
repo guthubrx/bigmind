@@ -20,13 +20,13 @@ export interface ColumnSizeLimits {
 const DEFAULT_COLUMN_SIZES: ColumnSizes = {
   files: 200,
   explorer: 280,
-  properties: 300,
+  properties: 360,
 };
 
 const COLUMN_SIZE_LIMITS: Record<keyof ColumnSizes, ColumnSizeLimits> = {
   files: { min: 150, max: 400 },
   explorer: { min: 200, max: 500 },
-  properties: { min: 200, max: 600 },
+  properties: { min: 360, max: 600 },
 };
 
 export const useColumnResize = () => {

@@ -10,7 +10,6 @@ import { immer } from 'zustand/middleware/immer';
 import {
   ImageAsset,
   StickerAsset,
-  NodeAsset,
   AssetLibrary,
   AssetUtils,
   StickerCategory,

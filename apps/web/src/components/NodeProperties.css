@@ -8,6 +8,15 @@
   flex-direction: column;
   height: 100%;
   background-color: theme('colors.background.secondary');
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.node-properties * {
+  box-sizing: border-box;
 }
 
 .no-selection {
@@ -74,7 +83,8 @@
 .properties-content {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 12px;
+  overflow-x: hidden;
 }
 
 .form-group {
@@ -166,4 +176,58 @@
 .position-inputs input,
 .size-inputs input {
   flex: 1;
+}
+
+/* FR: Styles pour l'ascenseur moderne et discret */
+/* EN: Styles for modern and discreet scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 114, 128, 0.7);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:active {
+  background: rgba(75, 85, 99, 0.8);
+}
+
+/* FR: Amélioration du défilement pour le contenu des propriétés */
+/* EN: Improved scrolling for properties content */
+.properties-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+}
+
+.properties-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.properties-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.properties-content::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 2px;
+}
+
+.properties-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 114, 128, 0.5);
 }

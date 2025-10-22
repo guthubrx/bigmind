@@ -4,15 +4,15 @@
  */
 
 import { create } from 'zustand';
-import { XMindParser } from '@bigmind/core';
-import { v4 as uuidv4 } from 'uuid';
-import { HistoryManager } from '@bigmind/core/dist/commands/history';
 import {
+  XMindParser,
+  HistoryManager,
   AddNodeCommand,
   DeleteNodeCommand,
-  UpdateNodeTitleCommand
-} from '@bigmind/core/dist/commands';
-import type { MindMap } from '@bigmind/core/dist/model';
+  UpdateNodeTitleCommand,
+  type MindMap
+} from '@bigmind/core';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface OpenFile {
   id: string;
@@ -90,6 +90,12 @@ interface OpenFilesState {
   copyNode: (nodeId: string) => void;
   pasteNode: (parentId: string) => string | null;
   canPaste: () => boolean;
+  // FR: Renommer un tag dans tous les nœuds
+  // EN: Rename a tag in all nodes
+  renameTagInAllNodes: (oldTag: string, newTag: string) => void;
+  // FR: Mettre à jour les tags d'un nœud spécifique
+  // EN: Update tags of a specific node
+  updateNodeTags: (nodeId: string, newTags: string[]) => void;
 }
 
 /**
@@ -582,5 +588,101 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
   canPaste: () => {
     const state = get();
     return state.copiedNode !== null;
+  },
+
+  renameTagInAllNodes: (oldTag: string, newTag: string) => {
+    const activeFile = get().getActiveFile();
+    if (!activeFile?.content) return;
+
+    // FR: Créer une copie des nœuds pour modification
+    // EN: Create a copy of nodes for modification
+    const updatedNodes = { ...activeFile.content.nodes };
+
+    // FR: Fonction pour renommer les tags dans un nœud
+    // EN: Function to rename tags in a node
+    const renameInNode = (nodeId: string) => {
+      const node = updatedNodes[nodeId];
+      if (node && node.tags && Array.isArray(node.tags)) {
+        const updatedTags = node.tags.map((tag: string) => {
+          // Si c'est exactement le tag à renommer
+          if (tag === oldTag) {
+            return newTag;
+          }
+          // Si c'est un enfant de l'ancien tag (oldTag>something)
+          if (tag.startsWith(oldTag + '>')) {
+            return newTag + tag.substring(oldTag.length);
+          }
+          return tag;
+        });
+        // FR: Créer un nouveau nœud avec les tags mis à jour
+        // EN: Create a new node with updated tags
+        updatedNodes[nodeId] = {
+          ...node,
+          tags: updatedTags
+        };
+      }
+    };
+
+    // FR: Parcourir tous les nœuds et renommer les tags
+    // EN: Go through all nodes and rename tags
+    if (activeFile.content.nodes) {
+      Object.keys(updatedNodes).forEach(nodeId => {
+        renameInNode(nodeId);
+      });
+    }
+
+    // FR: Forcer la mise à jour avec les nœuds modifiés
+    // EN: Force update with modified nodes
+    set(state => ({
+      openFiles: state.openFiles.map(f =>
+        f.id === activeFile.id
+          ? {
+              ...f,
+              content: {
+                ...activeFile.content,
+                nodes: updatedNodes
+              },
+              lastModified: new Date()
+            }
+          : f
+      )
+    }));
+  },
+
+  updateNodeTags: (nodeId: string, newTags: string[]) => {
+    const activeFile = get().getActiveFile();
+    if (!activeFile?.content?.nodes) return;
+
+    // FR: Vérifier que le nœud existe
+    // EN: Check that the node exists
+    const node = activeFile.content.nodes[nodeId];
+    if (!node) return;
+
+    // FR: Créer une copie des nœuds avec le nœud mis à jour
+    // EN: Create a copy of nodes with the updated node
+    const updatedNodes = {
+      ...activeFile.content.nodes,
+      [nodeId]: {
+        ...node,
+        tags: newTags
+      }
+    };
+
+    // FR: Mettre à jour le fichier actif avec les nouveaux nœuds
+    // EN: Update active file with new nodes
+    set(state => ({
+      openFiles: state.openFiles.map(f =>
+        f.id === activeFile.id
+          ? {
+              ...f,
+              content: {
+                ...activeFile.content,
+                nodes: updatedNodes
+              },
+              lastModified: new Date()
+            }
+          : f
+      )
+    }));
   },
 }));

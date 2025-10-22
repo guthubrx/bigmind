@@ -1,0 +1,307 @@
+/* Styles pour la page Settings */
+
+.settings-section {
+    display: grid;
+    gap: 16px;
+    max-width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    background: rgba(59, 130, 246, 0.03);
+}
+
+.settings-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.settings-field {
+    display: grid;
+    gap: 12px;
+}
+
+.settings-label {
+    font-weight: 500;
+    color: #374151;
+    width: 220px;
+}
+
+.settings-description {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Couleur d'accent */
+.color-input-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.color-input {
+    width: 44px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+}
+
+.color-value {
+    margin-left: 8px;
+    font-family: monospace;
+}
+
+/* Palettes de couleurs */
+.palette-section {
+    display: grid;
+    gap: 12px;
+}
+
+.palette-section-title {
+    font-weight: 500;
+    color: #374151;
+}
+
+.palette-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.palette-card {
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #e2e8f0;
+}
+
+.palette-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.palette-card.selected {
+    transform: translateY(-2px);
+}
+
+.palette-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.palette-name {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    color: #1f2937;
+}
+
+.palette-checkmark {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.palette-description {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0 0 12px 0;
+    line-height: 1.4;
+}
+
+.palette-colors {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.palette-color {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Interaction - Range input */
+.range-input-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.range-input {
+    flex: 1;
+    max-width: 300px;
+}
+
+.range-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 80px;
+    justify-content: flex-end;
+}
+
+.range-value-text {
+    font-size: 14px;
+    font-weight: 600;
+    min-width: 30px;
+    text-align: center;
+}
+
+/* Aperçu de tolérance */
+.tolerance-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.preview-label {
+    font-size: 13px;
+    color: #6b7280;
+    min-width: 100px;
+}
+
+.preview-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.preview-node {
+    width: 120px;
+    height: 30px;
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #6b7280;
+    position: relative;
+}
+
+.preview-tolerance {
+    position: absolute;
+    border-radius: 6px;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Raccourcis clavier */
+.shortcut-category {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    background: rgba(59, 130, 246, 0.03);
+}
+
+.shortcut-category-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: capitalize;
+}
+
+.shortcut-grid {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 8px;
+    align-items: center;
+    max-width: 700px;
+}
+
+.shortcut-label {
+    color: #475569;
+}
+
+.shortcut-input {
+    max-width: 260px;
+}
+
+.shortcut-actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Navigation sidebar */
+.settings-nav {
+    width: 240px;
+    background: #f8fafc;
+    border-right: 1px solid #e2e8f0;
+}
+
+.settings-nav-header {
+    padding: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    font-weight: 600;
+}
+
+.settings-nav-button {
+    width: 100%;
+    justify-content: flex-start;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+}
+
+.settings-nav-button.active {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+/* Layout principal */
+.settings-layout {
+    display: flex;
+    height: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+.settings-content {
+    flex: 1;
+    overflow: auto;
+    padding: 24px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

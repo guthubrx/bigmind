@@ -334,3 +334,106 @@ export class ReparentNodeCommand implements Command {
     return Date.now();
   }
 }
+
+// FR: Commande pour ajouter un tag à un nœud
+// EN: Command to add a tag to a node
+export class AddTagCommand implements Command {
+  private wasAdded: boolean = false;
+
+  constructor(
+    private nodeId: NodeID,
+    private tag: string
+  ) {}
+
+  execute(state: MindMap): MindMap {
+    return produce(state, draft => {
+      const node = draft.nodes[this.nodeId];
+      if (!node) return;
+
+      // FR: Initialiser le tableau de tags si nécessaire
+      // EN: Initialize tags array if needed
+      if (!node.tags) {
+        node.tags = [];
+      }
+
+      // FR: Ajouter le tag seulement s'il n'existe pas déjà
+      // EN: Add tag only if it doesn't already exist
+      if (!node.tags.includes(this.tag)) {
+        node.tags.push(this.tag);
+        this.wasAdded = true;
+      }
+    });
+  }
+
+  undo(state: MindMap): MindMap {
+    if (!this.wasAdded) return state;
+
+    return produce(state, draft => {
+      const node = draft.nodes[this.nodeId];
+      if (!node || !node.tags) return;
+
+      // FR: Retirer le tag
+      // EN: Remove the tag
+      node.tags = node.tags.filter(t => t !== this.tag);
+    });
+  }
+
+  get description(): string {
+    return `Ajouter le tag "${this.tag}"`;
+  }
+
+  get timestamp(): number {
+    return Date.now();
+  }
+}
+
+// FR: Commande pour retirer un tag d'un nœud
+// EN: Command to remove a tag from a node
+export class RemoveTagCommand implements Command {
+  private wasRemoved: boolean = false;
+
+  constructor(
+    private nodeId: NodeID,
+    private tag: string
+  ) {}
+
+  execute(state: MindMap): MindMap {
+    return produce(state, draft => {
+      const node = draft.nodes[this.nodeId];
+      if (!node || !node.tags) return;
+
+      // FR: Retirer le tag s'il existe
+      // EN: Remove tag if it exists
+      if (node.tags.includes(this.tag)) {
+        node.tags = node.tags.filter(t => t !== this.tag);
+        this.wasRemoved = true;
+      }
+    });
+  }
+
+  undo(state: MindMap): MindMap {
+    if (!this.wasRemoved) return state;
+
+    return produce(state, draft => {
+      const node = draft.nodes[this.nodeId];
+      if (!node) return;
+
+      // FR: Réajouter le tag
+      // EN: Re-add the tag
+      if (!node.tags) {
+        node.tags = [];
+      }
+      if (!node.tags.includes(this.tag)) {
+        node.tags.push(this.tag);
+      }
+    });
+  }
+
+  get description(): string {
+    return `Retirer le tag "${this.tag}"`;
+  }
+
+  get timestamp(): number {
+    return Date.now();
+  }
+}

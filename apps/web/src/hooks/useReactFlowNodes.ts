@@ -7,6 +7,7 @@ import { useCallback } from 'react';
 import type { Node } from '@xyflow/react';
 import { getTotalDescendantsCount } from '../utils/nodeUtils';
 import type { OpenFile } from './useOpenFiles';
+import { useTagLayers } from './useTagLayers';
 
 interface UseReactFlowNodesParams {
   activeFile: OpenFile | null;
@@ -64,6 +65,10 @@ export function useReactFlowNodes({
   ghostNode,
   draggedNodeId,
 }: UseReactFlowNodesParams): UseReactFlowNodesReturn {
+  // FR: Récupérer la visibilité des tags et nœuds
+  // EN: Get tags and nodes visibility
+  const { isNodeVisible, nodeVisibility, getNodeOpacity } = useTagLayers();
+
   // FR: Convertir les nœuds du fichier actif en nœuds ReactFlow
   // EN: Convert active file nodes to ReactFlow nodes
   const convertToReactFlowNodes = useCallback((): Node[] => {
@@ -119,11 +124,20 @@ export function useReactFlowNodes({
       const x = level === 0 ? 0 : direction * level * LEVEL_WIDTH;
       const nodeCenterY = baseY + totalHeight / 2 - nodeOwnHeightById[node.id] / 2;
 
-      // FR: Toujours afficher le nœud, mais marquer s'il est en cours de drag
-      // EN: Always display the node, but mark if it's being dragged
-      nodes.push({
-        id: node.id,
-        type: 'mindmap',
+      // FR: Vérifier si le nœud doit être affiché selon sa visibilité individuelle et celle de ses tags
+      // EN: Check if node should be displayed based on individual visibility and tag visibility
+      const isNodeVisibleByTag = isNodeVisible(node.tags);
+      const isIndividuallyVisible = nodeVisibility[node.id] !== false;
+      const shouldShow = isNodeVisibleByTag && isIndividuallyVisible;
+
+      // FR: Ajouter le nœud seulement s'il doit être affiché
+      // EN: Add node only if it should be displayed
+      if (shouldShow) {
+        const opacity = getNodeOpacity(node.tags);
+
+        nodes.push({
+          id: node.id,
+          type: 'mindmap',
         position: { x, y: nodeCenterY },
         data: {
           id: node.id,
@@ -141,8 +155,10 @@ export function useReactFlowNodes({
           isDragTarget: dragTarget === node.id,
           isDescendantOfDragged: draggedDescendants.includes(node.id),
           isBeingDragged: draggedNodeId === node.id,
+          opacity: opacity,
         },
       });
+      }
 
       // Si replié, ne pas positionner les enfants
       if (node.collapsed || !node.children || node.children.length === 0) return;
@@ -283,6 +299,9 @@ export function useReactFlowNodes({
     ghostNode,
     draggedNodeId,
     nodesWithColors,
+    isNodeVisible,
+    nodeVisibility,
+    getNodeOpacity,
   ]);
 
   return { convertToReactFlowNodes };

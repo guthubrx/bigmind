@@ -1,0 +1,124 @@
+{
+  "tags": [
+    {
+      "id": "risque",
+      "label": "Risque",
+      "color": "#ef4444",
+      "description": "Catégorie principale pour tous les risques"
+    },
+    {
+      "id": "technique",
+      "label": "Technique",
+      "parents": ["risque"],
+      "color": "#3b82f6",
+      "description": "Risques techniques et technologiques"
+    },
+    {
+      "id": "communication",
+      "label": "Communication",
+      "parents": ["risque"],
+      "color": "#10b981",
+      "description": "Risques liés à la communication"
+    },
+    {
+      "id": "securite",
+      "label": "Sécurité",
+      "parents": ["technique", "communication"],
+      "color": "#f59e0b",
+      "description": "Risques de sécurité (multi-parents)"
+    },
+    {
+      "id": "reseau",
+      "label": "Réseau",
+      "parents": ["securite"],
+      "color": "#8b5cf6",
+      "description": "Risques liés au réseau"
+    },
+    {
+      "id": "acces",
+      "label": "Accès",
+      "parents": ["reseau"],
+      "color": "#ec4899",
+      "description": "Risques d'accès et d'authentification"
+    },
+    {
+      "id": "projet",
+      "label": "Projet",
+      "color": "#06b6d4",
+      "description": "Éléments liés au projet"
+    },
+    {
+      "id": "phase1",
+      "label": "Phase 1",
+      "parents": ["projet"],
+      "color": "#14b8a6",
+      "description": "Première phase du projet"
+    },
+    {
+      "id": "phase2",
+      "label": "Phase 2",
+      "parents": ["projet"],
+      "color": "#84cc16",
+      "description": "Deuxième phase du projet"
+    },
+    {
+      "id": "implementation",
+      "label": "Implémentation",
+      "parents": ["phase1", "phase2"],
+      "color": "#a855f7",
+      "description": "Tâches d'implémentation (multi-phases)"
+    }
+  ],
+  "links": [
+    {
+      "source": "risque",
+      "target": "technique",
+      "type": "is-type-of"
+    },
+    {
+      "source": "risque",
+      "target": "communication",
+      "type": "is-type-of"
+    },
+    {
+      "source": "technique",
+      "target": "securite",
+      "type": "is-type-of"
+    },
+    {
+      "source": "communication",
+      "target": "securite",
+      "type": "is-type-of"
+    },
+    {
+      "source": "securite",
+      "target": "reseau",
+      "type": "is-type-of"
+    },
+    {
+      "source": "reseau",
+      "target": "acces",
+      "type": "is-type-of"
+    },
+    {
+      "source": "projet",
+      "target": "phase1",
+      "type": "is-part-of"
+    },
+    {
+      "source": "projet",
+      "target": "phase2",
+      "type": "is-part-of"
+    },
+    {
+      "source": "phase1",
+      "target": "implementation",
+      "type": "is-related-to"
+    },
+    {
+      "source": "phase2",
+      "target": "implementation",
+      "type": "is-related-to"
+    }
+  ]
+}

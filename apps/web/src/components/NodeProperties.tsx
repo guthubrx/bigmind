@@ -4,11 +4,11 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Type, 
-  Palette, 
-  AlignLeft, 
-  AlignCenter, 
+import {
+  Type,
+  Palette,
+  AlignLeft,
+  AlignCenter,
   AlignRight,
   Bold,
   Italic,
@@ -21,12 +21,19 @@ import {
   Square,
   Minus,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Tag,
+  X,
+  Image,
+  Sticker
 } from 'lucide-react';
 import { useMindmap } from '../hooks/useMindmap';
 import { COLOR_PALETTES, useAppSettings } from '../hooks/useAppSettings';
 import { useOpenFiles } from '../hooks/useOpenFiles';
 import { useSelection } from '../hooks/useSelection';
+import { AddTagCommand, RemoveTagCommand, TagUtils } from '@bigmind/core';
+import { ImageManager } from './ImageManager';
+import { StickerPicker } from './StickerPicker';
 import './NodeProperties.css';
 
 function NodeProperties() {
@@ -45,6 +52,27 @@ function NodeProperties() {
   const setColorsCollapsed = useAppSettings((s) => s.setColorsSectionCollapsed);
   const linksCollapsed = useAppSettings((s) => s.linksSectionCollapsed);
   const setLinksCollapsed = useAppSettings((s) => s.setLinksSectionCollapsed);
+
+  // FR: États pour gérer le collapse des sections principales
+  // EN: States to manage main sections collapse
+  const [mapSettingsCollapsed, setMapSettingsCollapsed] = useState(false);
+  const [selectedNodeCollapsed, setSelectedNodeCollapsed] = useState(false);
+
+  // FR: État pour gérer le collapse de la section Assets
+  // EN: State to manage Assets section collapse
+  const [assetsCollapsed, setAssetsCollapsed] = useState(false);
+
+  // FR: État pour gérer l'onglet actif des Assets
+  // EN: State to manage active Assets tab
+  const [activeAssetsTab, setActiveAssetsTab] = useState<'images' | 'stickers'>('images');
+
+  // FR: État pour gérer le collapse de la section Style
+  // EN: State to manage Style section collapse
+  const [styleCollapsed, setStyleCollapsed] = useState(false);
+
+  // FR: État pour la saisie du nouveau tag
+  // EN: State for new tag input
+  const [newTag, setNewTag] = useState('');
   
   // FR: Créer une palette XMind basée sur les couleurs du thème XMind
   // EN: Create an XMind palette based on XMind theme colors
@@ -80,7 +108,7 @@ function NodeProperties() {
   if (!activeFile) {
     return (
       <div className="node-properties">
-        <div className="panel-content">
+        <div className="panel-content" style={{ paddingRight: '8px' }}>
           <div className="no-selection" style={{
             display: 'flex',
             flexDirection: 'column',
@@ -108,23 +136,46 @@ function NodeProperties() {
 
   return (
     <div className="node-properties">
-      <div className="panel-content">
+      <div className="panel-content" style={{ paddingRight: '8px' }}>
         {/* FR: Section Paramètres de la carte */}
         {/* EN: Map settings section */}
-        <div className="section" style={{ marginBottom: 40 }}>
-          <div className="section-header" style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 8, 
-            marginBottom: 16,
-            paddingBottom: 8,
-            borderBottom: '1px solid #e2e8f0'
-          }}>
+        <div style={{
+          border: '1px solid #e2e8f0',
+          borderRadius: 8,
+          padding: mapSettingsCollapsed ? 8 : 12,
+          background: '#fafbfc',
+          marginBottom: 16
+        }}>
+          <button
+            type="button"
+            onClick={() => setMapSettingsCollapsed(!mapSettingsCollapsed)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              marginBottom: mapSettingsCollapsed ? 0 : 16,
+              fontSize: 14,
+              fontWeight: 600,
+              color: '#374151',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              width: '100%',
+              textAlign: 'left',
+              padding: 0
+            }}
+          >
+            {mapSettingsCollapsed ? (
+              <ChevronRight className="icon-small" style={{ color: '#64748b' }} />
+            ) : (
+              <ChevronDown className="icon-small" style={{ color: '#64748b' }} />
+            )}
             <Settings className="icon-small" style={{ color: '#64748b' }} />
-            <span style={{ fontWeight: 600, fontSize: 14, color: '#374151' }}>Paramètres de la carte</span>
-          </div>
-          
-          <div style={{ display: 'grid', gap: 12 }}>
+            Paramètres de la carte
+          </button>
+
+          {!mapSettingsCollapsed && (
+            <div style={{ display: 'grid', gap: 12 }}>
             {/* FR: Sous-section Couleurs */}
             {/* EN: Colors subsection */}
             <div style={{
@@ -427,232 +478,495 @@ function NodeProperties() {
               </div>
               )}
             </div>
+
+            {/* FR: Sous-section Assets avec onglets */}
+            {/* EN: Assets subsection with tabs */}
+            <div style={{
+              border: '1px solid #e2e8f0',
+              borderRadius: 8,
+              padding: assetsCollapsed ? 8 : 12,
+              background: '#fafbfc'
+            }}>
+              <button
+                type="button"
+                onClick={() => setAssetsCollapsed(!assetsCollapsed)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  marginBottom: assetsCollapsed ? 0 : 12,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: '#374151',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  width: '100%',
+                  textAlign: 'left',
+                  padding: 0
+                }}
+              >
+                {assetsCollapsed ? (
+                  <ChevronRight className="icon-small" style={{ color: '#64748b' }} />
+                ) : (
+                  <ChevronDown className="icon-small" style={{ color: '#64748b' }} />
+                )}
+                <Image className="icon-small" style={{ color: '#64748b' }} />
+                🎨 Assets
+              </button>
+
+              {!assetsCollapsed && activeFile && (
+                <div>
+                  {/* FR: Onglets Assets */}
+                  {/* EN: Assets tabs */}
+                  <div className="properties-tabs" style={{ marginBottom: 12 }}>
+                    <button
+                      type="button"
+                      className={`tab ${activeAssetsTab === 'images' ? 'active' : ''}`}
+                      onClick={() => setActiveAssetsTab('images')}
+                    >
+                      <Image className="icon-small" />
+                      Images
+                    </button>
+                    <button
+                      type="button"
+                      className={`tab ${activeAssetsTab === 'stickers' ? 'active' : ''}`}
+                      onClick={() => setActiveAssetsTab('stickers')}
+                    >
+                      <Sticker className="icon-small" />
+                      Stickers
+                    </button>
+                  </div>
+
+                  {/* FR: Contenu des onglets Assets */}
+                  {/* EN: Assets tab content */}
+                  <div className="properties-content">
+                    {activeAssetsTab === 'images' && (
+                      <div className="content-tab">
+                        <ImageManager mapId={activeFile.id} />
+                      </div>
+                    )}
+
+                    {activeAssetsTab === 'stickers' && (
+                      <div className="content-tab">
+                        <StickerPicker mapId={activeFile.id} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* FR: Sous-section Style */}
+            {/* EN: Style subsection */}
+            <div style={{
+              border: '1px solid #e2e8f0',
+              borderRadius: 8,
+              padding: styleCollapsed ? 8 : 12,
+              background: '#fafbfc'
+            }}>
+              <button
+                type="button"
+                onClick={() => setStyleCollapsed(!styleCollapsed)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  marginBottom: styleCollapsed ? 0 : 12,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: '#374151',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  width: '100%',
+                  textAlign: 'left',
+                  padding: 0
+                }}
+              >
+                {styleCollapsed ? (
+                  <ChevronRight className="icon-small" style={{ color: '#64748b' }} />
+                ) : (
+                  <ChevronDown className="icon-small" style={{ color: '#64748b' }} />
+                )}
+                <Palette className="icon-small" style={{ color: '#64748b' }} />
+                Styles
+              </button>
+
+              {!styleCollapsed && (
+                <div style={{ fontSize: 12, color: '#64748b' }}>
+                  Styles à implémenter
+                </div>
+              )}
+            </div>
           </div>
+          )}
         </div>
 
         {/* FR: Section Nœud sélectionné (affichée uniquement si un nœud est choisi) */}
         {/* EN: Selected node section (only when a node is selected) */}
         {selectedNode ? (
-          <div className="section" style={{ marginTop: 16 }}>
-            <div className="section-header" style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: 8, 
-              marginBottom: 12,
-              paddingBottom: 8,
-              borderBottom: '1px solid #e2e8f0'
-            }}>
+          <div style={{
+            border: '1px solid #e2e8f0',
+            borderRadius: 8,
+            padding: selectedNodeCollapsed ? 8 : 12,
+            background: '#fafbfc',
+            marginTop: 16
+          }}>
+            <button
+              type="button"
+              onClick={() => setSelectedNodeCollapsed(!selectedNodeCollapsed)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                marginBottom: selectedNodeCollapsed ? 0 : 12,
+                fontSize: 14,
+                fontWeight: 600,
+                color: '#374151',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                width: '100%',
+                textAlign: 'left',
+                padding: 0
+              }}
+            >
+              {selectedNodeCollapsed ? (
+                <ChevronRight className="icon-small" style={{ color: '#64748b' }} />
+              ) : (
+                <ChevronDown className="icon-small" style={{ color: '#64748b' }} />
+              )}
               <Type className="icon-small" style={{ color: '#64748b' }} />
-              <span style={{ fontWeight: 600, fontSize: 14, color: '#374151' }}>Nœud sélectionné</span>
-            </div>
-            
-            {/* FR: Onglets */}
-            {/* EN: Tabs */}
-          <div className="properties-tabs">
-          <button
-            type="button"
-            className={`tab ${activeTab === 'content' ? 'active' : ''}`}
-            onClick={() => setActiveTab('content')}
-          >
-            <Type className="icon-small" />
-            Contenu
-          </button>
-          <button
-            type="button"
-            className={`tab ${activeTab === 'style' ? 'active' : ''}`}
-            onClick={() => setActiveTab('style')}
-          >
-            <Palette className="icon-small" />
-            Style
-          </button>
-          <button
-            type="button"
-            className={`tab ${activeTab === 'advanced' ? 'active' : ''}`}
-            onClick={() => setActiveTab('advanced')}
-          >
-            <Settings className="icon-small" />
-            Avancé
-          </button>
+              Nœud sélectionné
+            </button>
+
+            {!selectedNodeCollapsed && (
+              <>
+                {/* FR: Onglets */}
+                {/* EN: Tabs */}
+                <div className="properties-tabs">
+                  <button
+                    type="button"
+                    className={`tab ${activeTab === 'content' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('content')}
+                  >
+                    <Type className="icon-small" />
+                    Contenu
+                  </button>
+                  <button
+                    type="button"
+                    className={`tab ${activeTab === 'style' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('style')}
+                  >
+                    <Palette className="icon-small" />
+                    Style
+                  </button>
+                  <button
+                    type="button"
+                    className={`tab ${activeTab === 'advanced' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('advanced')}
+                  >
+                    <Settings className="icon-small" />
+                    Avancé
+                  </button>
+                </div>
+
+                {/* FR: Contenu des onglets */}
+                {/* EN: Tab content */}
+                <div className="properties-content">
+                  {activeTab === 'content' && (
+                    <div className="content-tab">
+                      <div className="form-group">
+                        <label htmlFor="np-title">Titre</label>
+                        <input
+                          id="np-title"
+                          type="text"
+                          value={selectedNode.title}
+                          className="input"
+                          placeholder="Titre du nœud"
+                          onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { title: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="np-notes">Notes</label>
+                        <textarea
+                          id="np-notes"
+                          value={selectedNode.notes || ''}
+                          className="input textarea"
+                          placeholder="Notes additionnelles..."
+                          rows={4}
+                          onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { notes: e.target.value })}
+                        />
+                      </div>
+
+                      {/* FR: Section Tags */}
+                      {/* EN: Tags section */}
+                      <div className="form-group">
+                        <label htmlFor="np-tags">
+                          <Tag className="icon-small" style={{ width: 14, height: 14, display: 'inline', marginRight: 4 }} />
+                          Tags
+                        </label>
+
+                        {/* FR: Liste des tags existants */}
+                        {/* EN: Existing tags list */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                          {selectedNode.tags && selectedNode.tags.length > 0 ? (
+                            selectedNode.tags.map((tag, index) => (
+                              <div
+                                key={index}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 4,
+                                  padding: '4px 8px',
+                                  background: '#f1f5f9',
+                                  borderRadius: 4,
+                                  fontSize: 12,
+                                  color: '#475569'
+                                }}
+                              >
+                                <span>{tag}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (!activeFile?.content || !selectedNodeId) return;
+                                    const command = new RemoveTagCommand(selectedNodeId, tag);
+                                    const newMap = command.execute(activeFile.content);
+                                    useOpenFiles.setState((state) => ({
+                                      openFiles: state.openFiles.map(f =>
+                                        f.id === activeFile.id ? { ...f, content: newMap } : f
+                                      )
+                                    }));
+                                  }}
+                                  style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    padding: 0,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    color: '#94a3b8'
+                                  }}
+                                  title="Retirer ce tag"
+                                >
+                                  <X style={{ width: 12, height: 12 }} />
+                                </button>
+                              </div>
+                            ))
+                          ) : (
+                            <div style={{ fontSize: 12, color: '#94a3b8', fontStyle: 'italic' }}>
+                              Aucun tag
+                            </div>
+                          )}
+                        </div>
+
+                        {/* FR: Input pour ajouter un nouveau tag */}
+                        {/* EN: Input to add new tag */}
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <input
+                            id="np-tags"
+                            type="text"
+                            value={newTag}
+                            className="input"
+                            placeholder="Ajouter un tag..."
+                            onChange={(e) => setNewTag(e.target.value)}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter' && newTag.trim() && activeFile?.content && selectedNodeId) {
+                                const command = new AddTagCommand(selectedNodeId, newTag.trim());
+                                const newMap = command.execute(activeFile.content);
+                                useOpenFiles.setState((state) => ({
+                                  openFiles: state.openFiles.map(f =>
+                                    f.id === activeFile.id ? { ...f, content: newMap } : f
+                                  )
+                                }));
+                                setNewTag('');
+                              }
+                            }}
+                          />
+                          <button
+                            type="button"
+                            className="btn"
+                            onClick={() => {
+                              if (!newTag.trim() || !activeFile?.content || !selectedNodeId) return;
+                              const command = new AddTagCommand(selectedNodeId, newTag.trim());
+                              const newMap = command.execute(activeFile.content);
+                              useOpenFiles.setState((state) => ({
+                                openFiles: state.openFiles.map(f =>
+                                  f.id === activeFile.id ? { ...f, content: newMap } : f
+                                )
+                              }));
+                              setNewTag('');
+                            }}
+                            disabled={!newTag.trim()}
+                            style={{
+                              padding: '8px 16px',
+                              background: newTag.trim() ? 'var(--accent-color)' : '#e2e8f0',
+                              color: newTag.trim() ? '#fff' : '#94a3b8',
+                              border: 'none',
+                              borderRadius: 6,
+                              cursor: newTag.trim() ? 'pointer' : 'not-allowed',
+                              fontSize: 12,
+                              fontWeight: 500
+                            }}
+                          >
+                            Ajouter
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="np-alignment">Alignement</label>
+                        <div className="alignment-buttons">
+                          <button type="button" className="btn" title="Gauche">
+                            <AlignLeft className="icon-small" />
+                          </button>
+                          <button type="button" className="btn" title="Centre">
+                            <AlignCenter className="icon-small" />
+                          </button>
+                          <button type="button" className="btn" title="Droite">
+                            <AlignRight className="icon-small" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === 'style' && (
+                    <div className="style-tab">
+                      <div className="form-group">
+                        <label htmlFor="np-bg">Couleur de fond</label>
+                        <div className="color-input-group">
+                          <input
+                            id="np-bg"
+                            type="color"
+                            value={selectedNode.style?.backgroundColor || '#ffffff'}
+                            className="color-input"
+                            onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, backgroundColor: e.target.value } })}
+                          />
+                          <input
+                            type="text"
+                            value={selectedNode.style?.backgroundColor || '#ffffff'}
+                            className="input"
+                            onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, backgroundColor: e.target.value } })}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="np-fg">Couleur du texte</label>
+                        <div className="color-input-group">
+                          <input
+                            id="np-fg"
+                            type="color"
+                            value={selectedNode.style?.textColor || '#000000'}
+                            className="color-input"
+                            onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, textColor: e.target.value } })}
+                          />
+                          <input
+                            type="text"
+                            value={selectedNode.style?.textColor || '#000000'}
+                            className="input"
+                            onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, textColor: e.target.value } })}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="np-fontsize">Taille de police</label>
+                        <input
+                          id="np-fontsize"
+                          type="number"
+                          value={selectedNode.style?.fontSize || 14}
+                          className="input"
+                          min="8"
+                          max="72"
+                          onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, fontSize: Number(e.target.value) } })}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="np-fontstyle">Style de police</label>
+                        <div className="font-style-buttons">
+                          <button type="button" className="btn" title="Gras">
+                            <Bold className="icon-small" />
+                          </button>
+                          <button type="button" className="btn" title="Italique">
+                            <Italic className="icon-small" />
+                          </button>
+                          <button type="button" className="btn" title="Souligné">
+                            <Underline className="icon-small" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === 'advanced' && (
+                    <div className="advanced-tab">
+                      <div className="form-group">
+                        <label htmlFor="np-nodeid">ID du nœud</label>
+                        <input
+                          type="text"
+                          value={selectedNode.id}
+                          className="input"
+                          readOnly
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="np-parent">Nœud parent</label>
+                        <input
+                          type="text"
+                          value={selectedNode.parentId || 'Aucun'}
+                          className="input"
+                          readOnly
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="np-position">Position</label>
+                        <div className="position-inputs">
+                          <input
+                            type="number"
+                            value={selectedNode.x || 0}
+                            className="input"
+                            placeholder="X"
+                          />
+                          <input
+                            type="number"
+                            value={selectedNode.y || 0}
+                            className="input"
+                            placeholder="Y"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="np-size">Taille</label>
+                        <div className="size-inputs">
+                          <input
+                            type="number"
+                            value={selectedNode.width || 200}
+                            className="input"
+                            placeholder="Largeur"
+                          />
+                          <input
+                            type="number"
+                            value={selectedNode.height || 40}
+                            className="input"
+                            placeholder="Hauteur"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
-        </div>
         ) : null}
-
-        {/* FR: Contenu des onglets */}
-        {/* EN: Tab content */}
-        <div className="properties-content">
-          {selectedNode && activeTab === 'content' && (
-            <div className="content-tab">
-              <div className="form-group">
-                <label htmlFor="np-title">Titre</label>
-                <input
-                  id="np-title"
-                  type="text"
-                  value={selectedNode.title}
-                  className="input"
-                  placeholder="Titre du nœud"
-                  onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { title: e.target.value })}
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="np-notes">Notes</label>
-                <textarea
-                  id="np-notes"
-                  value={selectedNode.notes || ''}
-                  className="input textarea"
-                  placeholder="Notes additionnelles..."
-                  rows={4}
-                  onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { notes: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="np-alignment">Alignement</label>
-                <div className="alignment-buttons">
-                  <button type="button" className="btn" title="Gauche">
-                    <AlignLeft className="icon-small" />
-                  </button>
-                  <button type="button" className="btn" title="Centre">
-                    <AlignCenter className="icon-small" />
-                  </button>
-                  <button type="button" className="btn" title="Droite">
-                    <AlignRight className="icon-small" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {selectedNode && activeTab === 'style' && (
-            <div className="style-tab">
-              <div className="form-group">
-                <label htmlFor="np-bg">Couleur de fond</label>
-                <div className="color-input-group">
-                  <input
-                    id="np-bg"
-                    type="color"
-                    value={selectedNode.style?.backgroundColor || '#ffffff'}
-                    className="color-input"
-                    onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, backgroundColor: e.target.value } })}
-                  />
-                  <input
-                    type="text"
-                    value={selectedNode.style?.backgroundColor || '#ffffff'}
-                    className="input"
-                    onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, backgroundColor: e.target.value } })}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="np-fg">Couleur du texte</label>
-                <div className="color-input-group">
-                  <input
-                    id="np-fg"
-                    type="color"
-                    value={selectedNode.style?.textColor || '#000000'}
-                    className="color-input"
-                    onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, textColor: e.target.value } })}
-                  />
-                  <input
-                    type="text"
-                    value={selectedNode.style?.textColor || '#000000'}
-                    className="input"
-                    onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, textColor: e.target.value } })}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="np-fontsize">Taille de police</label>
-                <input
-                  id="np-fontsize"
-                  type="number"
-                  value={selectedNode.style?.fontSize || 14}
-                  className="input"
-                  min="8"
-                  max="72"
-                  onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, fontSize: Number(e.target.value) } })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="np-fontstyle">Style de police</label>
-                <div className="font-style-buttons">
-                  <button type="button" className="btn" title="Gras">
-                    <Bold className="icon-small" />
-                  </button>
-                  <button type="button" className="btn" title="Italique">
-                    <Italic className="icon-small" />
-                  </button>
-                  <button type="button" className="btn" title="Souligné">
-                    <Underline className="icon-small" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {selectedNode && activeTab === 'advanced' && (
-            <div className="advanced-tab">
-              <div className="form-group">
-                <label htmlFor="np-nodeid">ID du nœud</label>
-                <input
-                  type="text"
-                  value={selectedNode.id}
-                  className="input"
-                  readOnly
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="np-parent">Nœud parent</label>
-                <input
-                  type="text"
-                  value={selectedNode.parentId || 'Aucun'}
-                  className="input"
-                  readOnly
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="np-position">Position</label>
-                <div className="position-inputs">
-                  <input
-                    type="number"
-                    value={selectedNode.x || 0}
-                    className="input"
-                    placeholder="X"
-                  />
-                  <input
-                    type="number"
-                    value={selectedNode.y || 0}
-                    className="input"
-                    placeholder="Y"
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="np-size">Taille</label>
-                <div className="size-inputs">
-                  <input
-                    type="number"
-                    value={selectedNode.width || 200}
-                    className="input"
-                    placeholder="Largeur"
-                  />
-                  <input
-                    type="number"
-                    value={selectedNode.height || 40}
-                    className="input"
-                    placeholder="Hauteur"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

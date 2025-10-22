@@ -27,6 +27,7 @@ export interface MindNode {
   y?: number;
   width?: number;
   height?: number;
+  tags?: string[];
 }
 
 export interface MindMap {
@@ -45,6 +46,11 @@ export interface SelectionState {
   selectedNodes: NodeID[];
   primaryNode: NodeID | null;
   mode: 'single' | 'multiple';
+}
+
+export interface FilterState {
+  activeTags: string[];
+  filteredNodes: NodeID[];
 }
 
 // FR: Factory pour créer des nœuds
@@ -89,6 +95,10 @@ export const useMindmap = () => {
     selectedNodes: [],
     primaryNode: null,
     mode: 'single',
+  });
+  const [filterState, setFilterState] = useState<FilterState>({
+    activeTags: [],
+    filteredNodes: [],
   });
   const [editMode, setEditMode] = useState<{
     nodeId: NodeID | null;
@@ -287,17 +297,139 @@ export const useMindmap = () => {
       // EN: TODO: Implement history
       console.warn('Redo not implemented yet');
     },
-    
+
     // FR: Basculer le mode d'édition
     // EN: Toggle edit mode
     setEditMode: (nodeId: NodeID | null, field: 'title' | 'notes' | null) => {
       setEditMode({ nodeId, field });
+    },
+
+    // FR: Filtrer par tags
+    // EN: Filter by tags
+    filterByTags: (tags: string[]) => {
+      setFilterState(prev => {
+        if (!mindMap || tags.length === 0) {
+          return { activeTags: [], filteredNodes: [] };
+        }
+
+        // FR: Trouver tous les nœuds qui ont au moins un des tags sélectionnés
+        // EN: Find all nodes that have at least one of the selected tags
+        const filteredNodes = Object.values(mindMap.nodes)
+          .filter(node => node.tags && tags.some(tag => node.tags!.includes(tag)))
+          .map(node => node.id);
+
+        return {
+          activeTags: tags,
+          filteredNodes,
+        };
+      });
+    },
+
+    // FR: Effacer tous les filtres
+    // EN: Clear all filters
+    clearFilters: () => {
+      setFilterState({
+        activeTags: [],
+        filteredNodes: [],
+      });
+    },
+
+    // FR: Ajouter un tag au filtrage
+    // EN: Add a tag to filtering
+    addFilterTag: (tag: string) => {
+      setFilterState(prev => {
+        const newTags = [...prev.activeTags, tag];
+        if (!mindMap) {
+          return { activeTags: newTags, filteredNodes: [] };
+        }
+
+        // FR: Recalculer les nœuds filtrés
+        // EN: Recalculate filtered nodes
+        const filteredNodes = Object.values(mindMap.nodes)
+          .filter(node => node.tags && newTags.some(t => node.tags!.includes(t)))
+          .map(node => node.id);
+
+        return {
+          activeTags: newTags,
+          filteredNodes,
+        };
+      });
+    },
+
+    // FR: Retirer un tag du filtrage
+    // EN: Remove a tag from filtering
+    removeFilterTag: (tag: string) => {
+      setFilterState(prev => {
+        const newTags = prev.activeTags.filter(t => t !== tag);
+        if (!mindMap || newTags.length === 0) {
+          return { activeTags: [], filteredNodes: [] };
+        }
+
+        // FR: Recalculer les nœuds filtrés
+        // EN: Recalculate filtered nodes
+        const filteredNodes = Object.values(mindMap.nodes)
+          .filter(node => node.tags && newTags.some(t => node.tags!.includes(t)))
+          .map(node => node.id);
+
+        return {
+          activeTags: newTags,
+          filteredNodes,
+        };
+      });
+    },
+
+    // FR: Ajouter un tag à un nœud
+    // EN: Add a tag to a node
+    addTagToNode: (nodeId: NodeID, tag: string) => {
+      setMindMap(prev => {
+        if (!prev) return prev;
+
+        const node = prev.nodes[nodeId];
+        if (!node) return prev;
+
+        const currentTags = node.tags || [];
+        if (currentTags.includes(tag)) return prev; // FR: Tag déjà présent / EN: Tag already exists
+
+        return {
+          ...prev,
+          nodes: {
+            ...prev.nodes,
+            [nodeId]: {
+              ...node,
+              tags: [...currentTags, tag],
+            },
+          },
+        };
+      });
+    },
+
+    // FR: Retirer un tag d'un nœud
+    // EN: Remove a tag from a node
+    removeTagFromNode: (nodeId: NodeID, tag: string) => {
+      setMindMap(prev => {
+        if (!prev) return prev;
+
+        const node = prev.nodes[nodeId];
+        if (!node || !node.tags) return prev;
+
+        return {
+          ...prev,
+          nodes: {
+            ...prev.nodes,
+            [nodeId]: {
+              ...node,
+              tags: node.tags.filter(t => t !== tag),
+            },
+          },
+        };
+      });
     },
   }), []);
 
   return {
     mindMap,
     selection,
+    filterState,
     editMode,
     canUndo: false, // FR: TODO: Implémenter / EN: TODO: Implement
     canRedo: false, // FR: TODO: Implémenter / EN: TODO: Implement

@@ -4,6 +4,7 @@
  */
 
 import { nanoid } from 'nanoid';
+import type { NodeAsset, AssetLibrary } from './assets';
 
 // FR: Identifiant unique pour un nœud
 // EN: Unique identifier for a node
@@ -71,6 +72,14 @@ export interface MindNode {
   // FR: Hauteur du nœud
   // EN: Node height
   height?: number;
+
+  // FR: Assets attachés au nœud (images, stickers)
+  // EN: Assets attached to node (images, stickers)
+  assets?: NodeAsset[];
+
+  // FR: Tags du nœud (pour catégorisation et filtrage)
+  // EN: Node tags (for categorization and filtering)
+  tags?: string[];
 }
 
 // FR: Métadonnées d'une carte mentale
@@ -117,6 +126,14 @@ export interface MindMap {
   // FR: Palette de couleurs du thème pour l'inférence de couleurs par branche
   // EN: Theme color palette for branch color inference
   themeColors?: string[];
+
+  // FR: Bibliothèque d'assets de la carte
+  // EN: Mind map asset library
+  assetLibrary?: AssetLibrary;
+
+  // FR: ID du thème appliqué
+  // EN: Applied theme ID
+  themeId?: string;
 }
 
 // FR: État de sélection
@@ -268,3 +285,66 @@ export class NodeUtils {
     return descendants.some(node => node.id === descendantId);
   }
 }
+
+// FR: Utilitaires pour gérer les tags
+// EN: Utilities to manage tags
+export const TagUtils = {
+  /**
+   * FR: Obtenir tous les tags uniques utilisés dans la carte
+   * EN: Get all unique tags used in the map
+   */
+  getAllTags(map: MindMap): string[] {
+    const tagsSet = new Set<string>();
+
+    Object.values(map.nodes).forEach(node => {
+      if (node.tags) {
+        node.tags.forEach(tag => tagsSet.add(tag));
+      }
+    });
+
+    return Array.from(tagsSet).sort();
+  },
+
+  /**
+   * FR: Obtenir tous les nœuds ayant un tag spécifique
+   * EN: Get all nodes with a specific tag
+   */
+  getNodesByTag(map: MindMap, tag: string): MindNode[] {
+    return Object.values(map.nodes).filter(node =>
+      node.tags?.includes(tag)
+    );
+  },
+
+  /**
+   * FR: Obtenir tous les nœuds ayant tous les tags spécifiés
+   * EN: Get all nodes with all specified tags
+   */
+  getNodesByTags(map: MindMap, tags: string[]): MindNode[] {
+    return Object.values(map.nodes).filter(node =>
+      tags.every(tag => node.tags?.includes(tag))
+    );
+  },
+
+  /**
+   * FR: Compter le nombre de nœuds ayant un tag spécifique
+   * EN: Count nodes with a specific tag
+   */
+  countNodesByTag(map: MindMap, tag: string): number {
+    return TagUtils.getNodesByTag(map, tag).length;
+  },
+
+  /**
+   * FR: Obtenir un dictionnaire tag -> nombre de nœuds
+   * EN: Get a dictionary tag -> node count
+   */
+  getTagCounts(map: MindMap): Record<string, number> {
+    const tags = TagUtils.getAllTags(map);
+    const counts: Record<string, number> = {};
+
+    tags.forEach(tag => {
+      counts[tag] = TagUtils.countNodesByTag(map, tag);
+    });
+
+    return counts;
+  }
+};

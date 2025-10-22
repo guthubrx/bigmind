@@ -77,3 +77,6 @@ playwright/.cache/
 *.mmz
 *.zip
 !test-map.mm
+
+# SpecStory - AI conversation history
+.specstory/

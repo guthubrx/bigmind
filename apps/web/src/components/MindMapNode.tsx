@@ -9,6 +9,7 @@ import { useOpenFiles } from '../hooks/useOpenFiles';
 import { useSelection } from '../hooks/useSelection';
 import { useAppSettings } from '../hooks/useAppSettings';
 import { useEditMode } from '../hooks/useEditMode';
+import { useTagLayers } from '../hooks/useTagLayers';
 import NodeContextMenu from './NodeContextMenu';
 // FR: Types locaux pour le développement
 // EN: Local types for development
@@ -62,6 +63,13 @@ function MindMapNode({ data, selected }: Props) {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [isBlinking, setIsBlinking] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // FR: Gestion des calques de tags (toujours actif)
+  // EN: Tag layers management (always enabled)
+  const { isNodeVisible, getNodeOpacity } = useTagLayers();
+  const nodeTags = (data as any).tags || [];
+  const shouldShow = isNodeVisible(nodeTags);
+  const layerOpacity = getNodeOpacity(nodeTags);
 
   // FR: Calculer la luminosité relative d'une couleur hex (0-1, 0=noir, 1=blanc)
   // EN: Calculate relative luminance of a hex color (0-1, 0=black, 1=white)
@@ -216,12 +224,6 @@ function MindMapNode({ data, selected }: Props) {
   }, [data.id]);
 
   const isCurrentlySelected = !!(selected || data.isSelected || selectedNodeId === data.id);
-  
-  // FR: Debug pour le drag target
-  // EN: Debug for drag target
-  if ((data as any).isDragTarget) {
-    console.log('🎯 Nœud drag target:', data.id, 'accentColor:', accentColor);
-  }
 
   let outline: string | undefined;
   let outlineOffset: number | undefined;
@@ -245,6 +247,12 @@ function MindMapNode({ data, selected }: Props) {
       setSelectedNodeId(data.id);
     }
   };
+
+  // FR: Ne pas rendre le nœud s'il est caché par les calques
+  // EN: Don't render node if hidden by layers
+  if (!shouldShow) {
+    return null;
+  }
 
   return (
     <div
@@ -275,11 +283,11 @@ function MindMapNode({ data, selected }: Props) {
                (data.style as any)?.background ||
                (data.style as any)?.bgColor ||
                'white')),
-        // FR: Effet de transparence pour les descendants du nœud qu'on glisse, le nœud fantôme et le nœud en cours de drag
-        // EN: Transparency effect for descendants of dragged node, ghost node and node being dragged
-        opacity: (data as any).isGhost ? 0.4 : 
-                 ((data as any).isBeingDragged ? 0.6 : 
-                  ((data as any).isDescendantOfDragged ? 0.3 : 1)),
+        // FR: Effet de transparence pour les descendants du nœud qu'on glisse, le nœud fantôme et le nœud en cours de drag, et calques
+        // EN: Transparency effect for descendants of dragged node, ghost node, node being dragged, and layers
+        opacity: (data as any).isGhost ? 0.4 :
+                 ((data as any).isBeingDragged ? 0.6 :
+                  ((data as any).isDescendantOfDragged ? 0.3 : layerOpacity)),
         // FR: Couleur du texte - contraste automatique pour la racine, sinon selon le style ou contraste automatique
         // EN: Text color - automatic contrast for root, otherwise according to style or automatic contrast
         color: data.isPrimary 
@@ -300,7 +308,7 @@ function MindMapNode({ data, selected }: Props) {
         padding: '8px 12px',
         outline,
         outlineOffset,
-        boxShadow: (data as any).isDragTarget 
+        boxShadow: (data as any).isDragTarget
           ? `0 0 20px ${accentColor}, 0 0 40px ${accentColor}80, 0 0 60px ${accentColor}40`
           : 'none',
       }}

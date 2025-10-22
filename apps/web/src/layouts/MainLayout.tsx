@@ -9,6 +9,7 @@ import FileTabs from '../components/FileTabs';
 import NodeExplorer from '../components/NodeExplorer';
 import MindMapCanvas from '../components/MindMapCanvas';
 import NodeProperties from '../components/NodeProperties';
+import Sidebar from '../components/Sidebar';
 import StatusBar from '../components/StatusBar';
 import CollapseButton from '../components/CollapseButton';
 import { ResizeHandle } from '../components/ResizeHandle';
@@ -303,7 +304,7 @@ const MainLayout: React.FC = React.memo(() => {
                   showResizeHandle
                   resizeHandlePosition="left"
                 >
-                  <NodeProperties />
+                  <Sidebar />
                 </LayoutColumn>
               </div>
 

@@ -35,6 +35,8 @@ import { useContextMenuHandlers } from '../hooks/useContextMenuHandlers';
 import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
 import { useColorInference } from '../hooks/useColorInference';
 import NodeContextMenu from './NodeContextMenu';
+import { useMindmap } from '../hooks/useMindmap';
+import { AddTagCommand, RemoveTagCommand } from '@bigmind/core';
 
 // FR: Types de nœuds personnalisés
 // EN: Custom node types
@@ -144,6 +146,10 @@ function MindMapCanvas() {
   const canPaste = useOpenFiles(s => s.canPaste);
   const getShortcut = useShortcuts(s => s.getShortcut);
   const selectedPaletteGlobal = useAppSettings(s => s.selectedPalette);
+
+  // FR: Hook pour la gestion des tags
+  // EN: Hook for tag management
+  const { mindMap, actions } = useMindmap();
   // FR: Palette par carte (fallback globale)
   // EN: Per-map palette (global fallback)
   const perMapPaletteId =
@@ -422,6 +428,11 @@ function MindMapCanvas() {
         onNodeDragStart={onNodeDragStart}
         onNodeDrag={onNodeDrag}
         onNodeDragStop={onNodeDragStop}
+        onNodeClick={(event, node) => {
+          // FR: Synchroniser la sélection avec notre hook useSelection
+          // EN: Sync selection with our useSelection hook
+          setSelectedNodeId(node.id);
+        }}
         nodesDraggable={nodesDraggable}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
@@ -441,7 +452,13 @@ function MindMapCanvas() {
         selectionMode={SelectionMode.Partial}
         panOnDrag={false}
         onSelectionChange={({ nodes: selNodes }) => {
-          const nodeIds = selNodes ? selNodes.map(node => node.id) : [];
+          // FR: NE PAS effacer notre sélection si ReactFlow n'a pas de sélection
+          // EN: DON'T clear our selection if ReactFlow has no selection
+          if (!selNodes || selNodes.length === 0) {
+            // Garder la sélection actuelle de useSelection
+            return;
+          }
+          const nodeIds = selNodes.map(node => node.id);
           // FR: Éviter les mises à jour inutiles si la sélection n'a pas changé
           // EN: Avoid unnecessary updates if selection hasn't changed
           if (JSON.stringify(nodeIds.sort()) !== JSON.stringify(selectedNodeIds.sort())) {
@@ -509,6 +526,30 @@ function MindMapCanvas() {
           onCopy={(nodeId: string) => copyNode(nodeId)}
           onPaste={(nodeId: string) => pasteNode(nodeId)}
           canPaste={canPaste()}
+          // FR: Gestion des tags
+          // EN: Tag management
+          nodeTags={activeFile?.content?.nodes?.[contextMenu.nodeId]?.tags || []}
+          allTags={activeFile ? Object.values(activeFile.content?.nodes || {}).flatMap(node => node.tags || []).filter((tag, index, array) => array.indexOf(tag) === index) : []}
+          onAddTag={(nodeId: string, tag: string) => {
+            if (!activeFile?.content) return;
+            const command = new AddTagCommand(nodeId, tag);
+            const newMap = command.execute(activeFile.content);
+            useOpenFiles.setState((state) => ({
+              openFiles: state.openFiles.map(f =>
+                f.id === activeFile.id ? { ...f, content: newMap } : f
+              )
+            }));
+          }}
+          onRemoveTag={(nodeId: string, tag: string) => {
+            if (!activeFile?.content) return;
+            const command = new RemoveTagCommand(nodeId, tag);
+            const newMap = command.execute(activeFile.content);
+            useOpenFiles.setState((state) => ({
+              openFiles: state.openFiles.map(f =>
+                f.id === activeFile.id ? { ...f, content: newMap } : f
+              )
+            }));
+          }}
         />
       )}
     </div>
