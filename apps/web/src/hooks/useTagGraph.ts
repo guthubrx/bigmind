@@ -18,13 +18,12 @@ import {
 import { eventBus } from '../utils/eventBus';
 import { useNodeTags, useNodeTagsStore } from './useNodeTags';
 
-// FR: Store Zustand pour le graphe de tags
-// EN: Zustand store for tag graph
+// FR: Store Zustand pour le graphe de tags (sans persistance)
+// EN: Zustand store for tag graph (without persistence)
 const useTagGraphStore = create<TagDagState>()(
-  persist(
-    immer((set, get) => ({
-      tags: [], // FR: Initialisé vide - sera synchronisé avec la carte
-      links: [],
+  immer((set, get) => ({
+    tags: [], // FR: Tags synchronisés avec la carte active uniquement
+    links: [], // FR: Liens synchronisés avec la carte active uniquement
       selectedTagId: null,
       hoveredTagId: null,
       graphView: 'list',
@@ -232,6 +231,16 @@ const useTagGraphStore = create<TagDagState>()(
         };
       },
 
+      // FR: Effacer tous les tags
+      // EN: Clear all tags
+      clearTags: () =>
+        set((draft) => {
+          draft.tags = [];
+          draft.links = [];
+          draft.selectedTagId = null;
+          draft.hoveredTagId = null;
+        }),
+
       // FR: Vérifier la présence de cycles
       // EN: Check for cycles
       checkCycle: (source: string, target: string): boolean => {
@@ -283,12 +292,7 @@ const useTagGraphStore = create<TagDagState>()(
 
         return false;
       },
-    })),
-    {
-      name: 'bigmind-tag-graph',
-      version: 1,
-    }
-  )
+    }))
 );
 
 /**
@@ -511,6 +515,53 @@ export function useTagGraph() {
     };
   };
 
+  // FR: Synchroniser les tags depuis la carte mentale
+  // EN: Sync tags from mindmap
+  const syncFromMindMap = (mindMap: any) => {
+    // Effacer tous les tags existants
+    state.clearTags();
+    nodeTags.reset();
+
+    if (!mindMap || !mindMap.nodes) return;
+
+    // Parcourir tous les nœuds et collecter les tags uniques
+    const uniqueTags = new Set<string>();
+    Object.values(mindMap.nodes).forEach((node: any) => {
+      if (node.tags && Array.isArray(node.tags)) {
+        node.tags.forEach((tag: string) => {
+          uniqueTags.add(tag);
+        });
+      }
+    });
+
+    // Créer un tag DAG pour chaque tag unique
+    uniqueTags.forEach((tagId) => {
+      state.addTag({
+        id: tagId,
+        label: tagId.charAt(0).toUpperCase() + tagId.slice(1),
+        visible: true,
+        nodeIds: []
+      });
+    });
+
+    // Associer les tags aux nœuds
+    Object.values(mindMap.nodes).forEach((node: any) => {
+      if (node.tags && Array.isArray(node.tags)) {
+        node.tags.forEach((tagId: string) => {
+          state.associateTagToNode(tagId, node.id);
+          nodeTags.addNodeTag(node.id, tagId);
+        });
+      }
+    });
+  };
+
+  // FR: Vider tous les tags (pour quand on ferme la carte)
+  // EN: Clear all tags (for when closing the map)
+  const clearAllTags = () => {
+    state.clearTags();
+    nodeTags.reset();
+  };
+
   return {
     ...state,
     getAncestors,
@@ -523,6 +574,8 @@ export function useTagGraph() {
     deleteTag: deleteTagWithSync,
     selectTag: selectTagWithSync,
     getTagGraphData,
+    syncFromMindMap,
+    clearAllTags,
     // Accès aux associations nœud-tag
     getNodeTags: nodeTags.getNodeTags,
     getTagNodes: nodeTags.getTagNodes,

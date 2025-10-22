@@ -13,6 +13,16 @@ export function TagSyncInitializer() {
   const tagGraph = useTagGraph();
 
   useEffect(() => {
+    // FR: Nettoyer le localStorage au démarrage (une seule fois)
+    // EN: Clean localStorage on startup (once only)
+    const hasCleanedStorage = sessionStorage.getItem('bigmind-storage-cleaned');
+    if (!hasCleanedStorage) {
+      console.log('🧹 Nettoyage du localStorage des anciennes données de tags');
+      localStorage.removeItem('bigmind-tag-graph');
+      localStorage.removeItem('node-tags-storage');
+      sessionStorage.setItem('bigmind-storage-cleaned', 'true');
+    }
+
     console.log('✅ Synchronisation DAG-MindMap initialisée');
     console.log('📊 Nombre de tags au démarrage:', tagGraph.tags.length);
     console.log('👂 Listeners actifs:', {

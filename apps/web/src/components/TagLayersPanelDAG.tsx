@@ -35,7 +35,21 @@ export function TagLayersPanelDAG() {
     getRootTags,
     getAncestors,
     getDescendants,
+    syncFromMindMap,
+    clearAllTags,
   } = useTagGraph();
+
+  // FR: Synchroniser les tags avec la carte chargée
+  // EN: Sync tags with loaded map
+  React.useEffect(() => {
+    if (mindMap.mindMap) {
+      console.log('🔄 Synchronisation des tags avec la carte:', mindMap.mindMap.meta.name);
+      syncFromMindMap(mindMap.mindMap);
+    } else {
+      console.log('🗑️ Aucune carte chargée, effacement des tags');
+      clearAllTags();
+    }
+  }, [mindMap.mindMap?.id]); // Re-synchroniser si l'ID de la carte change
 
   // FR: Debug - afficher le nombre de tags
   // EN: Debug - show tag count
@@ -97,11 +111,9 @@ export function TagLayersPanelDAG() {
     createRelation(source, target, type);
   };
 
-  // FR: Rendu de la vue liste avec lignes d'arborescence
-  // EN: Render list view with tree lines
-  // FR: Les tags peuvent être gérés indépendamment de la carte
-  // EN: Tags can be managed independently of the map
-  const isMapLoaded = true; // Toujours permettre la gestion des tags
+  // FR: Vérifier si une carte est chargée
+  // EN: Check if a map is loaded
+  const isMapLoaded = !!mindMap.mindMap;
 
   const renderListView = () => {
     const renderTag = (tag: DagTag, level = 0, isLast = false, parentLines: boolean[] = []) => {
@@ -281,7 +293,15 @@ export function TagLayersPanelDAG() {
       {/* FR: Contenu principal */}
       {/* EN: Main content */}
       <div className="panel-content">
-        {graphView === 'list' ? (
+        {!isMapLoaded ? (
+          <div className="empty-state">
+            <FileWarning size={24} />
+            <p>Aucune carte chargée</p>
+            <span style={{ fontSize: '12px', color: '#64748b' }}>
+              Chargez une carte pour gérer les tags
+            </span>
+          </div>
+        ) : graphView === 'list' ? (
           renderListView()
         ) : (
           <div className="graph-container">
@@ -411,14 +431,16 @@ export function TagLayersPanelDAG() {
 
       {/* FR: Bouton flottant pour ajouter un tag */}
       {/* EN: Floating button to add a tag */}
-      <button
-        type="button"
-        className="fab"
-        onClick={() => setShowNewTagForm(true)}
-        title="Créer un tag"
-      >
-        <Plus size={20} />
-      </button>
+      {isMapLoaded && (
+        <button
+          type="button"
+          className="fab"
+          onClick={() => setShowNewTagForm(true)}
+          title="Créer un tag"
+        >
+          <Plus size={20} />
+        </button>
+      )}
     </div>
   );
 }

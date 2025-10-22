@@ -4,7 +4,6 @@
  */
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import { NodeTag, TagUsage } from '../types/nodeTag';
 import { eventBus } from '../utils/eventBus';
 
@@ -42,9 +41,7 @@ interface NodeTagsStore {
   reset: () => void;
 }
 
-export const useNodeTagsStore = create<NodeTagsStore>()(
-  persist(
-    (set, get) => ({
+export const useNodeTagsStore = create<NodeTagsStore>()((set, get) => ({
       nodeTags: [],
       nodeIndex: new Map(),
       tagIndex: new Map(),
@@ -203,37 +200,7 @@ export const useNodeTagsStore = create<NodeTagsStore>()(
           tagIndex: new Map()
         });
       }
-    }),
-    {
-      name: 'node-tags-storage',
-      partialize: (state) => ({
-        nodeTags: state.nodeTags
-      }),
-      onRehydrateStorage: () => (state) => {
-        // Reconstruire les index après réhydratation
-        if (state) {
-          const nodeIndex = new Map<string, Set<string>>();
-          const tagIndex = new Map<string, Set<string>>();
-
-          state.nodeTags.forEach(nt => {
-            if (!nodeIndex.has(nt.nodeId)) {
-              nodeIndex.set(nt.nodeId, new Set());
-            }
-            nodeIndex.get(nt.nodeId)!.add(nt.tagId);
-
-            if (!tagIndex.has(nt.tagId)) {
-              tagIndex.set(nt.tagId, new Set());
-            }
-            tagIndex.get(nt.tagId)!.add(nt.nodeId);
-          });
-
-          state.nodeIndex = nodeIndex;
-          state.tagIndex = tagIndex;
-        }
-      }
-    }
-  )
-);
+}));
 
 // Hook personnalisé
 export function useNodeTags() {
