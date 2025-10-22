@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { useMindMapStore } from './useMindMap';
+import { useMindMapStore } from './useMindmap';
 import { useTagGraph } from './useTagGraph';
 import { useNodeTags } from './useNodeTags';
 import { eventBus } from '../utils/eventBus';

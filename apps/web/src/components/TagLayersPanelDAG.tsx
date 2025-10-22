@@ -18,7 +18,7 @@ import {
 import { useTagGraph } from '../hooks/useTagGraph';
 import { TagGraph } from './TagGraph';
 import { DagTag, TagRelationType } from '../types/dag';
-import { useMindMapStore } from '../hooks/useMindMap';
+import { useMindMapStore } from '../hooks/useMindmap';
 import './TagLayersPanel.css';
 
 export function TagLayersPanelDAG() {
