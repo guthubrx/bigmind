@@ -37,6 +37,13 @@ export function TagLayersPanelDAG() {
     getDescendants,
   } = useTagGraph();
 
+  // FR: Debug - afficher le nombre de tags
+  // EN: Debug - show tag count
+  React.useEffect(() => {
+    console.log('🏷️ TagLayersPanelDAG - Nombre de tags:', tags.length);
+    console.log('🏷️ TagLayersPanelDAG - Tags:', tags.map(t => ({ id: t.id, label: t.label })));
+  }, [tags]);
+
   const [showNewTagForm, setShowNewTagForm] = useState(false);
   const [newTagLabel, setNewTagLabel] = useState('');
   const [newTagParent, setNewTagParent] = useState<string | null>(null);

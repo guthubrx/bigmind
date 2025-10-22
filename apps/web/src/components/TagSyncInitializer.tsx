@@ -5,16 +5,22 @@
 
 import { useEffect } from 'react';
 import { useTagGraph } from '../hooks/useTagGraph';
-import { useMindMapDAGSync } from '../hooks/useMindMapDAGSync';
+import { eventBus } from '../utils/eventBus';
 
 export function TagSyncInitializer() {
-  // FR: Initialiser les hooks pour activer la synchronisation
-  // EN: Initialize hooks to enable synchronization
-  useTagGraph();
-  useMindMapDAGSync();
+  // FR: Initialiser le hook pour activer la synchronisation
+  // EN: Initialize hook to enable synchronization
+  const tagGraph = useTagGraph();
 
   useEffect(() => {
     console.log('✅ Synchronisation DAG-MindMap initialisée');
+    console.log('📊 Nombre de tags au démarrage:', tagGraph.tags.length);
+    console.log('👂 Listeners actifs:', {
+      'node:tagged': eventBus.getListenerCount('node:tagged'),
+      'node:untagged': eventBus.getListenerCount('node:untagged'),
+      'tag:added': eventBus.getListenerCount('tag:added'),
+      'tag:removed': eventBus.getListenerCount('tag:removed'),
+    });
   }, []);
 
   // Ce composant ne rend rien visuellement
