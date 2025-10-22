@@ -4,6 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { eventBus } from '../utils/eventBus';
 
 // FR: Types simplifiés pour le développement
 // EN: Simplified types for development
@@ -392,11 +393,9 @@ export const useMindmap = () => {
 
         // FR: Émettre l'événement pour la synchronisation avec le DAG
         // EN: Emit event for DAG synchronization
+        console.log('🔥 Émission de node:tagged depuis useMindmap pour tag:', tag, 'nodeId:', nodeId);
         setTimeout(() => {
-          // Utiliser le bus d'événements si disponible
-          if (typeof window !== 'undefined' && (window as any).eventBus) {
-            (window as any).eventBus.emit('node:tagged', { nodeId, tagId: tag }, 'mindmap');
-          }
+          eventBus.emit('node:tagged', { nodeId, tagId: tag }, 'mindmap');
         }, 0);
 
         return {
@@ -423,11 +422,9 @@ export const useMindmap = () => {
 
         // FR: Émettre l'événement pour la synchronisation avec le DAG
         // EN: Emit event for DAG synchronization
+        console.log('🔥 Émission de node:untagged depuis useMindmap pour tag:', tag, 'nodeId:', nodeId);
         setTimeout(() => {
-          // Utiliser le bus d'événements si disponible
-          if (typeof window !== 'undefined' && (window as any).eventBus) {
-            (window as any).eventBus.emit('node:untagged', { nodeId, tagId: tag }, 'mindmap');
-          }
+          eventBus.emit('node:untagged', { nodeId, tagId: tag }, 'mindmap');
         }, 0);
 
         return {

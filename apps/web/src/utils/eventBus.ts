@@ -64,6 +64,9 @@ class EventBus {
       timestamp: Date.now()
     };
 
+    console.log('📢 Event émis:', type, 'depuis', source, 'payload:', payload);
+    console.log('👂 Listeners pour cet event:', this.getListenerCount(type));
+
     this.eventQueue.push(eventData);
     this.processQueue();
   }

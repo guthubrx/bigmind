@@ -302,26 +302,35 @@ export function useTagGraph() {
   // FR: Synchronisation avec le bus d'événements
   // EN: Synchronization with event bus
   useEffect(() => {
+    console.log('🎯 useTagGraph: Enregistrement des listeners');
+
     // FR: Écouter les événements de la MindMap
     // EN: Listen to MindMap events
     const unsubNodeTagged = eventBus.on('node:tagged', (event) => {
+      console.log('🎯 useTagGraph: Event node:tagged reçu', event);
       if (event.source === 'mindmap') {
         const { nodeId, tagId } = event.payload;
 
         // FR: Créer le tag s'il n'existe pas
         // EN: Create tag if it doesn't exist
         const tagExists = state.tags.find(t => t.id === tagId);
+        console.log('🔍 Tag existe déjà?', !!tagExists, 'pour tagId:', tagId);
+
         if (!tagExists) {
+          console.log('➕ Création du nouveau tag:', tagId);
           state.addTag({
             id: tagId,
             label: tagId.charAt(0).toUpperCase() + tagId.slice(1), // Capitaliser
             visible: true,
             nodeIds: [nodeId]
           });
+        } else {
+          // Associer le tag existant au nœud
+          console.log('🔗 Association du tag existant au nœud');
+          state.associateTagToNode(tagId, nodeId);
         }
 
-        // Mettre à jour le DAG avec le nouveau tag
-        state.associateTagToNode(tagId, nodeId);
+        // Mettre à jour les associations nœud-tag
         nodeTags.addNodeTag(nodeId, tagId);
       }
     });

@@ -22,8 +22,16 @@ export function QuickTagTest() {
   const handleAddTag = () => {
     if (!newTagName || !firstNode) return;
 
-    console.log('🏷️ Ajout du tag:', newTagName, 'au nœud:', firstNode.id);
-    mindMap.actions.addTagToNode(firstNode.id, newTagName.toLowerCase().replace(/\s+/g, '-'));
+    const tagId = newTagName.toLowerCase().replace(/\s+/g, '-');
+    console.log('🏷️ Ajout du tag:', tagId, 'au nœud:', firstNode.id);
+    console.log('🔍 Tags avant:', firstNode.tags);
+
+    mindMap.actions.addTagToNode(firstNode.id, tagId);
+
+    // Vérifier si le bus d'événements existe
+    console.log('🚌 Event bus disponible?', !!(window as any).eventBus);
+    console.log('📊 Tags dans le DAG:', tags.length, tags.map(t => t.id));
+
     setNewTagName('');
   };
 
