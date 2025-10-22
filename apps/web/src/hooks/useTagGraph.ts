@@ -16,7 +16,7 @@ import {
   TagGraphOptions
 } from '../types/dag';
 import { eventBus } from '../utils/eventBus';
-import { useNodeTags } from './useNodeTags';
+import { useNodeTags, useNodeTagsStore } from './useNodeTags';
 
 // FR: Store Zustand pour le graphe de tags
 // EN: Zustand store for tag graph
@@ -311,14 +311,19 @@ export function useTagGraph() {
       if (event.source === 'mindmap') {
         const { nodeId, tagId } = event.payload;
 
+        // FR: Accéder directement au store pour avoir l'état actuel
+        // EN: Access store directly to get current state
+        const currentState = useTagGraphStore.getState();
+        const currentNodeTags = useNodeTagsStore.getState();
+
         // FR: Créer le tag s'il n'existe pas
         // EN: Create tag if it doesn't exist
-        const tagExists = state.tags.find(t => t.id === tagId);
+        const tagExists = currentState.tags.find(t => t.id === tagId);
         console.log('🔍 Tag existe déjà?', !!tagExists, 'pour tagId:', tagId);
 
         if (!tagExists) {
           console.log('➕ Création du nouveau tag:', tagId);
-          state.addTag({
+          currentState.addTag({
             id: tagId,
             label: tagId.charAt(0).toUpperCase() + tagId.slice(1), // Capitaliser
             visible: true,
@@ -327,20 +332,24 @@ export function useTagGraph() {
         } else {
           // Associer le tag existant au nœud
           console.log('🔗 Association du tag existant au nœud');
-          state.associateTagToNode(tagId, nodeId);
+          currentState.associateTagToNode(tagId, nodeId);
         }
 
         // Mettre à jour les associations nœud-tag
-        nodeTags.addNodeTag(nodeId, tagId);
+        currentNodeTags.addNodeTag(nodeId, tagId);
       }
     });
 
     const unsubNodeUntagged = eventBus.on('node:untagged', (event) => {
       if (event.source === 'mindmap') {
         const { nodeId, tagId } = event.payload;
+        // FR: Accéder directement aux stores
+        // EN: Access stores directly
+        const currentState = useTagGraphStore.getState();
+        const currentNodeTags = useNodeTagsStore.getState();
         // Retirer l'association du DAG
-        state.dissociateTagFromNode(tagId, nodeId);
-        nodeTags.removeNodeTag(nodeId, tagId);
+        currentState.dissociateTagFromNode(tagId, nodeId);
+        currentNodeTags.removeNodeTag(nodeId, tagId);
       }
     });
 
@@ -357,7 +366,8 @@ export function useTagGraph() {
       if (event.source === 'dag') {
         const { tagId } = event.payload;
         // Retirer le tag de tous les nœuds
-        nodeTags.removeTagFromAllNodes(tagId);
+        const currentNodeTags = useNodeTagsStore.getState();
+        currentNodeTags.removeTagFromAllNodes(tagId);
       }
     });
 
@@ -365,7 +375,8 @@ export function useTagGraph() {
       if (event.source === 'dag') {
         const { tagId } = event.payload;
         // Mettre en surbrillance les nœuds associés dans la MindMap
-        const nodeIds = nodeTags.getTagNodes(tagId);
+        const currentNodeTags = useNodeTagsStore.getState();
+        const nodeIds = currentNodeTags.getTagNodes(tagId);
         eventBus.emit('node:selected', { nodeIds }, 'dag');
       }
     });
@@ -374,9 +385,11 @@ export function useTagGraph() {
     // EN: Global refresh request
     const unsubSyncRefresh = eventBus.on('sync:refresh', () => {
       // Rafraîchir toutes les données
-      const tagUsage = nodeTags.getTagUsage();
+      const currentState = useTagGraphStore.getState();
+      const currentNodeTags = useNodeTagsStore.getState();
+      const tagUsage = currentNodeTags.getTagUsage();
       tagUsage.forEach(usage => {
-        const tag = state.tags.find(t => t.id === usage.tagId);
+        const tag = currentState.tags.find(t => t.id === usage.tagId);
         if (tag) {
           tag.nodeIds = usage.nodeIds;
         }
@@ -391,7 +404,8 @@ export function useTagGraph() {
       unsubTagSelected();
       unsubSyncRefresh();
     };
-  }, [state, nodeTags]);
+  }, []); // FR: Pas de dépendances pour éviter les ré-enregistrements
+  // EN: No dependencies to avoid re-registrations
 
   // FR: Obtenir les ancêtres d'un tag
   // EN: Get ancestors of a tag

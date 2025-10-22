@@ -51,6 +51,17 @@ export function QuickTagTest() {
     }, 'mindmap');
   };
 
+  // FR: Réinitialiser tous les tags
+  // EN: Reset all tags
+  const handleResetTags = () => {
+    console.log('🗑️ Réinitialisation des tags');
+    // Effacer le localStorage
+    localStorage.removeItem('bigmind-tag-graph');
+    localStorage.removeItem('node-tags-storage');
+    // Recharger la page pour appliquer
+    window.location.reload();
+  };
+
   return (
     <div style={{
       position: 'fixed',
@@ -126,6 +137,24 @@ export function QuickTagTest() {
         }}
       >
         🚀 Test direct événement
+      </button>
+
+      <button
+        type="button"
+        onClick={handleResetTags}
+        style={{
+          width: '100%',
+          marginTop: '4px',
+          padding: '4px 8px',
+          background: '#dc2626',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontSize: '11px'
+        }}
+      >
+        🗑️ Réinitialiser tous les tags
       </button>
 
       {firstNode?.tags && firstNode.tags.length > 0 && (
