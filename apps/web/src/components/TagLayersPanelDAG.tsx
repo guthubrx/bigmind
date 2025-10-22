@@ -99,9 +99,9 @@ export function TagLayersPanelDAG() {
 
   // FR: Rendu de la vue liste avec lignes d'arborescence
   // EN: Render list view with tree lines
-  // FR: Vérifier si une carte est chargée
-  // EN: Check if a map is loaded
-  const isMapLoaded = mindMap.mindMap !== null;
+  // FR: Les tags peuvent être gérés indépendamment de la carte
+  // EN: Tags can be managed independently of the map
+  const isMapLoaded = true; // Toujours permettre la gestion des tags
 
   const renderListView = () => {
     const renderTag = (tag: DagTag, level = 0, isLast = false, parentLines: boolean[] = []) => {
@@ -281,15 +281,7 @@ export function TagLayersPanelDAG() {
       {/* FR: Contenu principal */}
       {/* EN: Main content */}
       <div className="panel-content">
-        {!isMapLoaded ? (
-          <div className="empty-state">
-            <FileWarning size={32} />
-            <p style={{ fontWeight: 600 }}>Aucune carte chargée</p>
-            <p style={{ fontSize: '13px', color: '#64748b', marginTop: '8px' }}>
-              Chargez ou créez une carte mentale pour gérer les tags
-            </p>
-          </div>
-        ) : graphView === 'list' ? (
+        {graphView === 'list' ? (
           renderListView()
         ) : (
           <div className="graph-container">
@@ -419,16 +411,14 @@ export function TagLayersPanelDAG() {
 
       {/* FR: Bouton flottant pour ajouter un tag */}
       {/* EN: Floating button to add a tag */}
-      {isMapLoaded && (
-        <button
-          type="button"
-          className="fab"
-          onClick={() => setShowNewTagForm(true)}
-          title="Créer un tag"
-        >
-          <Plus size={20} />
-        </button>
-      )}
+      <button
+        type="button"
+        className="fab"
+        onClick={() => setShowNewTagForm(true)}
+        title="Créer un tag"
+      >
+        <Plus size={20} />
+      </button>
     </div>
   );
 }

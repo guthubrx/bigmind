@@ -55,6 +55,10 @@ export function QuickTagTest() {
   // EN: Reset all tags
   const handleResetTags = () => {
     console.log('🗑️ Réinitialisation des tags');
+    console.log('📦 Contenu avant suppression:', {
+      tagGraph: localStorage.getItem('bigmind-tag-graph'),
+      nodeTags: localStorage.getItem('node-tags-storage')
+    });
     // Effacer le localStorage
     localStorage.removeItem('bigmind-tag-graph');
     localStorage.removeItem('node-tags-storage');
