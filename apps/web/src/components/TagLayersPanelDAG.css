@@ -128,6 +128,7 @@
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
+  position: relative;
 }
 
 .tag-row:hover {
@@ -138,6 +139,71 @@
   background: #eff6ff;
   border-left: 3px solid #2563eb;
   padding-left: 5px;
+}
+
+/* FR: Lignes d'arborescence style Windows Explorer */
+/* EN: Tree lines Windows Explorer style */
+.tree-structure {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tree-line {
+  position: absolute;
+  box-sizing: border-box;
+}
+
+/* FR: Ligne verticale continue */
+/* EN: Continuous vertical line */
+.tree-line-vertical {
+  width: 1px;
+  background: #cbd5e1;
+  top: -20px;
+  bottom: 0;
+}
+
+/* FR: Ligne horizontale de connexion */
+/* EN: Horizontal connection line */
+.tree-line-horizontal {
+  height: 1px;
+  background: #cbd5e1;
+  top: 12px;
+  width: 12px;
+}
+
+/* FR: Coude pour élément (L) */
+/* EN: Corner for item (L) */
+.tree-line-corner {
+  width: 12px;
+  height: 13px;
+  top: 0;
+  border-left: 1px solid #cbd5e1;
+  border-bottom: 1px solid #cbd5e1;
+  border-bottom-left-radius: 3px;
+}
+
+/* FR: Embranchement avec ligne verticale */
+/* EN: Branch with vertical line */
+.tree-line-branch {
+  width: 12px;
+  height: 13px;
+  top: 0;
+  border-left: 1px solid #cbd5e1;
+  border-bottom: 1px solid #cbd5e1;
+  border-bottom-left-radius: 3px;
+}
+
+.tree-line-branch::after {
+  content: '';
+  position: absolute;
+  width: 1px;
+  background: #cbd5e1;
+  top: 13px;
+  bottom: -20px;
+  left: -1px;
 }
 
 .visibility-btn {

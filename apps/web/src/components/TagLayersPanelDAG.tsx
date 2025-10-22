@@ -3,7 +3,7 @@
  * EN: Tag layers panel with DAG view and list view
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Eye,
   EyeOff,
@@ -22,16 +22,12 @@ import './TagLayersPanel.css';
 export function TagLayersPanelDAG() {
   const {
     tags,
-    links,
     selectedTagId,
     graphView,
-    graphOptions,
     addTag,
     deleteTag,
     selectTag,
     setGraphView,
-    updateGraphOptions,
-    associateTagToNode,
     createRelation,
     getRootTags,
     getAncestors,
@@ -54,8 +50,8 @@ export function TagLayersPanelDAG() {
   // EN: Get tag details
   const selectedTag = tags.find(t => t.id === selectedTagId);
 
-  // FR: Créer un nouveau tag
-  // EN: Create a new tag
+  // FR: Créer un nouveau tag avec synchronisation
+  // EN: Create a new tag with synchronization
   const handleCreateTag = () => {
     if (!newTagLabel.trim()) return;
 
@@ -64,46 +60,73 @@ export function TagLayersPanelDAG() {
       label: newTagLabel,
       parents: newTagParent ? [newTagParent] : undefined,
       visible: true,
+      nodeIds: [], // Initialisé vide
     };
 
-    addTag(newTag);
+    addTag(newTag); // Utilise maintenant addTagWithSync
     setNewTagLabel('');
     setNewTagParent(null);
     setShowNewTagForm(false);
   };
 
-  // FR: Gestionnaire pour les événements du graphe
-  // EN: Handler for graph events
+  // FR: Gestionnaire pour les événements du graphe avec synchronisation
+  // EN: Handler for graph events with synchronization
   const handleNodeClick = (node: any) => {
-    selectTag(node.id);
+    selectTag(node.id); // Utilise selectTagWithSync
     setShowTagDetails(true);
   };
 
   const handleNodeDoubleClick = (node: any) => {
     // FR: Ouvrir le panneau d'édition du tag
     // EN: Open tag edit panel
+    selectTag(node.id);
     setShowTagDetails(true);
   };
 
   const handleLinkCreate = (source: string, target: string, type: TagRelationType) => {
-    console.log(`Lien créé: ${source} -> ${target} (${type})`);
+    createRelation(source, target, type);
   };
 
-  // FR: Rendu de la vue liste
-  // EN: Render list view
+  // FR: Rendu de la vue liste avec lignes d'arborescence
+  // EN: Render list view with tree lines
   const renderListView = () => {
-    const renderTag = (tag: DagTag, level = 0) => {
+    const renderTag = (tag: DagTag, level = 0, isLast = false, parentLines: boolean[] = []) => {
       const children = tags.filter(t => t.parents?.includes(tag.id));
-      const ancestors = getAncestors(tag.id);
-      const descendants = getDescendants(tag.id);
 
       return (
-        <div key={tag.id} className="tag-list-item">
+        <div key={tag.id} className="tag-list-item" style={{ position: 'relative' }}>
           <div
             className={`tag-row ${selectedTagId === tag.id ? 'selected' : ''}`}
-            style={{ paddingLeft: `${level * 20 + 8}px` }}
             onClick={() => selectTag(tag.id)}
+            style={{ paddingLeft: `${level * 24 + 20}px`, position: 'relative' }}
           >
+            {/* FR: Lignes d'arborescence */}
+            {/* EN: Tree lines */}
+            {level > 0 && (
+              <div className="tree-structure" style={{ left: 0, width: `${level * 24 + 20}px` }}>
+                {/* FR: Lignes verticales continues des niveaux parents */}
+                {/* EN: Continuous vertical lines from parent levels */}
+                {parentLines.map((showLine, i) =>
+                  showLine && i < level - 1 && (
+                    <div
+                      key={`v-${i}`}
+                      className="tree-line tree-line-vertical"
+                      style={{ left: `${i * 24 + 20}px` }}
+                    />
+                  )
+                )}
+
+                {/* FR: Ligne de connexion (L ou T) */}
+                {/* EN: Connection line (L or T) */}
+                <div
+                  className={`tree-line ${isLast ? 'tree-line-corner' : 'tree-line-branch'}`}
+                  style={{
+                    left: `${(level - 1) * 24 + 20}px`,
+                  }}
+                />
+              </div>
+            )}
+
             <button
               className="visibility-btn"
               onClick={(e) => {
@@ -121,8 +144,8 @@ export function TagLayersPanelDAG() {
 
             <span className="tag-label">{tag.label}</span>
 
-            {/* FR: Badges pour parents et enfants multiples */}
-            {/* EN: Badges for multiple parents and children */}
+            {/* FR: Badges pour parents, enfants et nœuds associés */}
+            {/* EN: Badges for parents, children and associated nodes */}
             {tag.parents && tag.parents.length > 1 && (
               <span className="badge" title="Parents multiples">
                 {tag.parents.length}P
@@ -131,6 +154,11 @@ export function TagLayersPanelDAG() {
             {children.length > 0 && (
               <span className="badge" title="Enfants">
                 {children.length}E
+              </span>
+            )}
+            {tag.nodeIds && tag.nodeIds.length > 0 && (
+              <span className="badge" title="Nœuds associés" style={{ backgroundColor: '#10b981' }}>
+                {tag.nodeIds.length}N
               </span>
             )}
 
@@ -145,9 +173,19 @@ export function TagLayersPanelDAG() {
             </button>
           </div>
 
-          {/* FR: Rendu récursif des enfants */}
-          {/* EN: Recursive rendering of children */}
-          {children.map(child => renderTag(child, level + 1))}
+          {/* FR: Rendu récursif des enfants avec état des lignes */}
+          {/* EN: Recursive rendering of children with line state */}
+          {children.map((child, index) => {
+            const newParentLines = [...parentLines];
+            // Ajouter une ligne verticale pour ce niveau si ce n'est pas le dernier élément
+            newParentLines[level] = !isLast;
+            return renderTag(
+              child,
+              level + 1,
+              index === children.length - 1,
+              newParentLines
+            );
+          })}
         </div>
       );
     };
@@ -169,7 +207,7 @@ export function TagLayersPanelDAG() {
           </div>
         ) : (
           <>
-            {rootTags.map(tag => renderTag(tag))}
+            {rootTags.map((tag, index) => renderTag(tag, 0, index === rootTags.length - 1))}
             {filteredTags.filter(t => !rootTags.includes(t) && (!t.parents || t.parents.length === 0))
               .map(tag => renderTag(tag))}
           </>

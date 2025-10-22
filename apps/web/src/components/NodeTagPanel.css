@@ -1,0 +1,308 @@
+/**
+ * FR: Styles pour le panneau de tagging des nœuds
+ * EN: Styles for node tagging panel
+ */
+
+.node-tag-panel {
+  width: 320px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  max-height: 480px;
+  z-index: 1000;
+}
+
+/* FR: En-tête */
+/* EN: Header */
+.node-tag-panel .panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 8px 8px 0 0;
+}
+
+.node-tag-panel .header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.node-tag-panel .close-btn {
+  padding: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.node-tag-panel .close-btn:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+/* FR: Tags actuels */
+/* EN: Current tags */
+.current-tags {
+  padding: 16px;
+  min-height: 80px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.current-tags .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.current-tags .tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.current-tags .tag-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  font-size: 12px;
+  color: #334155;
+  transition: all 0.2s;
+}
+
+.current-tags .tag-chip:hover {
+  background: #e2e8f0;
+}
+
+.tag-color {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.current-tags .remove-btn {
+  padding: 0;
+  margin-left: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.current-tags .remove-btn:hover {
+  color: #ef4444;
+}
+
+/* FR: Section d'ajout */
+/* EN: Add section */
+.add-tag-section {
+  padding: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.search-input:focus {
+  background: #ffffff;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* FR: Suggestions */
+/* EN: Suggestions */
+.suggestions {
+  margin-top: 8px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  color: #334155;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.suggestion-item:hover {
+  background: #f1f5f9;
+}
+
+.suggestion-item:not(:last-child) {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.usage-badge {
+  margin-left: auto;
+  padding: 2px 6px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* FR: Bouton créer */
+/* EN: Create button */
+.create-tag-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 12px;
+  margin-top: 12px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.create-tag-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #334155;
+}
+
+/* FR: Formulaire de création */
+/* EN: Creation form */
+.new-tag-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.tag-name-input {
+  flex: 1;
+  padding: 6px 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.tag-name-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* FR: Boutons */
+/* EN: Buttons */
+.node-tag-panel .btn-primary,
+.node-tag-panel .btn-secondary {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.node-tag-panel .btn-primary {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.node-tag-panel .btn-primary:hover {
+  background: #2563eb;
+}
+
+.node-tag-panel .btn-secondary {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.node-tag-panel .btn-secondary:hover {
+  background: #cbd5e1;
+}
+
+/* FR: Pied de page */
+/* EN: Footer */
+.panel-footer {
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  border-radius: 0 0 8px 8px;
+}
+
+.stats {
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.stat-divider {
+  margin: 0 8px;
+  color: #cbd5e1;
+}
+
+/* FR: Scrollbar personnalisée */
+/* EN: Custom scrollbar */
+.current-tags::-webkit-scrollbar,
+.suggestions::-webkit-scrollbar {
+  width: 6px;
+}
+
+.current-tags::-webkit-scrollbar-track,
+.suggestions::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.current-tags::-webkit-scrollbar-thumb,
+.suggestions::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.current-tags::-webkit-scrollbar-thumb:hover,
+.suggestions::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

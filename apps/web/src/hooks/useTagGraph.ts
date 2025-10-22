@@ -1,8 +1,9 @@
 /**
- * FR: Hook pour la gestion du graphe DAG de tags
- * EN: Hook for DAG tag graph management
+ * FR: Hook pour la gestion du graphe DAG de tags avec synchronisation
+ * EN: Hook for DAG tag graph management with synchronization
  */
 
+import { useEffect } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
@@ -15,6 +16,8 @@ import {
   TagGraphOptions,
   SAMPLE_TAG_GRAPH
 } from '../types/dag';
+import { eventBus } from '../utils/eventBus';
+import { useNodeTags } from './useNodeTags';
 
 // FR: Store Zustand pour le graphe de tags
 // EN: Zustand store for tag graph
@@ -121,7 +124,7 @@ const useTagGraphStore = create<TagDagState>()(
                 }
               }
             } else {
-              console.warn(`Cycle détecté: impossible d'ajouter le lien ${link.source} -> ${link.target}`);
+              // Cycle détecté: impossible d'ajouter le lien
             }
           }
         }),
@@ -254,6 +257,7 @@ const useTagGraphStore = create<TagDagState>()(
             children.push(target);
           }
 
+          // eslint-disable-next-line no-restricted-syntax
           for (const child of children) {
             if (!visited.has(child)) {
               if (hasCycleDFS(child)) {
@@ -269,6 +273,7 @@ const useTagGraphStore = create<TagDagState>()(
         };
 
         // Vérifier depuis tous les nœuds non visités
+        // eslint-disable-next-line no-restricted-syntax
         for (const tag of state.tags) {
           if (!visited.has(tag.id)) {
             if (hasCycleDFS(tag.id)) {
@@ -288,11 +293,84 @@ const useTagGraphStore = create<TagDagState>()(
 );
 
 /**
- * FR: Hook personnalisé pour utiliser le graphe de tags
- * EN: Custom hook to use tag graph
+ * FR: Hook personnalisé pour utiliser le graphe de tags avec synchronisation
+ * EN: Custom hook to use tag graph with synchronization
  */
 export function useTagGraph() {
   const state = useTagGraphStore();
+  const nodeTags = useNodeTags();
+
+  // FR: Synchronisation avec le bus d'événements
+  // EN: Synchronization with event bus
+  useEffect(() => {
+    // FR: Écouter les événements de la MindMap
+    // EN: Listen to MindMap events
+    const unsubNodeTagged = eventBus.on('node:tagged', (event) => {
+      if (event.source === 'mindmap') {
+        const { nodeId, tagId } = event.payload;
+        // Mettre à jour le DAG avec le nouveau tag
+        state.associateTagToNode(tagId, nodeId);
+        nodeTags.addNodeTag(nodeId, tagId);
+      }
+    });
+
+    const unsubNodeUntagged = eventBus.on('node:untagged', (event) => {
+      if (event.source === 'mindmap') {
+        const { nodeId, tagId } = event.payload;
+        // Retirer l'association du DAG
+        state.dissociateTagFromNode(tagId, nodeId);
+        nodeTags.removeNodeTag(nodeId, tagId);
+      }
+    });
+
+    // FR: Écouter les événements du DAG
+    // EN: Listen to DAG events
+    const unsubTagAdded = eventBus.on('tag:added', (event) => {
+      if (event.source === 'dag') {
+        // La MindMap peut réagir si nécessaire
+        console.log('Tag ajouté depuis le DAG:', event.payload);
+      }
+    });
+
+    const unsubTagRemoved = eventBus.on('tag:removed', (event) => {
+      if (event.source === 'dag') {
+        const { tagId } = event.payload;
+        // Retirer le tag de tous les nœuds
+        nodeTags.removeTagFromAllNodes(tagId);
+      }
+    });
+
+    const unsubTagSelected = eventBus.on('tag:selected', (event) => {
+      if (event.source === 'dag') {
+        const { tagId } = event.payload;
+        // Mettre en surbrillance les nœuds associés dans la MindMap
+        const nodeIds = nodeTags.getTagNodes(tagId);
+        eventBus.emit('node:selected', { nodeIds }, 'dag');
+      }
+    });
+
+    // FR: Demande de rafraîchissement global
+    // EN: Global refresh request
+    const unsubSyncRefresh = eventBus.on('sync:refresh', () => {
+      // Rafraîchir toutes les données
+      const tagUsage = nodeTags.getTagUsage();
+      tagUsage.forEach(usage => {
+        const tag = state.tags.find(t => t.id === usage.tagId);
+        if (tag) {
+          tag.nodeIds = usage.nodeIds;
+        }
+      });
+    });
+
+    return () => {
+      unsubNodeTagged();
+      unsubNodeUntagged();
+      unsubTagAdded();
+      unsubTagRemoved();
+      unsubTagSelected();
+      unsubSyncRefresh();
+    };
+  }, [state, nodeTags]);
 
   // FR: Obtenir les ancêtres d'un tag
   // EN: Get ancestors of a tag
@@ -365,6 +443,39 @@ export function useTagGraph() {
     state.addLink({ source: sourceId, target: targetId, type });
   };
 
+  // FR: Méthodes de synchronisation enrichies
+  // EN: Enhanced synchronization methods
+  const addTagWithSync = (tag: DagTag) => {
+    state.addTag(tag);
+    eventBus.emit('tag:added', { tag }, 'dag');
+  };
+
+  const deleteTagWithSync = (tagId: string) => {
+    state.deleteTag(tagId);
+    nodeTags.removeTagFromAllNodes(tagId);
+    eventBus.emit('tag:removed', { tagId }, 'dag');
+  };
+
+  const selectTagWithSync = (tagId: string | null) => {
+    state.selectTag(tagId);
+    if (tagId) {
+      eventBus.emit('tag:selected', { tagId }, 'dag');
+    }
+  };
+
+  const getTagGraphData = () => {
+    const usage: Record<string, string[]> = {};
+    nodeTags.getTagUsage().forEach(u => {
+      usage[u.tagId] = u.nodeIds;
+    });
+
+    return {
+      tags: state.tags,
+      links: state.links,
+      usage
+    };
+  };
+
   return {
     ...state,
     getAncestors,
@@ -372,6 +483,16 @@ export function useTagGraph() {
     getRootTags,
     getLeafTags,
     createRelation,
+    // Méthodes avec synchronisation
+    addTag: addTagWithSync,
+    deleteTag: deleteTagWithSync,
+    selectTag: selectTagWithSync,
+    getTagGraphData,
+    // Accès aux associations nœud-tag
+    getNodeTags: nodeTags.getNodeTags,
+    getTagNodes: nodeTags.getTagNodes,
+    addNodeTag: nodeTags.addNodeTag,
+    removeNodeTag: nodeTags.removeNodeTag,
   };
 }
 
