@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { useMindMapStore } from '../hooks/useMindmap';
 import { useTagGraph } from '../hooks/useTagGraph';
+import { eventBus } from '../utils/eventBus';
 import { Tag, Plus } from 'lucide-react';
 
 export function QuickTagTest() {
@@ -38,6 +39,17 @@ export function QuickTagTest() {
   if (!mindMap.mindMap) {
     return null;
   }
+
+  // FR: Test direct d'émission d'événement
+  // EN: Direct test of event emission
+  const handleTestEvent = () => {
+    const testTagId = 'test-' + Date.now();
+    console.log('🚀 Test direct: émission de node:tagged avec tagId:', testTagId);
+    eventBus.emit('node:tagged', {
+      nodeId: firstNode?.id || 'test-node',
+      tagId: testTagId
+    }, 'mindmap');
+  };
 
   return (
     <div style={{
@@ -97,6 +109,24 @@ export function QuickTagTest() {
       <div style={{ fontSize: '11px', color: '#64748b' }}>
         Tags dans le DAG: <strong>{tags.length}</strong>
       </div>
+
+      <button
+        type="button"
+        onClick={handleTestEvent}
+        style={{
+          width: '100%',
+          marginTop: '8px',
+          padding: '4px 8px',
+          background: '#f97316',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontSize: '11px'
+        }}
+      >
+        🚀 Test direct événement
+      </button>
 
       {firstNode?.tags && firstNode.tags.length > 0 && (
         <div style={{ marginTop: '8px', fontSize: '11px' }}>
