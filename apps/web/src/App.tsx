@@ -8,6 +8,7 @@ import { Routes, Route } from 'react-router-dom';
 import { useMindmap } from './hooks/useMindmap';
 import MainLayout from './layouts/MainLayout';
 import SettingsPage from './pages/Settings';
+import TagSyncInitializer from './components/TagSyncInitializer';
 import { useAppSettings } from './hooks/useAppSettings';
 import { useOpenFiles } from './hooks/useOpenFiles';
 import { shouldIgnoreShortcut } from './utils/inputUtils';
@@ -65,6 +66,10 @@ function App() {
 
   return (
     <div className="app">
+      {/* FR: Initialiser la synchronisation des tags */}
+      {/* EN: Initialize tag synchronization */}
+      <TagSyncInitializer />
+
       <Routes>
         <Route path="/" element={<MainLayout />} />
         <Route path="/map/:id" element={<MainLayout />} />
