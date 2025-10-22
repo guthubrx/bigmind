@@ -117,3 +117,9 @@ class EventBus {
 
 // Singleton
 export const eventBus = new EventBus();
+
+// FR: Rendre le bus disponible globalement pour le développement
+// EN: Make the bus globally available for development
+if (typeof window !== 'undefined') {
+  (window as any).eventBus = eventBus;
+}

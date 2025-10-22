@@ -390,6 +390,15 @@ export const useMindmap = () => {
         const currentTags = node.tags || [];
         if (currentTags.includes(tag)) return prev; // FR: Tag déjà présent / EN: Tag already exists
 
+        // FR: Émettre l'événement pour la synchronisation avec le DAG
+        // EN: Emit event for DAG synchronization
+        setTimeout(() => {
+          // Utiliser le bus d'événements si disponible
+          if (typeof window !== 'undefined' && (window as any).eventBus) {
+            (window as any).eventBus.emit('node:tagged', { nodeId, tagId: tag }, 'mindmap');
+          }
+        }, 0);
+
         return {
           ...prev,
           nodes: {
@@ -411,6 +420,15 @@ export const useMindmap = () => {
 
         const node = prev.nodes[nodeId];
         if (!node || !node.tags) return prev;
+
+        // FR: Émettre l'événement pour la synchronisation avec le DAG
+        // EN: Emit event for DAG synchronization
+        setTimeout(() => {
+          // Utiliser le bus d'événements si disponible
+          if (typeof window !== 'undefined' && (window as any).eventBus) {
+            (window as any).eventBus.emit('node:untagged', { nodeId, tagId: tag }, 'mindmap');
+          }
+        }, 0);
 
         return {
           ...prev,

@@ -307,6 +307,19 @@ export function useTagGraph() {
     const unsubNodeTagged = eventBus.on('node:tagged', (event) => {
       if (event.source === 'mindmap') {
         const { nodeId, tagId } = event.payload;
+
+        // FR: Créer le tag s'il n'existe pas
+        // EN: Create tag if it doesn't exist
+        const tagExists = state.tags.find(t => t.id === tagId);
+        if (!tagExists) {
+          state.addTag({
+            id: tagId,
+            label: tagId.charAt(0).toUpperCase() + tagId.slice(1), // Capitaliser
+            visible: true,
+            nodeIds: [nodeId]
+          });
+        }
+
         // Mettre à jour le DAG avec le nouveau tag
         state.associateTagToNode(tagId, nodeId);
         nodeTags.addNodeTag(nodeId, tagId);

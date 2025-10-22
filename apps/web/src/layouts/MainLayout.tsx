@@ -13,6 +13,7 @@ import Sidebar from '../components/Sidebar';
 import StatusBar from '../components/StatusBar';
 import CollapseButton from '../components/CollapseButton';
 import { ResizeHandle } from '../components/ResizeHandle';
+import QuickTagTest from '../components/QuickTagTest';
 import { useColumnCollapse } from '../hooks/useColumnCollapse';
 import { useColumnResize } from '../hooks/useColumnResize';
 import { cn } from '../utils/cn';
@@ -323,6 +324,10 @@ const MainLayout: React.FC = React.memo(() => {
           <StatusBar />
         </div>
       </div>
+
+      {/* FR: Composant de test pour la synchronisation des tags */}
+      {/* EN: Test component for tag synchronization */}
+      <QuickTagTest />
     </div>
   );
 });
