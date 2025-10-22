@@ -440,4 +440,6 @@ export const useMindmap = () => {
 
 // FR: Export pour utilisation avec les stores Zustand existants
 // EN: Export for use with existing Zustand stores
-export const useMindMapStore = useMindMap;
+export const useMindMapStore = useMindmap;
+
+export default useMindmap;
