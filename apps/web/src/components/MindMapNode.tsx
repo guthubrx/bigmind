@@ -361,15 +361,15 @@ function MindMapNode({ data, selected }: Props) {
         )}
       </div>
 
-      {/* FR: Affichage des tags sur le bord droit du nœud */}
-      {/* EN: Display tags on the right edge of the node */}
+      {/* FR: Affichage des tags sur le bord inférieur du nœud */}
+      {/* EN: Display tags on the bottom edge of the node */}
       {nodeTags && nodeTags.length > 0 && (
         <div
-          className="absolute flex flex-col gap-1"
+          className="absolute flex flex-row gap-1"
           style={{
-            right: '-8px', // Position à cheval sur le bord
-            top: '50%',
-            transform: 'translateY(-50%)',
+            bottom: '-8px', // Position à cheval sur le bord inférieur
+            left: '50%',
+            transform: 'translateX(-50%)', // Centrage horizontal
             zIndex: 10,
           }}
         >
@@ -387,7 +387,7 @@ function MindMapNode({ data, selected }: Props) {
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                maxWidth: '100px',
+                maxWidth: '80px',
                 border: '1px solid rgba(255,255,255,0.3)',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
               }}
