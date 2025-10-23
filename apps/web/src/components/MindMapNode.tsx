@@ -367,12 +367,14 @@ function MindMapNode({ data, selected }: Props) {
         <div
           className="absolute flex flex-row gap-1 justify-center"
           style={{
-            bottom: '0', // Position sur la bordure inférieure
-            left: '50%',
-            transform: 'translateX(-50%) translateY(50%)', // Centrage horizontal ET vertical sur la bordure
+            bottom: '-1px', // Position sur la bordure inférieure (compense la bordure de 1px)
+            left: '0',
+            right: '0',
+            transform: 'translateY(50%)', // Décale verticalement pour être à cheval sur la bordure
             zIndex: 10,
+            display: 'flex',
+            justifyContent: 'center', // Centre les tags horizontalement
             whiteSpace: 'nowrap', // Empêche le retour à la ligne des tags
-            minWidth: 'max-content', // S'assure que le conteneur s'adapte au contenu
           }}
         >
           {nodeTags.map((tag: string) => (
