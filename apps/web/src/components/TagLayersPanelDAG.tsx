@@ -299,6 +299,16 @@ export function TagLayersPanelDAG() {
           >
             <Network size={16} />
           </button>
+          {isMapLoaded && (
+            <button
+              className="toggle-btn"
+              onClick={() => setShowNewTagForm(true)}
+              title="Créer un nouveau tag"
+              style={{ marginLeft: '8px' }}
+            >
+              <Plus size={16} />
+            </button>
+          )}
         </div>
       </div>
 
