@@ -356,9 +356,9 @@ function MindMapNode({ data, selected }: Props) {
             {/* EN: Display node tags */}
             {nodeTags && nodeTags.length > 0 && (
               <div className="flex flex-wrap gap-1 justify-center mt-1 max-w-full">
-                {nodeTags.map((tag: string, index: number) => (
+                {nodeTags.map((tag: string) => (
                   <span
-                    key={index}
+                    key={tag}
                     className="tag-badge"
                     style={{
                       backgroundColor: '#3B82F6',
