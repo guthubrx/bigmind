@@ -367,10 +367,10 @@ function MindMapNode({ data, selected }: Props) {
         <div
           className="absolute flex flex-row gap-1 justify-center"
           style={{
-            bottom: '0', // Position exactement au bas du nœud
+            bottom: '-8px', // Descend de 8px (environ 20% de la hauteur moyenne d'un nœud)
             left: '0',
             right: '0',
-            transform: 'translateY(50%)', // Descend de 50% : le milieu vertical est sur la bordure
+            transform: 'translateY(50%)', // Descend de 50% de la hauteur du conteneur
             zIndex: 10,
             display: 'flex',
             justifyContent: 'center', // Centre les tags horizontalement
