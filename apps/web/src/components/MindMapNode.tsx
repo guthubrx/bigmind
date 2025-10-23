@@ -374,7 +374,7 @@ function MindMapNode({ data, selected }: Props) {
             className="flex flex-row gap-1 justify-center"
             style={{
               position: 'relative',
-              transform: 'translateY(calc(50% + 4px))', // À cheval sur bordure + 4px (20% hauteur tag ~18px)
+              transform: 'translateY(-5px)', // Remonte de 5px pour avoir ~30% au-dessus de la bordure
               zIndex: 10,
               display: 'flex',
               justifyContent: 'center', // Centre les tags horizontalement
