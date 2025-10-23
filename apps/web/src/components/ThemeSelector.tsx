@@ -34,7 +34,7 @@ export function ThemeSelector({ onThemeSelect }: ThemeSelectorProps) {
   // EN: Group themes by category
   const categorizedThemes = useMemo(() => {
     const grouped = new Map<ThemeCategory, Theme[]>();
-    PRESET_THEMES.forEach((theme) => {
+    PRESET_THEMES.forEach(theme => {
       const key = theme.category;
       if (!grouped.has(key)) grouped.set(key, []);
       grouped.get(key)!.push(theme);
@@ -74,12 +74,12 @@ export function ThemeSelector({ onThemeSelect }: ThemeSelectorProps) {
         setImportError('Format de fichier invalide');
       }
     } catch (error) {
-      setImportError('Erreur lors de l\'import du thème');
+      setImportError("Erreur lors de l'import du thème");
     }
   };
 
   const handleCreateFromActive = () => {
-    const activeTheme = allThemes.find((t) => t.id === activeThemeId);
+    const activeTheme = allThemes.find(t => t.id === activeThemeId);
     if (!activeTheme) return;
 
     const customTheme = createCustomTheme(`${activeTheme.name} (copie)`, {
@@ -88,60 +88,62 @@ export function ThemeSelector({ onThemeSelect }: ThemeSelectorProps) {
     setActiveTheme(customTheme.id);
   };
 
-  const ThemeCard = ({ theme, isFavorite }: { theme: Theme; isFavorite: boolean }) => (
-    <div
-      onClick={() => handleSelectTheme(theme)}
-      className={`p-3 rounded-lg cursor-pointer transition-all border-2 ${
-        activeThemeId === theme.id ? 'border-blue-500 ring-2 ring-blue-300' : 'border-gray-200'
-      } hover:shadow-md`}
-    >
-      {/* FR: Aperçu des couleurs / EN: Colors preview */}
-      <div className="flex gap-1 mb-2 h-6 rounded overflow-hidden">
-        {[
-          theme.colors.primary,
-          theme.colors.secondary || theme.colors.primary,
-          ...theme.colors.branchColors.slice(0, 3),
-        ].map((color, i) => (
-          <div key={i} className="flex-1" style={{ backgroundColor: color }} />
-        ))}
-      </div>
-
-      {/* FR: Nom et catégorie / EN: Name and category */}
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h3 className="font-semibold text-sm">{theme.name}</h3>
-          <p className="text-xs text-gray-500 truncate">{theme.description}</p>
-        </div>
-        {!theme.isSystem && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              deleteCustomTheme(theme.id);
-            }}
-            className="p-1 hover:bg-red-100 rounded"
-            title="Supprimer"
-          >
-            <Trash2 size={14} className="text-red-500" />
-          </button>
-        )}
-      </div>
-
-      {/* FR: Bouton favori / EN: Favorite button */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          toggleFavorite(theme.id);
-        }}
-        className="mt-2 p-1 hover:bg-gray-100 rounded"
-        title={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+  function ThemeCard({ theme, isFavorite }: { theme: Theme; isFavorite: boolean }) {
+    return (
+      <div
+        onClick={() => handleSelectTheme(theme)}
+        className={`p-3 rounded-lg cursor-pointer transition-all border-2 ${
+          activeThemeId === theme.id ? 'border-blue-500 ring-2 ring-blue-300' : 'border-gray-200'
+        } hover:shadow-md`}
       >
-        <Star
-          size={16}
-          className={isFavorite ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}
-        />
-      </button>
-    </div>
-  );
+        {/* FR: Aperçu des couleurs / EN: Colors preview */}
+        <div className="flex gap-1 mb-2 h-6 rounded overflow-hidden">
+          {[
+            theme.colors.primary,
+            theme.colors.secondary || theme.colors.primary,
+            ...theme.colors.branchColors.slice(0, 3),
+          ].map((color, i) => (
+            <div key={i} className="flex-1" style={{ backgroundColor: color }} />
+          ))}
+        </div>
+
+        {/* FR: Nom et catégorie / EN: Name and category */}
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h3 className="font-semibold text-sm">{theme.name}</h3>
+            <p className="text-xs text-gray-500 truncate">{theme.description}</p>
+          </div>
+          {!theme.isSystem && (
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                deleteCustomTheme(theme.id);
+              }}
+              className="p-1 hover:bg-red-100 rounded"
+              title="Supprimer"
+            >
+              <Trash2 size={14} className="text-red-500" />
+            </button>
+          )}
+        </div>
+
+        {/* FR: Bouton favori / EN: Favorite button */}
+        <button
+          onClick={e => {
+            e.stopPropagation();
+            toggleFavorite(theme.id);
+          }}
+          className="mt-2 p-1 hover:bg-gray-100 rounded"
+          title={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+        >
+          <Star
+            size={16}
+            className={isFavorite ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}
+          />
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-2xl space-y-4">
@@ -160,12 +162,7 @@ export function ThemeSelector({ onThemeSelect }: ThemeSelectorProps) {
           <label className="p-2 hover:bg-gray-100 rounded cursor-pointer text-sm flex items-center gap-1">
             <Upload size={16} />
             Import
-            <input
-              type="file"
-              accept=".json"
-              onChange={handleImport}
-              className="hidden"
-            />
+            <input type="file" accept=".json" onChange={handleImport} className="hidden" />
           </label>
         </div>
       </div>
@@ -188,14 +185,14 @@ export function ThemeSelector({ onThemeSelect }: ThemeSelectorProps) {
           Système ({PRESET_THEMES.length})
         </button>
         {/* FR: Onglet personnalisés si existants / EN: Custom tab if exists */}
-        {allThemes.some((t) => !t.isSystem) && (
+        {allThemes.some(t => !t.isSystem) && (
           <button
             onClick={() => setShowCustom(true)}
             className={`px-4 py-2 font-medium text-sm ${
               showCustom ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600'
             }`}
           >
-            Personnalisés ({allThemes.filter((t) => !t.isSystem).length})
+            Personnalisés ({allThemes.filter(t => !t.isSystem).length})
           </button>
         )}
       </div>
@@ -206,11 +203,7 @@ export function ThemeSelector({ onThemeSelect }: ThemeSelectorProps) {
           {Array.from(categorizedThemes.entries()).map(([category, themes]) => (
             <div key={category}>
               <button
-                onClick={() =>
-                  setExpandedCategory(
-                    expandedCategory === category ? null : category
-                  )
-                }
+                onClick={() => setExpandedCategory(expandedCategory === category ? null : category)}
                 className="w-full flex items-center gap-2 p-2 hover:bg-gray-100 rounded font-semibold text-sm"
               >
                 <ChevronDown
@@ -224,11 +217,11 @@ export function ThemeSelector({ onThemeSelect }: ThemeSelectorProps) {
 
               {expandedCategory === category && (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-2">
-                  {themes.map((theme) => (
+                  {themes.map(theme => (
                     <ThemeCard
                       key={theme.id}
                       theme={theme}
-                      isFavorite={favoriteThemes.some((t) => t.id === theme.id)}
+                      isFavorite={favoriteThemes.some(t => t.id === theme.id)}
                     />
                   ))}
                 </div>
@@ -239,12 +232,12 @@ export function ThemeSelector({ onThemeSelect }: ThemeSelectorProps) {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {allThemes
-            .filter((t) => !t.isSystem)
-            .map((theme) => (
+            .filter(t => !t.isSystem)
+            .map(theme => (
               <ThemeCard
                 key={theme.id}
                 theme={theme}
-                isFavorite={favoriteThemes.some((t) => t.id === theme.id)}
+                isFavorite={favoriteThemes.some(t => t.id === theme.id)}
               />
             ))}
         </div>
@@ -255,8 +248,8 @@ export function ThemeSelector({ onThemeSelect }: ThemeSelectorProps) {
         <div className="mt-6 pt-4 border-t">
           <h3 className="font-semibold text-sm mb-3">Favoris ({favoriteThemes.length})</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {favoriteThemes.map((theme) => (
-              <ThemeCard key={theme.id} theme={theme} isFavorite={true} />
+            {favoriteThemes.map(theme => (
+              <ThemeCard key={theme.id} theme={theme} isFavorite />
             ))}
           </div>
         </div>

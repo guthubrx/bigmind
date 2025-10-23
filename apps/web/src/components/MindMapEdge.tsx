@@ -59,7 +59,7 @@ function MindMapEdge({
           filter: 'blur(2px)',
         }}
       />
-      
+
       {/* FR: Arête principale */}
       {/* EN: Main edge */}
       <path
@@ -73,7 +73,7 @@ function MindMapEdge({
           cursor: 'pointer',
         }}
       />
-      
+
       {/* FR: Point de connexion au centre */}
       {/* EN: Connection point in center */}
       <circle

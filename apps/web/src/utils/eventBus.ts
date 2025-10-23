@@ -13,7 +13,10 @@ export type EventType =
   | 'node:selected'
   | 'link:created'
   | 'link:deleted'
-  | 'sync:refresh';
+  | 'sync:refresh'
+  | 'map:loaded'
+  | 'node:updated'
+  | 'node:deleted';
 
 export interface EventData {
   type: EventType;
@@ -24,7 +27,9 @@ export interface EventData {
 
 class EventBus {
   private listeners: Map<EventType, Set<(data: EventData) => void>>;
+
   private eventQueue: EventData[];
+
   private processing: boolean;
 
   constructor() {
@@ -61,7 +66,7 @@ class EventBus {
       type,
       payload,
       source,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     console.log('📢 Event émis:', type, 'depuis', source, 'payload:', payload);

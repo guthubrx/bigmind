@@ -10,7 +10,7 @@ import {
   AddNodeCommand,
   DeleteNodeCommand,
   UpdateNodeTitleCommand,
-  type MindMap
+  type MindMap,
 } from '@bigmind/core';
 import { v4 as uuidv4 } from 'uuid';
 import { eventBus } from '../utils/eventBus';
@@ -128,16 +128,38 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       // EN: Deactivate all other files and add the new one
       const updatedFiles = state.openFiles.map(f => ({ ...f, isActive: false }));
       const result = [...updatedFiles, newFile];
-      
+
       console.warn('📁 Fichiers ouverts:', result.length);
       console.warn('📁 Nouveau fichier actif:', newFile.id, newFile.isActive);
-      
+
       return {
         ...state,
         openFiles: result,
         activeFileId: newFile.id,
       };
     });
+
+    // FR: Sauvegarder la dernière carte ouverte (métadonnées + contenu)
+    // EN: Save last opened map (metadata + content)
+    try {
+      const lastFileData = {
+        name: newFile.name,
+        path: newFile.path,
+        type: newFile.type,
+        lastModified: newFile.lastModified.toISOString(),
+        content: newFile.content,
+        sheets: newFile.sheets,
+        activeSheetId: newFile.activeSheetId,
+        sheetsData: newFile.sheetsData,
+        themeColors: newFile.themeColors,
+        paletteId: newFile.paletteId,
+        mapStyle: newFile.mapStyle,
+      };
+      localStorage.setItem('bigmind_lastOpenedFile', JSON.stringify(lastFileData));
+      console.log('💾 Dernière carte sauvegardée:', newFile.name);
+    } catch (e) {
+      console.warn('⚠️ Impossible de sauvegarder la dernière carte:', e);
+    }
 
     console.warn('✅ Fichier ouvert avec ID:', newFile.id);
     return newFile.id;
@@ -150,7 +172,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     const fileId = state.activeFileId;
     if (!fileId) return;
     set({
-      openFiles: state.openFiles.map(f => f.id === fileId ? { ...f, paletteId } : f)
+      openFiles: state.openFiles.map(f => (f.id === fileId ? { ...f, paletteId } : f)),
     });
   },
 
@@ -160,19 +182,19 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     const state = get();
     const fileId = state.activeFileId;
     if (!fileId) return;
-    
+
     set({
-      openFiles: state.openFiles.map(f => 
-        f.id === fileId 
-          ? { 
-              ...f, 
-              mapStyle: { 
-                ...f.mapStyle, 
-                ...styleUpdates 
-              } 
-            } 
+      openFiles: state.openFiles.map(f =>
+        f.id === fileId
+          ? {
+              ...f,
+              mapStyle: {
+                ...f.mapStyle,
+                ...styleUpdates,
+              },
+            }
           : f
-      )
+      ),
     });
   },
 
@@ -181,7 +203,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
   closeFile: (fileId: string) => {
     set(state => {
       const filteredFiles = state.openFiles.filter(f => f.id !== fileId);
-      
+
       // FR: Si on ferme le fichier actif, activer le précédent
       // EN: If closing active file, activate the previous one
       let newActiveFileId = state.activeFileId;
@@ -194,7 +216,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
           newActiveFileId = null;
         }
       }
-      
+
       return {
         ...state,
         openFiles: filteredFiles,
@@ -211,6 +233,32 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       openFiles: state.openFiles.map(f => ({ ...f, isActive: f.id === fileId })),
       activeFileId: fileId,
     }));
+
+    // FR: Sauvegarder la dernière carte ouverte (métadonnées + contenu)
+    // EN: Save last opened map (metadata + content)
+    const state = get();
+    const activeFile = state.openFiles.find(f => f.id === fileId);
+    if (activeFile) {
+      try {
+        const lastFileData = {
+          name: activeFile.name,
+          path: activeFile.path,
+          type: activeFile.type,
+          lastModified: activeFile.lastModified.toISOString(),
+          content: activeFile.content,
+          sheets: activeFile.sheets,
+          activeSheetId: activeFile.activeSheetId,
+          sheetsData: activeFile.sheetsData,
+          themeColors: activeFile.themeColors,
+          paletteId: activeFile.paletteId,
+          mapStyle: activeFile.mapStyle,
+        };
+        localStorage.setItem('bigmind_lastOpenedFile', JSON.stringify(lastFileData));
+        console.log('💾 Dernière carte sauvegardée:', activeFile.name);
+      } catch (e) {
+        console.warn('⚠️ Impossible de sauvegarder la dernière carte:', e);
+      }
+    }
   },
 
   // FR: Définir la feuille active pour un fichier
@@ -265,7 +313,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
   createNewFile: (name: string = 'Nouvelle carte') => {
     const newFileId = uuidv4();
     const newRootId = uuidv4();
-    
+
     return get().openFile({
       name,
       type: 'new',
@@ -308,7 +356,11 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
 
       if (active.history) {
         active.history.addCommand(command);
-        console.log('📝 Command added: UpdateTitle', { nodeId, newTitle: patch.title, canUndo: active.history.canUndo() });
+        console.log('📝 Command added: UpdateTitle', {
+          nodeId,
+          newTitle: patch.title,
+          canUndo: active.history.canUndo(),
+        });
       }
 
       // Persister overlay minimal (titre, notes, style)
@@ -328,9 +380,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
 
       set(prev => ({
         ...prev,
-        openFiles: prev.openFiles.map(f =>
-          f.id === active.id ? { ...f, content: newMap } : f
-        ),
+        openFiles: prev.openFiles.map(f => (f.id === active.id ? { ...f, content: newMap } : f)),
         canUndoValue: active.history?.canUndo() ?? false,
         canRedoValue: active.history?.canRedo() ?? false,
       }));
@@ -381,14 +431,15 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
 
     if (active.history) {
       active.history.addCommand(command);
-      console.log('📝 Command added: AddNode', { nodeId: newId, canUndo: active.history.canUndo() });
+      console.log('📝 Command added: AddNode', {
+        nodeId: newId,
+        canUndo: active.history.canUndo(),
+      });
     }
 
     set(prev => ({
       ...prev,
-      openFiles: prev.openFiles.map(f =>
-        f.id === active.id ? { ...f, content: newMap } : f
-      ),
+      openFiles: prev.openFiles.map(f => (f.id === active.id ? { ...f, content: newMap } : f)),
       canUndoValue: active.history?.canUndo() ?? false,
       canRedoValue: active.history?.canRedo() ?? false,
     }));
@@ -416,9 +467,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
 
     set(prev => ({
       ...prev,
-      openFiles: prev.openFiles.map(f =>
-        f.id === active.id ? { ...f, content: newMap } : f
-      ),
+      openFiles: prev.openFiles.map(f => (f.id === active.id ? { ...f, content: newMap } : f)),
       canUndoValue: active.history?.canUndo() ?? false,
       canRedoValue: active.history?.canRedo() ?? false,
     }));
@@ -465,9 +514,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       console.log('✅ Undo: Success, updating state');
       set(prev => ({
         ...prev,
-        openFiles: prev.openFiles.map(f =>
-          f.id === active.id ? { ...f, content: newMap } : f
-        ),
+        openFiles: prev.openFiles.map(f => (f.id === active.id ? { ...f, content: newMap } : f)),
         canUndoValue: active.history?.canUndo() ?? false,
         canRedoValue: active.history?.canRedo() ?? false,
       }));
@@ -491,9 +538,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       console.log('✅ Redo: Success, updating state');
       set(prev => ({
         ...prev,
-        openFiles: prev.openFiles.map(f =>
-          f.id === active.id ? { ...f, content: newMap } : f
-        ),
+        openFiles: prev.openFiles.map(f => (f.id === active.id ? { ...f, content: newMap } : f)),
         canUndoValue: active.history?.canUndo() ?? false,
         canRedoValue: active.history?.canRedo() ?? false,
       }));
@@ -513,7 +558,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     const copyNodeRecursive = (node: any): any => {
       const copied = { ...node };
       if (node.children && node.children.length > 0) {
-        copied.children = node.children.map((childId: string) => 
+        copied.children = node.children.map((childId: string) =>
           copyNodeRecursive(active.content.nodes[childId])
         );
       }
@@ -543,7 +588,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     };
 
     const newNode = createNewNodeId(state.copiedNode);
-    
+
     // FR: Ajouter le nœud au parent
     // EN: Add node to parent
     const parentNode = active.content.nodes[parentId];
@@ -610,7 +655,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
             return newTag;
           }
           // Si c'est un enfant de l'ancien tag (oldTag>something)
-          if (tag.startsWith(oldTag + '>')) {
+          if (tag.startsWith(`${oldTag}>`)) {
             return newTag + tag.substring(oldTag.length);
           }
           return tag;
@@ -619,7 +664,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
         // EN: Create a new node with updated tags
         updatedNodes[nodeId] = {
           ...node,
-          tags: updatedTags
+          tags: updatedTags,
         };
       }
     };
@@ -641,12 +686,12 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
               ...f,
               content: {
                 ...activeFile.content,
-                nodes: updatedNodes
+                nodes: updatedNodes,
               },
-              lastModified: new Date()
+              lastModified: new Date(),
             }
           : f
-      )
+      ),
     }));
   },
 
@@ -665,8 +710,8 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       ...activeFile.content.nodes,
       [nodeId]: {
         ...node,
-        tags: newTags
-      }
+        tags: newTags,
+      },
     };
 
     // FR: Mettre à jour le fichier actif avec les nouveaux nœuds
@@ -678,12 +723,12 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
               ...f,
               content: {
                 ...activeFile.content,
-                nodes: updatedNodes
+                nodes: updatedNodes,
               },
-              lastModified: new Date()
+              lastModified: new Date(),
             }
           : f
-      )
+      ),
     }));
   },
 }));

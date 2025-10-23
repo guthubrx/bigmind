@@ -12,10 +12,7 @@ import type { MindNode } from '@bigmind/core';
  * @param nodes - Dictionnaire de tous les nœuds
  * @returns Tableau des IDs de tous les descendants
  */
-export function getAllDescendants(
-  nodeId: string,
-  nodes: Record<string, MindNode>
-): string[] {
+export function getAllDescendants(nodeId: string, nodes: Record<string, MindNode>): string[] {
   const descendants: string[] = [];
   const node = nodes[nodeId];
   if (!node?.children) return descendants;
@@ -41,10 +38,7 @@ export function getAllDescendants(
  * @param nodes - Dictionnaire de tous les nœuds
  * @returns Nombre total de descendants
  */
-export function getTotalDescendantsCount(
-  nodeId: string,
-  nodes: Record<string, MindNode>
-): number {
+export function getTotalDescendantsCount(nodeId: string, nodes: Record<string, MindNode>): number {
   const node = nodes[nodeId];
   if (!node?.children || node.children.length === 0) return 0;
 
@@ -95,4 +89,3 @@ export function isDescendant(
   if (currentNode.parentId === ancestorId) return true;
   return isDescendant(currentNode.parentId, ancestorId, nodes);
 }
-

@@ -12,7 +12,7 @@ import {
   ChevronRight,
   MoreVertical,
   FileText,
-  Layers as LayersIcon
+  Layers as LayersIcon,
 } from 'lucide-react';
 import { useTagLayers } from '../hooks/useTagLayers';
 import { useOpenFiles } from '../hooks/useOpenFiles';
@@ -37,7 +37,7 @@ function TagLayersPanel() {
     hideAllLayers,
     initializeLayer,
     moveTagToParent,
-    addTagToGroupNodes
+    addTagToGroupNodes,
   } = useTagLayers();
 
   // FR: Menu contextuel pour l'opacité
@@ -62,7 +62,10 @@ function TagLayersPanel() {
   const [draggedTag, setDraggedTag] = useState<string | null>(null);
   const [dragOverTag, setDragOverTag] = useState<string | null>(null);
   const [draggedNode, setDraggedNode] = useState<string | null>(null);
-  const [dropPosition, setDropPosition] = useState<{ tag: string; position: 'before' | 'after' | 'inside' } | null>(null);
+  const [dropPosition, setDropPosition] = useState<{
+    tag: string;
+    position: 'before' | 'after' | 'inside';
+  } | null>(null);
 
   // FR: État pour forcer le recalcul de l'arborescence
   // EN: State to force tree recalculation
@@ -104,7 +107,7 @@ function TagLayersPanel() {
           for (const nodeTag of sortedTags) {
             // FR: Vérifier si ce tag n'est pas un parent d'un tag plus spécifique déjà trouvé
             // EN: Check if this tag is not a parent of a more specific tag already found
-            if (!mostSpecificTag || !mostSpecificTag.startsWith(nodeTag + '>')) {
+            if (!mostSpecificTag || !mostSpecificTag.startsWith(`${nodeTag}>`)) {
               mostSpecificTag = nodeTag;
               break;
             }
@@ -173,7 +176,7 @@ function TagLayersPanel() {
         rootTags: [],
         childrenMap: {},
         nodesByTag: {},
-        nodesWithoutTag: []
+        nodesWithoutTag: [],
       };
     }
 
@@ -212,7 +215,7 @@ function TagLayersPanel() {
         for (const tag of sortedTags) {
           // FR: Vérifier si ce tag n'est pas un parent d'un tag plus spécifique déjà trouvé
           // EN: Check if this tag is not a parent of a more specific tag already found
-          if (!mostSpecificTag || !mostSpecificTag.startsWith(tag + '>')) {
+          if (!mostSpecificTag || !mostSpecificTag.startsWith(`${tag}>`)) {
             mostSpecificTag = tag;
             break;
           }
@@ -284,7 +287,9 @@ function TagLayersPanel() {
         }
       });
 
-      console.log(`✅ Tag "${targetTag}" ajouté à ${nodesToUpdate.length} nœuds du groupe "${sourceTag}"`);
+      console.log(
+        `✅ Tag "${targetTag}" ajouté à ${nodesToUpdate.length} nœuds du groupe "${sourceTag}"`
+      );
     };
 
     // FR: Ajouter l'écouteur d'événement
@@ -320,7 +325,7 @@ function TagLayersPanel() {
         className={`node-item ${!isVisible ? 'hidden' : ''}`}
         style={{ paddingLeft: `${level * 20 + 28}px` }}
         draggable
-        onDragStart={(e) => {
+        onDragStart={e => {
           e.dataTransfer.effectAllowed = 'move';
           setDraggedNode(node.id);
         }}
@@ -335,11 +340,11 @@ function TagLayersPanel() {
         <button
           type="button"
           className="visibility-btn"
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation();
             toggleNodeVisibility(node.id);
           }}
-          title={isVisible ? "Masquer ce nœud" : "Afficher ce nœud"}
+          title={isVisible ? 'Masquer ce nœud' : 'Afficher ce nœud'}
           style={{ padding: 0, width: 16, height: 16 }}
         >
           {isVisible ? (
@@ -412,7 +417,7 @@ function TagLayersPanel() {
           for (const nodeTag of sortedTags) {
             // FR: Vérifier si ce tag n'est pas un parent d'un tag plus spécifique déjà trouvé
             // EN: Check if this tag is not a parent of a more specific tag already found
-            if (!mostSpecificTag || !mostSpecificTag.startsWith(nodeTag + '>')) {
+            if (!mostSpecificTag || !mostSpecificTag.startsWith(`${nodeTag}>`)) {
               mostSpecificTag = nodeTag;
               break;
             }
@@ -439,7 +444,7 @@ function TagLayersPanel() {
               height: '2px',
               background: '#3b82f6',
               boxShadow: '0 0 8px rgba(59, 130, 246, 0.5)',
-              margin: '1px 0'
+              margin: '1px 0',
             }}
           />
         )}
@@ -450,11 +455,11 @@ function TagLayersPanel() {
           draggable
           onClick={() => selectGroup(tag)}
           title="Cliquer pour sélectionner tous les nœuds de ce groupe"
-          onDragStart={(e) => {
+          onDragStart={e => {
             e.dataTransfer.effectAllowed = 'move';
             setDraggedTag(tag);
           }}
-          onDragOver={(e) => {
+          onDragOver={e => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
 
@@ -463,7 +468,7 @@ function TagLayersPanel() {
             if ((draggedTag && draggedTag !== tag) || draggedNode) {
               const rect = e.currentTarget.getBoundingClientRect();
               const y = e.clientY - rect.top;
-              const height = rect.height;
+              const { height } = rect;
 
               // FR: Déterminer la position de drop selon la position de la souris
               // EN: Determine drop position based on mouse position
@@ -484,7 +489,7 @@ function TagLayersPanel() {
             setDragOverTag(null);
             setDropPosition(null);
           }}
-          onDrop={(e) => {
+          onDrop={e => {
             e.preventDefault();
             e.stopPropagation();
 
@@ -507,7 +512,9 @@ function TagLayersPanel() {
                 initializeLayer(tag);
 
                 // FR: Afficher un message (optionnel)
-                console.log(`Nœud "${node.title}" déplacé de [${oldTags.join(', ')}] vers [${tag}]`);
+                console.log(
+                  `Nœud "${node.title}" déplacé de [${oldTags.join(', ')}] vers [${tag}]`
+                );
               }
             }
             // FR: Gérer le déplacement d'un tag vers un autre tag
@@ -534,7 +541,9 @@ function TagLayersPanel() {
                   return newExpanded;
                 });
 
-                console.log(`📁 Groupe "${draggedTag}" déplacé dans "${tag}" → hiérarchie visuelle créée`);
+                console.log(
+                  `📁 Groupe "${draggedTag}" déplacé dans "${tag}" → hiérarchie visuelle créée`
+                );
               } else {
                 // FR: Pour 'before' ou 'after', mettre au même niveau que le tag cible
                 // EN: For 'before' or 'after', put at the same level as target tag
@@ -568,7 +577,7 @@ function TagLayersPanel() {
             <button
               type="button"
               className="expand-btn"
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 toggleTagExpanded(tag);
               }}
@@ -588,15 +597,16 @@ function TagLayersPanel() {
           <button
             type="button"
             className="visibility-btn"
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
               toggleLayerVisibility(tag);
             }}
-            title={visualState.isVisible ?
-              "Masquer" :
-              visualState.isInherited ?
-                "Masqué par héritage (parent)" :
-                "Afficher"
+            title={
+              visualState.isVisible
+                ? 'Masquer'
+                : visualState.isInherited
+                  ? 'Masqué par héritage (parent)'
+                  : 'Afficher'
             }
           >
             {visualState.isVisible ? (
@@ -605,7 +615,7 @@ function TagLayersPanel() {
               <EyeOff
                 className="icon-small"
                 style={{
-                  opacity: visualState.isInherited ? 0.2 : 0.4
+                  opacity: visualState.isInherited ? 0.2 : 0.4,
                 }}
               />
             )}
@@ -620,7 +630,7 @@ function TagLayersPanel() {
               const input = document.createElement('input');
               input.type = 'color';
               input.value = layer.color;
-              input.onchange = (e) => {
+              input.onchange = e => {
                 setLayerColor(tag, (e.target as HTMLInputElement).value);
               };
               input.click();
@@ -640,21 +650,19 @@ function TagLayersPanel() {
 
           {/* FR: Compteur de nœuds totaux */}
           {/* EN: Total node counter */}
-          {totalNodeCount > 0 && (
-            <span className="node-count">{totalNodeCount}</span>
-          )}
+          {totalNodeCount > 0 && <span className="node-count">{totalNodeCount}</span>}
 
           {/* FR: Menu contextuel pour l'opacité */}
           {/* EN: Context menu for opacity */}
           <button
             type="button"
             className="more-btn"
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
               setContextMenu({
                 tag,
                 x: e.currentTarget.getBoundingClientRect().left,
-                y: e.currentTarget.getBoundingClientRect().bottom
+                y: e.currentTarget.getBoundingClientRect().bottom,
               });
             }}
             title="Plus d'options"
@@ -669,15 +677,11 @@ function TagLayersPanel() {
           <>
             {/* FR: D'abord les sous-tags */}
             {/* EN: Sub-tags first */}
-            {fullHierarchy.childrenMap[tag]?.map(childTag =>
-              renderTag(childTag, level + 1)
-            )}
+            {fullHierarchy.childrenMap[tag]?.map(childTag => renderTag(childTag, level + 1))}
 
             {/* FR: Puis les nœuds directs de ce tag */}
             {/* EN: Then direct nodes of this tag */}
-            {fullHierarchy.nodesByTag[tag]?.map(node =>
-              renderNode(node, level + 1)
-            )}
+            {fullHierarchy.nodesByTag[tag]?.map(node => renderNode(node, level + 1))}
           </>
         )}
 
@@ -691,7 +695,7 @@ function TagLayersPanel() {
               height: '2px',
               background: '#3b82f6',
               boxShadow: '0 0 8px rgba(59, 130, 246, 0.5)',
-              margin: '1px 0'
+              margin: '1px 0',
             }}
           />
         )}
@@ -712,7 +716,7 @@ function TagLayersPanel() {
         <div
           className={`layer-item background-layer ${dragOverTag === '__background__' ? 'drag-over' : ''}`}
           style={{ paddingLeft: '8px' }}
-          onDragOver={(e) => {
+          onDragOver={e => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
             if (draggedNode) {
@@ -722,7 +726,7 @@ function TagLayersPanel() {
           onDragLeave={() => {
             setDragOverTag(null);
           }}
-          onDrop={(e) => {
+          onDrop={e => {
             e.preventDefault();
             e.stopPropagation();
 
@@ -775,11 +779,7 @@ function TagLayersPanel() {
 
         {/* FR: Afficher les nœuds sans tag si étendu */}
         {/* EN: Show nodes without tags if expanded */}
-        {isExpanded && (
-          fullHierarchy.nodesWithoutTag.map(node =>
-            renderNode(node, 1)
-          )
-        )}
+        {isExpanded && fullHierarchy.nodesWithoutTag.map(node => renderNode(node, 1))}
       </div>
     );
   };
@@ -807,11 +807,11 @@ function TagLayersPanel() {
       {/* EN: Layers list */}
       <div
         className="layers-list"
-        onDragOver={(e) => {
+        onDragOver={e => {
           e.preventDefault();
           e.dataTransfer.dropEffect = 'move';
         }}
-        onDrop={(e) => {
+        onDrop={e => {
           e.preventDefault();
 
           if (draggedTag) {
@@ -826,8 +826,9 @@ function TagLayersPanel() {
 
           setDraggedTag(null);
           setDragOverTag(null);
-        }}>
-        {(allTags.length === 0 && fullHierarchy.nodesWithoutTag.length === 0) ? (
+        }}
+      >
+        {allTags.length === 0 && fullHierarchy.nodesWithoutTag.length === 0 ? (
           <div className="no-tags">
             <Tag size={24} />
             <p>Aucun élément dans la carte</p>
@@ -858,12 +859,7 @@ function TagLayersPanel() {
           >
             <Eye className="icon-small" />
           </button>
-          <button
-            type="button"
-            className="action-btn"
-            onClick={hideAllLayers}
-            title="Tout masquer"
-          >
+          <button type="button" className="action-btn" onClick={hideAllLayers} title="Tout masquer">
             <EyeOff className="icon-small" />
           </button>
         </div>
@@ -883,9 +879,9 @@ function TagLayersPanel() {
             border: '1px solid #e2e8f0',
             borderRadius: '6px',
             padding: '8px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
           }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         >
           <div style={{ fontSize: '12px', marginBottom: '8px', color: '#475569' }}>
             Transparence
@@ -896,7 +892,7 @@ function TagLayersPanel() {
               min="0"
               max="100"
               value={layers[contextMenu.tag].opacity * 100}
-              onChange={(e) => {
+              onChange={e => {
                 setLayerOpacity(contextMenu.tag, parseInt(e.target.value) / 100);
               }}
               style={{ width: '120px' }}

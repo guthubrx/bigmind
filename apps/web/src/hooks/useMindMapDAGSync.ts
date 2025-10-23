@@ -4,16 +4,20 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { useMindMapStore } from './useMindmap';
+import { useOpenFiles } from './useOpenFiles';
 import { useTagGraph } from './useTagGraph';
 import { useNodeTags } from './useNodeTags';
 import { eventBus } from '../utils/eventBus';
 
 export function useMindMapDAGSync() {
-  const mindMap = useMindMapStore();
+  const openFiles = useOpenFiles();
   const tagGraph = useTagGraph();
   const nodeTags = useNodeTags();
   const isSyncing = useRef(false);
+
+  // Obtenir le fichier actif et ses nœuds
+  const activeFile = openFiles.openFiles.find(f => f.isActive) || null;
+  const nodes = activeFile?.content?.nodes || {};
 
   // FR: Synchroniser les modifications de la MindMap vers le DAG
   // EN: Sync MindMap changes to DAG
@@ -23,7 +27,7 @@ export function useMindMapDAGSync() {
     const handleNodeUpdate = (nodeId: string) => {
       if (isSyncing.current) return;
 
-      const node = mindMap.nodes.find(n => n.id === nodeId);
+      const node = nodes[nodeId];
       if (!node) return;
 
       // FR: Si le nœud a des tags, les synchroniser
@@ -61,13 +65,13 @@ export function useMindMapDAGSync() {
     // FR: S'abonner aux événements de la MindMap
     // EN: Subscribe to MindMap events
     // Note: Ces événements doivent être émis par le composant MindMapCanvas
-    const unsubUpdate = eventBus.on('node:updated', (event) => {
+    const unsubUpdate = eventBus.on('node:updated', event => {
       if (event.source === 'mindmap') {
         handleNodeUpdate(event.payload.nodeId);
       }
     });
 
-    const unsubDelete = eventBus.on('node:deleted', (event) => {
+    const unsubDelete = eventBus.on('node:deleted', event => {
       if (event.source === 'mindmap') {
         handleNodeDelete(event.payload.nodeId);
       }
@@ -77,7 +81,7 @@ export function useMindMapDAGSync() {
       unsubUpdate();
       unsubDelete();
     };
-  }, [mindMap.nodes, nodeTags]);
+  }, [nodes, nodeTags]);
 
   // FR: Synchroniser les modifications du DAG vers la MindMap
   // EN: Sync DAG changes to MindMap
@@ -92,15 +96,15 @@ export function useMindMapDAGSync() {
 
       // FR: Mettre en surbrillance les nœuds dans la MindMap
       // EN: Highlight nodes in MindMap
-      mindMap.nodes.forEach(node => {
+      Object.values(nodes).forEach(node => {
         const isHighlighted = nodeIds.includes(node.id);
-        mindMap.updateNode(node.id, {
+        openFiles.updateActiveFileNode(node.id, {
           style: {
             ...node.style,
             opacity: isHighlighted ? 1 : 0.3,
             borderColor: isHighlighted ? '#3B82F6' : undefined,
             borderWidth: isHighlighted ? 2 : 1,
-          }
+          },
         });
       });
 
@@ -114,7 +118,7 @@ export function useMindMapDAGSync() {
     return () => {
       unsubNodeSelection();
     };
-  }, [mindMap]);
+  }, [nodes, openFiles]);
 
   // FR: Méthodes d'interaction
   // EN: Interaction methods
@@ -130,16 +134,11 @@ export function useMindMapDAGSync() {
     nodeTags.addNodeTag(nodeId, tagId);
 
     // Mettre à jour le nœud de la MindMap
-    const node = mindMap.nodes.find(n => n.id === nodeId);
+    const node = nodes[nodeId];
     if (node) {
-      const currentTags = (node.data?.tags as string[]) || [];
+      const currentTags = (node.tags as string[]) || [];
       if (!currentTags.includes(tagId)) {
-        mindMap.updateNode(nodeId, {
-          data: {
-            ...node.data,
-            tags: [...currentTags, tagId]
-          }
-        });
+        openFiles.updateNodeTags(nodeId, [...currentTags, tagId]);
       }
     }
 
@@ -152,34 +151,30 @@ export function useMindMapDAGSync() {
     nodeTags.removeNodeTag(nodeId, tagId);
 
     // Mettre à jour le nœud de la MindMap
-    const node = mindMap.nodes.find(n => n.id === nodeId);
+    const node = nodes[nodeId];
     if (node) {
-      const currentTags = (node.data?.tags as string[]) || [];
-      mindMap.updateNode(nodeId, {
-        data: {
-          ...node.data,
-          tags: currentTags.filter(t => t !== tagId)
-        }
-      });
+      const currentTags = (node.tags as string[]) || [];
+      openFiles.updateNodeTags(
+        nodeId,
+        currentTags.filter(t => t !== tagId)
+      );
     }
 
     // Émettre l'événement
     eventBus.emit('node:untagged', { nodeId, tagId }, 'mindmap');
   };
 
-  const getNodeTags = (nodeId: string) => {
-    return nodeTags.getNodeTags(nodeId).map(tagId => {
+  const getNodeTags = (nodeId: string) =>
+    nodeTags.getNodeTags(nodeId).map(tagId => {
       const tag = tagGraph.tags.find(t => t.id === tagId);
       return tag || { id: tagId, label: tagId };
     });
-  };
 
-  const getTaggedNodes = (tagId: string) => {
-    return nodeTags.getTagNodes(tagId).map(nodeId => {
-      const node = mindMap.nodes.find(n => n.id === nodeId);
-      return node;
-    }).filter(Boolean);
-  };
+  const getTaggedNodes = (tagId: string) =>
+    nodeTags
+      .getTagNodes(tagId)
+      .map(nodeId => nodes[nodeId])
+      .filter(Boolean);
 
   const highlightTaggedNodes = (tagId: string) => {
     const nodeIds = nodeTags.getTagNodes(tagId);
@@ -204,7 +199,7 @@ export function useMindMapDAGSync() {
 
     // État global
     tags: tagGraph.tags,
-    nodes: mindMap.nodes,
+    nodes: Object.values(nodes),
     tagUsage: nodeTags.getTagUsage(),
   };
 }

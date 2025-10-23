@@ -13,22 +13,22 @@ import {
   FolderOpen,
   Download,
   Settings,
-  HelpCircle
+  HelpCircle,
 } from 'lucide-react';
 import { useOpenFiles } from '../hooks/useOpenFiles';
 import { useSelection } from '../hooks/useSelection';
 import { shouldIgnoreShortcut } from '../utils/inputUtils';
 
 const Toolbar: React.FC = () => {
-  const activeFile = useOpenFiles((state) => state.openFiles.find(f => f.isActive));
-  const undo = useOpenFiles((state) => state.undo);
-  const redo = useOpenFiles((state) => state.redo);
-  const canUndoState = useOpenFiles((state) => state.canUndoValue);
-  const canRedoState = useOpenFiles((state) => state.canRedoValue);
-  const addChildToActive = useOpenFiles((state) => state.addChildToActive);
-  const removeNodeFromActive = useOpenFiles((state) => state.removeNodeFromActive);
-  const selectedNodeId = useSelection((state) => state.selectedNodeId);
-  const setSelectedNodeId = useSelection((state) => state.setSelectedNodeId);
+  const activeFile = useOpenFiles(state => state.openFiles.find(f => f.isActive));
+  const undo = useOpenFiles(state => state.undo);
+  const redo = useOpenFiles(state => state.redo);
+  const canUndoState = useOpenFiles(state => state.canUndoValue);
+  const canRedoState = useOpenFiles(state => state.canRedoValue);
+  const addChildToActive = useOpenFiles(state => state.addChildToActive);
+  const removeNodeFromActive = useOpenFiles(state => state.removeNodeFromActive);
+  const selectedNodeId = useSelection(state => state.selectedNodeId);
+  const setSelectedNodeId = useSelection(state => state.setSelectedNodeId);
 
   console.log('🔧 Toolbar render:', { canUndoState, canRedoState });
 
@@ -41,7 +41,7 @@ const Toolbar: React.FC = () => {
       if (shouldIgnoreShortcut(e)) {
         return;
       }
-      
+
       // FR: Ctrl/Cmd + Z pour annuler
       // EN: Ctrl/Cmd + Z to undo
       if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
@@ -186,9 +186,7 @@ const Toolbar: React.FC = () => {
       {/* FR: Section centrale - Titre de la carte */}
       {/* EN: Center section - Map title */}
       <div className="flex-1 text-center">
-        <h1 className="text-lg font-semibold text-foreground">
-          {activeFile?.name || 'BigMind'}
-        </h1>
+        <h1 className="text-lg font-semibold text-foreground">{activeFile?.name || 'BigMind'}</h1>
       </div>
 
       {/* FR: Section droite - Actions de fichier */}
@@ -230,19 +228,13 @@ const Toolbar: React.FC = () => {
 
         {/* FR: Bouton Paramètres */}
         {/* EN: Settings button */}
-        <button
-          className="action-button secondary"
-          title="Paramètres"
-        >
+        <button className="action-button secondary" title="Paramètres">
           <Settings className="w-4 h-4" />
         </button>
 
         {/* FR: Bouton Aide */}
         {/* EN: Help button */}
-        <button
-          className="action-button secondary"
-          title="Aide"
-        >
+        <button className="action-button secondary" title="Aide">
           <HelpCircle className="w-4 h-4" />
         </button>
       </div>

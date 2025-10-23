@@ -13,7 +13,7 @@ import {
   TagGraph,
   TagRelationType,
   TagDagState,
-  TagGraphOptions
+  TagGraphOptions,
 } from '../types/dag';
 import { eventBus } from '../utils/eventBus';
 import { useNodeTags, useNodeTagsStore } from './useNodeTags';
@@ -24,275 +24,265 @@ const useTagGraphStore = create<TagDagState>()(
   immer((set, get) => ({
     tags: [], // FR: Tags synchronisés avec la carte active uniquement
     links: [], // FR: Liens synchronisés avec la carte active uniquement
-      selectedTagId: null,
-      hoveredTagId: null,
-      graphView: 'list',
-      graphOptions: {
-        width: 800,
-        height: 600,
-        nodeRadius: 20,
-        linkDistance: 100,
-        chargeStrength: -300,
-        showLabels: true,
-        showRelationTypes: true,
-        enableDrag: true,
-        enableZoom: true,
-        enablePan: true,
-        hideSecondaryRelations: false,
-      },
+    selectedTagId: null,
+    hoveredTagId: null,
+    graphView: 'list',
+    graphOptions: {
+      width: 800,
+      height: 600,
+      nodeRadius: 20,
+      linkDistance: 100,
+      chargeStrength: -300,
+      showLabels: true,
+      showRelationTypes: true,
+      enableDrag: true,
+      enableZoom: true,
+      enablePan: true,
+      hideSecondaryRelations: false,
+    },
 
-      // FR: Ajouter un tag
-      // EN: Add a tag
-      addTag: (tag: DagTag) =>
-        set((draft) => {
-          // Vérifier l'unicité de l'ID
-          if (!draft.tags.find((t) => t.id === tag.id)) {
-            draft.tags.push(tag);
+    // FR: Ajouter un tag
+    // EN: Add a tag
+    addTag: (tag: DagTag) =>
+      set(draft => {
+        // Vérifier l'unicité de l'ID
+        if (!draft.tags.find(t => t.id === tag.id)) {
+          draft.tags.push(tag);
 
-            // Créer automatiquement les liens pour les parents
-            if (tag.parents) {
-              tag.parents.forEach((parentId) => {
-                const link: TagLink = {
+          // Créer automatiquement les liens pour les parents
+          if (tag.parents) {
+            tag.parents.forEach(parentId => {
+              const link: TagLink = {
+                source: parentId,
+                target: tag.id,
+                type: 'is-type-of',
+              };
+              if (!draft.links.find(l => l.source === link.source && l.target === link.target)) {
+                draft.links.push(link);
+              }
+            });
+          }
+        }
+      }),
+
+    // FR: Mettre à jour un tag
+    // EN: Update a tag
+    updateTag: (id: string, updates: Partial<DagTag>) =>
+      set(draft => {
+        const tagIndex = draft.tags.findIndex(t => t.id === id);
+        if (tagIndex !== -1) {
+          draft.tags[tagIndex] = { ...draft.tags[tagIndex], ...updates };
+        }
+      }),
+
+    // FR: Supprimer un tag
+    // EN: Delete a tag
+    deleteTag: (id: string) =>
+      set(draft => {
+        // Supprimer le tag
+        draft.tags = draft.tags.filter(t => t.id !== id);
+
+        // Supprimer tous les liens associés
+        draft.links = draft.links.filter(l => l.source !== id && l.target !== id);
+
+        // Nettoyer les références de parents dans les autres tags
+        draft.tags.forEach(tag => {
+          if (tag.parents) {
+            tag.parents = tag.parents.filter(p => p !== id);
+          }
+        });
+      }),
+
+    // FR: Ajouter un lien entre tags
+    // EN: Add a link between tags
+    addLink: (link: TagLink) =>
+      set(draft => {
+        // Vérifier que le lien n'existe pas déjà
+        const exists = draft.links.find(l => l.source === link.source && l.target === link.target);
+
+        if (!exists) {
+          // Vérifier qu'il n'y a pas de cycle
+          if (!get().checkCycle(link.source, link.target)) {
+            draft.links.push(link);
+
+            // Mettre à jour les parents du tag cible
+            const targetTag = draft.tags.find(t => t.id === link.target);
+            if (targetTag) {
+              if (!targetTag.parents) {
+                targetTag.parents = [];
+              }
+              if (!targetTag.parents.includes(link.source)) {
+                targetTag.parents.push(link.source);
+              }
+            }
+          } else {
+            // Cycle détecté: impossible d'ajouter le lien
+          }
+        }
+      }),
+
+    // FR: Supprimer un lien
+    // EN: Remove a link
+    removeLink: (source: string, target: string) =>
+      set(draft => {
+        draft.links = draft.links.filter(l => !(l.source === source && l.target === target));
+
+        // Mettre à jour les parents du tag cible
+        const targetTag = draft.tags.find(t => t.id === target);
+        if (targetTag && targetTag.parents) {
+          targetTag.parents = targetTag.parents.filter(p => p !== source);
+        }
+      }),
+
+    // FR: Sélectionner un tag
+    // EN: Select a tag
+    selectTag: (id: string | null) =>
+      set(draft => {
+        draft.selectedTagId = id;
+      }),
+
+    // FR: Survoler un tag
+    // EN: Hover a tag
+    hoverTag: (id: string | null) =>
+      set(draft => {
+        draft.hoveredTagId = id;
+      }),
+
+    // FR: Changer la vue
+    // EN: Change view
+    setGraphView: (view: 'list' | 'graph') =>
+      set(draft => {
+        draft.graphView = view;
+      }),
+
+    // FR: Mettre à jour les options du graphe
+    // EN: Update graph options
+    updateGraphOptions: (options: Partial<TagGraphOptions>) =>
+      set(draft => {
+        draft.graphOptions = { ...draft.graphOptions, ...options };
+      }),
+
+    // FR: Associer un tag à un nœud MindMap
+    // EN: Associate a tag to a MindMap node
+    associateTagToNode: (tagId: string, nodeId: string) =>
+      set(draft => {
+        const tag = draft.tags.find(t => t.id === tagId);
+        if (tag) {
+          if (!tag.nodeIds) {
+            tag.nodeIds = [];
+          }
+          if (!tag.nodeIds.includes(nodeId)) {
+            tag.nodeIds.push(nodeId);
+          }
+        }
+      }),
+
+    // FR: Dissocier un tag d'un nœud
+    // EN: Dissociate a tag from a node
+    dissociateTagFromNode: (tagId: string, nodeId: string) =>
+      set(draft => {
+        const tag = draft.tags.find(t => t.id === tagId);
+        if (tag && tag.nodeIds) {
+          tag.nodeIds = tag.nodeIds.filter(id => id !== nodeId);
+        }
+      }),
+
+    // FR: Importer des tags
+    // EN: Import tags
+    importTags: (graph: TagGraph) =>
+      set(draft => {
+        draft.tags = graph.tags;
+        draft.links = graph.links || [];
+
+        // Reconstruire les liens depuis les parents
+        draft.tags.forEach(tag => {
+          if (tag.parents) {
+            tag.parents.forEach(parentId => {
+              const linkExists = draft.links.find(
+                l => l.source === parentId && l.target === tag.id
+              );
+              if (!linkExists) {
+                draft.links.push({
                   source: parentId,
                   target: tag.id,
-                  type: 'is-type-of'
-                };
-                if (!draft.links.find(l =>
-                  l.source === link.source && l.target === link.target
-                )) {
-                  draft.links.push(link);
-                }
-              });
-            }
-          }
-        }),
-
-      // FR: Mettre à jour un tag
-      // EN: Update a tag
-      updateTag: (id: string, updates: Partial<DagTag>) =>
-        set((draft) => {
-          const tagIndex = draft.tags.findIndex((t) => t.id === id);
-          if (tagIndex !== -1) {
-            draft.tags[tagIndex] = { ...draft.tags[tagIndex], ...updates };
-          }
-        }),
-
-      // FR: Supprimer un tag
-      // EN: Delete a tag
-      deleteTag: (id: string) =>
-        set((draft) => {
-          // Supprimer le tag
-          draft.tags = draft.tags.filter((t) => t.id !== id);
-
-          // Supprimer tous les liens associés
-          draft.links = draft.links.filter(
-            (l) => l.source !== id && l.target !== id
-          );
-
-          // Nettoyer les références de parents dans les autres tags
-          draft.tags.forEach((tag) => {
-            if (tag.parents) {
-              tag.parents = tag.parents.filter((p) => p !== id);
-            }
-          });
-        }),
-
-      // FR: Ajouter un lien entre tags
-      // EN: Add a link between tags
-      addLink: (link: TagLink) =>
-        set((draft) => {
-          // Vérifier que le lien n'existe pas déjà
-          const exists = draft.links.find(
-            (l) => l.source === link.source && l.target === link.target
-          );
-
-          if (!exists) {
-            // Vérifier qu'il n'y a pas de cycle
-            if (!get().checkCycle(link.source, link.target)) {
-              draft.links.push(link);
-
-              // Mettre à jour les parents du tag cible
-              const targetTag = draft.tags.find((t) => t.id === link.target);
-              if (targetTag) {
-                if (!targetTag.parents) {
-                  targetTag.parents = [];
-                }
-                if (!targetTag.parents.includes(link.source)) {
-                  targetTag.parents.push(link.source);
-                }
+                  type: 'is-type-of',
+                });
               }
-            } else {
-              // Cycle détecté: impossible d'ajouter le lien
-            }
+            });
           }
-        }),
+        });
+      }),
 
-      // FR: Supprimer un lien
-      // EN: Remove a link
-      removeLink: (source: string, target: string) =>
-        set((draft) => {
-          draft.links = draft.links.filter(
-            (l) => !(l.source === source && l.target === target)
-          );
+    // FR: Exporter les tags
+    // EN: Export tags
+    exportTags: (): TagGraph => {
+      const state = get();
+      return {
+        tags: state.tags,
+        links: state.links,
+      };
+    },
 
-          // Mettre à jour les parents du tag cible
-          const targetTag = draft.tags.find((t) => t.id === target);
-          if (targetTag && targetTag.parents) {
-            targetTag.parents = targetTag.parents.filter((p) => p !== source);
-          }
-        }),
+    // FR: Effacer tous les tags
+    // EN: Clear all tags
+    clearTags: () =>
+      set(draft => {
+        draft.tags = [];
+        draft.links = [];
+        draft.selectedTagId = null;
+        draft.hoveredTagId = null;
+      }),
 
-      // FR: Sélectionner un tag
-      // EN: Select a tag
-      selectTag: (id: string | null) =>
-        set((draft) => {
-          draft.selectedTagId = id;
-        }),
+    // FR: Vérifier la présence de cycles
+    // EN: Check for cycles
+    checkCycle: (source: string, target: string): boolean => {
+      const state = get();
 
-      // FR: Survoler un tag
-      // EN: Hover a tag
-      hoverTag: (id: string | null) =>
-        set((draft) => {
-          draft.hoveredTagId = id;
-        }),
+      // FR: Parcours en profondeur pour détecter les cycles
+      // EN: Depth-first search to detect cycles
+      const visited = new Set<string>();
+      const recStack = new Set<string>();
 
-      // FR: Changer la vue
-      // EN: Change view
-      setGraphView: (view: 'list' | 'graph') =>
-        set((draft) => {
-          draft.graphView = view;
-        }),
+      const hasCycleDFS = (nodeId: string): boolean => {
+        visited.add(nodeId);
+        recStack.add(nodeId);
 
-      // FR: Mettre à jour les options du graphe
-      // EN: Update graph options
-      updateGraphOptions: (options: Partial<TagGraphOptions>) =>
-        set((draft) => {
-          draft.graphOptions = { ...draft.graphOptions, ...options };
-        }),
+        // Trouver tous les enfants du nœud
+        const children = state.links.filter(l => l.source === nodeId).map(l => l.target);
 
-      // FR: Associer un tag à un nœud MindMap
-      // EN: Associate a tag to a MindMap node
-      associateTagToNode: (tagId: string, nodeId: string) =>
-        set((draft) => {
-          const tag = draft.tags.find((t) => t.id === tagId);
-          if (tag) {
-            if (!tag.nodeIds) {
-              tag.nodeIds = [];
-            }
-            if (!tag.nodeIds.includes(nodeId)) {
-              tag.nodeIds.push(nodeId);
-            }
-          }
-        }),
+        // Si on ajoute le nouveau lien, ajouter aussi cette connexion
+        if (nodeId === source) {
+          children.push(target);
+        }
 
-      // FR: Dissocier un tag d'un nœud
-      // EN: Dissociate a tag from a node
-      dissociateTagFromNode: (tagId: string, nodeId: string) =>
-        set((draft) => {
-          const tag = draft.tags.find((t) => t.id === tagId);
-          if (tag && tag.nodeIds) {
-            tag.nodeIds = tag.nodeIds.filter((id) => id !== nodeId);
-          }
-        }),
-
-      // FR: Importer des tags
-      // EN: Import tags
-      importTags: (graph: TagGraph) =>
-        set((draft) => {
-          draft.tags = graph.tags;
-          draft.links = graph.links || [];
-
-          // Reconstruire les liens depuis les parents
-          draft.tags.forEach((tag) => {
-            if (tag.parents) {
-              tag.parents.forEach((parentId) => {
-                const linkExists = draft.links.find(
-                  (l) => l.source === parentId && l.target === tag.id
-                );
-                if (!linkExists) {
-                  draft.links.push({
-                    source: parentId,
-                    target: tag.id,
-                    type: 'is-type-of'
-                  });
-                }
-              });
-            }
-          });
-        }),
-
-      // FR: Exporter les tags
-      // EN: Export tags
-      exportTags: (): TagGraph => {
-        const state = get();
-        return {
-          tags: state.tags,
-          links: state.links
-        };
-      },
-
-      // FR: Effacer tous les tags
-      // EN: Clear all tags
-      clearTags: () =>
-        set((draft) => {
-          draft.tags = [];
-          draft.links = [];
-          draft.selectedTagId = null;
-          draft.hoveredTagId = null;
-        }),
-
-      // FR: Vérifier la présence de cycles
-      // EN: Check for cycles
-      checkCycle: (source: string, target: string): boolean => {
-        const state = get();
-
-        // FR: Parcours en profondeur pour détecter les cycles
-        // EN: Depth-first search to detect cycles
-        const visited = new Set<string>();
-        const recStack = new Set<string>();
-
-        const hasCycleDFS = (nodeId: string): boolean => {
-          visited.add(nodeId);
-          recStack.add(nodeId);
-
-          // Trouver tous les enfants du nœud
-          const children = state.links
-            .filter((l) => l.source === nodeId)
-            .map((l) => l.target);
-
-          // Si on ajoute le nouveau lien, ajouter aussi cette connexion
-          if (nodeId === source) {
-            children.push(target);
-          }
-
-          // eslint-disable-next-line no-restricted-syntax
-          for (const child of children) {
-            if (!visited.has(child)) {
-              if (hasCycleDFS(child)) {
-                return true;
-              }
-            } else if (recStack.has(child)) {
-              return true;
-            }
-          }
-
-          recStack.delete(nodeId);
-          return false;
-        };
-
-        // Vérifier depuis tous les nœuds non visités
         // eslint-disable-next-line no-restricted-syntax
-        for (const tag of state.tags) {
-          if (!visited.has(tag.id)) {
-            if (hasCycleDFS(tag.id)) {
+        for (const child of children) {
+          if (!visited.has(child)) {
+            if (hasCycleDFS(child)) {
               return true;
             }
+          } else if (recStack.has(child)) {
+            return true;
           }
         }
 
+        recStack.delete(nodeId);
         return false;
-      },
-    }))
+      };
+
+      // Vérifier depuis tous les nœuds non visités
+      // eslint-disable-next-line no-restricted-syntax
+      for (const tag of state.tags) {
+        if (!visited.has(tag.id)) {
+          if (hasCycleDFS(tag.id)) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    },
+  }))
 );
 
 /**
@@ -310,7 +300,7 @@ export function useTagGraph() {
 
     // FR: Écouter les événements de la MindMap
     // EN: Listen to MindMap events
-    const unsubNodeTagged = eventBus.on('node:tagged', (event) => {
+    const unsubNodeTagged = eventBus.on('node:tagged', event => {
       console.log('🎯 useTagGraph: Event node:tagged reçu', event);
       if (event.source === 'mindmap' || event.source === 'system') {
         const { nodeId, tagId } = event.payload;
@@ -332,7 +322,7 @@ export function useTagGraph() {
             id: tagId,
             label: tagId.charAt(0).toUpperCase() + tagId.slice(1), // Capitaliser
             visible: true,
-            nodeIds: [nodeId]
+            nodeIds: [nodeId],
           });
         } else {
           // Associer le tag existant au nœud
@@ -341,14 +331,14 @@ export function useTagGraph() {
         }
 
         // Mettre à jour les associations nœud-tag
-        console.log('🔗 Ajout de l\'association nœud-tag');
+        console.log("🔗 Ajout de l'association nœud-tag");
         nodeTagsState.addNodeTag(nodeId, tagId);
       } else {
         console.log('🎯 Event ignoré - source:', event.source);
       }
     });
 
-    const unsubNodeUntagged = eventBus.on('node:untagged', (event) => {
+    const unsubNodeUntagged = eventBus.on('node:untagged', event => {
       if (event.source === 'mindmap') {
         const { nodeId, tagId } = event.payload;
         // FR: Accéder directement aux stores
@@ -363,14 +353,14 @@ export function useTagGraph() {
 
     // FR: Écouter les événements du DAG
     // EN: Listen to DAG events
-    const unsubTagAdded = eventBus.on('tag:added', (event) => {
+    const unsubTagAdded = eventBus.on('tag:added', event => {
       if (event.source === 'dag') {
         // La MindMap peut réagir si nécessaire
         console.log('Tag ajouté depuis le DAG:', event.payload);
       }
     });
 
-    const unsubTagRemoved = eventBus.on('tag:removed', (event) => {
+    const unsubTagRemoved = eventBus.on('tag:removed', event => {
       if (event.source === 'dag') {
         const { tagId } = event.payload;
         // Retirer le tag de tous les nœuds
@@ -379,7 +369,7 @@ export function useTagGraph() {
       }
     });
 
-    const unsubTagSelected = eventBus.on('tag:selected', (event) => {
+    const unsubTagSelected = eventBus.on('tag:selected', event => {
       if (event.source === 'dag') {
         const { tagId } = event.payload;
         // Mettre en surbrillance les nœuds associés dans la MindMap
@@ -425,11 +415,9 @@ export function useTagGraph() {
       if (visited.has(id)) return;
       visited.add(id);
 
-      const parents = state.links
-        .filter((l) => l.target === id)
-        .map((l) => l.source);
+      const parents = state.links.filter(l => l.target === id).map(l => l.source);
 
-      parents.forEach((parentId) => {
+      parents.forEach(parentId => {
         ancestors.push(parentId);
         findAncestors(parentId);
       });
@@ -449,11 +437,9 @@ export function useTagGraph() {
       if (visited.has(id)) return;
       visited.add(id);
 
-      const children = state.links
-        .filter((l) => l.source === id)
-        .map((l) => l.target);
+      const children = state.links.filter(l => l.source === id).map(l => l.target);
 
-      children.forEach((childId) => {
+      children.forEach(childId => {
         descendants.push(childId);
         findDescendants(childId);
       });
@@ -465,15 +451,14 @@ export function useTagGraph() {
 
   // FR: Obtenir les tags racines (sans parents)
   // EN: Get root tags (without parents)
-  const getRootTags = (): DagTag[] => {
-    return state.tags.filter((tag) => !tag.parents || tag.parents.length === 0);
-  };
+  const getRootTags = (): DagTag[] =>
+    state.tags.filter(tag => !tag.parents || tag.parents.length === 0);
 
   // FR: Obtenir les tags feuilles (sans enfants)
   // EN: Get leaf tags (without children)
   const getLeafTags = (): DagTag[] => {
-    const hasChildren = new Set(state.links.map((l) => l.source));
-    return state.tags.filter((tag) => !hasChildren.has(tag.id));
+    const hasChildren = new Set(state.links.map(l => l.source));
+    return state.tags.filter(tag => !hasChildren.has(tag.id));
   };
 
   // FR: Créer une relation entre deux tags
@@ -515,7 +500,7 @@ export function useTagGraph() {
     return {
       tags: state.tags,
       links: state.links,
-      usage
+      usage,
     };
   };
 
@@ -549,13 +534,13 @@ export function useTagGraph() {
     console.log('🔄 syncFromMindMap: Tags uniques trouvés:', Array.from(uniqueTags));
 
     // Créer un tag DAG pour chaque tag unique
-    uniqueTags.forEach((tagId) => {
+    uniqueTags.forEach(tagId => {
       console.log('🔄 syncFromMindMap: Création du tag:', tagId);
       state.addTag({
         id: tagId,
         label: tagId.charAt(0).toUpperCase() + tagId.slice(1),
         visible: true,
-        nodeIds: []
+        nodeIds: [],
       });
     });
 

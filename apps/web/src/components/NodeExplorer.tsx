@@ -139,9 +139,7 @@ function NodeExplorer() {
 
     // Vérifier si un descendant correspond
     const hasMatchingDescendant =
-      node.children?.some((childId: string) =>
-        nodeMatchesSearch(childId, search),
-      ) || false;
+      node.children?.some((childId: string) => nodeMatchesSearch(childId, search)) || false;
 
     return titleMatches || hasMatchingDescendant;
   };
@@ -251,10 +249,10 @@ function NodeExplorer() {
         {/* EN: Node children */}
         {hasChildren && isExpanded && (
           <div className="node-children">
-            {node.children.map((childId: string) => {
+            {node.children.map((childId: string) =>
               // Rendering child node
-              return renderNode(childId, level + 1);
-            })}
+              renderNode(childId, level + 1)
+            )}
           </div>
         )}
       </div>
@@ -314,8 +312,7 @@ function NodeExplorer() {
 
                   if (node.children) {
                     count += node.children.reduce(
-                      (sum: number, childId: string) =>
-                        sum + countVisibleNodes(childId),
+                      (sum: number, childId: string) => sum + countVisibleNodes(childId),
                       0
                     );
                   }

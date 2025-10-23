@@ -13,7 +13,7 @@ import {
   GitBranch,
   Tag,
   Plus,
-  Minus
+  Minus,
 } from 'lucide-react';
 
 interface NodeContextMenuProps {
@@ -59,7 +59,7 @@ function NodeContextMenu({
   nodeTags = [],
   allTags = [],
   onAddTag,
-  onRemoveTag
+  onRemoveTag,
 }: NodeContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [newTagInput, setNewTagInput] = useState('');
@@ -155,7 +155,7 @@ function NodeContextMenu({
         boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
         padding: 4,
         minWidth: 200,
-        fontSize: 14
+        fontSize: 14,
       }}
     >
       {/* FR: Replier/Déplier le nœud */}
@@ -176,22 +176,18 @@ function NodeContextMenu({
           borderRadius: 4,
           textAlign: 'left',
           fontSize: 14,
-          color: hasChildren ? '#374151' : '#9ca3af'
+          color: hasChildren ? '#374151' : '#9ca3af',
         }}
-        onMouseEnter={(e) => {
+        onMouseEnter={e => {
           if (hasChildren) {
             e.currentTarget.style.background = '#f3f4f6';
           }
         }}
-        onMouseLeave={(e) => {
+        onMouseLeave={e => {
           e.currentTarget.style.background = 'transparent';
         }}
       >
-        {isCollapsed ? (
-          <ChevronDown size={16} />
-        ) : (
-          <ChevronUp size={16} />
-        )}
+        {isCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
         {isCollapsed ? 'Déplier' : 'Replier'}
       </button>
 
@@ -213,14 +209,14 @@ function NodeContextMenu({
           borderRadius: 4,
           textAlign: 'left',
           fontSize: 14,
-          color: hasChildren ? '#374151' : '#9ca3af'
+          color: hasChildren ? '#374151' : '#9ca3af',
         }}
-        onMouseEnter={(e) => {
+        onMouseEnter={e => {
           if (hasChildren) {
             e.currentTarget.style.background = '#f3f4f6';
           }
         }}
-        onMouseLeave={(e) => {
+        onMouseLeave={e => {
           e.currentTarget.style.background = 'transparent';
         }}
       >
@@ -245,12 +241,12 @@ function NodeContextMenu({
           borderRadius: 4,
           textAlign: 'left',
           fontSize: 14,
-          color: '#374151'
+          color: '#374151',
         }}
-        onMouseEnter={(e) => {
+        onMouseEnter={e => {
           e.currentTarget.style.background = '#f3f4f6';
         }}
-        onMouseLeave={(e) => {
+        onMouseLeave={e => {
           e.currentTarget.style.background = 'transparent';
         }}
       >
@@ -260,11 +256,13 @@ function NodeContextMenu({
 
       {/* FR: Séparateur */}
       {/* EN: Separator */}
-      <div style={{
-        height: 1,
-        background: '#e2e8f0',
-        margin: '4px 0'
-      }} />
+      <div
+        style={{
+          height: 1,
+          background: '#e2e8f0',
+          margin: '4px 0',
+        }}
+      />
 
       {/* FR: Déplier le nœud */}
       {/* EN: Expand node */}
@@ -284,14 +282,14 @@ function NodeContextMenu({
           borderRadius: 4,
           textAlign: 'left',
           fontSize: 14,
-          color: hasChildren ? '#374151' : '#9ca3af'
+          color: hasChildren ? '#374151' : '#9ca3af',
         }}
-        onMouseEnter={(e) => {
+        onMouseEnter={e => {
           if (hasChildren) {
             e.currentTarget.style.background = '#f3f4f6';
           }
         }}
-        onMouseLeave={(e) => {
+        onMouseLeave={e => {
           e.currentTarget.style.background = 'transparent';
         }}
       >
@@ -317,14 +315,14 @@ function NodeContextMenu({
           borderRadius: 4,
           textAlign: 'left',
           fontSize: 14,
-          color: hasChildren ? '#374151' : '#9ca3af'
+          color: hasChildren ? '#374151' : '#9ca3af',
         }}
-        onMouseEnter={(e) => {
+        onMouseEnter={e => {
           if (hasChildren) {
             e.currentTarget.style.background = '#f3f4f6';
           }
         }}
-        onMouseLeave={(e) => {
+        onMouseLeave={e => {
           e.currentTarget.style.background = 'transparent';
         }}
       >
@@ -349,12 +347,12 @@ function NodeContextMenu({
           borderRadius: 4,
           textAlign: 'left',
           fontSize: 14,
-          color: '#374151'
+          color: '#374151',
         }}
-        onMouseEnter={(e) => {
+        onMouseEnter={e => {
           e.currentTarget.style.background = '#f3f4f6';
         }}
-        onMouseLeave={(e) => {
+        onMouseLeave={e => {
           e.currentTarget.style.background = 'transparent';
         }}
       >
@@ -364,11 +362,13 @@ function NodeContextMenu({
 
       {/* FR: Séparateur */}
       {/* EN: Separator */}
-      <div style={{
-        height: 1,
-        background: '#e2e8f0',
-        margin: '4px 0'
-      }} />
+      <div
+        style={{
+          height: 1,
+          background: '#e2e8f0',
+          margin: '4px 0',
+        }}
+      />
 
       {/* FR: Copier */}
       {/* EN: Copy */}
@@ -387,12 +387,12 @@ function NodeContextMenu({
           borderRadius: 4,
           textAlign: 'left',
           fontSize: 14,
-          color: '#374151'
+          color: '#374151',
         }}
-        onMouseEnter={(e) => {
+        onMouseEnter={e => {
           e.currentTarget.style.background = '#f3f4f6';
         }}
-        onMouseLeave={(e) => {
+        onMouseLeave={e => {
           e.currentTarget.style.background = 'transparent';
         }}
       >
@@ -418,14 +418,14 @@ function NodeContextMenu({
           borderRadius: 4,
           textAlign: 'left',
           fontSize: 14,
-          color: canPaste ? '#374151' : '#9ca3af'
+          color: canPaste ? '#374151' : '#9ca3af',
         }}
-        onMouseEnter={(e) => {
+        onMouseEnter={e => {
           if (canPaste) {
             e.currentTarget.style.background = '#f3f4f6';
           }
         }}
-        onMouseLeave={(e) => {
+        onMouseLeave={e => {
           e.currentTarget.style.background = 'transparent';
         }}
       >
@@ -435,22 +435,26 @@ function NodeContextMenu({
 
       {/* FR: Séparateur */}
       {/* EN: Separator */}
-      <div style={{
-        height: 1,
-        background: '#e2e8f0',
-        margin: '4px 0'
-      }} />
+      <div
+        style={{
+          height: 1,
+          background: '#e2e8f0',
+          margin: '4px 0',
+        }}
+      />
 
       {/* FR: Gestion des tags */}
       {/* EN: Tag management */}
-      <div style={{
-        padding: '8px 12px',
-        fontSize: 12,
-        fontWeight: 600,
-        color: '#64748b',
-        borderBottom: '1px solid #f1f5f9',
-        marginBottom: 4
-      }}>
+      <div
+        style={{
+          padding: '8px 12px',
+          fontSize: 12,
+          fontWeight: 600,
+          color: '#64748b',
+          borderBottom: '1px solid #f1f5f9',
+          marginBottom: 4,
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Tag size={14} />
           Tags
@@ -461,12 +465,14 @@ function NodeContextMenu({
       {/* EN: Current node tags */}
       {nodeTags.length > 0 && (
         <>
-          <div style={{
-            padding: '4px 12px',
-            fontSize: 11,
-            color: '#64748b',
-            fontWeight: 500
-          }}>
+          <div
+            style={{
+              padding: '4px 12px',
+              fontSize: 11,
+              color: '#64748b',
+              fontWeight: 500,
+            }}
+          >
             Tags actuels:
           </div>
           {nodeTags.map(tag => (
@@ -487,12 +493,12 @@ function NodeContextMenu({
                 borderRadius: 4,
                 textAlign: 'left',
                 fontSize: 13,
-                color: '#374151'
+                color: '#374151',
               }}
-              onMouseEnter={(e) => {
+              onMouseEnter={e => {
                 e.currentTarget.style.background = '#fef2f2';
               }}
-              onMouseLeave={(e) => {
+              onMouseLeave={e => {
                 e.currentTarget.style.background = 'transparent';
               }}
             >
@@ -510,13 +516,15 @@ function NodeContextMenu({
       {/* EN: Add an existing tag */}
       {allTags.length > 0 && allTags.filter(tag => !nodeTags.includes(tag)).length > 0 && (
         <>
-          <div style={{
-            padding: '4px 12px',
-            fontSize: 11,
-            color: '#64748b',
-            fontWeight: 500,
-            marginTop: nodeTags.length > 0 ? 8 : 0
-          }}>
+          <div
+            style={{
+              padding: '4px 12px',
+              fontSize: 11,
+              color: '#64748b',
+              fontWeight: 500,
+              marginTop: nodeTags.length > 0 ? 8 : 0,
+            }}
+          >
             Ajouter un tag:
           </div>
           {allTags
@@ -539,12 +547,12 @@ function NodeContextMenu({
                   borderRadius: 4,
                   textAlign: 'left',
                   fontSize: 13,
-                  color: '#374151'
+                  color: '#374151',
                 }}
-                onMouseEnter={(e) => {
+                onMouseEnter={e => {
                   e.currentTarget.style.background = '#f0f9ff';
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={e => {
                   e.currentTarget.style.background = 'transparent';
                 }}
               >
@@ -560,25 +568,29 @@ function NodeContextMenu({
 
       {/* FR: Champ de saisie pour créer un nouveau tag (toujours visible) */}
       {/* EN: Input field to create a new tag (always visible) */}
-      <div style={{
-        padding: '4px 12px',
-        fontSize: 11,
-        color: '#64748b',
-        fontWeight: 500,
-        marginTop: (nodeTags.length > 0 || allTags.length > 0) ? 8 : 0
-      }}>
+      <div
+        style={{
+          padding: '4px 12px',
+          fontSize: 11,
+          color: '#64748b',
+          fontWeight: 500,
+          marginTop: nodeTags.length > 0 || allTags.length > 0 ? 8 : 0,
+        }}
+      >
         {allTags.length === 0 ? 'Ajouter un tag:' : 'Créer un nouveau tag:'}
       </div>
-      <div style={{
-        display: 'flex',
-        gap: 4,
-        padding: '0 8px 8px 8px'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: 4,
+          padding: '0 8px 8px 8px',
+        }}
+      >
         <input
           type="text"
           value={newTagInput}
-          onChange={(e) => setNewTagInput(e.target.value)}
-          onKeyDown={(e) => {
+          onChange={e => setNewTagInput(e.target.value)}
+          onKeyDown={e => {
             if (e.key === 'Enter' && newTagInput.trim()) {
               handleAddTag(newTagInput.trim());
               setNewTagInput('');
@@ -593,12 +605,12 @@ function NodeContextMenu({
             border: '1px solid #e2e8f0',
             borderRadius: 4,
             fontSize: 13,
-            outline: 'none'
+            outline: 'none',
           }}
-          onFocus={(e) => {
+          onFocus={e => {
             e.currentTarget.style.borderColor = '#0ea5e9';
           }}
-          onBlur={(e) => {
+          onBlur={e => {
             e.currentTarget.style.borderColor = '#e2e8f0';
           }}
         />
@@ -622,7 +634,7 @@ function NodeContextMenu({
             fontWeight: 500,
             display: 'flex',
             alignItems: 'center',
-            gap: 4
+            gap: 4,
           }}
         >
           <Plus size={14} />

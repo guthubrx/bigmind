@@ -68,25 +68,28 @@ const LayoutColumn: React.FC<LayoutColumnProps> = React.memo(
     // Zone de tolérance en pixels autour de la bordure
     const TOLERANCE = 15;
 
-    const handleMouseMove = React.useCallback((e: React.MouseEvent) => {
-      if (isCollapsed || !showResizeHandle) return;
+    const handleMouseMove = React.useCallback(
+      (e: React.MouseEvent) => {
+        if (isCollapsed || !showResizeHandle) return;
 
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const columnWidth = rect.width;
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const columnWidth = rect.width;
 
-      // Vérifier si on est proche de la bordure (à l'intérieur de la colonne)
-      const nearLeft = x <= TOLERANCE && resizeHandlePosition === 'left';
-      const nearRight = x >= columnWidth - TOLERANCE && resizeHandlePosition === 'right';
+        // Vérifier si on est proche de la bordure (à l'intérieur de la colonne)
+        const nearLeft = x <= TOLERANCE && resizeHandlePosition === 'left';
+        const nearRight = x >= columnWidth - TOLERANCE && resizeHandlePosition === 'right';
 
-      if (nearLeft || nearRight) {
-        setIsNearBorder(true);
-        setBorderSide(nearLeft ? 'left' : 'right');
-      } else {
-        setIsNearBorder(false);
-        setBorderSide(null);
-      }
-    }, [isCollapsed, showResizeHandle, resizeHandlePosition, TOLERANCE]);
+        if (nearLeft || nearRight) {
+          setIsNearBorder(true);
+          setBorderSide(nearLeft ? 'left' : 'right');
+        } else {
+          setIsNearBorder(false);
+          setBorderSide(null);
+        }
+      },
+      [isCollapsed, showResizeHandle, resizeHandlePosition, TOLERANCE]
+    );
 
     const handleMouseLeave = React.useCallback(() => {
       setIsNearBorder(false);
@@ -114,7 +117,7 @@ const LayoutColumn: React.FC<LayoutColumnProps> = React.memo(
                 bottom: 0,
                 width: '15px',
                 zIndex: 45,
-                cursor: 'col-resize'
+                cursor: 'col-resize',
               }}
             />
           )}
@@ -133,7 +136,7 @@ const LayoutColumn: React.FC<LayoutColumnProps> = React.memo(
                 bottom: 0,
                 width: '15px',
                 zIndex: 45,
-                cursor: 'col-resize'
+                cursor: 'col-resize',
               }}
             />
           )}
@@ -167,7 +170,12 @@ const LayoutColumn: React.FC<LayoutColumnProps> = React.memo(
       >
         {renderBorderZones()}
         {showResizeHandle && resizeHandlePosition === 'left' && !isCollapsed && onResize && (
-          <ResizeHandle onMouseDown={onResize} isDragging={isResizing} isHovered={isNearBorder && borderSide === 'left'} position="left" />
+          <ResizeHandle
+            onMouseDown={onResize}
+            isDragging={isResizing}
+            isHovered={isNearBorder && borderSide === 'left'}
+            position="left"
+          />
         )}
 
         <div className="column-header">
@@ -191,7 +199,12 @@ const LayoutColumn: React.FC<LayoutColumnProps> = React.memo(
         )}
 
         {showResizeHandle && resizeHandlePosition === 'right' && !isCollapsed && onResize && (
-          <ResizeHandle onMouseDown={onResize} isDragging={isResizing} isHovered={isNearBorder && borderSide === 'right'} position="right" />
+          <ResizeHandle
+            onMouseDown={onResize}
+            isDragging={isResizing}
+            isHovered={isNearBorder && borderSide === 'right'}
+            position="right"
+          />
         )}
       </div>
     );
@@ -202,7 +215,8 @@ LayoutColumn.displayName = 'LayoutColumn';
 
 const MainLayout: React.FC = React.memo(() => {
   const { toggleColumn, isCollapsed } = useColumnCollapse();
-  const { columnSizes, isDragging, startResize, COLUMN_SIZE_LIMITS, borderThickness } = useColumnResize();
+  const { columnSizes, isDragging, startResize, COLUMN_SIZE_LIMITS, borderThickness } =
+    useColumnResize();
 
   const handleToggleColumn = React.useCallback(
     (columnKey: ColumnKey) => {

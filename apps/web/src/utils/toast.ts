@@ -86,9 +86,6 @@ export function showToast({ message, type = 'info', duration = 3000 }: ToastOpti
 export const toast = {
   success: (message: string, duration?: number) =>
     showToast({ message, type: 'success', duration }),
-  error: (message: string, duration?: number) =>
-    showToast({ message, type: 'error', duration }),
-  info: (message: string, duration?: number) =>
-    showToast({ message, type: 'info', duration }),
+  error: (message: string, duration?: number) => showToast({ message, type: 'error', duration }),
+  info: (message: string, duration?: number) => showToast({ message, type: 'info', duration }),
 };
-

@@ -89,13 +89,14 @@ function MenuBar({ isSettingsPage = false, onBack }: MenuBarProps) {
 
   // FR: Nettoyer le timeout au démontage du composant
   // EN: Clean up timeout on component unmount
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       if (menuTimeout) {
         clearTimeout(menuTimeout);
       }
-    };
-  }, [menuTimeout]);
+    },
+    [menuTimeout]
+  );
 
   // FR: Gestionnaire pour les actions de menu
   // EN: Handler for menu actions
@@ -136,8 +137,7 @@ function MenuBar({ isSettingsPage = false, onBack }: MenuBarProps) {
             await exportActiveXMind();
             // console.warn('File saved');
           } catch (error) {
-            const message =
-              error instanceof Error ? error.message : String(error);
+            const message = error instanceof Error ? error.message : String(error);
             toast.error(`Erreur lors de la sauvegarde: ${message}`);
           }
           break;
@@ -147,8 +147,7 @@ function MenuBar({ isSettingsPage = false, onBack }: MenuBarProps) {
             await saveAsXMind();
             // console.warn('File saved as');
           } catch (error) {
-            const message =
-              error instanceof Error ? error.message : String(error);
+            const message = error instanceof Error ? error.message : String(error);
             toast.error(`Erreur lors de la sauvegarde: ${message}`);
           }
           break;
@@ -157,8 +156,7 @@ function MenuBar({ isSettingsPage = false, onBack }: MenuBarProps) {
             await exportToFreeMind();
             toast.success('Fichier .mm téléchargé avec succès !');
           } catch (error) {
-            const message =
-              error instanceof Error ? error.message : String(error);
+            const message = error instanceof Error ? error.message : String(error);
             toast.error(`Erreur lors de l'export vers FreeMind: ${message}`);
           }
           break;
@@ -167,8 +165,7 @@ function MenuBar({ isSettingsPage = false, onBack }: MenuBarProps) {
             await exportToPDF();
             toast.success('Fichier PDF téléchargé avec succès !');
           } catch (error) {
-            const message =
-              error instanceof Error ? error.message : String(error);
+            const message = error instanceof Error ? error.message : String(error);
             toast.error(`Erreur lors de l'export vers PDF: ${message}`);
           }
           break;
@@ -177,8 +174,7 @@ function MenuBar({ isSettingsPage = false, onBack }: MenuBarProps) {
             await exportToPNG();
             toast.success('Fichier PNG téléchargé avec succès !');
           } catch (error) {
-            const message =
-              error instanceof Error ? error.message : String(error);
+            const message = error instanceof Error ? error.message : String(error);
             toast.error(`Erreur lors de l'export vers PNG: ${message}`);
           }
           break;
@@ -188,8 +184,7 @@ function MenuBar({ isSettingsPage = false, onBack }: MenuBarProps) {
             await exportToJPEG();
             toast.success('Fichier JPEG téléchargé avec succès !');
           } catch (error) {
-            const message =
-              error instanceof Error ? error.message : String(error);
+            const message = error instanceof Error ? error.message : String(error);
             toast.error(`Erreur lors de l'export vers JPEG: ${message}`);
           }
           break;
@@ -199,8 +194,7 @@ function MenuBar({ isSettingsPage = false, onBack }: MenuBarProps) {
             await exportToSVG();
             toast.success('Fichier SVG téléchargé avec succès !');
           } catch (error) {
-            const message =
-              error instanceof Error ? error.message : String(error);
+            const message = error instanceof Error ? error.message : String(error);
             toast.error(`Erreur lors de l'export vers SVG: ${message}`);
           }
           break;
@@ -209,8 +203,7 @@ function MenuBar({ isSettingsPage = false, onBack }: MenuBarProps) {
             await exportToMarkdown();
             toast.success('Fichier Markdown téléchargé avec succès !');
           } catch (error) {
-            const message =
-              error instanceof Error ? error.message : String(error);
+            const message = error instanceof Error ? error.message : String(error);
             toast.error(`Erreur lors de l'export vers Markdown: ${message}`);
           }
           break;
@@ -219,8 +212,7 @@ function MenuBar({ isSettingsPage = false, onBack }: MenuBarProps) {
             await exportToWord();
             toast.success('Fichier Word téléchargé avec succès !');
           } catch (error) {
-            const message =
-              error instanceof Error ? error.message : String(error);
+            const message = error instanceof Error ? error.message : String(error);
             toast.error(`Erreur lors de l'export vers Word: ${message}`);
           }
           break;
@@ -229,8 +221,7 @@ function MenuBar({ isSettingsPage = false, onBack }: MenuBarProps) {
             await exportToExcel();
             toast.success('Fichier Excel téléchargé avec succès !');
           } catch (error) {
-            const message =
-              error instanceof Error ? error.message : String(error);
+            const message = error instanceof Error ? error.message : String(error);
             toast.error(`Erreur lors de l'export vers Excel: ${message}`);
           }
           break;
@@ -255,20 +246,20 @@ function MenuBar({ isSettingsPage = false, onBack }: MenuBarProps) {
         { label: 'Fermer', shortcut: getShortcut('Ctrl+W') },
         { label: 'Sauvegarder', shortcut: getShortcut('Ctrl+S') },
         { label: 'Sauvegarder sous...', shortcut: getShortcut('Ctrl+Shift+S') },
-               {
-                 label: 'Exporter vers',
-                 shortcut: getShortcut('Ctrl+E'),
-                 submenu: [
-                   { label: 'FreeMind (.mm)' },
-                   { label: 'PDF' },
-                   { label: 'PNG' },
-                   { label: 'JPEG' },
-                   { label: 'SVG' },
-                   { label: 'Markdown' },
-                   { label: 'Word (.docx)' },
-                   { label: 'Excel (.xlsx)' }
-                 ],
-               },
+        {
+          label: 'Exporter vers',
+          shortcut: getShortcut('Ctrl+E'),
+          submenu: [
+            { label: 'FreeMind (.mm)' },
+            { label: 'PDF' },
+            { label: 'PNG' },
+            { label: 'JPEG' },
+            { label: 'SVG' },
+            { label: 'Markdown' },
+            { label: 'Word (.docx)' },
+            { label: 'Excel (.xlsx)' },
+          ],
+        },
         { label: 'Imprimer...', shortcut: getShortcut('Ctrl+P') },
       ],
     },
@@ -344,7 +335,10 @@ function MenuBar({ isSettingsPage = false, onBack }: MenuBarProps) {
   ];
 
   return (
-    <div className="menu-bar" style={{ justifyContent: 'flex-start', padding: '0 16px', width: '100%' }}>
+    <div
+      className="menu-bar"
+      style={{ justifyContent: 'flex-start', padding: '0 16px', width: '100%' }}
+    >
       <div className="menu-logo" />
       {menuItems.map(menu => (
         <div
@@ -361,7 +355,7 @@ function MenuBar({ isSettingsPage = false, onBack }: MenuBarProps) {
 
           {activeMenu === menu.id && (
             <div className="menu-dropdown">
-              {menu.items.map((item) => (
+              {menu.items.map(item => (
                 <div key={item.label}>
                   {item.submenu ? (
                     // FR: Élément avec sous-menu
@@ -372,8 +366,12 @@ function MenuBar({ isSettingsPage = false, onBack }: MenuBarProps) {
 
                       {/* FR: Sous-menu */}
                       {/* EN: Submenu */}
-                      <div className="menu-submenu" onMouseEnter={handleSubmenuEnter} onMouseLeave={handleSubmenuLeave}>
-                        {item.submenu.map((subItem) => (
+                      <div
+                        className="menu-submenu"
+                        onMouseEnter={handleSubmenuEnter}
+                        onMouseLeave={handleSubmenuLeave}
+                      >
+                        {item.submenu.map(subItem => (
                           <div
                             key={subItem.label}
                             className="menu-item-option"
@@ -448,7 +446,7 @@ function MenuBar({ isSettingsPage = false, onBack }: MenuBarProps) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '4px'
+              gap: '4px',
             }}
           >
             <ArrowLeft className="icon-small" />
@@ -469,7 +467,7 @@ function MenuBar({ isSettingsPage = false, onBack }: MenuBarProps) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '4px'
+              gap: '4px',
             }}
           >
             <Settings className="icon-small" />

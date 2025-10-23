@@ -4,21 +4,20 @@
  */
 
 import React, { useState } from 'react';
-import { useMindMapStore } from '../hooks/useMindmap';
+import { useOpenFiles } from '../hooks/useOpenFiles';
 import { useTagGraph } from '../hooks/useTagGraph';
 import { eventBus } from '../utils/eventBus';
 import { Tag, Plus } from 'lucide-react';
 
 export function QuickTagTest() {
-  const mindMap = useMindMapStore();
+  const activeFile = useOpenFiles(s => s.openFiles.find(f => f.isActive) || null);
+  const updateActiveFileNode = useOpenFiles(s => s.updateActiveFileNode);
   const { tags } = useTagGraph();
   const [newTagName, setNewTagName] = useState('');
   const [selectedNodeId, setSelectedNodeId] = useState<string>('');
 
   // Obtenir le premier nœud disponible pour le test
-  const firstNode = mindMap.mindMap?.nodes
-    ? Object.values(mindMap.mindMap.nodes)[0]
-    : null;
+  const firstNode = activeFile?.content?.nodes ? Object.values(activeFile.content.nodes)[0] : null;
 
   const handleAddTag = () => {
     if (!newTagName || !firstNode) return;
@@ -27,28 +26,39 @@ export function QuickTagTest() {
     console.log('🏷️ Ajout du tag:', tagId, 'au nœud:', firstNode.id);
     console.log('🔍 Tags avant:', firstNode.tags);
 
-    mindMap.actions.addTagToNode(firstNode.id, tagId);
+    // Ajouter le tag au nœud
+    const currentTags = firstNode.tags || [];
+    const newTags = [...currentTags, tagId];
+    updateActiveFileNode(firstNode.id, { tags: newTags });
 
     // Vérifier si le bus d'événements existe
     console.log('🚌 Event bus disponible?', !!(window as any).eventBus);
-    console.log('📊 Tags dans le DAG:', tags.length, tags.map(t => t.id));
+    console.log(
+      '📊 Tags dans le DAG:',
+      tags.length,
+      tags.map(t => t.id)
+    );
 
     setNewTagName('');
   };
 
-  if (!mindMap.mindMap) {
+  if (!activeFile) {
     return null;
   }
 
   // FR: Test direct d'émission d'événement
   // EN: Direct test of event emission
   const handleTestEvent = () => {
-    const testTagId = 'test-' + Date.now();
+    const testTagId = `test-${Date.now()}`;
     console.log('🚀 Test direct: émission de node:tagged avec tagId:', testTagId);
-    eventBus.emit('node:tagged', {
-      nodeId: firstNode?.id || 'test-node',
-      tagId: testTagId
-    }, 'mindmap');
+    eventBus.emit(
+      'node:tagged',
+      {
+        nodeId: firstNode?.id || 'test-node',
+        tagId: testTagId,
+      },
+      'mindmap'
+    );
   };
 
   // FR: Réinitialiser tous les tags
@@ -57,7 +67,7 @@ export function QuickTagTest() {
     console.log('🗑️ Réinitialisation des tags');
     console.log('📦 Contenu avant suppression:', {
       tagGraph: localStorage.getItem('bigmind-tag-graph'),
-      nodeTags: localStorage.getItem('node-tags-storage')
+      nodeTags: localStorage.getItem('node-tags-storage'),
     });
     // Effacer le localStorage
     localStorage.removeItem('bigmind-tag-graph');
@@ -67,18 +77,20 @@ export function QuickTagTest() {
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      bottom: 20,
-      left: 20,
-      background: 'white',
-      border: '1px solid #e2e8f0',
-      borderRadius: '8px',
-      padding: '12px',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-      zIndex: 1000,
-      width: '250px'
-    }}>
+    <div
+      style={{
+        position: 'fixed',
+        bottom: 20,
+        left: 20,
+        background: 'white',
+        border: '1px solid #e2e8f0',
+        borderRadius: '8px',
+        padding: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        zIndex: 1000,
+        width: '250px',
+      }}
+    >
       <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '8px' }}>
         🧪 Test de synchronisation
       </div>
@@ -93,15 +105,15 @@ export function QuickTagTest() {
         <input
           type="text"
           value={newTagName}
-          onChange={(e) => setNewTagName(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
+          onChange={e => setNewTagName(e.target.value)}
+          onKeyPress={e => e.key === 'Enter' && handleAddTag()}
           placeholder="Nouveau tag..."
           style={{
             flex: 1,
             padding: '4px 8px',
             fontSize: '12px',
             border: '1px solid #e2e8f0',
-            borderRadius: '4px'
+            borderRadius: '4px',
           }}
         />
         <button
@@ -114,7 +126,7 @@ export function QuickTagTest() {
             border: 'none',
             borderRadius: '4px',
             cursor: 'pointer',
-            fontSize: '12px'
+            fontSize: '12px',
           }}
         >
           <Plus size={14} />
@@ -137,7 +149,7 @@ export function QuickTagTest() {
           border: 'none',
           borderRadius: '4px',
           cursor: 'pointer',
-          fontSize: '11px'
+          fontSize: '11px',
         }}
       >
         🚀 Test direct événement
@@ -155,7 +167,7 @@ export function QuickTagTest() {
           border: 'none',
           borderRadius: '4px',
           cursor: 'pointer',
-          fontSize: '11px'
+          fontSize: '11px',
         }}
       >
         🗑️ Réinitialiser tous les tags
@@ -174,7 +186,7 @@ export function QuickTagTest() {
                   border: '1px solid #dbeafe',
                   borderRadius: '8px',
                   fontSize: '10px',
-                  color: '#2563eb'
+                  color: '#2563eb',
                 }}
               >
                 {tag}

@@ -25,40 +25,40 @@ interface ThemeState {
 // EN: Zustand store for theme state
 const useThemeStore = create<ThemeState>()(
   persist(
-    immer((set) => ({
+    immer(set => ({
       activeThemeId: DEFAULT_THEME.id,
       customThemes: [],
       favoriteThemeIds: [],
 
       setActiveTheme: (themeId: string) =>
-        set((state) => {
+        set(state => {
           state.activeThemeId = themeId;
         }),
 
       addCustomTheme: (theme: Theme) =>
-        set((state) => {
+        set(state => {
           if (!ThemeUtils.isValidTheme(theme)) return;
           state.customThemes.push(theme);
         }),
 
       updateCustomTheme: (themeId: string, updates: Partial<Theme>) =>
-        set((state) => {
-          const idx = state.customThemes.findIndex((t) => t.id === themeId);
+        set(state => {
+          const idx = state.customThemes.findIndex(t => t.id === themeId);
           if (idx !== -1) {
             state.customThemes[idx] = { ...state.customThemes[idx], ...updates };
           }
         }),
 
       deleteCustomTheme: (themeId: string) =>
-        set((state) => {
-          state.customThemes = state.customThemes.filter((t) => t.id !== themeId);
+        set(state => {
+          state.customThemes = state.customThemes.filter(t => t.id !== themeId);
           if (state.activeThemeId === themeId) {
             state.activeThemeId = DEFAULT_THEME.id;
           }
         }),
 
       toggleFavorite: (themeId: string) =>
-        set((state) => {
+        set(state => {
           const idx = state.favoriteThemeIds.indexOf(themeId);
           if (idx !== -1) {
             state.favoriteThemeIds.splice(idx, 1);
@@ -92,32 +92,29 @@ export function useThemes() {
 
   // FR: Obtient le thème actif
   // EN: Gets the active theme
-  const activeTheme = useMemo(() => {
-    return (
-      PRESET_THEMES.find((t) => t.id === activeThemeId) ||
-      customThemes.find((t) => t.id === activeThemeId) ||
-      DEFAULT_THEME
-    );
-  }, [activeThemeId, customThemes]);
+  const activeTheme = useMemo(
+    () =>
+      PRESET_THEMES.find(t => t.id === activeThemeId) ||
+      customThemes.find(t => t.id === activeThemeId) ||
+      DEFAULT_THEME,
+    [activeThemeId, customThemes]
+  );
 
   // FR: Obtient tous les thèmes disponibles
   // EN: Gets all available themes
-  const allThemes = useMemo(() => {
-    return [...PRESET_THEMES, ...customThemes];
-  }, [customThemes]);
+  const allThemes = useMemo(() => [...PRESET_THEMES, ...customThemes], [customThemes]);
 
   // FR: Obtient les thèmes favorites
   // EN: Gets favorite themes
-  const favoriteThemes = useMemo(() => {
-    return allThemes.filter((t) => favoriteThemeIds.includes(t.id));
-  }, [allThemes, favoriteThemeIds]);
+  const favoriteThemes = useMemo(
+    () => allThemes.filter(t => favoriteThemeIds.includes(t.id)),
+    [allThemes, favoriteThemeIds]
+  );
 
   // FR: Obtient les thèmes par catégorie
   // EN: Gets themes by category
   const getThemesByCategory = useCallback(
-    (category: ThemeCategory): Theme[] => {
-      return allThemes.filter((t) => t.category === category);
-    },
+    (category: ThemeCategory): Theme[] => allThemes.filter(t => t.category === category),
     [allThemes]
   );
 
@@ -137,11 +134,14 @@ export function useThemes() {
 
   // FR: Exporte un thème en JSON
   // EN: Exports theme to JSON
-  const exportTheme = useCallback((themeId: string): string | null => {
-    const theme = allThemes.find((t) => t.id === themeId);
-    if (!theme) return null;
-    return ThemeUtils.toJSON(theme);
-  }, [allThemes]);
+  const exportTheme = useCallback(
+    (themeId: string): string | null => {
+      const theme = allThemes.find(t => t.id === themeId);
+      if (!theme) return null;
+      return ThemeUtils.toJSON(theme);
+    },
+    [allThemes]
+  );
 
   // FR: Importe un thème depuis JSON
   // EN: Imports theme from JSON

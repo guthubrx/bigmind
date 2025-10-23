@@ -139,9 +139,7 @@ export const useColumnResize = () => {
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
       };
-      return undefined;
     }
-    return undefined;
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
   // Réinitialiser les tailles par défaut

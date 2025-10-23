@@ -6,11 +6,13 @@
 import { useCallback } from 'react';
 import type { Node } from '@xyflow/react';
 import { getTotalDescendantsCount } from '../utils/nodeUtils';
+import { useOpenFiles } from './useOpenFiles';
 import type { OpenFile } from './useOpenFiles';
 import { useTagLayers } from './useTagLayers';
 
 interface UseReactFlowNodesParams {
-  activeFile: OpenFile | null;
+  fileId?: string;
+  activeSheetId?: string;
   nodesWithColors: Record<string, any>;
   dragTarget: string | null;
   draggedDescendants: string[];
@@ -58,16 +60,23 @@ function estimateTextHeight(text: string): number {
  * EN: Hook to manage BigMind nodes to ReactFlow conversion
  */
 export function useReactFlowNodes({
-  activeFile,
+  fileId,
+  activeSheetId,
   nodesWithColors,
   dragTarget,
   draggedDescendants,
   ghostNode,
   draggedNodeId,
 }: UseReactFlowNodesParams): UseReactFlowNodesReturn {
-  // FR: Récupérer la visibilité des tags et nœuds
-  // EN: Get tags and nodes visibility
-  const { isNodeVisible, nodeVisibility, getNodeOpacity } = useTagLayers();
+  // FR: Récupérer le fichier actif depuis le store
+  // EN: Get active file from store
+  const activeFile = useOpenFiles(
+    state => state.openFiles.find(f => f.id === fileId && f.activeSheetId === activeSheetId) || null
+  );
+
+  // FR: Récupérer uniquement nodeVisibility du store, pas les fonctions
+  // EN: Get only nodeVisibility from store, not functions
+  const nodeVisibility = useTagLayers(state => state.nodeVisibility);
 
   // FR: Convertir les nœuds du fichier actif en nœuds ReactFlow
   // EN: Convert active file nodes to ReactFlow nodes
@@ -126,39 +135,42 @@ export function useReactFlowNodes({
 
       // FR: Vérifier si le nœud doit être affiché selon sa visibilité individuelle et celle de ses tags
       // EN: Check if node should be displayed based on individual visibility and tag visibility
-      const isNodeVisibleByTag = isNodeVisible(node.tags);
+      // FR: Appeler directement les fonctions du store pour éviter les dépendances instables
+      // EN: Call store functions directly to avoid unstable dependencies
+      const tagLayersState = useTagLayers.getState();
+      const isNodeVisibleByTag = tagLayersState.isNodeVisible(node.tags);
       const isIndividuallyVisible = nodeVisibility[node.id] !== false;
       const shouldShow = isNodeVisibleByTag && isIndividuallyVisible;
 
       // FR: Ajouter le nœud seulement s'il doit être affiché
       // EN: Add node only if it should be displayed
       if (shouldShow) {
-        const opacity = getNodeOpacity(node.tags);
+        const opacity = tagLayersState.getNodeOpacity(node.tags);
 
         nodes.push({
           id: node.id,
           type: 'mindmap',
-        position: { x, y: nodeCenterY },
-        data: {
-          id: node.id,
-          title: node.title,
-          parentId: level === 0 ? null : 'parent', // fixé plus tard
-          children: node.children || [],
-          style: node.style,
-          computedStyle: node.computedStyle,
-          isSelected: false,
-          isPrimary: level === 0,
-          direction,
-          childCounts: {
-            total: getTotalDescendantsCount(node.id, nodesWithColors),
+          position: { x, y: nodeCenterY },
+          data: {
+            id: node.id,
+            title: node.title,
+            parentId: level === 0 ? null : 'parent', // fixé plus tard
+            children: node.children || [],
+            style: node.style,
+            computedStyle: node.computedStyle,
+            isSelected: false,
+            isPrimary: level === 0,
+            direction,
+            childCounts: {
+              total: getTotalDescendantsCount(node.id, nodesWithColors),
+            },
+            isDragTarget: dragTarget === node.id,
+            isDescendantOfDragged: draggedDescendants.includes(node.id),
+            isBeingDragged: draggedNodeId === node.id,
+            opacity,
+            tags: node.tags || [], // FR: Transmettre les tags au composant MindMapNode
           },
-          isDragTarget: dragTarget === node.id,
-          isDescendantOfDragged: draggedDescendants.includes(node.id),
-          isBeingDragged: draggedNodeId === node.id,
-          opacity: opacity,
-          tags: node.tags || [], // FR: Transmettre les tags au composant MindMapNode
-        },
-      });
+        });
       }
 
       // Si replié, ne pas positionner les enfants
@@ -295,16 +307,15 @@ export function useReactFlowNodes({
     return nodes;
   }, [
     activeFile,
+    // FR: Utiliser la référence directe du fichier récupérée depuis le store
+    // EN: Use direct file reference retrieved from store
     dragTarget,
     draggedDescendants,
     ghostNode,
     draggedNodeId,
     nodesWithColors,
-    isNodeVisible,
     nodeVisibility,
-    getNodeOpacity,
   ]);
 
   return { convertToReactFlowNodes };
 }
-

@@ -115,11 +115,11 @@ export interface TagDagState {
 // EN: Test data example
 export const SAMPLE_TAG_GRAPH: TagGraph = {
   tags: [
-    { id: "risque", label: "Risque" },
-    { id: "technique", label: "Technique", parents: ["risque"] },
-    { id: "communication", label: "Communication", parents: ["risque"] },
-    { id: "securite", label: "Sécurité", parents: ["technique", "communication"] },
-    { id: "reseau", label: "Réseau", parents: ["securite"] },
-    { id: "acces", label: "Accès", parents: ["reseau"] }
-  ]
+    { id: 'risque', label: 'Risque' },
+    { id: 'technique', label: 'Technique', parents: ['risque'] },
+    { id: 'communication', label: 'Communication', parents: ['risque'] },
+    { id: 'securite', label: 'Sécurité', parents: ['technique', 'communication'] },
+    { id: 'reseau', label: 'Réseau', parents: ['securite'] },
+    { id: 'acces', label: 'Accès', parents: ['reseau'] },
+  ],
 };

@@ -7,12 +7,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import * as d3dag from 'd3-dag';
 import { useTagGraph } from '../hooks/useTagGraph';
-import {
-  D3TagNode,
-  D3TagLink,
-  TagGraphEvents,
-  TagRelationType,
-} from '../types/dag';
+import { D3TagNode, D3TagLink, TagGraphEvents, TagRelationType } from '../types/dag';
 import { Network, Eye, EyeOff } from 'lucide-react';
 
 interface TagGraphProps extends TagGraphEvents {
@@ -100,17 +95,18 @@ export function TagGraph({
     // FR: Construire la hiérarchie DAG
     // EN: Build DAG hierarchy
     try {
-      const dag = d3dag.dagStratify<D3TagNode>()
-        .id(d => d.id)
-        .parentIds(d => d.parents || [])(Array.from(nodeMap.values()));
+      // FR: Préparer les données avec id et parentIds pour graphStratify
+      // EN: Prepare data with id and parentIds for graphStratify
+      const stratifyData = Array.from(nodeMap.values()).map(node => ({
+        ...node,
+        parentIds: node.parents || [],
+      }));
+
+      const dag = d3dag.graphStratify()(stratifyData);
 
       // FR: Appliquer le layout Sugiyama
       // EN: Apply Sugiyama layout
-      const layout = d3dag.sugiyama()
-        .size([width * 0.8, height * 0.8])
-        .layering(d3dag.layeringSimplex())
-        .decross(d3dag.decrossOpt())
-        .coord(d3dag.coordVert());
+      const layout = d3dag.sugiyama().size([width * 0.8, height * 0.8]);
 
       layout(dag);
 
@@ -119,7 +115,8 @@ export function TagGraph({
       const defs = svg.append('defs');
 
       ['is-type-of', 'is-related-to', 'is-part-of'].forEach(type => {
-        defs.append('marker')
+        defs
+          .append('marker')
           .attr('id', `arrow-${type}`)
           .attr('viewBox', '0 -5 10 10')
           .attr('refX', 25)
@@ -129,13 +126,16 @@ export function TagGraph({
           .attr('orient', 'auto')
           .append('path')
           .attr('d', 'M0,-5L10,0L0,5')
-          .attr('fill', type === 'is-type-of' ? '#2563EB' :
-            type === 'is-part-of' ? '#6B7280' : '#8B5CF6');
+          .attr(
+            'fill',
+            type === 'is-type-of' ? '#2563EB' : type === 'is-part-of' ? '#6B7280' : '#8B5CF6'
+          );
       });
 
       // FR: Créer les liens
       // EN: Create links
-      const linkSelection = g.append('g')
+      const linkSelection = g
+        .append('g')
         .attr('class', 'links')
         .selectAll('path')
         .data(dag.links())
@@ -144,36 +144,43 @@ export function TagGraph({
         .attr('d', d => {
           const source = d.source as any;
           const target = d.target as any;
-          return d3dag.dagConnect(source, target);
+          // FR: Créer une courbe entre source et target
+          // EN: Create a curve between source and target
+          const sx = source.x;
+          const sy = source.y;
+          const tx = target.x;
+          const ty = target.y;
+          const dx = tx - sx;
+          const dy = ty - sy;
+          return `M${sx},${sy} C${sx + dx / 3},${sy},${tx - dx / 3},${ty},${tx},${ty}`;
         })
         .attr('stroke', d => {
-          const link = links.find(l =>
-            l.source === (d.source as any).data.id &&
-            l.target === (d.target as any).data.id
+          const link = links.find(
+            l => l.source === (d.source as any).data.id && l.target === (d.target as any).data.id
           );
-          return link?.type === 'is-type-of' ? '#2563EB' :
-            link?.type === 'is-part-of' ? '#6B7280' : '#8B5CF6';
+          return link?.type === 'is-type-of'
+            ? '#2563EB'
+            : link?.type === 'is-part-of'
+              ? '#6B7280'
+              : '#8B5CF6';
         })
         .attr('stroke-width', 2)
         .attr('stroke-dasharray', d => {
-          const link = links.find(l =>
-            l.source === (d.source as any).data.id &&
-            l.target === (d.target as any).data.id
+          const link = links.find(
+            l => l.source === (d.source as any).data.id && l.target === (d.target as any).data.id
           );
           return link?.type === 'is-related-to' ? '5,5' : 'none';
         })
         .attr('fill', 'none')
         .attr('marker-end', d => {
-          const link = links.find(l =>
-            l.source === (d.source as any).data.id &&
-            l.target === (d.target as any).data.id
+          const link = links.find(
+            l => l.source === (d.source as any).data.id && l.target === (d.target as any).data.id
           );
           return `url(#arrow-${link?.type || 'is-type-of'})`;
         })
-        .on('click', function(event, d) {
-          const link = links.find(l =>
-            l.source === (d.source as any).data.id &&
-            l.target === (d.target as any).data.id
+        .on('click', (event, d) => {
+          const link = links.find(
+            l => l.source === (d.source as any).data.id && l.target === (d.target as any).data.id
           );
           if (link && onLinkClick) {
             onLinkClick(link as D3TagLink);
@@ -182,30 +189,38 @@ export function TagGraph({
 
       // FR: Créer les nœuds
       // EN: Create nodes
-      const nodeGroup = g.append('g')
+      const nodeGroup = g
+        .append('g')
         .attr('class', 'nodes')
         .selectAll('g')
-        .data(dag.descendants())
+        .data(dag.nodes())
         .enter()
         .append('g')
-        .attr('transform', d => `translate(${(d as any).x + width * 0.1},${(d as any).y + height * 0.1})`);
+        .attr(
+          'transform',
+          d => `translate(${(d as any).x + width * 0.1},${(d as any).y + height * 0.1})`
+        );
 
       // FR: Ajouter les cercles de nœuds
       // EN: Add node circles
-      nodeGroup.append('circle')
+      nodeGroup
+        .append('circle')
         .attr('r', graphOptions.nodeRadius || 20)
         .attr('fill', '#FFFFFF')
         .attr('stroke', d => {
           const tagData = (d as any).data as D3TagNode;
-          return tagData.id === selectedTagId ? '#2563EB' :
-            tagData.id === hoveredTagId ? '#60A5FA' : '#D1D5DB';
+          return tagData.id === selectedTagId
+            ? '#2563EB'
+            : tagData.id === hoveredTagId
+              ? '#60A5FA'
+              : '#D1D5DB';
         })
         .attr('stroke-width', d => {
           const tagData = (d as any).data as D3TagNode;
           return tagData.id === selectedTagId ? 3 : 2;
         })
         .attr('cursor', 'pointer')
-        .on('click', function(event, d) {
+        .on('click', (event, d) => {
           const tagData = (d as any).data as D3TagNode;
 
           if (shiftPressed && selectedForLink) {
@@ -231,13 +246,13 @@ export function TagGraph({
             }
           }
         })
-        .on('dblclick', function(event, d) {
+        .on('dblclick', (event, d) => {
           const tagData = (d as any).data as D3TagNode;
           if (onNodeDoubleClick) {
             onNodeDoubleClick(tagData);
           }
         })
-        .on('mouseenter', function(event, d) {
+        .on('mouseenter', function (event, d) {
           const tagData = (d as any).data as D3TagNode;
           hoverTag(tagData.id);
           if (onNodeHover) {
@@ -245,7 +260,7 @@ export function TagGraph({
           }
           d3.select(this).attr('stroke', '#60A5FA');
         })
-        .on('mouseleave', function(event, d) {
+        .on('mouseleave', function (event, d) {
           const tagData = (d as any).data as D3TagNode;
           hoverTag(null);
           if (onNodeHover) {
@@ -257,7 +272,8 @@ export function TagGraph({
       // FR: Ajouter les labels
       // EN: Add labels
       if (graphOptions.showLabels !== false) {
-        nodeGroup.append('text')
+        nodeGroup
+          .append('text')
           .text(d => (d as any).data.label)
           .attr('text-anchor', 'middle')
           .attr('dy', '0.35em')
@@ -273,14 +289,15 @@ export function TagGraph({
       // FR: Implémenter le drag & drop si activé
       // EN: Implement drag & drop if enabled
       if (graphOptions.enableDrag) {
-        const dragBehavior = d3.drag<any, any>()
-          .on('start', function(event, d) {
+        const dragBehavior = d3
+          .drag<any, any>()
+          .on('start', (event, d) => {
             const tagData = (d as any).data as D3TagNode;
             if (onNodeDragStart) {
               onNodeDragStart(tagData);
             }
           })
-          .on('drag', function(event, d) {
+          .on('drag', function (event, d) {
             d.x = event.x;
             d.y = event.y;
             d3.select(this).attr('transform', `translate(${event.x},${event.y})`);
@@ -292,14 +309,13 @@ export function TagGraph({
 
             // FR: Mettre à jour les liens connectés
             // EN: Update connected links
-            linkSelection
-              .attr('d', linkData => {
-                const source = linkData.source as any;
-                const target = linkData.target as any;
-                return d3dag.dagConnect(source, target);
-              });
+            linkSelection.attr('d', linkData => {
+              const source = linkData.source as any;
+              const target = linkData.target as any;
+              return d3dag.dagConnect(source, target);
+            });
           })
-          .on('end', function(event, d) {
+          .on('end', (event, d) => {
             const tagData = (d as any).data as D3TagNode;
             if (onNodeDragEnd) {
               onNodeDragEnd(tagData);
@@ -312,9 +328,10 @@ export function TagGraph({
       // FR: Implémenter le zoom et pan si activés
       // EN: Implement zoom and pan if enabled
       if (graphOptions.enableZoom || graphOptions.enablePan) {
-        const zoom = d3.zoom<SVGSVGElement, unknown>()
+        const zoom = d3
+          .zoom<SVGSVGElement, unknown>()
           .scaleExtent([0.1, 4])
-          .on('zoom', (event) => {
+          .on('zoom', event => {
             g.attr('transform', event.transform);
           });
 
@@ -324,11 +341,19 @@ export function TagGraph({
 
         svg.call(zoom);
       }
-
     } catch (error) {
       console.error('Erreur lors de la construction du DAG:', error);
     }
-  }, [tags, links, selectedTagId, hoveredTagId, graphOptions, shiftPressed, selectedForLink, linkMode]);
+  }, [
+    tags,
+    links,
+    selectedTagId,
+    hoveredTagId,
+    graphOptions,
+    shiftPressed,
+    selectedForLink,
+    linkMode,
+  ]);
 
   return (
     <div className={`relative ${className}`}>
@@ -337,7 +362,7 @@ export function TagGraph({
         <div className="text-xs font-medium text-gray-700">Mode de lien:</div>
         <select
           value={linkMode}
-          onChange={(e) => setLinkMode(e.target.value as TagRelationType)}
+          onChange={e => setLinkMode(e.target.value as TagRelationType)}
           className="text-xs px-2 py-1 border rounded"
         >
           <option value="is-type-of">Est un type de</option>
@@ -367,7 +392,15 @@ export function TagGraph({
             </div>
             <div className="flex items-center gap-2">
               <svg width="30" height="10">
-                <line x1="0" y1="5" x2="30" y2="5" stroke="#8B5CF6" strokeWidth="2" strokeDasharray="5,5" />
+                <line
+                  x1="0"
+                  y1="5"
+                  x2="30"
+                  y2="5"
+                  stroke="#8B5CF6"
+                  strokeWidth="2"
+                  strokeDasharray="5,5"
+                />
               </svg>
               <span className="text-xs">Est relié à</span>
             </div>

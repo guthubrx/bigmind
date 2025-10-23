@@ -107,12 +107,12 @@ export const useTagLayers = create<TagLayersState>((set, get) => ({
   layers: {},
   nodeVisibility: {},
 
-  toggleNodeVisibility: (nodeId) => {
+  toggleNodeVisibility: nodeId => {
     set(state => ({
       nodeVisibility: {
         ...state.nodeVisibility,
-        [nodeId]: state.nodeVisibility[nodeId] === false ? true : false
-      }
+        [nodeId]: state.nodeVisibility[nodeId] === false,
+      },
     }));
   },
 
@@ -120,8 +120,8 @@ export const useTagLayers = create<TagLayersState>((set, get) => ({
     set(state => ({
       nodeVisibility: {
         ...state.nodeVisibility,
-        [nodeId]: visible
-      }
+        [nodeId]: visible,
+      },
     }));
   },
 
@@ -148,9 +148,9 @@ export const useTagLayers = create<TagLayersState>((set, get) => ({
                 ...state.layers,
                 [currentTag]: {
                   ...currentLayer,
-                  originalVisible: currentLayer.visible
-                }
-              }
+                  originalVisible: currentLayer.visible,
+                },
+              },
             }));
           }
           // FR: Masquer ce calque
@@ -193,7 +193,7 @@ export const useTagLayers = create<TagLayersState>((set, get) => ({
     }
   },
 
-  toggleLayerVisibility: (tag) => {
+  toggleLayerVisibility: tag => {
     const state = get();
     const layer = state.layers[tag];
     if (layer) {
@@ -209,9 +209,9 @@ export const useTagLayers = create<TagLayersState>((set, get) => ({
             visible: newVisible,
             // FR: Sauvegarder l'état original si c'est la première fois
             // EN: Save original state if it's the first time
-            originalVisible: layer.originalVisible ?? layer.visible
-          }
-        }
+            originalVisible: layer.originalVisible ?? layer.visible,
+          },
+        },
       }));
 
       // FR: Appliquer/retirer le masque sur tous les descendants
@@ -233,9 +233,9 @@ export const useTagLayers = create<TagLayersState>((set, get) => ({
             visible,
             // FR: Ne pas toucher à l'état original ici - il est géré dans applyMaskToDescendants
             // EN: Don't touch original state here - it's managed in applyMaskToDescendants
-            originalVisible: layer.originalVisible
-          }
-        }
+            originalVisible: layer.originalVisible,
+          },
+        },
       };
     });
   },
@@ -246,9 +246,9 @@ export const useTagLayers = create<TagLayersState>((set, get) => ({
         ...state.layers,
         [tag]: {
           ...state.layers[tag],
-          color
-        }
-      }
+          color,
+        },
+      },
     }));
   },
 
@@ -258,19 +258,19 @@ export const useTagLayers = create<TagLayersState>((set, get) => ({
         ...state.layers,
         [tag]: {
           ...state.layers[tag],
-          opacity
-        }
-      }
+          opacity,
+        },
+      },
     }));
   },
 
-  showOnlyLayer: (tag) => {
+  showOnlyLayer: tag => {
     set(state => {
       const newLayers = { ...state.layers };
       Object.keys(newLayers).forEach(t => {
         newLayers[t] = {
           ...newLayers[t],
-          visible: t === tag
+          visible: t === tag,
         };
       });
       return { layers: newLayers };
@@ -283,7 +283,7 @@ export const useTagLayers = create<TagLayersState>((set, get) => ({
       Object.keys(newLayers).forEach(tag => {
         newLayers[tag] = {
           ...newLayers[tag],
-          visible: true
+          visible: true,
         };
       });
       return { layers: newLayers };
@@ -296,14 +296,14 @@ export const useTagLayers = create<TagLayersState>((set, get) => ({
       Object.keys(newLayers).forEach(tag => {
         newLayers[tag] = {
           ...newLayers[tag],
-          visible: false
+          visible: false,
         };
       });
       return { layers: newLayers };
     });
   },
 
-  initializeLayer: (tag) => {
+  initializeLayer: tag => {
     const state = get();
     if (!state.layers[tag]) {
       const { parent } = parseTagHierarchy(tag);
@@ -314,7 +314,7 @@ export const useTagLayers = create<TagLayersState>((set, get) => ({
         originalVisible: true, // FR: Initialiser l'état original
         color: getNextColor(),
         opacity: 1,
-        parent
+        parent,
       };
 
       // FR: Si c'est un enfant, l'ajouter à la liste des enfants du parent
@@ -330,13 +330,13 @@ export const useTagLayers = create<TagLayersState>((set, get) => ({
       set({
         layers: {
           ...state.layers,
-          [tag]: newLayer
-        }
+          [tag]: newLayer,
+        },
       });
     }
   },
 
-  removeLayer: (tag) => {
+  removeLayer: tag => {
     set(state => {
       const newLayers = { ...state.layers };
       const layer = newLayers[tag];
@@ -363,7 +363,7 @@ export const useTagLayers = create<TagLayersState>((set, get) => ({
     });
   },
 
-  isNodeVisible: (nodeTags) => {
+  isNodeVisible: nodeTags => {
     const state = get();
 
     // FR: Si le nœud n'a pas de tags, il est toujours visible
@@ -374,14 +374,12 @@ export const useTagLayers = create<TagLayersState>((set, get) => ({
 
     // FR: Le nœud est visible si au moins un de ses tags est visible (avec héritage)
     // EN: Node is visible if at least one of its tags is visible (with inheritance)
-    return nodeTags.some(tag => {
-      return state.isTagVisibleWithInheritance(tag);
-    });
+    return nodeTags.some(tag => state.isTagVisibleWithInheritance(tag));
   },
 
   // FR: Vérifier si un tag est visible (le masque est déjà appliqué dans toggleLayerVisibility)
   // EN: Check if a tag is visible (mask is already applied in toggleLayerVisibility)
-  isTagVisibleWithInheritance: (tag) => {
+  isTagVisibleWithInheritance: tag => {
     const state = get();
     const layer = state.layers[tag];
 
@@ -394,7 +392,7 @@ export const useTagLayers = create<TagLayersState>((set, get) => ({
     return layer.visible;
   },
 
-  getNodeOpacity: (nodeTags) => {
+  getNodeOpacity: nodeTags => {
     const state = get();
 
     if (!nodeTags || nodeTags.length === 0) {
@@ -516,10 +514,12 @@ export const useTagLayers = create<TagLayersState>((set, get) => ({
     // FR: Nous allons simplement dispatcher un événement personnalisé
     // EN: We'll simply dispatch a custom event
     const event = new CustomEvent('bigmind:addTagToGroup', {
-      detail: { sourceTag, targetTag }
+      detail: { sourceTag, targetTag },
     });
     window.dispatchEvent(event);
 
-    console.log(`📤 Événement dispatché: ajouter tag "${targetTag}" aux nœuds du groupe "${sourceTag}"`);
-  }
+    console.log(
+      `📤 Événement dispatché: ajouter tag "${targetTag}" aux nœuds du groupe "${sourceTag}"`
+    );
+  },
 }));

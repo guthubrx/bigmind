@@ -14,8 +14,7 @@ interface ImageManagerProps {
 }
 
 export function ImageManager({ mapId, onImageSelect }: ImageManagerProps) {
-  const { images, uploadImage, removeImage, availableSpace, usagePercentage } =
-    useAssets(mapId);
+  const { images, uploadImage, removeImage, availableSpace, usagePercentage } = useAssets(mapId);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -26,7 +25,7 @@ export function ImageManager({ mapId, onImageSelect }: ImageManagerProps) {
   const [currentFileName, setCurrentFileName] = useState<string>('');
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
+    const { files } = e.target;
     if (!files) return;
 
     setUploadError(null);
@@ -190,11 +189,14 @@ export function ImageManager({ mapId, onImageSelect }: ImageManagerProps) {
 
       {/* FR: Barre d'espace / EN: Space bar */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between" style={{ fontSize: 12, color: '#64748b' }}>
+        <div
+          className="flex items-center justify-between"
+          style={{ fontSize: 12, color: '#64748b' }}
+        >
           <span className="font-medium">Espace utilisé</span>
           <span>
-            {usagePercentage}% ({AssetUtils.formatFileSize(images.reduce((a, i) => a + i.size, 0))} /
-            {AssetUtils.formatFileSize(50 * 1024 * 1024)})
+            {usagePercentage}% ({AssetUtils.formatFileSize(images.reduce((a, i) => a + i.size, 0))}{' '}
+            /{AssetUtils.formatFileSize(50 * 1024 * 1024)})
           </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
@@ -218,7 +220,7 @@ export function ImageManager({ mapId, onImageSelect }: ImageManagerProps) {
         </div>
       ) : (
         <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar">
-          {images.map((image) => (
+          {images.map(image => (
             <div
               key={image.id}
               className="group relative rounded-lg overflow-hidden border border-gray-200 hover:shadow-lg transition-all cursor-pointer bg-white"
@@ -233,14 +235,14 @@ export function ImageManager({ mapId, onImageSelect }: ImageManagerProps) {
                   style={{
                     maxWidth: '100%',
                     height: 'auto',
-                    aspectRatio: `${image.width} / ${image.height}`
+                    aspectRatio: `${image.width} / ${image.height}`,
                   }}
                 />
 
                 {/* FR: Boutons d'actions sur l'image en haut à droite / EN: Action buttons on image top right */}
                 <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   <button
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
                       setViewingImage(image);
                     }}
@@ -250,7 +252,7 @@ export function ImageManager({ mapId, onImageSelect }: ImageManagerProps) {
                     <Eye size={14} className="text-gray-700" />
                   </button>
                   <button
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
                       handleDownload(image);
                     }}
@@ -260,7 +262,7 @@ export function ImageManager({ mapId, onImageSelect }: ImageManagerProps) {
                     <Download size={14} className="text-gray-700" />
                   </button>
                   <button
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
                       handleCopyDataUrl(image);
                     }}
@@ -273,7 +275,7 @@ export function ImageManager({ mapId, onImageSelect }: ImageManagerProps) {
                     />
                   </button>
                   <button
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
                       removeImage(image.id);
                     }}
@@ -347,11 +349,10 @@ export function ImageManager({ mapId, onImageSelect }: ImageManagerProps) {
           <div className="absolute bottom-4 left-4 right-4 bg-black bg-opacity-70 text-white p-4 rounded-lg backdrop-blur-sm">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-lg font-semibold truncate">
-                  {viewingImage.fileName}
-                </h3>
+                <h3 className="text-lg font-semibold truncate">{viewingImage.fileName}</h3>
                 <p className="text-sm text-gray-300">
-                  {viewingImage.width} × {viewingImage.height}px • {AssetUtils.formatFileSize(viewingImage.size)}
+                  {viewingImage.width} × {viewingImage.height}px •{' '}
+                  {AssetUtils.formatFileSize(viewingImage.size)}
                 </p>
               </div>
             </div>
@@ -367,7 +368,7 @@ export function ImageManager({ mapId, onImageSelect }: ImageManagerProps) {
                 maxWidth: '100%',
                 maxHeight: '100%',
                 width: 'auto',
-                height: 'auto'
+                height: 'auto',
               }}
             />
           </div>

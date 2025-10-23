@@ -178,7 +178,7 @@ export function useDragAndDrop({
 
       // FR: Utiliser la commande ReparentNodeCommand pour undo/redo
       // EN: Use ReparentNodeCommand for undo/redo
-      const openFiles = useOpenFiles.getState().openFiles;
+      const { openFiles } = useOpenFiles.getState();
       const active = openFiles.find(f => f.isActive);
 
       if (active && active.content) {
@@ -221,4 +221,3 @@ export function useDragAndDrop({
     onNodeDragStop,
   };
 }
-

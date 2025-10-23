@@ -67,7 +67,7 @@ export function lightenHexColor(hex: string, factor: number): string {
   // Convertir en hex
   const toHex = (n: number) => {
     const hex = Math.min(255, Math.max(0, n)).toString(16);
-    return hex.length === 1 ? '0' + hex : hex;
+    return hex.length === 1 ? `0${hex}` : hex;
   };
 
   return `#${toHex(newR)}${toHex(newG)}${toHex(newB)}`;

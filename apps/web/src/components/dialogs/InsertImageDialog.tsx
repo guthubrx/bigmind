@@ -14,11 +14,7 @@ interface InsertImageDialogProps {
   onImageInsert?: (image: ImageAsset) => void;
 }
 
-export function InsertImageDialog({
-  mapId,
-  onClose,
-  onImageInsert,
-}: InsertImageDialogProps) {
+export function InsertImageDialog({ mapId, onClose, onImageInsert }: InsertImageDialogProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-auto">
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] flex flex-col">
@@ -38,7 +34,7 @@ export function InsertImageDialog({
         <div className="flex-1 overflow-auto p-4">
           <ImageManager
             mapId={mapId}
-            onImageSelect={(image) => {
+            onImageSelect={image => {
               onImageInsert?.(image);
               onClose();
             }}

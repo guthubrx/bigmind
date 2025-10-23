@@ -10,6 +10,7 @@ import { useSelection } from '../hooks/useSelection';
 import { useAppSettings } from '../hooks/useAppSettings';
 import { useEditMode } from '../hooks/useEditMode';
 import { useTagLayers } from '../hooks/useTagLayers';
+import { useTagDragDrop } from '../hooks/useTagDragDrop';
 import NodeContextMenu from './NodeContextMenu';
 // FR: Types locaux pour le développement
 // EN: Local types for development
@@ -70,6 +71,10 @@ function MindMapNode({ data, selected }: Props) {
   const { isNodeVisible, getNodeOpacity } = useTagLayers();
   const nodeTags = data.tags || [];
 
+  // FR: Hook pour le drag & drop de tags
+  // EN: Hook for tag drag & drop
+  const { dragState, startDrag, setTargetNode, endDrag } = useTagDragDrop();
+
   const shouldShow = isNodeVisible(nodeTags);
   const layerOpacity = getNodeOpacity(nodeTags);
 
@@ -82,10 +87,10 @@ function MindMapNode({ data, selected }: Props) {
       const r = parseInt(isShort ? clean[0] + clean[0] : clean.substring(0, 2), 16) / 255;
       const g = parseInt(isShort ? clean[1] + clean[1] : clean.substring(2, 4), 16) / 255;
       const b = parseInt(isShort ? clean[2] + clean[2] : clean.substring(4, 6), 16) / 255;
-      
+
       // FR: Formule de luminosité relative selon WCAG
       // EN: Relative luminance formula according to WCAG
-      const toLinear = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      const toLinear = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
       return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
     } catch (_e) {
       return 0.5; // FR: Valeur par défaut si erreur de parsing
@@ -94,25 +99,30 @@ function MindMapNode({ data, selected }: Props) {
 
   // FR: Choisir la couleur de texte optimale (noir ou blanc) selon la luminosité du fond
   // EN: Choose optimal text color (black or white) based on background luminance
-  const getOptimalTextColor = useCallback((backgroundColor: string): string => {
-    const luminance = getRelativeLuminance(backgroundColor);
-    // FR: Seuil de 0.5 : plus clair = texte noir, plus foncé = texte blanc
-    // EN: Threshold of 0.5: lighter = black text, darker = white text
-    return luminance > 0.5 ? '#000000' : '#ffffff';
-  }, [getRelativeLuminance]);
+  const getOptimalTextColor = useCallback(
+    (backgroundColor: string): string => {
+      const luminance = getRelativeLuminance(backgroundColor);
+      // FR: Seuil de 0.5 : plus clair = texte noir, plus foncé = texte blanc
+      // EN: Threshold of 0.5: lighter = black text, darker = white text
+      return luminance > 0.5 ? '#000000' : '#ffffff';
+    },
+    [getRelativeLuminance]
+  );
 
   // FR: Obtenir la couleur de fond du nœud
   // EN: Get node background color
-  const getNodeBackgroundColor = useCallback((): string => {
-    return data.isPrimary 
-      ? accentColor 
-      : (data.computedStyle?.backgroundColor ||
-         data.style?.backgroundColor ||
-         (data.style as any)?.fill ||
-         (data.style as any)?.background ||
-         (data.style as any)?.bgColor ||
-         'white');
-  }, [data.style, data.computedStyle, data.isPrimary, accentColor]);
+  const getNodeBackgroundColor = useCallback(
+    (): string =>
+      data.isPrimary
+        ? accentColor
+        : data.computedStyle?.backgroundColor ||
+          data.style?.backgroundColor ||
+          (data.style as any)?.fill ||
+          (data.style as any)?.background ||
+          (data.style as any)?.bgColor ||
+          'white',
+    [data.style, data.computedStyle, data.isPrimary, accentColor]
+  );
 
   // FR: Démarrer l'édition
   // EN: Start editing
@@ -166,12 +176,12 @@ function MindMapNode({ data, selected }: Props) {
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     // FR: Émettre un événement personnalisé vers le canvas parent
     // EN: Emit custom event to parent canvas
     // La sélection du nœud sera gérée par le canvas pour synchroniser avec le mode follow
     const event = new CustomEvent('node-context-menu', {
-      detail: { x: e.clientX, y: e.clientY, nodeId: data.id }
+      detail: { x: e.clientX, y: e.clientY, nodeId: data.id },
     });
     window.dispatchEvent(event);
   };
@@ -243,6 +253,20 @@ function MindMapNode({ data, selected }: Props) {
     outlineOffset = 2;
   }
 
+  // FR: Style spécial pour les nœuds cibles de drag & drop
+  // EN: Special style for drag & drop target nodes
+  const isDragTarget =
+    dragState.isDragging &&
+    dragState.targetNodeId === data.id &&
+    dragState.sourceNodeId !== data.id;
+  const dragTargetStyle = isDragTarget
+    ? {
+        backgroundColor: `${accentColor}20`,
+        borderColor: accentColor,
+        borderWidth: 2,
+      }
+    : {};
+
   const onKeyActivate = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -278,33 +302,38 @@ function MindMapNode({ data, selected }: Props) {
         // EN: Special style for root node
         backgroundColor: (data as any).isDragTarget
           ? `${accentColor}20` // Fond semi-transparent de la couleur d'accent
-          : (data.isPrimary
+          : data.isPrimary
             ? accentColor
-            : (data.computedStyle?.backgroundColor ||
-               data.style?.backgroundColor ||
-               (data.style as any)?.fill ||
-               (data.style as any)?.background ||
-               (data.style as any)?.bgColor ||
-               'white')),
+            : data.computedStyle?.backgroundColor ||
+              data.style?.backgroundColor ||
+              (data.style as any)?.fill ||
+              (data.style as any)?.background ||
+              (data.style as any)?.bgColor ||
+              'white',
         // FR: Effet de transparence pour les descendants du nœud qu'on glisse, le nœud fantôme et le nœud en cours de drag, et calques
         // EN: Transparency effect for descendants of dragged node, ghost node, node being dragged, and layers
-        opacity: (data as any).isGhost ? 0.4 :
-                 ((data as any).isBeingDragged ? 0.6 :
-                  ((data as any).isDescendantOfDragged ? 0.3 : layerOpacity)),
+        opacity: (data as any).isGhost
+          ? 0.4
+          : (data as any).isBeingDragged
+            ? 0.6
+            : (data as any).isDescendantOfDragged
+              ? 0.3
+              : layerOpacity,
         // FR: Couleur du texte - contraste automatique pour la racine, sinon selon le style ou contraste automatique
         // EN: Text color - automatic contrast for root, otherwise according to style or automatic contrast
         color: data.isPrimary
           ? getOptimalTextColor(accentColor)
-          : (data.computedStyle?.textColor || data.style?.textColor || (data.style as any)?.color || 'black'),
-        fontSize: data.isPrimary
-          ? (data.style?.fontSize || 24)
-          : (data.style?.fontSize || 14),
+          : data.computedStyle?.textColor ||
+            data.style?.textColor ||
+            (data.style as any)?.color ||
+            'black',
+        fontSize: data.isPrimary ? data.style?.fontSize || 24 : data.style?.fontSize || 14,
         fontWeight: data.isPrimary
-          ? (data.style?.fontWeight || 'bold')
-          : (data.style?.fontWeight || 'normal'),
-        borderColor: data.style?.borderColor || '#e5e7eb',
+          ? data.style?.fontWeight || 'bold'
+          : data.style?.fontWeight || 'normal',
+        borderColor: isDragTarget ? accentColor : data.style?.borderColor || '#e5e7eb',
         borderStyle: data.style?.borderStyle || 'solid',
-        borderWidth: 1,
+        borderWidth: isDragTarget ? 2 : 1,
         borderRadius: data.style?.borderRadius || 8,
         boxSizing: 'border-box',
         width: 200,
@@ -313,7 +342,10 @@ function MindMapNode({ data, selected }: Props) {
         outlineOffset,
         boxShadow: (data as any).isDragTarget
           ? `0 0 20px ${accentColor}, 0 0 40px ${accentColor}80, 0 0 60px ${accentColor}40`
-          : 'none',
+          : isDragTarget
+            ? `0 0 10px ${accentColor}40`
+            : 'none',
+        ...dragTargetStyle,
       }}
     >
       {/* FR: Handles d'entrée (côté logique) */}
@@ -329,7 +361,9 @@ function MindMapNode({ data, selected }: Props) {
 
       {/* FR: Contenu du nœud */}
       {/* EN: Node content */}
-      <div className={`flex flex-col items-center h-full ${data.isPrimary ? 'justify-center' : 'justify-center'}`}>
+      <div
+        className={`flex flex-col items-center h-full ${data.isPrimary ? 'justify-center' : 'justify-center'}`}
+      >
         {isEditing ? (
           <input
             ref={inputRef}
@@ -340,15 +374,11 @@ function MindMapNode({ data, selected }: Props) {
             onKeyDown={handleKeyDown}
             className="w-full bg-transparent border-none outline-none text-center"
             style={{
-              color: data.isPrimary
-                ? '#ffffff'
-                : (data.style?.textColor || 'black'),
-              fontSize: data.isPrimary
-                ? (data.style?.fontSize || 24)
-                : (data.style?.fontSize || 14),
+              color: data.isPrimary ? '#ffffff' : data.style?.textColor || 'black',
+              fontSize: data.isPrimary ? data.style?.fontSize || 24 : data.style?.fontSize || 14,
               fontWeight: data.isPrimary
-                ? (data.style?.fontWeight || 'bold')
-                : (data.style?.fontWeight || 'normal'),
+                ? data.style?.fontWeight || 'bold'
+                : data.style?.fontWeight || 'normal',
             }}
           />
         ) : (
@@ -397,16 +427,33 @@ function MindMapNode({ data, selected }: Props) {
                   whiteSpace: 'nowrap',
                   border: '1px solid rgba(255,255,255,0.3)',
                   boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                  cursor: 'grab',
                 }}
                 title={tag}
+                onMouseDown={e => {
+                  e.stopPropagation();
+                  startDrag(tag, data.id, e);
+                }}
+                onMouseEnter={() => {
+                  if (dragState.isDragging && dragState.sourceNodeId !== data.id) {
+                    setTargetNode(data.id);
+                  }
+                }}
+                onMouseLeave={() => {
+                  if (dragState.isDragging && dragState.targetNodeId === data.id) {
+                    setTargetNode(null);
+                  }
+                }}
               >
                 {tag}
+                {dragState.isDragging && dragState.draggedTagId === tag && (
+                  <span style={{ marginLeft: '4px' }}>{dragState.isCopyMode ? '📋' : '➡️'}</span>
+                )}
               </span>
             ))}
           </div>
         </div>
       )}
-
 
       {/* FR: Handles de sortie sur le côté logique (gauche/droite) */}
       {/* EN: Output handles on logical side (left/right) */}
@@ -420,9 +467,10 @@ function MindMapNode({ data, selected }: Props) {
               <Handle id="right" type="source" position={Position.Right} className="opacity-0" />
               <span
                 aria-label="Nombre d'enfants à gauche"
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation();
-                  const node = useOpenFiles.getState().openFiles.find(f => f.isActive)?.content?.nodes?.[data.id];
+                  const node = useOpenFiles.getState().openFiles.find(f => f.isActive)?.content
+                    ?.nodes?.[data.id];
                   if (node) {
                     updateActiveFileNode(data.id, { collapsed: !node.collapsed });
                   }
@@ -447,10 +495,10 @@ function MindMapNode({ data, selected }: Props) {
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
-                onMouseEnter={(e) => {
+                onMouseEnter={e => {
                   e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.1)';
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={e => {
                   e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1)';
                 }}
               >
@@ -458,9 +506,10 @@ function MindMapNode({ data, selected }: Props) {
               </span>
               <span
                 aria-label="Nombre d'enfants à droite"
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation();
-                  const node = useOpenFiles.getState().openFiles.find(f => f.isActive)?.content?.nodes?.[data.id];
+                  const node = useOpenFiles.getState().openFiles.find(f => f.isActive)?.content
+                    ?.nodes?.[data.id];
                   if (node) {
                     updateActiveFileNode(data.id, { collapsed: !node.collapsed });
                   }
@@ -485,10 +534,10 @@ function MindMapNode({ data, selected }: Props) {
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
-                onMouseEnter={(e) => {
+                onMouseEnter={e => {
                   e.currentTarget.style.transform = 'translate(50%, -50%) scale(1.1)';
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={e => {
                   e.currentTarget.style.transform = 'translate(50%, -50%) scale(1)';
                 }}
               >
@@ -511,9 +560,10 @@ function MindMapNode({ data, selected }: Props) {
             />
             <span
               aria-label="Nombre d'enfants"
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
-                const node = useOpenFiles.getState().openFiles.find(f => f.isActive)?.content?.nodes?.[data.id];
+                const node = useOpenFiles.getState().openFiles.find(f => f.isActive)?.content
+                  ?.nodes?.[data.id];
                 if (node) {
                   updateActiveFileNode(data.id, { collapsed: !node.collapsed });
                 }
@@ -535,11 +585,13 @@ function MindMapNode({ data, selected }: Props) {
                   border: '1px solid rgba(0,0,0,0.1)',
                 } as any
               }
-              onMouseEnter={(e) => {
+              onMouseEnter={e => {
                 const currentTransform = sideStyle.transform;
-                e.currentTarget.style.transform = currentTransform.replace('scale(1)', 'scale(1.1)') || currentTransform + ' scale(1.1)';
+                e.currentTarget.style.transform =
+                  currentTransform.replace('scale(1)', 'scale(1.1)') ||
+                  `${currentTransform} scale(1.1)`;
               }}
-              onMouseLeave={(e) => {
+              onMouseLeave={e => {
                 e.currentTarget.style.transform = sideStyle.transform;
               }}
             >

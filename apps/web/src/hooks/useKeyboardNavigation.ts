@@ -61,7 +61,7 @@ export function useKeyboardNavigation({
         return;
       }
 
-      const key = e.key;
+      const { key } = e;
       // toggle follow
       if (key.toLowerCase() === (getShortcut('view.follow') || 'F').toLowerCase()) {
         e.preventDefault();
@@ -198,7 +198,7 @@ export function useKeyboardNavigation({
       }
 
       // siblings navigation
-      const parentId: string | null = current.parentId;
+      const { parentId } = current;
       if (!parentId) return; // root has no up/down among siblings
       const parent = nodesMap[parentId];
       const siblings: string[] = parent?.children || [];
@@ -282,12 +282,19 @@ export function useKeyboardNavigation({
             if (bestId) select(bestId);
           }
         }
-        return;
       }
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [activeFile, selectedNodeId, setSelectedNodeId, getShortcut, addSiblingToActive, nodesWithColors, updateActiveFileNode]);
+  }, [
+    activeFile,
+    selectedNodeId,
+    setSelectedNodeId,
+    getShortcut,
+    addSiblingToActive,
+    nodesWithColors,
+    updateActiveFileNode,
+  ]);
 
   // FR: Raccourci Tab pour créer un enfant du nœud sélectionné
   // EN: Tab shortcut to create child of selected node

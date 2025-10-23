@@ -31,24 +31,24 @@ interface TemplateState {
 // EN: Zustand store for template state
 const useTemplateStore = create<TemplateState>()(
   persist(
-    immer((set) => ({
+    immer(set => ({
       customTemplates: [],
       favoriteTemplateIds: [],
       recentTemplateIds: [],
 
       addCustomTemplate: (template: Template) =>
-        set((state) => {
+        set(state => {
           if (!TemplateUtils.isValidTemplate(template)) return;
           state.customTemplates.push(template);
         }),
 
       deleteCustomTemplate: (templateId: string) =>
-        set((state) => {
-          state.customTemplates = state.customTemplates.filter((t) => t.metadata.id !== templateId);
+        set(state => {
+          state.customTemplates = state.customTemplates.filter(t => t.metadata.id !== templateId);
         }),
 
       toggleFavorite: (templateId: string) =>
-        set((state) => {
+        set(state => {
           const idx = state.favoriteTemplateIds.indexOf(templateId);
           if (idx !== -1) {
             state.favoriteTemplateIds.splice(idx, 1);
@@ -58,7 +58,7 @@ const useTemplateStore = create<TemplateState>()(
         }),
 
       addRecent: (templateId: string) =>
-        set((state) => {
+        set(state => {
           // FR: Retirer si déjà présent
           // EN: Remove if already present
           const idx = state.recentTemplateIds.indexOf(templateId);
@@ -86,44 +86,48 @@ const useTemplateStore = create<TemplateState>()(
  * EN: Hook for template management
  */
 export function useTemplates() {
-  const { customTemplates, favoriteTemplateIds, recentTemplateIds, addCustomTemplate, deleteCustomTemplate, toggleFavorite, addRecent } =
-    useTemplateStore();
+  const {
+    customTemplates,
+    favoriteTemplateIds,
+    recentTemplateIds,
+    addCustomTemplate,
+    deleteCustomTemplate,
+    toggleFavorite,
+    addRecent,
+  } = useTemplateStore();
 
   // FR: Obtient tous les templates (système + personnalisés)
   // EN: Gets all templates (system + custom)
-  const allTemplates = useMemo(() => {
-    return [...PRESET_TEMPLATES, ...customTemplates];
-  }, [customTemplates]);
+  const allTemplates = useMemo(() => [...PRESET_TEMPLATES, ...customTemplates], [customTemplates]);
 
   // FR: Obtient les templates favoris
   // EN: Gets favorite templates
-  const favoriteTemplates = useMemo(() => {
-    return allTemplates.filter((t) => favoriteTemplateIds.includes(t.metadata.id));
-  }, [allTemplates, favoriteTemplateIds]);
+  const favoriteTemplates = useMemo(
+    () => allTemplates.filter(t => favoriteTemplateIds.includes(t.metadata.id)),
+    [allTemplates, favoriteTemplateIds]
+  );
 
   // FR: Obtient les templates récemment utilisés
   // EN: Gets recently used templates
-  const recentTemplates = useMemo(() => {
-    return recentTemplateIds
-      .map((id) => allTemplates.find((t) => t.metadata.id === id))
-      .filter((t): t is Template => !!t);
-  }, [allTemplates, recentTemplateIds]);
+  const recentTemplates = useMemo(
+    () =>
+      recentTemplateIds
+        .map(id => allTemplates.find(t => t.metadata.id === id))
+        .filter((t): t is Template => !!t),
+    [allTemplates, recentTemplateIds]
+  );
 
   // FR: Obtient un template par ID
   // EN: Gets a template by ID
   const getTemplateById = useCallback(
-    (id: string): Template | undefined => {
-      return allTemplates.find((t) => t.metadata.id === id);
-    },
+    (id: string): Template | undefined => allTemplates.find(t => t.metadata.id === id),
     [allTemplates]
   );
 
   // FR: Filtre les templates
   // EN: Filters templates
   const filterTemplates = useCallback(
-    (filter: TemplateFilter): Template[] => {
-      return TemplateUtils.filterTemplates(allTemplates, filter);
-    },
+    (filter: TemplateFilter): Template[] => TemplateUtils.filterTemplates(allTemplates, filter),
     [allTemplates]
   );
 
@@ -134,7 +138,7 @@ export function useTemplates() {
       const results = searchTemplates(query);
       // FR: Inclure les templates personnalisés dans la recherche
       // EN: Include custom templates in search
-      return [...results, ...customTemplates].filter((t) => {
+      return [...results, ...customTemplates].filter(t => {
         const name = t.metadata.name.toLowerCase();
         const desc = t.metadata.description.toLowerCase();
         const q = query.toLowerCase();
@@ -147,18 +151,16 @@ export function useTemplates() {
   // FR: Obtient les templates par catégorie
   // EN: Gets templates by category
   const getTemplatesByCategory = useCallback(
-    (category: TemplateCategory): Template[] => {
-      return allTemplates.filter((t) => t.metadata.category === category);
-    },
+    (category: TemplateCategory): Template[] =>
+      allTemplates.filter(t => t.metadata.category === category),
     [allTemplates]
   );
 
   // FR: Obtient les templates par complexité
   // EN: Gets templates by complexity
   const getTemplatesByComplexity = useCallback(
-    (complexity: TemplateComplexity): Template[] => {
-      return allTemplates.filter((t) => t.metadata.complexity === complexity);
-    },
+    (complexity: TemplateComplexity): Template[] =>
+      allTemplates.filter(t => t.metadata.complexity === complexity),
     [allTemplates]
   );
 

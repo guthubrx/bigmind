@@ -16,29 +16,30 @@ import { ShortcutsSection } from './SettingsShortcutsSection';
 import { ThemeSelector } from '../components/ThemeSelector';
 import { TemplateGallery } from '../components/TemplateGallery';
 
-type SettingsSection = 'appearance' | 'interface' | 'interaction' | 'shortcuts' | 'themes' | 'templates';
+type SettingsSection =
+  | 'appearance'
+  | 'interface'
+  | 'interaction'
+  | 'shortcuts'
+  | 'themes'
+  | 'templates';
 
 function SettingsPage() {
   const navigate = useNavigate();
   const [section, setSection] = useState<SettingsSection>('appearance');
 
   // Hooks pour les paramètres
-  const accentColor = useAppSettings((s) => s.accentColor);
-  const setAccentColor = useAppSettings((s) => s.setAccentColor);
-  const selectedPalette = useAppSettings((s) => s.selectedPalette);
-  const setSelectedPalette = useAppSettings((s) => s.setSelectedPalette);
-  const dragTolerance = useAppSettings((s) => s.dragTolerance);
-  const setDragTolerance = useAppSettings((s) => s.setDragTolerance);
-  const columnBorderThickness = useAppSettings((s) => s.columnBorderThickness);
-  const setColumnBorderThickness = useAppSettings((s) => s.setColumnBorderThickness);
+  const accentColor = useAppSettings(s => s.accentColor);
+  const setAccentColor = useAppSettings(s => s.setAccentColor);
+  const selectedPalette = useAppSettings(s => s.selectedPalette);
+  const setSelectedPalette = useAppSettings(s => s.setSelectedPalette);
+  const dragTolerance = useAppSettings(s => s.dragTolerance);
+  const setDragTolerance = useAppSettings(s => s.setDragTolerance);
+  const columnBorderThickness = useAppSettings(s => s.columnBorderThickness);
+  const setColumnBorderThickness = useAppSettings(s => s.setColumnBorderThickness);
 
   // Hook pour le redimensionnement des colonnes
-  const {
-    columnSizes,
-    updateColumnSize,
-    resetColumnSizes,
-    COLUMN_SIZE_LIMITS
-  } = useColumnResize();
+  const { columnSizes, updateColumnSize, resetColumnSizes, COLUMN_SIZE_LIMITS } = useColumnResize();
 
   // Utilitaires
   const pastelBg = (alpha: number = 0.06) => getPastelBackground(accentColor, alpha);
@@ -47,7 +48,7 @@ function SettingsPage() {
     <div className="main-layout">
       <div className="frameset-vertical-1">
         <div className="menu-bar-container">
-          <MenuBar isSettingsPage={true} onBack={() => navigate('/')} />
+          <MenuBar isSettingsPage onBack={() => navigate('/')} />
         </div>
 
         {/* FR: Barre d'onglets normale pour l'écran des paramètres */}
@@ -141,16 +142,18 @@ function SettingsPage() {
                 />
               )}
 
-              {section === 'shortcuts' && (
-                <ShortcutsSection pastelBg={pastelBg} />
-              )}
+              {section === 'shortcuts' && <ShortcutsSection pastelBg={pastelBg} />}
 
               {/* Phase 2 Thèmes */}
               {section === 'themes' && (
                 <div className="space-y-4">
                   <h2 className="text-2xl font-bold mb-6">🎨 Thèmes</h2>
-                  <p className="text-gray-600 mb-6">Sélectionnez ou créez un thème pour personnaliser votre interface.</p>
-                  <ThemeSelector onThemeSelect={(theme) => console.log('Thème sélectionné:', theme.name)} />
+                  <p className="text-gray-600 mb-6">
+                    Sélectionnez ou créez un thème pour personnaliser votre interface.
+                  </p>
+                  <ThemeSelector
+                    onThemeSelect={theme => console.log('Thème sélectionné:', theme.name)}
+                  />
                 </div>
               )}
 
@@ -158,10 +161,14 @@ function SettingsPage() {
               {section === 'templates' && (
                 <div className="space-y-4">
                   <h2 className="text-2xl font-bold mb-6">📑 Templates</h2>
-                  <p className="text-gray-600 mb-6">Démarrez une nouvelle carte mentale avec un template prédéfini ou personnalisé.</p>
-                  <TemplateGallery onTemplateSelect={(mindMap) => {
-                    console.log('Template sélectionné:', mindMap.meta.name);
-                  }} />
+                  <p className="text-gray-600 mb-6">
+                    Démarrez une nouvelle carte mentale avec un template prédéfini ou personnalisé.
+                  </p>
+                  <TemplateGallery
+                    onTemplateSelect={mindMap => {
+                      console.log('Template sélectionné:', mindMap.meta.name);
+                    }}
+                  />
                 </div>
               )}
             </section>
@@ -176,5 +183,3 @@ function SettingsPage() {
 }
 
 export default SettingsPage;
-
-

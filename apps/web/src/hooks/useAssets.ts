@@ -7,13 +7,7 @@ import { useCallback, useMemo } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
-import {
-  ImageAsset,
-  StickerAsset,
-  AssetLibrary,
-  AssetUtils,
-  StickerCategory,
-} from '@bigmind/core';
+import { ImageAsset, StickerAsset, AssetLibrary, AssetUtils, StickerCategory } from '@bigmind/core';
 import { ALL_STICKERS, getStickersByCategory, searchStickersByTag } from '@bigmind/design';
 
 interface AssetState {
@@ -47,7 +41,7 @@ const useAssetStore = create<AssetState>()(
         // EN: Check if we can add the asset
         if (!AssetUtils.canAddAsset(library, image.size)) return false;
 
-        set((draft) => {
+        set(draft => {
           if (!draft.libraries[mapId]) {
             draft.libraries[mapId] = AssetUtils.createEmptyLibrary();
           }
@@ -59,7 +53,7 @@ const useAssetStore = create<AssetState>()(
       },
 
       removeImage: (mapId: string, imageId: string) =>
-        set((draft) => {
+        set(draft => {
           const lib = draft.libraries[mapId];
           if (!lib || !lib.images[imageId]) return;
 
@@ -69,7 +63,7 @@ const useAssetStore = create<AssetState>()(
         }),
 
       updateImage: (mapId: string, imageId: string, updates: Partial<ImageAsset>) =>
-        set((draft) => {
+        set(draft => {
           const lib = draft.libraries[mapId];
           if (!lib || !lib.images[imageId]) return;
 
@@ -80,7 +74,7 @@ const useAssetStore = create<AssetState>()(
         }),
 
       addStickerToLibrary: (mapId: string, sticker: StickerAsset) =>
-        set((draft) => {
+        set(draft => {
           if (!draft.libraries[mapId]) {
             draft.libraries[mapId] = AssetUtils.createEmptyLibrary();
           }
@@ -88,7 +82,7 @@ const useAssetStore = create<AssetState>()(
         }),
 
       removeStickerFromLibrary: (mapId: string, stickerId: string) =>
-        set((draft) => {
+        set(draft => {
           const lib = draft.libraries[mapId];
           if (lib && lib.stickers[stickerId]) {
             delete draft.libraries[mapId].stickers[stickerId];
@@ -124,13 +118,14 @@ export function useAssets(mapId: string) {
 
   // FR: S'abonner directement au store pour recevoir les mises à jour
   // EN: Subscribe directly to store to receive updates
-  const library = useAssetStore((state) =>
-    state.libraries[mapId] || {
-      images: {},
-      stickers: {},
-      totalSize: 0,
-      sizeLimit: AssetUtils.DEFAULT_SIZE_LIMIT,
-    }
+  const library = useAssetStore(
+    state =>
+      state.libraries[mapId] || {
+        images: {},
+        stickers: {},
+        totalSize: 0,
+        sizeLimit: AssetUtils.DEFAULT_SIZE_LIMIT,
+      }
   );
 
   // FR: Obtient toutes les images
@@ -143,15 +138,17 @@ export function useAssets(mapId: string) {
 
   // FR: Obtient l'espace disponible
   // EN: Gets available space
-  const availableSpace = useMemo(() => {
-    return library.sizeLimit - library.totalSize;
-  }, [library.sizeLimit, library.totalSize]);
+  const availableSpace = useMemo(
+    () => library.sizeLimit - library.totalSize,
+    [library.sizeLimit, library.totalSize]
+  );
 
   // FR: Calcule le pourcentage d'utilisation
   // EN: Calculates usage percentage
-  const usagePercentage = useMemo(() => {
-    return Math.round((library.totalSize / library.sizeLimit) * 100);
-  }, [library.totalSize, library.sizeLimit]);
+  const usagePercentage = useMemo(
+    () => Math.round((library.totalSize / library.sizeLimit) * 100),
+    [library.totalSize, library.sizeLimit]
+  );
 
   // FR: Upload une image
   // EN: Uploads an image
@@ -160,9 +157,11 @@ export function useAssets(mapId: string) {
       try {
         // FR: Valider le type MIME
         // EN: Validate MIME type
-        if (!['image/png', 'image/jpeg', 'image/svg+xml', 'image/gif', 'image/webp'].includes(
-          file.type
-        )) {
+        if (
+          !['image/png', 'image/jpeg', 'image/svg+xml', 'image/gif', 'image/webp'].includes(
+            file.type
+          )
+        ) {
           console.error('Invalid image format');
           return null;
         }
@@ -178,7 +177,7 @@ export function useAssets(mapId: string) {
 
         // FR: Calculer les dimensions de l'image
         // EN: Calculate image dimensions
-        const dimensions = await new Promise<{ width: number; height: number }>((resolve) => {
+        const dimensions = await new Promise<{ width: number; height: number }>(resolve => {
           const img = new Image();
           img.onload = () => {
             resolve({ width: img.width, height: img.height });
@@ -217,7 +216,7 @@ export function useAssets(mapId: string) {
   // EN: Adds a sticker to library
   const addSticker = useCallback(
     (stickerId: string) => {
-      const sticker = ALL_STICKERS.find((s) => s.id === stickerId);
+      const sticker = ALL_STICKERS.find(s => s.id === stickerId);
       if (sticker) {
         addStickerToLibrary(mapId, sticker);
       }
@@ -227,15 +226,14 @@ export function useAssets(mapId: string) {
 
   // FR: Obtient les stickers d'une catégorie
   // EN: Gets stickers of a category
-  const getStickersInCategory = useCallback((category: StickerCategory): StickerAsset[] => {
-    return getStickersByCategory(category);
-  }, []);
+  const getStickersInCategory = useCallback(
+    (category: StickerCategory): StickerAsset[] => getStickersByCategory(category),
+    []
+  );
 
   // FR: Recherche des stickers par tag
   // EN: Searches stickers by tag
-  const searchStickers = useCallback((tag: string): StickerAsset[] => {
-    return searchStickersByTag(tag);
-  }, []);
+  const searchStickers = useCallback((tag: string): StickerAsset[] => searchStickersByTag(tag), []);
 
   return {
     // État

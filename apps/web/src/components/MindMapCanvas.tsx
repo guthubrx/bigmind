@@ -35,7 +35,6 @@ import { useContextMenuHandlers } from '../hooks/useContextMenuHandlers';
 import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
 import { useColorInference } from '../hooks/useColorInference';
 import NodeContextMenu from './NodeContextMenu';
-import { useMindmap } from '../hooks/useMindmap';
 import { AddTagCommand, RemoveTagCommand } from '@bigmind/core';
 
 // FR: Types de nœuds personnalisés
@@ -147,9 +146,6 @@ function MindMapCanvas() {
   const getShortcut = useShortcuts(s => s.getShortcut);
   const selectedPaletteGlobal = useAppSettings(s => s.selectedPalette);
 
-  // FR: Hook pour la gestion des tags
-  // EN: Hook for tag management
-  const { mindMap, actions } = useMindmap();
   // FR: Palette par carte (fallback globale)
   // EN: Per-map palette (global fallback)
   const perMapPaletteId =
@@ -158,7 +154,8 @@ function MindMapCanvas() {
   // FR: Hook pour l'inférence de couleurs par branche
   // EN: Hook for branch color inference
   const { nodesWithColors } = useColorInference({
-    activeFile,
+    fileId: activeFile?.id,
+    activeSheetId: activeFile?.activeSheetId,
     perMapPaletteId,
   });
 
@@ -167,7 +164,8 @@ function MindMapCanvas() {
   // FR: Hook pour convertir les nœuds BigMind en nœuds ReactFlow
   // EN: Hook to convert BigMind nodes to ReactFlow nodes
   const { convertToReactFlowNodes } = useReactFlowNodes({
-    activeFile,
+    fileId: activeFile?.id,
+    activeSheetId: activeFile?.activeSheetId,
     nodesWithColors,
     dragTarget,
     draggedDescendants,
@@ -178,7 +176,8 @@ function MindMapCanvas() {
   // FR: Hook pour convertir les connexions BigMind en arêtes ReactFlow
   // EN: Hook to convert BigMind connections to ReactFlow edges
   const { convertToReactFlowEdges } = useReactFlowEdges({
-    activeFile,
+    fileId: activeFile?.id,
+    activeSheetId: activeFile?.activeSheetId,
     nodesWithColors,
     draggedNodeId,
     ghostNode,
@@ -215,21 +214,12 @@ function MindMapCanvas() {
     nodes,
   });
 
-  // FR: Mettre à jour les nœuds quand le fichier actif change
-  // EN: Update nodes when active file changes
+  // FR: Mettre à jour les nœuds quand initialNodes/initialEdges changent
+  // EN: Update nodes when initialNodes/initialEdges change
   React.useEffect(() => {
-    const newNodes = convertToReactFlowNodes();
-    const newEdges = convertToReactFlowEdges();
-    setNodes(newNodes);
-    setEdges(newEdges);
-  }, [
-    activeFile,
-    activeFile?.content?.nodes,
-    convertToReactFlowNodes,
-    convertToReactFlowEdges,
-    setNodes,
-    setEdges,
-  ]);
+    setNodes(initialNodes);
+    setEdges(initialEdges);
+  }, [initialNodes, initialEdges, setNodes, setEdges]);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges(eds => addEdge(params, eds)),
@@ -312,18 +302,21 @@ function MindMapCanvas() {
         // EN: Calculate bounding box of node and its first-level children
         const allNodesToShow = [nodeId, ...mindMapNode.children];
         const nodesToShow = allNodesToShow.map(id => inst.getNode(id)).filter(Boolean);
-        
+
         if (nodesToShow.length === 0) return;
 
         // FR: Calculer les limites de la zone à afficher
         // EN: Calculate bounds of the area to display
-        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-        
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let minY = Infinity;
+        let maxY = -Infinity;
+
         nodesToShow.forEach(n => {
           if (!n.position) return;
           const width = (n.data as any)?.width || 200;
           const height = (n.data as any)?.height || 40;
-          
+
           minX = Math.min(minX, n.position.x);
           maxX = Math.max(maxX, n.position.x + width);
           minY = Math.min(minY, n.position.y);
@@ -337,7 +330,7 @@ function MindMapCanvas() {
         const totalHeight = maxY - minY;
         const marginX = totalWidth * margin;
         const marginY = totalHeight * margin;
-        
+
         minX -= marginX;
         maxX += marginX;
         minY -= marginY;
@@ -490,7 +483,7 @@ function MindMapCanvas() {
             // Ignore selection errors
           }
         }}
-        onViewportChange={(viewport) => {
+        onViewportChange={viewport => {
           // FR: Émettre un événement personnalisé pour notifier les changements de viewport
           // EN: Emit custom event to notify viewport changes
           const viewportEvent = new CustomEvent('viewport-change', {
@@ -529,25 +522,31 @@ function MindMapCanvas() {
           // FR: Gestion des tags
           // EN: Tag management
           nodeTags={activeFile?.content?.nodes?.[contextMenu.nodeId]?.tags || []}
-          allTags={activeFile ? Object.values(activeFile.content?.nodes || {}).flatMap(node => node.tags || []).filter((tag, index, array) => array.indexOf(tag) === index) : []}
+          allTags={
+            activeFile
+              ? Object.values(activeFile.content?.nodes || {})
+                  .flatMap(node => node.tags || [])
+                  .filter((tag, index, array) => array.indexOf(tag) === index)
+              : []
+          }
           onAddTag={(nodeId: string, tag: string) => {
             if (!activeFile?.content) return;
             const command = new AddTagCommand(nodeId, tag);
             const newMap = command.execute(activeFile.content);
-            useOpenFiles.setState((state) => ({
+            useOpenFiles.setState(state => ({
               openFiles: state.openFiles.map(f =>
                 f.id === activeFile.id ? { ...f, content: newMap } : f
-              )
+              ),
             }));
           }}
           onRemoveTag={(nodeId: string, tag: string) => {
             if (!activeFile?.content) return;
             const command = new RemoveTagCommand(nodeId, tag);
             const newMap = command.execute(activeFile.content);
-            useOpenFiles.setState((state) => ({
+            useOpenFiles.setState(state => ({
               openFiles: state.openFiles.map(f =>
                 f.id === activeFile.id ? { ...f, content: newMap } : f
-              )
+              ),
             }));
           }}
         />

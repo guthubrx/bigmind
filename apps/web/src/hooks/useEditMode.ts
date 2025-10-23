@@ -11,7 +11,7 @@ interface EditModeState {
   setEditMode: (isEditing: boolean, nodeId: string | null) => void;
 }
 
-export const useEditMode = create<EditModeState>((set) => ({
+export const useEditMode = create<EditModeState>(set => ({
   isEditing: false,
   editingNodeId: null,
   setEditMode: (isEditing: boolean, nodeId: string | null) =>

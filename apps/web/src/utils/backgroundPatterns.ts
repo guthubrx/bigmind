@@ -68,4 +68,3 @@ export function getBackgroundPatternStyle(
       return {};
   }
 }
-

@@ -24,8 +24,7 @@ export type ShortcutAction =
   | 'insert.newNode'
   | 'insert.newChild'
   | 'insert.newParent'
-  | 'tools.preferences'
-  ;
+  | 'tools.preferences';
 
 type ShortcutsMap = Record<ShortcutAction, string>;
 
@@ -80,21 +79,23 @@ function loadFromStorage(): ShortcutsMap {
 export const useShortcuts = create<ShortcutsState>((set, get) => ({
   map: loadFromStorage(),
   setShortcut: (action, accelerator) => {
-    set((state) => {
+    set(state => {
       const map = { ...state.map, [action]: accelerator };
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(map)); } catch (e) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+      } catch (e) {
         // Ignore errors
       }
       return { map };
     });
   },
-  getShortcut: (action) => get().map[action],
+  getShortcut: action => get().map[action],
   resetDefaults: () => {
     set({ map: defaultMap });
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultMap)); } catch (e) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultMap));
+    } catch (e) {
       // Ignore errors
     }
   },
 }));
-
-

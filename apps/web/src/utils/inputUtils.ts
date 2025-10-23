@@ -9,26 +9,29 @@
  */
 export function isInputField(element: Element | null): boolean {
   if (!element) return false;
-  
+
   const tagName = element.tagName.toLowerCase();
   const inputTypes = ['input', 'textarea', 'select'];
-  
+
   // Vérifier les balises de saisie
   if (inputTypes.includes(tagName)) {
     return true;
   }
-  
+
   // Vérifier si l'élément a l'attribut contenteditable
-  if (element.hasAttribute('contenteditable') && element.getAttribute('contenteditable') !== 'false') {
+  if (
+    element.hasAttribute('contenteditable') &&
+    element.getAttribute('contenteditable') !== 'false'
+  ) {
     return true;
   }
-  
+
   // Vérifier si l'élément a le rôle d'input
   const role = element.getAttribute('role');
   if (role && ['textbox', 'searchbox', 'combobox'].includes(role)) {
     return true;
   }
-  
+
   return false;
 }
 
@@ -57,7 +60,7 @@ export function shouldIgnoreShortcut(event: KeyboardEvent): boolean {
   if (hasModifiers(event)) {
     return false;
   }
-  
+
   // Ignorer les raccourcis sans modificateurs si on tape dans un champ
   return isTypingInInput();
 }

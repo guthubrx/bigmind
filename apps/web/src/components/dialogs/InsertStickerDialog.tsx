@@ -41,7 +41,7 @@ export function InsertStickerDialog({
           <StickerPicker
             mapId={mapId}
             selectedNodeId={selectedNodeId}
-            onStickerSelect={(sticker) => {
+            onStickerSelect={sticker => {
               onStickerInsert?.(sticker);
               onClose();
             }}

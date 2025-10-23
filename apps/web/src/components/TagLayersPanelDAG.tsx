@@ -4,25 +4,16 @@
  */
 
 import React, { useState } from 'react';
-import {
-  Eye,
-  EyeOff,
-  Tag,
-  Network,
-  List,
-  Plus,
-  Search,
-  X,
-  FileWarning
-} from 'lucide-react';
+import { Eye, EyeOff, Tag, Network, List, Plus, Search, X, FileWarning } from 'lucide-react';
 import { useTagGraph } from '../hooks/useTagGraph';
 import { TagGraph } from './TagGraph';
 import { DagTag, TagRelationType } from '../types/dag';
-import { useMindMapStore } from '../hooks/useMindmap';
+import { useOpenFiles } from '../hooks/useOpenFiles';
+import { eventBus } from '../utils/eventBus';
 import './TagLayersPanel.css';
 
 export function TagLayersPanelDAG() {
-  const mindMap = useMindMapStore();
+  const activeFile = useOpenFiles(s => s.openFiles.find(f => f.isActive) || null);
   const {
     tags,
     selectedTagId,
@@ -41,38 +32,47 @@ export function TagLayersPanelDAG() {
 
   // FR: Synchroniser les tags avec la carte chargée
   // EN: Sync tags with loaded map
+  const lastSyncedFileId = React.useRef<string | null>(null);
+
   React.useEffect(() => {
     console.log('🏷️ TagLayersPanelDAG: Effet de synchronisation déclenché');
-    console.log('🏷️ TagLayersPanelDAG: mindMap.mindMap:', mindMap.mindMap ? 'présent' : 'absent');
+    console.log('🏷️ TagLayersPanelDAG: activeFile:', activeFile ? 'présent' : 'absent');
 
-    if (mindMap.mindMap) {
-      console.log('🔄 Synchronisation des tags avec la carte:', mindMap.mindMap.meta.name);
+    if (activeFile && activeFile.id !== lastSyncedFileId.current) {
+      console.log('🔄 Synchronisation des tags avec la carte:', activeFile.name);
       console.log('🔄 Détails de la carte:', {
-        id: mindMap.mindMap.id,
-        nodesCount: Object.keys(mindMap.mindMap.nodes || {}).length,
-        rootId: mindMap.mindMap.rootId
+        id: activeFile.id,
+        nodesCount: Object.keys(activeFile.content?.nodes || {}).length,
+        rootId: activeFile.content?.rootNode?.id,
       });
-      syncFromMindMap(mindMap.mindMap);
-    } else {
+      lastSyncedFileId.current = activeFile.id;
+      syncFromMindMap(activeFile);
+    } else if (!activeFile && lastSyncedFileId.current !== null) {
       console.log('🗑️ Aucune carte chargée, effacement des tags');
+      lastSyncedFileId.current = null;
       clearAllTags();
     }
-  }, [mindMap.mindMap?.id]); // Re-synchroniser si l'ID de la carte change
+  }, [activeFile?.id]); // Re-synchroniser si l'ID de la carte change
 
   // FR: Écouter les événements de mise à jour de la carte
   // EN: Listen to map update events
   React.useEffect(() => {
-    console.log('🏷️ TagLayersPanelDAG: Enregistrement des listeners d\'événements');
+    console.log("🏷️ TagLayersPanelDAG: Enregistrement des listeners d'événements");
 
-    const unsubMapLoaded = eventBus.on('map:loaded', (event) => {
+    const unsubMapLoaded = eventBus.on('map:loaded', event => {
       console.log('🏷️ TagLayersPanelDAG: Event map:loaded reçu', event);
-      if (event.source === 'system' && event.payload.map) {
+      if (
+        event.source === 'system' &&
+        event.payload.map &&
+        event.payload.map.id !== lastSyncedFileId.current
+      ) {
         console.log('🏷️ TagLayersPanelDAG: Synchronisation depuis map:loaded');
+        lastSyncedFileId.current = event.payload.map.id;
         syncFromMindMap(event.payload.map);
       }
     });
 
-    const unsubNodeTagged = eventBus.on('node:tagged', (event) => {
+    const unsubNodeTagged = eventBus.on('node:tagged', event => {
       console.log('🏷️ TagLayersPanelDAG: Event node:tagged reçu', event);
       console.log('🏷️ TagLayersPanelDAG: Tags actuels après event:', tags.length);
     });
@@ -87,7 +87,10 @@ export function TagLayersPanelDAG() {
   // EN: Debug - show tag count
   React.useEffect(() => {
     console.log('🏷️ TagLayersPanelDAG - Nombre de tags:', tags.length);
-    console.log('🏷️ TagLayersPanelDAG - Tags:', tags.map(t => ({ id: t.id, label: t.label })));
+    console.log(
+      '🏷️ TagLayersPanelDAG - Tags:',
+      tags.map(t => ({ id: t.id, label: t.label }))
+    );
   }, [tags]);
 
   const [showNewTagForm, setShowNewTagForm] = useState(false);
@@ -145,7 +148,7 @@ export function TagLayersPanelDAG() {
 
   // FR: Vérifier si une carte est chargée
   // EN: Check if a map is loaded
-  const isMapLoaded = !!mindMap.mindMap;
+  const isMapLoaded = !!activeFile;
 
   const renderListView = () => {
     const renderTag = (tag: DagTag, level = 0, isLast = false, parentLines: boolean[] = []) => {
@@ -164,14 +167,16 @@ export function TagLayersPanelDAG() {
               <div className="tree-structure" style={{ left: 0, width: `${level * 24 + 20}px` }}>
                 {/* FR: Lignes verticales continues des niveaux parents */}
                 {/* EN: Continuous vertical lines from parent levels */}
-                {parentLines.map((showLine, i) =>
-                  showLine && i < level - 1 && (
-                    <div
-                      key={`v-${i}`}
-                      className="tree-line tree-line-vertical"
-                      style={{ left: `${i * 24 + 20}px` }}
-                    />
-                  )
+                {parentLines.map(
+                  (showLine, i) =>
+                    showLine &&
+                    i < level - 1 && (
+                      <div
+                        key={`v-${i}`}
+                        className="tree-line tree-line-vertical"
+                        style={{ left: `${i * 24 + 20}px` }}
+                      />
+                    )
                 )}
 
                 {/* FR: Ligne de connexion (L ou T) */}
@@ -187,7 +192,7 @@ export function TagLayersPanelDAG() {
 
             <button
               className="visibility-btn"
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 // Toggle visibility
               }}
@@ -195,10 +200,7 @@ export function TagLayersPanelDAG() {
               {tag.visible !== false ? <Eye size={14} /> : <EyeOff size={14} />}
             </button>
 
-            <div
-              className="color-indicator"
-              style={{ backgroundColor: tag.color || '#3B82F6' }}
-            />
+            <div className="color-indicator" style={{ backgroundColor: tag.color || '#3B82F6' }} />
 
             <span className="tag-label">{tag.label}</span>
 
@@ -222,7 +224,7 @@ export function TagLayersPanelDAG() {
 
             <button
               className="delete-btn"
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 deleteTag(tag.id);
               }}
@@ -237,12 +239,7 @@ export function TagLayersPanelDAG() {
             const newParentLines = [...parentLines];
             // Ajouter une ligne verticale pour ce niveau si ce n'est pas le dernier élément
             newParentLines[level] = !isLast;
-            return renderTag(
-              child,
-              level + 1,
-              index === children.length - 1,
-              newParentLines
-            );
+            return renderTag(child, level + 1, index === children.length - 1, newParentLines);
           })}
         </div>
       );
@@ -256,17 +253,15 @@ export function TagLayersPanelDAG() {
           <div className="empty-state">
             <Tag size={24} />
             <p>Aucun tag</p>
-            <button
-              className="btn-primary"
-              onClick={() => setShowNewTagForm(true)}
-            >
+            <button className="btn-primary" onClick={() => setShowNewTagForm(true)}>
               Créer un tag
             </button>
           </div>
         ) : (
           <>
             {rootTags.map((tag, index) => renderTag(tag, 0, index === rootTags.length - 1))}
-            {filteredTags.filter(t => !rootTags.includes(t) && (!t.parents || t.parents.length === 0))
+            {filteredTags
+              .filter(t => !rootTags.includes(t) && (!t.parents || t.parents.length === 0))
               .map(tag => renderTag(tag))}
           </>
         )}
@@ -320,13 +315,10 @@ export function TagLayersPanelDAG() {
           type="text"
           placeholder="Rechercher un tag..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={e => setSearchQuery(e.target.value)}
         />
         {searchQuery && (
-          <button
-            className="clear-btn"
-            onClick={() => setSearchQuery('')}
-          >
+          <button className="clear-btn" onClick={() => setSearchQuery('')}>
             <X size={12} />
           </button>
         )}
@@ -360,18 +352,18 @@ export function TagLayersPanelDAG() {
       {/* EN: Tag creation form */}
       {showNewTagForm && (
         <div className="modal-overlay" onClick={() => setShowNewTagForm(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
             <h3>Nouveau tag</h3>
             <input
               type="text"
               placeholder="Nom du tag"
               value={newTagLabel}
-              onChange={(e) => setNewTagLabel(e.target.value)}
+              onChange={e => setNewTagLabel(e.target.value)}
               autoFocus
             />
             <select
               value={newTagParent || ''}
-              onChange={(e) => setNewTagParent(e.target.value || null)}
+              onChange={e => setNewTagParent(e.target.value || null)}
             >
               <option value="">Sans parent</option>
               {tags.map(tag => (
@@ -381,16 +373,10 @@ export function TagLayersPanelDAG() {
               ))}
             </select>
             <div className="modal-actions">
-              <button
-                className="btn-secondary"
-                onClick={() => setShowNewTagForm(false)}
-              >
+              <button className="btn-secondary" onClick={() => setShowNewTagForm(false)}>
                 Annuler
               </button>
-              <button
-                className="btn-primary"
-                onClick={handleCreateTag}
-              >
+              <button className="btn-primary" onClick={handleCreateTag}>
                 Créer
               </button>
             </div>
@@ -404,10 +390,7 @@ export function TagLayersPanelDAG() {
         <div className="tag-details-panel">
           <div className="details-header">
             <h3>{selectedTag.label}</h3>
-            <button
-              className="close-btn"
-              onClick={() => setShowTagDetails(false)}
-            >
+            <button className="close-btn" onClick={() => setShowTagDetails(false)}>
               <X size={16} />
             </button>
           </div>
@@ -424,11 +407,7 @@ export function TagLayersPanelDAG() {
                 {selectedTag.parents?.map(parentId => {
                   const parent = tags.find(t => t.id === parentId);
                   return parent ? (
-                    <span
-                      key={parentId}
-                      className="tag-chip"
-                      onClick={() => selectTag(parentId)}
-                    >
+                    <span key={parentId} className="tag-chip" onClick={() => selectTag(parentId)}>
                       {parent.label}
                     </span>
                   ) : null;
@@ -439,15 +418,13 @@ export function TagLayersPanelDAG() {
             <div className="detail-row">
               <label>Enfants:</label>
               <div className="tag-list">
-                {tags.filter(t => t.parents?.includes(selectedTag.id)).map(child => (
-                  <span
-                    key={child.id}
-                    className="tag-chip"
-                    onClick={() => selectTag(child.id)}
-                  >
-                    {child.label}
-                  </span>
-                )) || <span className="empty">Aucun</span>}
+                {tags
+                  .filter(t => t.parents?.includes(selectedTag.id))
+                  .map(child => (
+                    <span key={child.id} className="tag-chip" onClick={() => selectTag(child.id)}>
+                      {child.label}
+                    </span>
+                  )) || <span className="empty">Aucun</span>}
               </div>
             </div>
 

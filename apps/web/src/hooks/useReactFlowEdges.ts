@@ -5,10 +5,12 @@
 
 import { useCallback } from 'react';
 import type { Edge, Node } from '@xyflow/react';
+import { useOpenFiles } from './useOpenFiles';
 import type { OpenFile } from './useOpenFiles';
 
 interface UseReactFlowEdgesParams {
-  activeFile: OpenFile | null;
+  fileId?: string;
+  activeSheetId?: string;
   nodesWithColors: Record<string, any>;
   draggedNodeId: string | null;
   ghostNode: Node | null;
@@ -80,13 +82,20 @@ function getEdgeType(linkStyle?: string): string {
  * EN: Hook to manage BigMind connections to ReactFlow conversion
  */
 export function useReactFlowEdges({
-  activeFile,
+  fileId,
+  activeSheetId,
   nodesWithColors,
   draggedNodeId,
   ghostNode,
   draggedDescendants,
   linkStyle,
 }: UseReactFlowEdgesParams): UseReactFlowEdgesReturn {
+  // FR: Récupérer le fichier actif depuis le store
+  // EN: Get active file from store
+  const activeFile = useOpenFiles(
+    state => state.openFiles.find(f => f.id === fileId && f.activeSheetId === activeSheetId) || null
+  );
+
   const convertToReactFlowEdges = useCallback((): Edge[] => {
     if (!activeFile?.content?.nodes) {
       return [];
@@ -184,7 +193,7 @@ export function useReactFlowEdges({
     // EN: Create ghost edges between ghost node and its transparent children
     if (ghostNode && draggedDescendants.length > 0) {
       const ghostNodeId = ghostNode.id;
-      const originalNodeId = (ghostNode.data as any).originalNodeId;
+      const { originalNodeId } = ghostNode.data as any;
 
       const originalNode = activeFile?.content?.nodes?.[originalNodeId];
       if (originalNode?.children) {
@@ -271,8 +280,16 @@ export function useReactFlowEdges({
     }
 
     return edges;
-  }, [activeFile, draggedNodeId, ghostNode, draggedDescendants, linkStyle, nodesWithColors]);
+  }, [
+    activeFile,
+    // FR: Utiliser la référence directe du fichier récupérée depuis le store
+    // EN: Use direct file reference retrieved from store
+    draggedNodeId,
+    ghostNode,
+    draggedDescendants,
+    linkStyle,
+    nodesWithColors,
+  ]);
 
   return { convertToReactFlowEdges };
 }
-

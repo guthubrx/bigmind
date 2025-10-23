@@ -53,28 +53,21 @@ export function TemplateGallery({ onTemplateSelect }: TemplateGalleryProps) {
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       templates = templates.filter(
-        (t) =>
+        t =>
           t.metadata.name.toLowerCase().includes(q) ||
           t.metadata.description.toLowerCase().includes(q)
       );
     }
 
     return templates;
-  }, [
-    allTemplates,
-    view,
-    searchQuery,
-    favoriteTemplates,
-    recentTemplates,
-    customTemplates,
-  ]);
+  }, [allTemplates, view, searchQuery, favoriteTemplates, recentTemplates, customTemplates]);
 
   // FR: Grouper par catégorie/complexité
   // EN: Group by category/complexity
   const groupedTemplates = useMemo(() => {
     const grouped = new Map<TemplateCategory, Template[]>();
 
-    filteredTemplates.forEach((template) => {
+    filteredTemplates.forEach(template => {
       const key = template.metadata.category;
       if (!grouped.has(key)) grouped.set(key, []);
       grouped.get(key)!.push(template);
@@ -117,11 +110,11 @@ export function TemplateGallery({ onTemplateSelect }: TemplateGalleryProps) {
         setImportError('Format de fichier invalide');
       }
     } catch (error) {
-      setImportError('Erreur lors de l\'import du template');
+      setImportError("Erreur lors de l'import du template");
     }
   };
 
-  const TemplateCard = ({ template }: { template: Template }) => {
+  function TemplateCard({ template }: { template: Template }) {
     const isFavorite = favoriteTemplateIds.includes(template.metadata.id);
     const isCustom = !template.metadata.isSystem;
 
@@ -143,16 +136,12 @@ export function TemplateGallery({ onTemplateSelect }: TemplateGalleryProps) {
         </div>
 
         {/* FR: Description / EN: Description */}
-        <p className="text-xs text-gray-600 mb-3 flex-1">
-          {template.metadata.description}
-        </p>
+        <p className="text-xs text-gray-600 mb-3 flex-1">{template.metadata.description}</p>
 
         {/* FR: Métadonnées / EN: Metadata */}
         <div className="text-xs text-gray-500 mb-3">
           {template.metadata.author && <p>Par {template.metadata.author}</p>}
-          {template.metadata.usageCount && (
-            <p>Utilisé {template.metadata.usageCount} fois</p>
-          )}
+          {template.metadata.usageCount && <p>Utilisé {template.metadata.usageCount} fois</p>}
         </div>
 
         {/* FR: Actions / EN: Actions */}
@@ -195,7 +184,7 @@ export function TemplateGallery({ onTemplateSelect }: TemplateGalleryProps) {
         </div>
       </div>
     );
-  };
+  }
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-4">
@@ -205,12 +194,7 @@ export function TemplateGallery({ onTemplateSelect }: TemplateGalleryProps) {
         <label className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded cursor-pointer transition text-sm font-medium">
           <Upload size={16} />
           Importer
-          <input
-            type="file"
-            accept=".json"
-            onChange={handleImport}
-            className="hidden"
-          />
+          <input type="file" accept=".json" onChange={handleImport} className="hidden" />
         </label>
       </div>
 
@@ -231,7 +215,7 @@ export function TemplateGallery({ onTemplateSelect }: TemplateGalleryProps) {
           type="text"
           placeholder="Chercher un template..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={e => setSearchQuery(e.target.value)}
           className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         {searchQuery && (
@@ -251,7 +235,7 @@ export function TemplateGallery({ onTemplateSelect }: TemplateGalleryProps) {
           { id: 'recent', label: `Récents (${recentTemplates.length})` },
           { id: 'favorites', label: `Favoris (${favoriteTemplates.length})` },
           { id: 'custom', label: `Personnalisés (${customTemplates.length})` },
-        ].map((tab) => (
+        ].map(tab => (
           <button
             key={tab.id}
             onClick={() => setView(tab.id as typeof view)}
@@ -281,11 +265,7 @@ export function TemplateGallery({ onTemplateSelect }: TemplateGalleryProps) {
           {Array.from(groupedTemplates.entries()).map(([category, templates]) => (
             <div key={category}>
               <button
-                onClick={() =>
-                  setExpandedCategory(
-                    expandedCategory === category ? null : category
-                  )
-                }
+                onClick={() => setExpandedCategory(expandedCategory === category ? null : category)}
                 className="w-full flex items-center gap-2 p-2 hover:bg-gray-100 rounded font-semibold text-sm mb-2"
               >
                 <ChevronDown
@@ -299,7 +279,7 @@ export function TemplateGallery({ onTemplateSelect }: TemplateGalleryProps) {
 
               {expandedCategory === category && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {templates.map((template) => (
+                  {templates.map(template => (
                     <TemplateCard key={template.metadata.id} template={template} />
                   ))}
                 </div>
@@ -313,8 +293,8 @@ export function TemplateGallery({ onTemplateSelect }: TemplateGalleryProps) {
       <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
         <p className="font-medium mb-1">💡 Astuce</p>
         <p>
-          Utilisez les templates pour démarrer rapidement. Vous pouvez aussi créer vos
-          propres templates à partir de vos cartes existantes.
+          Utilisez les templates pour démarrer rapidement. Vous pouvez aussi créer vos propres
+          templates à partir de vos cartes existantes.
         </p>
       </div>
     </div>

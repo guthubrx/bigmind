@@ -27,9 +27,9 @@ export function NodeTagPanel({ nodeId, onClose, position }: NodeTagPanelProps) {
   const nodeTagIds = nodeTags.map(t => t.id);
 
   // Filtrer les tags disponibles
-  const availableTags = tagGraph.tags.filter(tag =>
-    !nodeTagIds.includes(tag.id) &&
-    tag.label.toLowerCase().includes(searchQuery.toLowerCase())
+  const availableTags = tagGraph.tags.filter(
+    tag =>
+      !nodeTagIds.includes(tag.id) && tag.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (!nodeId) return null;
@@ -53,7 +53,7 @@ export function NodeTagPanel({ nodeId, onClose, position }: NodeTagPanelProps) {
       id: newTagId,
       label: newTagName,
       visible: true,
-      nodeIds: [nodeId]
+      nodeIds: [nodeId],
     });
 
     // L'associer au nœud
@@ -66,11 +66,15 @@ export function NodeTagPanel({ nodeId, onClose, position }: NodeTagPanelProps) {
   return (
     <div
       className="node-tag-panel"
-      style={position ? {
-        position: 'fixed',
-        left: `${position.x}px`,
-        top: `${position.y}px`
-      } : undefined}
+      style={
+        position
+          ? {
+              position: 'fixed',
+              left: `${position.x}px`,
+              top: `${position.y}px`,
+            }
+          : undefined
+      }
     >
       {/* FR: En-tête */}
       {/* EN: Header */}
@@ -98,10 +102,7 @@ export function NodeTagPanel({ nodeId, onClose, position }: NodeTagPanelProps) {
           <div className="tag-list">
             {nodeTags.map(tag => (
               <div key={tag.id} className="tag-chip">
-                <div
-                  className="tag-color"
-                  style={{ backgroundColor: tag.color || '#3B82F6' }}
-                />
+                <div className="tag-color" style={{ backgroundColor: tag.color || '#3B82F6' }} />
                 <span>{tag.label}</span>
                 <button
                   type="button"
@@ -123,7 +124,7 @@ export function NodeTagPanel({ nodeId, onClose, position }: NodeTagPanelProps) {
           type="text"
           placeholder="Rechercher un tag..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={e => setSearchQuery(e.target.value)}
           className="search-input"
         />
 
@@ -136,15 +137,10 @@ export function NodeTagPanel({ nodeId, onClose, position }: NodeTagPanelProps) {
                 className="suggestion-item"
                 onClick={() => handleAddTag(tag.id)}
               >
-                <div
-                  className="tag-color"
-                  style={{ backgroundColor: tag.color || '#3B82F6' }}
-                />
+                <div className="tag-color" style={{ backgroundColor: tag.color || '#3B82F6' }} />
                 <span>{tag.label}</span>
                 {tag.nodeIds && tag.nodeIds.length > 0 && (
-                  <span className="usage-badge">
-                    {tag.nodeIds.length}
-                  </span>
+                  <span className="usage-badge">{tag.nodeIds.length}</span>
                 )}
               </button>
             ))}
@@ -154,11 +150,7 @@ export function NodeTagPanel({ nodeId, onClose, position }: NodeTagPanelProps) {
         {/* FR: Créer un nouveau tag */}
         {/* EN: Create new tag */}
         {!showAddForm ? (
-          <button
-            type="button"
-            className="create-tag-btn"
-            onClick={() => setShowAddForm(true)}
-          >
+          <button type="button" className="create-tag-btn" onClick={() => setShowAddForm(true)}>
             <Plus size={14} />
             <span>Créer un tag</span>
           </button>
@@ -168,15 +160,11 @@ export function NodeTagPanel({ nodeId, onClose, position }: NodeTagPanelProps) {
               type="text"
               placeholder="Nom du tag..."
               value={newTagName}
-              onChange={(e) => setNewTagName(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleCreateNewTag()}
+              onChange={e => setNewTagName(e.target.value)}
+              onKeyPress={e => e.key === 'Enter' && handleCreateNewTag()}
               className="tag-name-input"
             />
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={handleCreateNewTag}
-            >
+            <button type="button" className="btn-primary" onClick={handleCreateNewTag}>
               Créer
             </button>
             <button
@@ -201,9 +189,7 @@ export function NodeTagPanel({ nodeId, onClose, position }: NodeTagPanelProps) {
             {nodeTags.length} tag{nodeTags.length > 1 ? 's' : ''}
           </span>
           <span className="stat-divider">•</span>
-          <span className="stat-item">
-            {tagGraph.tags.length} disponibles
-          </span>
+          <span className="stat-item">{tagGraph.tags.length} disponibles</span>
         </div>
       </div>
     </div>
