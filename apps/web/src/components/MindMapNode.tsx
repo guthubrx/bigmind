@@ -390,9 +390,6 @@ function MindMapNode({ data, selected }: Props) {
                 borderRadius: '12px',
                 lineHeight: '1',
                 whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                maxWidth: '100px',
                 border: '1px solid rgba(255,255,255,0.3)',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
               }}
