@@ -273,12 +273,13 @@ function MindMapNode({ data, selected }: Props) {
       onContextMenu={(data as any).isGhost ? undefined : handleContextMenu}
       style={{
         position: 'relative',
+        overflow: 'visible', // Permet aux tags absolus de déborder sans agrandir le nœud
         // FR: Style spécial pour le nœud racine
         // EN: Special style for root node
         backgroundColor: (data as any).isDragTarget
           ? `${accentColor}20` // Fond semi-transparent de la couleur d'accent
-          : (data.isPrimary 
-            ? accentColor 
+          : (data.isPrimary
+            ? accentColor
             : (data.computedStyle?.backgroundColor ||
                data.style?.backgroundColor ||
                (data.style as any)?.fill ||
@@ -292,14 +293,14 @@ function MindMapNode({ data, selected }: Props) {
                   ((data as any).isDescendantOfDragged ? 0.3 : layerOpacity)),
         // FR: Couleur du texte - contraste automatique pour la racine, sinon selon le style ou contraste automatique
         // EN: Text color - automatic contrast for root, otherwise according to style or automatic contrast
-        color: data.isPrimary 
+        color: data.isPrimary
           ? getOptimalTextColor(accentColor)
           : (data.computedStyle?.textColor || data.style?.textColor || (data.style as any)?.color || 'black'),
-        fontSize: data.isPrimary 
-          ? (data.style?.fontSize || 24) 
+        fontSize: data.isPrimary
+          ? (data.style?.fontSize || 24)
           : (data.style?.fontSize || 14),
-        fontWeight: data.isPrimary 
-          ? (data.style?.fontWeight || 'bold') 
+        fontWeight: data.isPrimary
+          ? (data.style?.fontWeight || 'bold')
           : (data.style?.fontWeight || 'normal'),
         borderColor: data.style?.borderColor || '#e5e7eb',
         borderStyle: data.style?.borderStyle || 'solid',
