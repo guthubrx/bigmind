@@ -367,9 +367,9 @@ function MindMapNode({ data, selected }: Props) {
         <div
           className="absolute flex flex-row gap-1"
           style={{
-            bottom: '-8px', // Position à cheval sur le bord inférieur
+            bottom: '0', // Position sur la bordure inférieure
             left: '50%',
-            transform: 'translateX(-50%)', // Centrage horizontal
+            transform: 'translateX(-50%) translateY(50%)', // Centrage horizontal ET vertical sur la bordure
             zIndex: 10,
           }}
         >
