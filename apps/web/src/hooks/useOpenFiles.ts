@@ -13,6 +13,7 @@ import {
   type MindMap
 } from '@bigmind/core';
 import { v4 as uuidv4 } from 'uuid';
+import { eventBus } from '../utils/eventBus';
 
 export interface OpenFile {
   id: string;

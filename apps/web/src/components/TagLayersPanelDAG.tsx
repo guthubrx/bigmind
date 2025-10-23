@@ -42,14 +42,46 @@ export function TagLayersPanelDAG() {
   // FR: Synchroniser les tags avec la carte chargée
   // EN: Sync tags with loaded map
   React.useEffect(() => {
+    console.log('🏷️ TagLayersPanelDAG: Effet de synchronisation déclenché');
+    console.log('🏷️ TagLayersPanelDAG: mindMap.mindMap:', mindMap.mindMap ? 'présent' : 'absent');
+
     if (mindMap.mindMap) {
       console.log('🔄 Synchronisation des tags avec la carte:', mindMap.mindMap.meta.name);
+      console.log('🔄 Détails de la carte:', {
+        id: mindMap.mindMap.id,
+        nodesCount: Object.keys(mindMap.mindMap.nodes || {}).length,
+        rootId: mindMap.mindMap.rootId
+      });
       syncFromMindMap(mindMap.mindMap);
     } else {
       console.log('🗑️ Aucune carte chargée, effacement des tags');
       clearAllTags();
     }
   }, [mindMap.mindMap?.id]); // Re-synchroniser si l'ID de la carte change
+
+  // FR: Écouter les événements de mise à jour de la carte
+  // EN: Listen to map update events
+  React.useEffect(() => {
+    console.log('🏷️ TagLayersPanelDAG: Enregistrement des listeners d\'événements');
+
+    const unsubMapLoaded = eventBus.on('map:loaded', (event) => {
+      console.log('🏷️ TagLayersPanelDAG: Event map:loaded reçu', event);
+      if (event.source === 'system' && event.payload.map) {
+        console.log('🏷️ TagLayersPanelDAG: Synchronisation depuis map:loaded');
+        syncFromMindMap(event.payload.map);
+      }
+    });
+
+    const unsubNodeTagged = eventBus.on('node:tagged', (event) => {
+      console.log('🏷️ TagLayersPanelDAG: Event node:tagged reçu', event);
+      console.log('🏷️ TagLayersPanelDAG: Tags actuels après event:', tags.length);
+    });
+
+    return () => {
+      unsubMapLoaded();
+      unsubNodeTagged();
+    };
+  }, []);
 
   // FR: Debug - afficher le nombre de tags
   // EN: Debug - show tag count

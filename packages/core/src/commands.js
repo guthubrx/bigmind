@@ -314,20 +314,32 @@ export class AddTagCommand {
         this.tag = tag;
     }
     execute(state) {
+        console.log('🏷️ AddTagCommand: Début de l\'exécution - nœud:', this.nodeId, 'tag:', this.tag);
         return produce(state, draft => {
             const node = draft.nodes[this.nodeId];
-            if (!node)
+            if (!node) {
+                console.log('❌ AddTagCommand: Nœud non trouvé:', this.nodeId);
                 return;
+            }
             // FR: Initialiser le tableau de tags si nécessaire
             // EN: Initialize tags array if needed
             if (!node.tags) {
                 node.tags = [];
+                console.log('🏷️ AddTagCommand: Tags initialisés pour le nœud:', this.nodeId);
             }
             // FR: Ajouter le tag seulement s'il n'existe pas déjà
             // EN: Add tag only if it doesn't already exist
             if (!node.tags.includes(this.tag)) {
                 node.tags.push(this.tag);
                 this.wasAdded = true;
+                console.log('✅ AddTagCommand: Tag ajouté - nœud:', this.nodeId, 'tag:', this.tag);
+                // FR: Émettre l'événement pour la synchronisation avec le DAG
+                // EN: Emit event for DAG synchronization
+                console.log('🔥 AddTagCommand: Émission de node:tagged - nœud:', this.nodeId, 'tag:', this.tag);
+                // Note: L'événement sera émis par le composant parent qui utilise cette commande
+            }
+            else {
+                console.log('ℹ️ AddTagCommand: Tag déjà présent - nœud:', this.nodeId, 'tag:', this.tag);
             }
         });
     }

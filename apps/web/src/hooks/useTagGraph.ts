@@ -312,22 +312,23 @@ export function useTagGraph() {
     // EN: Listen to MindMap events
     const unsubNodeTagged = eventBus.on('node:tagged', (event) => {
       console.log('🎯 useTagGraph: Event node:tagged reçu', event);
-      if (event.source === 'mindmap') {
+      if (event.source === 'mindmap' || event.source === 'system') {
         const { nodeId, tagId } = event.payload;
+        console.log('🎯 Traitement du tag:', tagId, 'pour le nœud:', nodeId);
 
         // FR: Accéder directement au store pour avoir l'état actuel
         // EN: Access store directly to get current state
-        const currentState = useTagGraphStore.getState();
-        const currentNodeTags = useNodeTagsStore.getState();
+        const tagGraphState = useTagGraphStore.getState();
+        const nodeTagsState = useNodeTagsStore.getState();
 
         // FR: Créer le tag s'il n'existe pas
         // EN: Create tag if it doesn't exist
-        const tagExists = currentState.tags.find(t => t.id === tagId);
+        const tagExists = tagGraphState.tags.find(t => t.id === tagId);
         console.log('🔍 Tag existe déjà?', !!tagExists, 'pour tagId:', tagId);
 
         if (!tagExists) {
           console.log('➕ Création du nouveau tag:', tagId);
-          currentState.addTag({
+          tagGraphState.addTag({
             id: tagId,
             label: tagId.charAt(0).toUpperCase() + tagId.slice(1), // Capitaliser
             visible: true,
@@ -336,11 +337,14 @@ export function useTagGraph() {
         } else {
           // Associer le tag existant au nœud
           console.log('🔗 Association du tag existant au nœud');
-          currentState.associateTagToNode(tagId, nodeId);
+          tagGraphState.associateTagToNode(tagId, nodeId);
         }
 
         // Mettre à jour les associations nœud-tag
-        currentNodeTags.addNodeTag(nodeId, tagId);
+        console.log('🔗 Ajout de l\'association nœud-tag');
+        nodeTagsState.addNodeTag(nodeId, tagId);
+      } else {
+        console.log('🎯 Event ignoré - source:', event.source);
       }
     });
 
@@ -518,24 +522,35 @@ export function useTagGraph() {
   // FR: Synchroniser les tags depuis la carte mentale
   // EN: Sync tags from mindmap
   const syncFromMindMap = (mindMap: any) => {
+    console.log('🔄 syncFromMindMap: Début de synchronisation');
+
     // Effacer tous les tags existants
     state.clearTags();
     nodeTags.reset();
 
-    if (!mindMap || !mindMap.nodes) return;
+    if (!mindMap || !mindMap.nodes) {
+      console.log('🔄 syncFromMindMap: Pas de carte ou de nœuds');
+      return;
+    }
+
+    console.log('🔄 syncFromMindMap: Nombre de nœuds:', Object.keys(mindMap.nodes).length);
 
     // Parcourir tous les nœuds et collecter les tags uniques
     const uniqueTags = new Set<string>();
     Object.values(mindMap.nodes).forEach((node: any) => {
       if (node.tags && Array.isArray(node.tags)) {
+        console.log('🔄 syncFromMindMap: Nœud', node.id, 'a tags:', node.tags);
         node.tags.forEach((tag: string) => {
           uniqueTags.add(tag);
         });
       }
     });
 
+    console.log('🔄 syncFromMindMap: Tags uniques trouvés:', Array.from(uniqueTags));
+
     // Créer un tag DAG pour chaque tag unique
     uniqueTags.forEach((tagId) => {
+      console.log('🔄 syncFromMindMap: Création du tag:', tagId);
       state.addTag({
         id: tagId,
         label: tagId.charAt(0).toUpperCase() + tagId.slice(1),
@@ -548,11 +563,14 @@ export function useTagGraph() {
     Object.values(mindMap.nodes).forEach((node: any) => {
       if (node.tags && Array.isArray(node.tags)) {
         node.tags.forEach((tagId: string) => {
+          console.log('🔄 syncFromMindMap: Association tag', tagId, 'au nœud', node.id);
           state.associateTagToNode(tagId, node.id);
           nodeTags.addNodeTag(node.id, tagId);
         });
       }
     });
+
+    console.log('🔄 syncFromMindMap: Synchronisation terminée');
   };
 
   // FR: Vider tous les tags (pour quand on ferme la carte)

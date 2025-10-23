@@ -12,6 +12,7 @@ import TagSyncInitializer from './components/TagSyncInitializer';
 import { useAppSettings } from './hooks/useAppSettings';
 import { useOpenFiles } from './hooks/useOpenFiles';
 import { shouldIgnoreShortcut } from './utils/inputUtils';
+import { eventBus } from './utils/eventBus';
 import './App.css';
 
 function App() {
@@ -33,6 +34,17 @@ function App() {
   useEffect(() => {
     loadAppSettings();
   }, [loadAppSettings]);
+
+  // FR: Émettre un événement quand la carte est chargée/mise à jour
+  // EN: Emit event when map is loaded/updated
+  useEffect(() => {
+    if (mindMap) {
+      console.log('🏷️ App: Carte détectée, émission de map:loaded');
+      setTimeout(() => {
+        eventBus.emit('map:loaded', { map: mindMap }, 'system');
+      }, 0);
+    }
+  }, [mindMap?.id]);
 
   // FR: Raccourcis globaux Undo/Redo (Cmd/Ctrl+Z, Shift+Cmd/Ctrl+Z ou Ctrl+Y)
   // EN: Global Undo/Redo shortcuts (Cmd/Ctrl+Z, Shift+Cmd/Ctrl+Z or Ctrl+Y)

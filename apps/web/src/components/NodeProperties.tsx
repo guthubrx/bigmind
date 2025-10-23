@@ -34,6 +34,7 @@ import { useSelection } from '../hooks/useSelection';
 import { AddTagCommand, RemoveTagCommand, TagUtils } from '@bigmind/core';
 import { ImageManager } from './ImageManager';
 import { StickerPicker } from './StickerPicker';
+import { eventBus } from '../utils/eventBus';
 import './NodeProperties.css';
 
 function NodeProperties() {
@@ -774,8 +775,18 @@ function NodeProperties() {
                             onChange={(e) => setNewTag(e.target.value)}
                             onKeyPress={(e) => {
                               if (e.key === 'Enter' && newTag.trim() && activeFile?.content && selectedNodeId) {
+                                console.log('🏷️ NodeProperties: Ajout du tag via Enter - nœud:', selectedNodeId, 'tag:', newTag.trim());
                                 const command = new AddTagCommand(selectedNodeId, newTag.trim());
                                 const newMap = command.execute(activeFile.content);
+                                console.log('🏷️ NodeProperties: Carte mise à jour avec nouveau tag');
+
+                                // FR: Émettre l'événement pour la synchronisation avec le DAG
+                                // EN: Emit event for DAG synchronization
+                                console.log('🔥 NodeProperties: Émission de node:tagged - nœud:', selectedNodeId, 'tag:', newTag.trim());
+                                setTimeout(() => {
+                                  eventBus.emit('node:tagged', { nodeId: selectedNodeId, tagId: newTag.trim() }, 'mindmap');
+                                }, 0);
+
                                 useOpenFiles.setState((state) => ({
                                   openFiles: state.openFiles.map(f =>
                                     f.id === activeFile.id ? { ...f, content: newMap } : f
@@ -790,8 +801,18 @@ function NodeProperties() {
                             className="btn"
                             onClick={() => {
                               if (!newTag.trim() || !activeFile?.content || !selectedNodeId) return;
+                              console.log('🏷️ NodeProperties: Ajout du tag via bouton - nœud:', selectedNodeId, 'tag:', newTag.trim());
                               const command = new AddTagCommand(selectedNodeId, newTag.trim());
                               const newMap = command.execute(activeFile.content);
+                              console.log('🏷️ NodeProperties: Carte mise à jour avec nouveau tag');
+
+                              // FR: Émettre l'événement pour la synchronisation avec le DAG
+                              // EN: Emit event for DAG synchronization
+                              console.log('🔥 NodeProperties: Émission de node:tagged - nœud:', selectedNodeId, 'tag:', newTag.trim());
+                              setTimeout(() => {
+                                eventBus.emit('node:tagged', { nodeId: selectedNodeId, tagId: newTag.trim() }, 'mindmap');
+                              }, 0);
+
                               useOpenFiles.setState((state) => ({
                                 openFiles: state.openFiles.map(f =>
                                   f.id === activeFile.id ? { ...f, content: newMap } : f

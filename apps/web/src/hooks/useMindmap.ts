@@ -3,8 +3,9 @@
  * EN: Simplified hook to manage mind map state (development version)
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { eventBus } from '../utils/eventBus';
+import { useOpenFiles } from './useOpenFiles';
 
 // FR: Types simplifiés pour le développement
 // EN: Simplified types for development
@@ -108,6 +109,46 @@ export const useMindmap = () => {
     nodeId: null,
     field: null,
   });
+
+  // FR: Synchroniser avec useOpenFiles
+  // EN: Sync with useOpenFiles
+  const activeFile = useOpenFiles((state) => state.openFiles.find(f => f.isActive) || null);
+
+  // FR: Effet pour synchroniser la carte mentale avec le fichier actif
+  // EN: Effect to sync mindmap with active file
+  useEffect(() => {
+    console.log('🔄 useMindmap: Synchronisation avec useOpenFiles déclenchée');
+    console.log('🔄 useMindmap: Fichier actif:', activeFile ? activeFile.name : 'aucun');
+
+    if (activeFile && activeFile.content) {
+      console.log('🔄 useMindmap: Chargement de la carte depuis useOpenFiles');
+      console.log('🔄 useMindmap: Contenu de la carte:', {
+        id: activeFile.content.id,
+        name: activeFile.content.name,
+        nodesCount: Object.keys(activeFile.content.nodes || {}).length
+      });
+
+      // FR: Convertir le format useOpenFiles vers MindMap
+      // EN: Convert useOpenFiles format to MindMap
+      const convertedMap: MindMap = {
+        id: activeFile.content.id,
+        rootId: activeFile.content.rootNode?.id || 'root',
+        nodes: activeFile.content.nodes || {},
+        meta: {
+          name: activeFile.content.name || 'Carte sans nom',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          locale: 'fr',
+        },
+      };
+
+      setMindMap(convertedMap);
+      console.log('✅ useMindmap: Carte synchronisée avec useOpenFiles');
+    } else {
+      console.log('🗑️ useMindmap: Aucun fichier actif, carte réinitialisée');
+      setMindMap(null);
+    }
+  }, [activeFile?.id, activeFile?.content]);
 
   // FR: Actions avec useCallback pour éviter les re-renders
   // EN: Actions with useCallback to avoid re-renders
