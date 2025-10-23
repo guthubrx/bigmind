@@ -45,6 +45,7 @@ export interface MindMapNodeData extends MindNode {
     backgroundColor?: string;
     textColor?: string;
   };
+  tags?: string[]; // FR: Tags associés au nœud / EN: Tags associated with the node
 }
 
 type Props = { data: MindMapNodeData; selected?: boolean };
@@ -67,7 +68,14 @@ function MindMapNode({ data, selected }: Props) {
   // FR: Gestion des calques de tags (toujours actif)
   // EN: Tag layers management (always enabled)
   const { isNodeVisible, getNodeOpacity } = useTagLayers();
-  const nodeTags = (data as any).tags || [];
+  const nodeTags = data.tags || [];
+
+  // FR: Log pour débugger l'affichage des tags
+  // EN: Debug log for tag display
+  if (nodeTags.length > 0) {
+    console.log('🏷️ MindMapNode: Nœud avec tags -', data.title, ':', nodeTags);
+  }
+
   const shouldShow = isNodeVisible(nodeTags);
   const layerOpacity = getNodeOpacity(nodeTags);
 
@@ -349,40 +357,47 @@ function MindMapNode({ data, selected }: Props) {
             }}
           />
         ) : (
-          <>
-            <span className="text-center break-words">{data.title}</span>
-
-            {/* FR: Affichage des tags du nœud */}
-            {/* EN: Display node tags */}
-            {nodeTags && nodeTags.length > 0 && (
-              <div className="flex flex-wrap gap-1 justify-center mt-1 max-w-full">
-                {nodeTags.map((tag: string) => (
-                  <span
-                    key={tag}
-                    className="tag-badge"
-                    style={{
-                      backgroundColor: '#3B82F6',
-                      color: 'white',
-                      fontSize: '10px',
-                      padding: '2px 6px',
-                      borderRadius: '12px',
-                      lineHeight: '1',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      maxWidth: '80px',
-                      border: '1px solid rgba(255,255,255,0.2)',
-                    }}
-                    title={tag}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
-          </>
+          <span className="text-center break-words">{data.title}</span>
         )}
       </div>
+
+      {/* FR: Affichage des tags sur le bord droit du nœud */}
+      {/* EN: Display tags on the right edge of the node */}
+      {nodeTags && nodeTags.length > 0 && (
+        <div
+          className="absolute flex flex-col gap-1"
+          style={{
+            right: '-8px', // Position à cheval sur le bord
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 10,
+          }}
+        >
+          {nodeTags.map((tag: string) => (
+            <span
+              key={tag}
+              className="tag-badge"
+              style={{
+                backgroundColor: '#3B82F6',
+                color: 'white',
+                fontSize: '10px',
+                padding: '3px 8px',
+                borderRadius: '12px',
+                lineHeight: '1',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100px',
+                border: '1px solid rgba(255,255,255,0.3)',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+              }}
+              title={tag}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
 
 
       {/* FR: Handles de sortie sur le côté logique (gauche/droite) */}

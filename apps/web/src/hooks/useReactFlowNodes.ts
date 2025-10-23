@@ -156,6 +156,7 @@ export function useReactFlowNodes({
           isDescendantOfDragged: draggedDescendants.includes(node.id),
           isBeingDragged: draggedNodeId === node.id,
           opacity: opacity,
+          tags: node.tags || [], // FR: Transmettre les tags au composant MindMapNode
         },
       });
       }
