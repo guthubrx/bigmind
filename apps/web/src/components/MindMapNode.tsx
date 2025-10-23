@@ -360,39 +360,50 @@ function MindMapNode({ data, selected }: Props) {
       {/* EN: Display tags on the bottom edge of the node */}
       {nodeTags && nodeTags.length > 0 && (
         <div
-          className="absolute flex flex-row gap-1 justify-center"
           style={{
-            bottom: '0', // Position sur la bordure inférieure
+            position: 'absolute',
+            bottom: '0',
             left: '0',
             right: '0',
-            transform: 'translateY(calc(50% + 8px))', // À cheval sur bordure + descend de 8px
-            zIndex: 10,
-            display: 'flex',
-            justifyContent: 'center', // Centre les tags horizontalement
-            whiteSpace: 'nowrap', // Empêche le retour à la ligne des tags
+            height: '0', // Hauteur 0 pour ne pas contribuer à la hauteur du nœud
+            overflow: 'visible', // Permet au contenu de déborder
+            pointerEvents: 'none', // Les tags ne bloquent pas les interactions
           }}
         >
-          {nodeTags.map((tag: string) => (
-            <span
-              key={tag}
-              className="tag-badge"
-              style={{
-                display: 'inline-block',
-                backgroundColor: '#3B82F6',
-                color: 'white',
-                fontSize: '10px',
-                padding: '3px 8px',
-                borderRadius: '12px',
-                lineHeight: '1',
-                whiteSpace: 'nowrap',
-                border: '1px solid rgba(255,255,255,0.3)',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-              }}
-              title={tag}
-            >
-              {tag}
-            </span>
-          ))}
+          <div
+            className="flex flex-row gap-1 justify-center"
+            style={{
+              position: 'relative',
+              transform: 'translateY(calc(50% + 8px))', // À cheval sur bordure + descend de 8px
+              zIndex: 10,
+              display: 'flex',
+              justifyContent: 'center', // Centre les tags horizontalement
+              whiteSpace: 'nowrap', // Empêche le retour à la ligne des tags
+              pointerEvents: 'auto', // Réactive les interactions sur les tags
+            }}
+          >
+            {nodeTags.map((tag: string) => (
+              <span
+                key={tag}
+                className="tag-badge"
+                style={{
+                  display: 'inline-block',
+                  backgroundColor: '#3B82F6',
+                  color: 'white',
+                  fontSize: '10px',
+                  padding: '3px 8px',
+                  borderRadius: '12px',
+                  lineHeight: '1',
+                  whiteSpace: 'nowrap',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                }}
+                title={tag}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 
