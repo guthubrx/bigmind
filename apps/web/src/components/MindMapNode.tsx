@@ -326,7 +326,7 @@ function MindMapNode({ data, selected }: Props) {
 
       {/* FR: Contenu du nœud */}
       {/* EN: Node content */}
-      <div className={`flex items-center h-full ${data.isPrimary ? 'justify-center' : 'justify-center'}`}>
+      <div className={`flex flex-col items-center h-full ${data.isPrimary ? 'justify-center' : 'justify-center'}`}>
         {isEditing ? (
           <input
             ref={inputRef}
@@ -337,19 +337,50 @@ function MindMapNode({ data, selected }: Props) {
             onKeyDown={handleKeyDown}
             className="w-full bg-transparent border-none outline-none text-center"
             style={{
-              color: data.isPrimary 
-                ? '#ffffff' 
+              color: data.isPrimary
+                ? '#ffffff'
                 : (data.style?.textColor || 'black'),
-              fontSize: data.isPrimary 
-                ? (data.style?.fontSize || 24) 
+              fontSize: data.isPrimary
+                ? (data.style?.fontSize || 24)
                 : (data.style?.fontSize || 14),
-              fontWeight: data.isPrimary 
-                ? (data.style?.fontWeight || 'bold') 
+              fontWeight: data.isPrimary
+                ? (data.style?.fontWeight || 'bold')
                 : (data.style?.fontWeight || 'normal'),
             }}
           />
         ) : (
-          <span className="text-center break-words">{data.title}</span>
+          <>
+            <span className="text-center break-words">{data.title}</span>
+
+            {/* FR: Affichage des tags du nœud */}
+            {/* EN: Display node tags */}
+            {nodeTags && nodeTags.length > 0 && (
+              <div className="flex flex-wrap gap-1 justify-center mt-1 max-w-full">
+                {nodeTags.map((tag: string, index: number) => (
+                  <span
+                    key={index}
+                    className="tag-badge"
+                    style={{
+                      backgroundColor: '#3B82F6',
+                      color: 'white',
+                      fontSize: '10px',
+                      padding: '2px 6px',
+                      borderRadius: '12px',
+                      lineHeight: '1',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxWidth: '80px',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                    }}
+                    title={tag}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
 
