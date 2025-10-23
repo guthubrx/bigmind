@@ -70,12 +70,6 @@ function MindMapNode({ data, selected }: Props) {
   const { isNodeVisible, getNodeOpacity } = useTagLayers();
   const nodeTags = data.tags || [];
 
-  // FR: Log pour débugger l'affichage des tags
-  // EN: Debug log for tag display
-  if (nodeTags.length > 0) {
-    console.log('🏷️ MindMapNode: Nœud avec tags -', data.title, ':', nodeTags);
-  }
-
   const shouldShow = isNodeVisible(nodeTags);
   const layerOpacity = getNodeOpacity(nodeTags);
 
@@ -367,10 +361,10 @@ function MindMapNode({ data, selected }: Props) {
         <div
           className="absolute flex flex-row gap-1 justify-center"
           style={{
-            bottom: '-8px', // Descend de 8px (environ 20% de la hauteur moyenne d'un nœud)
+            bottom: '0', // Position sur la bordure inférieure
             left: '0',
             right: '0',
-            transform: 'translateY(50%)', // Descend de 50% de la hauteur du conteneur
+            transform: 'translateY(calc(50% + 8px))', // À cheval sur bordure + descend de 8px
             zIndex: 10,
             display: 'flex',
             justifyContent: 'center', // Centre les tags horizontalement
