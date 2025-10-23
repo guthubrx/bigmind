@@ -365,12 +365,14 @@ function MindMapNode({ data, selected }: Props) {
       {/* EN: Display tags on the bottom edge of the node */}
       {nodeTags && nodeTags.length > 0 && (
         <div
-          className="absolute flex flex-row gap-1"
+          className="absolute flex flex-row gap-1 justify-center"
           style={{
             bottom: '0', // Position sur la bordure inférieure
             left: '50%',
             transform: 'translateX(-50%) translateY(50%)', // Centrage horizontal ET vertical sur la bordure
             zIndex: 10,
+            whiteSpace: 'nowrap', // Empêche le retour à la ligne des tags
+            minWidth: 'max-content', // S'assure que le conteneur s'adapte au contenu
           }}
         >
           {nodeTags.map((tag: string) => (
@@ -378,6 +380,7 @@ function MindMapNode({ data, selected }: Props) {
               key={tag}
               className="tag-badge"
               style={{
+                display: 'inline-block',
                 backgroundColor: '#3B82F6',
                 color: 'white',
                 fontSize: '10px',
@@ -387,7 +390,7 @@ function MindMapNode({ data, selected }: Props) {
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                maxWidth: '80px',
+                maxWidth: '100px',
                 border: '1px solid rgba(255,255,255,0.3)',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
               }}
