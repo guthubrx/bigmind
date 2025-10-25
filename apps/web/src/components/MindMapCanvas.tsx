@@ -26,6 +26,7 @@ import MindMapNode from './MindMapNode';
 import MindMapEdge from './MindMapEdge';
 import { useFlowInstance } from '../hooks/useFlowInstance';
 import { useShortcuts } from '../hooks/useShortcuts';
+import { useDragAndDrop } from '../hooks/useDragAndDrop';
 
 // FR: Types de nœuds personnalisés
 // EN: Custom node types
@@ -41,7 +42,6 @@ const edgeTypes: EdgeTypes = {
 
 function MindMapCanvas() {
   const activeFile = useOpenFiles((state) => state.openFiles.find(f => f.isActive) || null);
-  const setActiveSheet = useOpenFiles((s) => s.setActiveSheet);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<any>(null);
   const setFlowInstance = useFlowInstance((s) => s.setInstance);
@@ -56,6 +56,23 @@ function MindMapCanvas() {
   const addSiblingToActive = useOpenFiles((s) => s.addSiblingToActive);
   const removeNodeFromActive = useOpenFiles((s) => s.removeNodeFromActive);
   const getShortcut = useShortcuts((s) => s.getShortcut);
+
+  // FR: Hook pour gérer le drag & drop des nœuds
+  // EN: Hook to manage node drag & drop
+  const {
+    draggedNodeId,
+    draggedDescendants,
+    dragTarget,
+    ghostNode,
+    dragMode,
+    setDragMode,
+    onNodeDragStart,
+    onNodeDrag,
+    onNodeDragStop,
+  } = useDragAndDrop({
+    activeFile,
+    instanceRef,
+  });
 
   // Debug logs removed for cleanliness
 
@@ -351,15 +368,51 @@ function MindMapCanvas() {
     return edges;
   }, [activeFile]);
 
-  const initialNodes = useMemo(() => convertToReactFlowNodes(), [convertToReactFlowNodes]);
+  // FR: Appliquer les états de drag aux nœuds
+  // EN: Apply drag states to nodes
+  const nodesWithDragStates = useMemo(() => {
+    const baseNodes = convertToReactFlowNodes();
+
+    // FR: Ajouter les propriétés de drag à chaque nœud
+    // EN: Add drag properties to each node
+    return baseNodes.map(node => ({
+      ...node,
+      data: {
+        ...node.data,
+        isGhost: node.id === ghostNode?.id,
+        isBeingDragged: node.id === draggedNodeId,
+        isDescendantOfDragged: draggedNodeId && draggedDescendants.includes(node.id),
+        isDragTarget: node.id === dragTarget,
+      },
+    }));
+  }, [convertToReactFlowNodes, ghostNode, draggedNodeId, draggedDescendants, dragTarget]);
+
+  // FR: Ajouter le nœud fantôme à la liste si en cours de drag
+  // EN: Add ghost node to list if dragging
+  const initialNodes = useMemo(() => {
+    if (!ghostNode) return nodesWithDragStates;
+    return [
+      ...nodesWithDragStates,
+      {
+        ...ghostNode,
+        draggable: false,
+        selectable: false,
+        data: {
+          ...ghostNode.data,
+          isGhost: true,
+        },
+      },
+    ];
+  }, [nodesWithDragStates, ghostNode]);
+
   const initialEdges = useMemo(() => convertToReactFlowEdges(), [convertToReactFlowEdges]);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes as any);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   // FR: Conserver une référence aux nœuds positionnés pour la navigation
   // EN: Keep a ref to positioned nodes for navigation
-  const nodesRef = useRef<Node[]>(initialNodes);
+  const nodesRef = useRef<Node[]>(initialNodes as any);
   useEffect(() => {
     nodesRef.current = nodes;
   }, [nodes]);
@@ -369,7 +422,7 @@ function MindMapCanvas() {
   React.useEffect(() => {
     const newNodes = convertToReactFlowNodes();
     const newEdges = convertToReactFlowEdges();
-    setNodes(newNodes);
+    setNodes(newNodes as any);
     setEdges(newEdges);
   }, [activeFile, activeFile?.content?.nodes, convertToReactFlowNodes, convertToReactFlowEdges, setNodes, setEdges]);
 
@@ -657,6 +710,9 @@ function MindMapCanvas() {
         nodesDraggable={nodesDraggable}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
+        onNodeDragStart={onNodeDragStart}
+        onNodeDrag={onNodeDrag}
+        onNodeDragStop={onNodeDragStop}
         fitView
         attributionPosition="bottom-left"
         style={{ width: '100%', height: '100%', minHeight: '400px' }}
@@ -665,6 +721,56 @@ function MindMapCanvas() {
         <Background />
         {/* Controls retirés: le zoom est géré dans la StatusBar */}
         <MiniMap position="top-right" />
+
+        {/* FR: Contrôles du mode de drag */}
+        {/* EN: Drag mode controls */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '10px',
+            left: '10px',
+            display: 'flex',
+            gap: '8px',
+            padding: '8px',
+            backgroundColor: 'white',
+            borderRadius: '4px',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+            zIndex: 100,
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setDragMode('free')}
+            style={{
+              padding: '6px 12px',
+              border: dragMode === 'free' ? '2px solid #3b82f6' : '1px solid #ccc',
+              borderRadius: '3px',
+              background: dragMode === 'free' ? '#eff6ff' : '#f9fafb',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: dragMode === 'free' ? '600' : 'normal',
+              color: dragMode === 'free' ? '#1e40af' : '#666',
+            }}
+          >
+            📦 Libre
+          </button>
+          <button
+            type="button"
+            onClick={() => setDragMode('reparent')}
+            style={{
+              padding: '6px 12px',
+              border: dragMode === 'reparent' ? '2px solid #3b82f6' : '1px solid #ccc',
+              borderRadius: '3px',
+              background: dragMode === 'reparent' ? '#eff6ff' : '#f9fafb',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: dragMode === 'reparent' ? '600' : 'normal',
+              color: dragMode === 'reparent' ? '#1e40af' : '#666',
+            }}
+          >
+            🔗 Rattach
+          </button>
+        </div>
       </ReactFlow>
     </div>
   );

@@ -2,6 +2,7 @@
  * FR: Commandes pour le pattern Command (undo/redo)
  * EN: Commands for Command pattern (undo/redo)
  */
+/* eslint-disable max-classes-per-file, @typescript-eslint/no-unused-vars, class-methods-use-this */
 
 import { produce } from 'immer';
 import { MindMap, MindNode, NodeID, Command, NodeFactory } from './model';
@@ -328,6 +329,109 @@ export class ReparentNodeCommand implements Command {
 
   get description(): string {
     return `Déplacer le nœud vers un nouveau parent`;
+  }
+
+  get timestamp(): number {
+    return Date.now();
+  }
+}
+
+// FR: Commande pour déplacer un nœud et toute son arborescence
+// EN: Command to move a node and its entire subtree
+export class MoveNodeWithSubtreeCommand implements Command {
+  private previousPositions: Record<NodeID, { x: number; y: number }> = {};
+
+  constructor(
+    private nodeId: NodeID,
+    private newPosition: { x: number; y: number },
+    private offset: { x: number; y: number } = { x: 0, y: 0 }
+  ) {}
+
+  /**
+   * FR: Récupère récursivement tous les descendants d'un nœud
+   * EN: Recursively get all descendants of a node
+   */
+  private getAllDescendants(nodeId: NodeID, nodes: Record<NodeID, MindNode>): NodeID[] {
+    const descendants: NodeID[] = [];
+    const node = nodes[nodeId];
+
+    if (!node?.children) return descendants;
+
+    const traverse = (currentNodeId: NodeID) => {
+      const currentNode = nodes[currentNodeId];
+      if (currentNode?.children) {
+        currentNode.children.forEach(childId => {
+          descendants.push(childId);
+          traverse(childId);
+        });
+      }
+    };
+
+    traverse(nodeId);
+    return descendants;
+  }
+
+  execute(state: MindMap): MindMap {
+    return produce(state, draft => {
+      const node = draft.nodes[this.nodeId];
+      if (!node) return;
+
+      // FR: Calculer tous les descendants du nœud
+      // EN: Calculate all descendants of the node
+      const allNodesToMove = [this.nodeId, ...this.getAllDescendants(this.nodeId, draft.nodes)];
+
+      // FR: Sauvegarder les positions précédentes pour undo
+      // EN: Save previous positions for undo
+      allNodesToMove.forEach(nodeId => {
+        const currentNode = draft.nodes[nodeId];
+        if (currentNode) {
+          this.previousPositions[nodeId] = {
+            x: currentNode.x || 0,
+            y: currentNode.y || 0,
+          };
+        }
+      });
+
+      // FR: Appliquer la translation à tous les nœuds de l'arborescence
+      // EN: Apply translation to all nodes in the subtree
+      allNodesToMove.forEach(nodeId => {
+        const currentNode = draft.nodes[nodeId];
+        if (currentNode) {
+          // FR: Pour le nœud principal, utiliser la nouvelle position
+          // EN: For the main node, use the new position
+          if (nodeId === this.nodeId) {
+            currentNode.x = this.newPosition.x;
+            currentNode.y = this.newPosition.y;
+          } else {
+            // FR: Pour les descendants, appliquer le même décalage
+            // EN: For descendants, apply the same offset
+            const originalPos = this.previousPositions[nodeId];
+            if (originalPos) {
+              currentNode.x = originalPos.x + this.offset.x;
+              currentNode.y = originalPos.y + this.offset.y;
+            }
+          }
+        }
+      });
+    });
+  }
+
+  undo(state: MindMap): MindMap {
+    return produce(state, draft => {
+      // FR: Restaurer toutes les positions précédentes
+      // EN: Restore all previous positions
+      Object.entries(this.previousPositions).forEach(([nodeId, position]) => {
+        const node = draft.nodes[nodeId];
+        if (node) {
+          node.x = position.x;
+          node.y = position.y;
+        }
+      });
+    });
+  }
+
+  get description(): string {
+    return `Déplacer le nœud vers (${this.newPosition.x}, ${this.newPosition.y})`;
   }
 
   get timestamp(): number {
