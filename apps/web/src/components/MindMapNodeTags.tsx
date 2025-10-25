@@ -22,7 +22,6 @@ function MindMapNodeTags({ nodeId, onRemoveTag }: MindMapNodeTagsProps) {
   const tags = useMemo(() => allTags.filter(tag => tagIds.includes(tag.id)), [allTags, tagIds]);
 
   const handleTagDragStart = (e: React.DragEvent, tagId: string) => {
-    e.stopPropagation();
     e.dataTransfer.effectAllowed = 'copy';
     e.dataTransfer.setData(
       'application/json',
