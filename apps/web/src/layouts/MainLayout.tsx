@@ -9,6 +9,7 @@ import FileTabs from '../components/FileTabs';
 import NodeExplorer from '../components/NodeExplorer';
 import MindMapCanvas from '../components/MindMapCanvas';
 import NodeProperties from '../components/NodeProperties';
+import TagLayersPanelDAG from '../components/TagLayersPanelDAG';
 import StatusBar from '../components/StatusBar';
 import CollapseButton from '../components/CollapseButton';
 import { useColumnCollapse } from '../hooks/useColumnCollapse';
@@ -31,8 +32,6 @@ function MainLayout() {
           <MenuBar />
         </div>
 
-        
-
         {/* FR: Frameset horizontal 2 - Zone principale */}
         {/* EN: Horizontal frameset 2 - Main area */}
         <div className="frameset-horizontal-2">
@@ -41,8 +40,8 @@ function MainLayout() {
           <div className={`files-column ${isCollapsed('files') ? 'collapsed' : ''}`}>
             <div className="column-header">
               <span className="column-title">Fichiers</span>
-              <CollapseButton 
-                isCollapsed={isCollapsed('files')} 
+              <CollapseButton
+                isCollapsed={isCollapsed('files')}
                 onToggle={() => toggleColumn('files')}
                 direction="left"
               />
@@ -66,11 +65,13 @@ function MainLayout() {
               <div className="frameset-horizontal-5">
                 {/* FR: Colonne explorateur de nœuds */}
                 {/* EN: Node explorer column */}
-                <div className={`node-explorer-column ${isCollapsed('explorer') ? 'collapsed' : ''}`}>
+                <div
+                  className={`node-explorer-column ${isCollapsed('explorer') ? 'collapsed' : ''}`}
+                >
                   <div className="column-header">
                     <span className="column-title">Explorateur</span>
-                    <CollapseButton 
-                      isCollapsed={isCollapsed('explorer')} 
+                    <CollapseButton
+                      isCollapsed={isCollapsed('explorer')}
                       onToggle={() => toggleColumn('explorer')}
                       direction="left"
                     />
@@ -91,11 +92,13 @@ function MainLayout() {
 
                 {/* FR: Colonne de propriétés du nœud sélectionné */}
                 {/* EN: Selected node properties column */}
-                <div className={`properties-column ${isCollapsed('properties') ? 'collapsed' : ''}`}>
+                <div
+                  className={`properties-column ${isCollapsed('properties') ? 'collapsed' : ''}`}
+                >
                   <div className="column-header">
                     <span className="column-title">Propriétés</span>
-                    <CollapseButton 
-                      isCollapsed={isCollapsed('properties')} 
+                    <CollapseButton
+                      isCollapsed={isCollapsed('properties')}
                       onToggle={() => toggleColumn('properties')}
                       direction="right"
                     />
@@ -106,6 +109,25 @@ function MainLayout() {
                     </div>
                   )}
                   {!isCollapsed('properties') && <NodeProperties />}
+                </div>
+
+                {/* FR: Colonne DAG des tags */}
+                {/* EN: Tags DAG column */}
+                <div className={`tags-column ${isCollapsed('tags') ? 'collapsed' : ''}`}>
+                  <div className="column-header">
+                    <span className="column-title">Tags & Layers</span>
+                    <CollapseButton
+                      isCollapsed={isCollapsed('tags')}
+                      onToggle={() => toggleColumn('tags')}
+                      direction="right"
+                    />
+                  </div>
+                  {isCollapsed('tags') && (
+                    <div className="vertical-title">
+                      <span className="vertical-text">TAGS</span>
+                    </div>
+                  )}
+                  {!isCollapsed('tags') && <TagLayersPanelDAG />}
                 </div>
               </div>
 
@@ -124,7 +146,7 @@ function MainLayout() {
           <StatusBar />
         </div>
       </div>
-      
+
       {/* FR: Composant de debug pour la plateforme (temporaire) */}
       {/* EN: Platform debug component (temporary) */}
       {/* <PlatformDebug /> */}

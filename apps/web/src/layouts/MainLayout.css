@@ -148,6 +148,23 @@
   display: none;
 }
 
+.tags-column.collapsed {
+  width: 32px;
+  min-width: 32px;
+  max-width: 32px;
+  transition: width 0.3s ease, min-width 0.3s ease, max-width 0.3s ease;
+  position: relative;
+}
+
+.tags-column.collapsed .column-header {
+  padding: 8px 4px;
+  justify-content: center;
+}
+
+.tags-column.collapsed .column-title {
+  display: none;
+}
+
 /* FR: Titre vertical pour les colonnes collapsed */
 /* EN: Vertical title for collapsed columns */
 .vertical-title {
@@ -269,6 +286,25 @@
   transition: width 0.3s ease, min-width 0.3s ease, max-width 0.3s ease;
 }
 
+/* FR: Colonne DAG des tags */
+/* EN: Tags DAG column */
+.tags-column {
+  width: 350px;
+  min-width: 350px;
+  max-width: 600px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent-color) 3%, white) 0%,
+    color-mix(in srgb, var(--accent-color) 1.5%, white) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--accent-color) 18%, white);
+  border-left: 2px solid color-mix(in srgb, var(--accent-color) 26%, white);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width 0.3s ease, min-width 0.3s ease, max-width 0.3s ease;
+}
+
 /* FR: Barre d'onglets */
 /* EN: Tab bar */
 .tab-bar-container {
@@ -331,6 +367,11 @@
 }
 
 .properties-column.resizable {
+  resize: horizontal;
+  overflow: auto;
+}
+
+.tags-column.resizable {
   resize: horizontal;
   overflow: auto;
 }
