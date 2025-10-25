@@ -247,6 +247,11 @@ function MindMapNode({ data, selected }: Props) {
     if ((data as any).isSiblingReorder) {
       return 'none';
     }
+    // FR: Si c'est un reparenting (zone centrale), utiliser du BLEU
+    // EN: If reparenting (center zone), use BLUE
+    if ((data as any).isValidDragTarget && (data as any).dropPosition === 'center') {
+      return '0 0 20px rgba(59, 130, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.3)';
+    }
     if ((data as any).isValidDragTarget) {
       return '0 0 20px rgba(34, 197, 94, 0.6), 0 0 40px rgba(34, 197, 94, 0.3)';
     }
@@ -271,6 +276,11 @@ function MindMapNode({ data, selected }: Props) {
     // EN: No outline for sibling reorder (line displayed instead)
     outline = undefined;
     outlineOffset = undefined;
+  } else if ((data as any).isValidDragTarget && (data as any).dropPosition === 'center') {
+    // FR: Reparenting (zone centrale) - outline BLEU
+    // EN: Reparenting (center zone) - BLUE outline
+    outline = '3px dashed rgb(59, 130, 246)';
+    outlineOffset = 4;
   } else if ((data as any).isValidDragTarget) {
     outline = '3px dashed rgb(34, 197, 94)';
     outlineOffset = 4;
@@ -298,7 +308,11 @@ function MindMapNode({ data, selected }: Props) {
   // FR: Déterminer la couleur de fond
   // EN: Determine background color
   let bgColor: string;
-  if ((data as any).isValidDragTarget) {
+  if ((data as any).isValidDragTarget && (data as any).dropPosition === 'center') {
+    // FR: Reparenting (zone centrale) - fond BLEU
+    // EN: Reparenting (center zone) - BLUE background
+    bgColor = 'rgba(59, 130, 246, 0.1)';
+  } else if ((data as any).isValidDragTarget) {
     bgColor = 'rgba(34, 197, 94, 0.1)';
   } else if ((data as any).isInvalidDragTarget) {
     bgColor = 'rgba(239, 68, 68, 0.05)';
