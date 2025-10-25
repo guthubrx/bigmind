@@ -80,7 +80,7 @@
   padding: 1px;
   border: none;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 0px;
+  border-radius: 2px;
   cursor: pointer;
   color: white;
   transition: all 0.2s ease;
