@@ -124,3 +124,43 @@
 .drag-error-shake {
   animation: errorShake 0.3s ease-in-out;
 }
+
+/* FR: Animation de restauration d'opacité à la fin du drag
+   EN: Opacity restoration animation on drag end */
+@keyframes opacityRestore {
+  0% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* FR: Animation de restauration pour descendants
+   EN: Opacity restore animation for descendants */
+@keyframes descendantOpacityRestore {
+  0% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* FR: Classe pour restauration d'opacité fluide
+   EN: Class for smooth opacity restoration */
+.node-opacity-restore {
+  animation: opacityRestore 0.4s ease-out forwards;
+}
+
+.node-descendant-opacity-restore {
+  animation: descendantOpacityRestore 0.4s ease-out forwards;
+}
+
+/* FR: Transition fluide pour retour à l'état normal
+   EN: Smooth transition back to normal state */
+.drag-complete-reset {
+  transition: opacity 0.3s ease-out,
+              transform 0.2s ease-out,
+              box-shadow 0.2s ease-out;
+}
