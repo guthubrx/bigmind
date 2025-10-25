@@ -3,7 +3,7 @@
  * EN: DAG graph visualization component with SVG
  */
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useTagGraph } from '../hooks/useTagGraph';
 import { DagTag } from '../types/dag';
 import './TagGraph.css';
@@ -26,8 +26,14 @@ function TagGraph() {
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
   const svgRef = useRef<SVGSVGElement>(null);
 
+  // Create stable dependency key based on tag IDs
+  const tagIdKey = useMemo(() => {
+    return tags.map(t => t.id).join(',');
+  }, [tags]);
+
   // FR: Calculer les positions des nœuds avec un algorithme hiérarchique simple
   // EN: Calculate node positions with simple hierarchical algorithm
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (tags.length === 0) {
       setPositions({});
@@ -90,7 +96,7 @@ function TagGraph() {
       });
 
     setPositions(newPositions);
-  }, [tags, getChildren, getParent]);
+  }, [tagIdKey]);
 
   // FR: Gérer le zoom avec la molette
   // EN: Handle zoom with mouse wheel
@@ -149,6 +155,7 @@ function TagGraph() {
     setDraggingNode(null);
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     window.addEventListener('mousemove', handleMouseMove as any);
     window.addEventListener('mouseup', handleMouseUp);
