@@ -48,7 +48,7 @@ function MindMapNodeTags({ nodeId, onRemoveTag }: MindMapNodeTagsProps) {
               }}
               aria-label={`Remove ${tag.label}`}
             >
-              <X size={9} />
+              <X size={7} />
             </button>
           )}
         </div>
