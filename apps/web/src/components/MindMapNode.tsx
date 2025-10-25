@@ -255,6 +255,7 @@ function MindMapNode({ data, selected }: Props) {
       onContextMenu={(data as any).isGhost ? undefined : handleContextMenu}
       style={{
         position: 'relative',
+        overflow: 'visible',
         backgroundColor: bgColor,
         opacity: nodeOpacity,
         color: textColor,

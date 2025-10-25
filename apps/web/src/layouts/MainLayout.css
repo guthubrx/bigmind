@@ -263,7 +263,7 @@
   background-color: theme('colors.background.DEFAULT');
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   border-bottom: none; /* supprimer la bordure basse pour coller aux onglets */
 }
 
