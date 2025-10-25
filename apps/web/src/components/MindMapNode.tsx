@@ -242,6 +242,12 @@ function MindMapNode({ data, selected }: Props) {
     if (isDragOverNode) {
       return `inset 0 0 10px ${accentColor}40, 0 0 20px ${accentColor}40`;
     }
+    if ((data as any).isValidDragTarget) {
+      return '0 0 20px rgba(34, 197, 94, 0.6), 0 0 40px rgba(34, 197, 94, 0.3)';
+    }
+    if ((data as any).isInvalidDragTarget) {
+      return '0 0 20px rgba(239, 68, 68, 0.6), 0 0 40px rgba(239, 68, 68, 0.3)';
+    }
     if ((data as any).isDragTarget) {
       return `0 0 20px ${accentColor}, 0 0 40px ${accentColor}80, 0 0 60px ${accentColor}40`;
     }
@@ -255,6 +261,12 @@ function MindMapNode({ data, selected }: Props) {
   if ((data as any).isGhost) {
     outline = '2px dashed #666666';
     outlineOffset = 2;
+  } else if ((data as any).isValidDragTarget) {
+    outline = '3px dashed rgb(34, 197, 94)';
+    outlineOffset = 4;
+  } else if ((data as any).isInvalidDragTarget) {
+    outline = '3px dashed rgb(239, 68, 68)';
+    outlineOffset = 4;
   } else if ((data as any).isDragTarget) {
     outline = `3px dashed ${accentColor}`;
     outlineOffset = 4;
@@ -276,7 +288,11 @@ function MindMapNode({ data, selected }: Props) {
   // FR: Déterminer la couleur de fond
   // EN: Determine background color
   let bgColor: string;
-  if ((data as any).isDragTarget) {
+  if ((data as any).isValidDragTarget) {
+    bgColor = 'rgba(34, 197, 94, 0.1)';
+  } else if ((data as any).isInvalidDragTarget) {
+    bgColor = 'rgba(239, 68, 68, 0.05)';
+  } else if ((data as any).isDragTarget) {
     bgColor = `${accentColor}20`;
   } else if (data.isPrimary) {
     bgColor = accentColor;
@@ -320,6 +336,11 @@ function MindMapNode({ data, selected }: Props) {
         ${isEditing ? 'editing' : ''}
         ${data.isPrimary ? '' : ''}
         ${isDragOverNode ? 'drag-over-tag' : ''}
+        ${(data as any).isValidDragTarget ? 'valid-reparent-target' : ''}
+        ${(data as any).isInvalidDragTarget ? 'invalid-reparent-target' : ''}
+        ${(data as any).isBeingDragged ? 'node-dropping' : ''}
+        ${(data as any).isDragTarget ? 'node-receive-drop' : ''}
+        ${(data as any).isDescendantOfDragged ? 'node-descendant-dropping' : ''}
       `}
       role="button"
       tabIndex={(data as any).isGhost ? -1 : 0}

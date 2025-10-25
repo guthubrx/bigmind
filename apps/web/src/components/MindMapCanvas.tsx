@@ -18,6 +18,7 @@ import {
   EdgeTypes,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import '../styles/drag-drop-animations.css';
 import { useOpenFiles } from '../hooks/useOpenFiles';
 // import { useViewport } from '../hooks/useViewport';
 import { useCanvasOptions } from '../hooks/useCanvasOptions';
@@ -63,12 +64,14 @@ function MindMapCanvas() {
     draggedNodeId,
     draggedDescendants,
     dragTarget,
+    isValidTarget,
     ghostNode,
     dragMode,
     setDragMode,
     onNodeDragStart,
     onNodeDrag,
     onNodeDragStop,
+    lastDropSuccess,
   } = useDragAndDrop({
     activeFile,
     instanceRef,
@@ -383,9 +386,11 @@ function MindMapCanvas() {
         isBeingDragged: node.id === draggedNodeId,
         isDescendantOfDragged: draggedNodeId && draggedDescendants.includes(node.id),
         isDragTarget: node.id === dragTarget,
+        isValidDragTarget: node.id === dragTarget && isValidTarget,
+        isInvalidDragTarget: node.id === dragTarget && !isValidTarget && dragTarget !== null,
       },
     }));
-  }, [convertToReactFlowNodes, ghostNode, draggedNodeId, draggedDescendants, dragTarget]);
+  }, [convertToReactFlowNodes, ghostNode, draggedNodeId, draggedDescendants, dragTarget, isValidTarget]);
 
   // FR: Ajouter le nœud fantôme à la liste si en cours de drag
   // EN: Add ghost node to list if dragging

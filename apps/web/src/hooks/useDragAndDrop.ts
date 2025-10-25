@@ -7,9 +7,30 @@
 import { useCallback, useState } from 'react';
 import type { Node } from '@xyflow/react';
 import { useOpenFiles } from './useOpenFiles';
-import { getAllDescendants } from '../utils/nodeUtils';
+import { getAllDescendants, isDescendant } from '../utils/nodeUtils';
 import type { OpenFile } from './useOpenFiles';
 import { ReparentNodeCommand } from '@bigmind/core';
+
+/**
+ * FR: Valide si on peut reparenter un nœud sur un autre
+ * EN: Validates if a node can be reparented to another
+ * Prévient les cycles en vérifiant qu'on ne reparente pas sur un enfant
+ */
+function canReparentNode(
+  nodeId: string,
+  targetId: string,
+  nodes: Record<string, any>
+): boolean {
+  // FR: Impossible reparenter sur soi-même
+  // EN: Cannot reparent to itself
+  if (nodeId === targetId) return false;
+
+  // FR: Impossible reparenter sur un enfant (créerait un cycle)
+  // EN: Cannot reparent to a child (would create cycle)
+  if (isDescendant(targetId, nodeId, nodes)) return false;
+
+  return true;
+}
 
 interface UseDragAndDropParams {
   activeFile: OpenFile | null;
@@ -20,12 +41,14 @@ interface UseDragAndDropReturn {
   draggedNodeId: string | null;
   draggedDescendants: string[];
   dragTarget: string | null;
+  isValidTarget: boolean;
   ghostNode: Node | null;
   dragMode: 'reparent' | 'free';
   setDragMode: (mode: 'reparent' | 'free') => void;
   onNodeDragStart: (event: React.MouseEvent, node: Node) => void;
   onNodeDrag: (event: React.MouseEvent, node: Node) => void;
   onNodeDragStop: (event: React.MouseEvent, node: Node) => void;
+  lastDropSuccess: boolean;
 }
 
 /**
@@ -39,8 +62,10 @@ export function useDragAndDrop({
   const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null);
   const [draggedDescendants, setDraggedDescendants] = useState<string[]>([]);
   const [dragTarget, setDragTarget] = useState<string | null>(null);
+  const [isValidTarget, setIsValidTarget] = useState(false);
   const [ghostNode, setGhostNode] = useState<Node | null>(null);
   const [dragMode, setDragMode] = useState<'reparent' | 'free'>('free');
+  const [lastDropSuccess, setLastDropSuccess] = useState(false);
 
   // FR: Tolérance de drag pour détecter la cible (en pixels)
   // EN: Drag tolerance to detect target (in pixels)
@@ -52,6 +77,7 @@ export function useDragAndDrop({
     setDraggedNodeId(null);
     setDraggedDescendants([]);
     setDragTarget(null);
+    setIsValidTarget(false);
     setGhostNode(null);
   }, []);
 
@@ -160,9 +186,17 @@ export function useDragAndDrop({
       const targetNode = closestNode as Node;
       console.log('🎯 Found target node:', targetNode.id, 'current node:', node.id);
 
+      // FR: Valider que la cible est valide (pas de cycle)
+      // EN: Validate that target is valid (no cycle)
+      const isValid = activeFile && canReparentNode(node.id, targetNode.id, activeFile.content.nodes);
       setDragTarget(targetNode.id);
+      setIsValidTarget(isValid || false);
+
+      if (!isValid) {
+        console.log('⚠️ Invalid target: would create cycle');
+      }
     },
-    [dragMode, dragTolerance, instanceRef]
+    [dragMode, dragTolerance, instanceRef, activeFile]
   );
 
   // FR: Gérer la fin du drag des nœuds
@@ -248,9 +282,17 @@ export function useDragAndDrop({
         }));
 
         console.log('✅ Nœud et arborescence déplacés avec succès');
+        setLastDropSuccess(true);
       } else if (dragMode === 'reparent' && dragTarget) {
         // FR: Mode reparenting - rattacher le nœud
         // EN: Reparenting mode - reattach the node
+        if (!isValidTarget) {
+          console.log('❌ Invalid reparent: would create cycle');
+          setLastDropSuccess(false);
+          resetStates();
+          return;
+        }
+
         console.log(`🔄 Rattachement: ${node.id} → ${dragTarget}`);
 
         // FR: Utiliser la commande ReparentNodeCommand pour undo/redo
@@ -271,8 +313,10 @@ export function useDragAndDrop({
         }));
 
         console.log('✅ Nœud rattaché avec succès');
+        setLastDropSuccess(true);
       } else {
         console.log('❌ No drag target in reparent mode, resetting states');
+        setLastDropSuccess(false);
       }
 
       resetStates();
@@ -284,11 +328,13 @@ export function useDragAndDrop({
     draggedNodeId,
     draggedDescendants,
     dragTarget,
+    isValidTarget,
     ghostNode,
     dragMode,
     setDragMode,
     onNodeDragStart,
     onNodeDrag,
     onNodeDragStop,
+    lastDropSuccess,
   };
 }
