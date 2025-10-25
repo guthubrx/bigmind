@@ -15,10 +15,11 @@ export const useSelection = create<SelectionState>((set, get) => ({
   selectedNodeId: null,
   selectedNodeIds: [],
 
-  setSelectedNodeId: (id) => set({
-    selectedNodeId: id,
-    selectedNodeIds: id ? [id] : [],
-  }),
+  setSelectedNodeId: id =>
+    set({
+      selectedNodeId: id,
+      selectedNodeIds: id ? [id] : [],
+    }),
 
   toggleNodeSelection: (id, multiSelect = false) => {
     const state = get();
@@ -44,7 +45,7 @@ export const useSelection = create<SelectionState>((set, get) => ({
     }
   },
 
-  addToSelection: (id) => {
+  addToSelection: id => {
     const state = get();
     if (!state.selectedNodeIds.includes(id)) {
       set({
@@ -54,20 +55,23 @@ export const useSelection = create<SelectionState>((set, get) => ({
     }
   },
 
-  removeFromSelection: (id) => {
+  removeFromSelection: id => {
     const state = get();
+    const newSelectedNodeIds = state.selectedNodeIds.filter(nId => nId !== id);
     set({
-      selectedNodeIds: state.selectedNodeIds.filter(nId => nId !== id),
-      selectedNodeId: state.selectedNodeIds[0] === id ? state.selectedNodeIds[1] || null : state.selectedNodeId,
+      selectedNodeIds: newSelectedNodeIds,
+      selectedNodeId:
+        state.selectedNodeId === id
+          ? newSelectedNodeIds[newSelectedNodeIds.length - 1] || null
+          : state.selectedNodeId,
     });
   },
 
-  clearSelection: () => set({
-    selectedNodeId: null,
-    selectedNodeIds: [],
-  }),
+  clearSelection: () =>
+    set({
+      selectedNodeId: null,
+      selectedNodeIds: [],
+    }),
 
-  isNodeSelected: (id) => get().selectedNodeIds.includes(id),
+  isNodeSelected: id => get().selectedNodeIds.includes(id),
 }));
-
-

@@ -34,4 +34,11 @@ export default defineConfig({
   optimizeDeps: {
     include: ['react', 'react-dom', '@xyflow/react'],
   },
+  test: {
+    // FR: Configuration Vitest
+    // EN: Vitest configuration
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: [],
+  },
 });
