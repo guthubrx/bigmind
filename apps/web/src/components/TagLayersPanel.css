@@ -113,6 +113,14 @@
   outline-offset: 2px;
 }
 
+.tag-node-badge[draggable='true'] {
+  cursor: grab;
+}
+
+.tag-node-badge[draggable='true']:active {
+  cursor: grabbing;
+}
+
 .tag-delete-btn {
   display: flex;
   align-items: center;

@@ -11,6 +11,12 @@ import { useAppSettings } from '../hooks/useAppSettings';
 import { useEditMode } from '../hooks/useEditMode';
 import { useMindMapDAGSync } from '../hooks/useMindMapDAGSync';
 import MindMapNodeTags from './MindMapNodeTags';
+
+interface DragTagData {
+  type: 'tag';
+  tagId: string;
+  tagLabel: string;
+}
 // FR: Types locaux pour le développement
 // EN: Local types for development
 export interface MindNode {
@@ -53,10 +59,58 @@ function MindMapNode({ data, selected }: Props) {
   const setSelectedNodeId = useSelection(s => s.setSelectedNodeId);
   const accentColor = useAppSettings(s => s.accentColor);
   const setEditMode = useEditMode(s => s.setEditMode);
-  const { untagNodeSync } = useMindMapDAGSync();
+  const { untagNodeSync, tagNodeSync } = useMindMapDAGSync();
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(data.title);
+  const [isDragOverNode, setIsDragOverNode] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // FR: Gérer le drag over (afficher feedback visuel)
+  // EN: Handle drag over (show visual feedback)
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    const dataJson = e.dataTransfer.getData('application/json');
+    if (!dataJson) return;
+
+    try {
+      const dragData: DragTagData = JSON.parse(dataJson);
+      if (dragData.type === 'tag') {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        setIsDragOverNode(true);
+      }
+    } catch {
+      // Ignore invalid data
+    }
+  }, []);
+
+  // FR: Gérer le drag leave (retirer feedback visuel)
+  // EN: Handle drag leave (remove visual feedback)
+  const handleDragLeave = useCallback(() => {
+    setIsDragOverNode(false);
+  }, []);
+
+  // FR: Gérer le drop (ajouter le tag au nœud)
+  // EN: Handle drop (add tag to node)
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragOverNode(false);
+
+      const dataJson = e.dataTransfer.getData('application/json');
+      if (!dataJson) return;
+
+      try {
+        const dragData: DragTagData = JSON.parse(dataJson);
+        if (dragData.type === 'tag') {
+          tagNodeSync(data.id, dragData.tagId);
+        }
+      } catch {
+        // Ignore invalid data
+      }
+    },
+    [data.id, tagNodeSync]
+  );
 
   // FR: Calculer la luminosité relative d'une couleur hex
   // EN: Calculate relative luminance of a hex color
@@ -175,6 +229,18 @@ function MindMapNode({ data, selected }: Props) {
 
   const isCurrentlySelected = !!(selected || data.isSelected || selectedNodeId === data.id);
 
+  // FR: Calculer le shadow selon l'état
+  // EN: Calculate shadow based on state
+  const getBoxShadow = (): string => {
+    if (isDragOverNode) {
+      return `inset 0 0 10px ${accentColor}40, 0 0 20px ${accentColor}40`;
+    }
+    if ((data as any).isDragTarget) {
+      return `0 0 20px ${accentColor}, 0 0 40px ${accentColor}80, 0 0 60px ${accentColor}40`;
+    }
+    return 'none';
+  };
+
   // FR: Calculer outline selon l'état
   // EN: Calculate outline based on state
   let outline: string | undefined;
@@ -246,6 +312,7 @@ function MindMapNode({ data, selected }: Props) {
         ${data.isSelected ? 'selected' : ''}
         ${isEditing ? 'editing' : ''}
         ${data.isPrimary ? '' : ''}
+        ${isDragOverNode ? 'drag-over-tag' : ''}
       `}
       role="button"
       tabIndex={(data as any).isGhost ? -1 : 0}
@@ -253,6 +320,9 @@ function MindMapNode({ data, selected }: Props) {
       onClick={(data as any).isGhost ? undefined : handleClick}
       onDoubleClick={(data as any).isGhost ? undefined : handleDoubleClick}
       onContextMenu={(data as any).isGhost ? undefined : handleContextMenu}
+      onDragOver={(data as any).isGhost ? undefined : handleDragOver}
+      onDragLeave={(data as any).isGhost ? undefined : handleDragLeave}
+      onDrop={(data as any).isGhost ? undefined : handleDrop}
       style={{
         position: 'relative',
         overflow: 'visible',
@@ -263,19 +333,17 @@ function MindMapNode({ data, selected }: Props) {
         fontWeight: data.isPrimary
           ? data.style?.fontWeight || 'bold'
           : data.style?.fontWeight || 'normal',
-        borderColor: data.style?.borderColor || '#e5e7eb',
-        borderStyle: data.style?.borderStyle || 'solid',
-        borderWidth: 1,
+        borderColor: isDragOverNode ? accentColor : data.style?.borderColor || '#e5e7eb',
+        borderStyle: isDragOverNode ? 'dashed' : data.style?.borderStyle || 'solid',
+        borderWidth: isDragOverNode ? 2 : 1,
         borderRadius: data.style?.borderRadius || 8,
         boxSizing: 'border-box',
         width: 200,
         padding: '8px 12px',
         outline,
         outlineOffset,
-        boxShadow: (data as any).isDragTarget
-          ? `0 0 20px ${accentColor}, 0 0 40px ${accentColor}80,
-             0 0 60px ${accentColor}40`
-          : 'none',
+        boxShadow: getBoxShadow(),
+        transition: 'all 0.2s ease',
       }}
     >
       {/* FR: Handles d'entrée (côté logique) */}

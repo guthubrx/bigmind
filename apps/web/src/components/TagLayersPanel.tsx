@@ -60,9 +60,20 @@ function TagTreeNode({
           className="tag-node-badge"
           style={{ backgroundColor: tag.color || '#3b82f6' }}
           onClick={handleColorClick}
+          draggable
+          onDragStart={e => {
+            e.dataTransfer!.effectAllowed = 'copy';
+            e.dataTransfer!.setData(
+              'application/json',
+              JSON.stringify({ type: 'tag', tagId: tag.id, tagLabel: tag.label })
+            );
+          }}
+          onDragEnd={e => {
+            e.dataTransfer!.dropEffect = 'none';
+          }}
           role="button"
           tabIndex={0}
-          title="Click to change color"
+          title="Click to change color or drag to assign to a node"
           onKeyDown={e => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
