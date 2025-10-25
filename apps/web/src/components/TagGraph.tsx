@@ -16,7 +16,7 @@ interface NodePosition {
 function TagGraph() {
   const tags = useTagGraph((state: any) => Object.values(state.tags) as DagTag[]);
   const getChildren = useTagGraph((state: any) => state.getChildren);
-  const getParent = useTagGraph((state: any) => state.getParent);
+  const getParents = useTagGraph((state: any) => state.getParents);
 
   const [positions, setPositions] = useState<Record<string, NodePosition>>({});
   const [zoom, setZoom] = useState(1);
@@ -33,8 +33,9 @@ function TagGraph() {
 
   // FR: Calculer les positions des nœuds avec un algorithme hiérarchique simple
   // EN: Calculate node positions with simple hierarchical algorithm
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Note: Using tagIdKey to prevent infinite loops from getChildren/getParents changing refs
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     if (tags.length === 0) {
       setPositions({});
       return;
@@ -51,10 +52,11 @@ function TagGraph() {
       visited.add(tagId);
       depth.set(tagId, d);
 
-      const parent = getParent(tagId);
-      if (parent) {
+      // FR: Gérer plusieurs parents
+      // EN: Handle multiple parents
+      getParents(tagId).forEach((parent: DagTag) => {
         assignDepth(parent.id, d - 1);
-      }
+      });
 
       getChildren(tagId).forEach((child: DagTag) => {
         assignDepth(child.id, d + 1);

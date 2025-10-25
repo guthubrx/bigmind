@@ -174,7 +174,7 @@ function TagLayersPanel() {
 
   // FR: Obtenir les balises racine (sans parent)
   // EN: Get root tags (without parent)
-  const rootTags = tags.filter((tag: DagTag) => !tag.parentId);
+  const rootTags = tags.filter((tag: DagTag) => !tag.parentIds || tag.parentIds.length === 0);
 
   const handleToggle = (tagId: string) => {
     setExpandedState(prev => ({

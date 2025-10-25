@@ -82,6 +82,7 @@ function NodeTagPanel({ nodeId }: NodeTagPanelProps) {
       id: newTagId,
       label: searchQuery.trim(),
       color: generateRandomColor(),
+      parentIds: [],
       children: [],
       relations: [],
       createdAt: Date.now(),

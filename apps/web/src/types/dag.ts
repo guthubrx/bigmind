@@ -29,7 +29,11 @@ export interface DagTag {
   id: string;
   label: string;
   color?: string;
-  parentId?: string | null;
+  // FR: Identifiants des parents (multi-parent DAG)
+  // EN: Parent identifiers (multi-parent DAG)
+  parentIds: string[];
+  // FR: Identifiants des enfants (calculés ou explicit)
+  // EN: Child identifiers (calculated or explicit)
   children: string[];
   relations: DagLink[];
   createdAt?: number;
@@ -112,17 +116,27 @@ export const DagValidation = {
         errors.push(`Tag ID mismatch: ${tagId} vs ${tag.id}`);
       }
 
-      if (tag.parentId && !tags[tag.parentId]) {
-        errors.push(`Tag ${tagId} references non-existent parent ${tag.parentId}`);
+      // FR: Vérifier que tous les parents existent
+      // EN: Check that all parents exist
+      const parentIds = tag.parentIds || [];
+      for (let j = 0; j < parentIds.length; j += 1) {
+        const parentId = parentIds[j];
+        if (!tags[parentId]) {
+          errors.push(`Tag ${tagId} references non-existent parent ${parentId}`);
+        } else if (!tags[parentId].children.includes(tagId)) {
+          errors.push(`Parent ${parentId} does not include ${tagId} in children`);
+        }
       }
 
+      // FR: Vérifier que tous les enfants existent et nous listent comme parent
+      // EN: Check that all children exist and list us as parent
       const childIds = tag.children;
       for (let j = 0; j < childIds.length; j += 1) {
         const childId = childIds[j];
         if (!tags[childId]) {
           errors.push(`Tag ${tagId} references non-existent child ${childId}`);
-        } else if (tags[childId].parentId !== tagId) {
-          errors.push(`Child ${childId} parentId mismatch with parent ${tagId}`);
+        } else if (!tags[childId].parentIds.includes(tagId)) {
+          errors.push(`Child ${childId} does not include ${tagId} in parentIds`);
         }
       }
 
@@ -152,9 +166,13 @@ export const DagValidation = {
       visited.add(currentId);
 
       const tag = tags[currentId];
-      if (tag?.parentId) {
-        ancestors.push(tag.parentId);
-        traverse(tag.parentId);
+      if (tag?.parentIds && tag.parentIds.length > 0) {
+        tag.parentIds.forEach(parentId => {
+          if (!ancestors.includes(parentId)) {
+            ancestors.push(parentId);
+          }
+          traverse(parentId);
+        });
       }
     };
 

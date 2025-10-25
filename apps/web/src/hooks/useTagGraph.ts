@@ -21,6 +21,8 @@ interface TagGraphState {
   updateTag(tagId: string, updates: Partial<DagTag>): void;
   getTag(tagId: string): DagTag | undefined;
   getAllTags(): DagTag[];
+  addParent(tagId: string, parentId: string): void;
+  removeParent(tagId: string, parentId: string): void;
 
   // FR: Actions de gestion des liens
   // EN: Link management actions
@@ -32,7 +34,7 @@ interface TagGraphState {
   // FR: Requêtes sur la hiérarchie
   // EN: Hierarchy queries
   getChildren(tagId: string): DagTag[];
-  getParent(tagId: string): DagTag | undefined;
+  getParents(tagId: string): DagTag[];
   getAncestors(tagId: string): DagTag[];
   getDescendants(tagId: string): DagTag[];
 
@@ -83,6 +85,7 @@ export const useTagGraph = create<TagGraphState>()(
         set((state: TagGraphState) => {
           const newTag: DagTag = {
             ...tag,
+            parentIds: tag.parentIds || [],
             children: tag.children || [],
             relations: tag.relations || [],
             createdAt: tag.createdAt || Date.now(),
@@ -104,13 +107,13 @@ export const useTagGraph = create<TagGraphState>()(
 
           if (!removed) return state;
 
-          // FR: Nettoyer les références
-          // EN: Clean up references
+          // FR: Nettoyer les références multi-parent
+          // EN: Clean up multi-parent references
           const cleaned = { ...remaining };
           Object.values(cleaned).forEach((tag: DagTag) => {
-            if (tag.parentId === tagId) {
-              tag.parentId = undefined;
-            }
+            // Remove from parentIds array
+            tag.parentIds = tag.parentIds.filter(id => id !== tagId);
+            // Remove from children array
             tag.children = tag.children.filter(id => id !== tagId);
           });
 
@@ -193,11 +196,62 @@ export const useTagGraph = create<TagGraphState>()(
         return tag.children.map((id: string) => state.tags[id]).filter(Boolean) as DagTag[];
       },
 
-      getParent: (tagId: string): DagTag | undefined => {
+      getParents: (tagId: string): DagTag[] => {
         const state = get();
         const tag = state.tags[tagId];
-        if (!tag?.parentId) return undefined;
-        return state.tags[tag.parentId];
+        if (!tag?.parentIds || tag.parentIds.length === 0) return [];
+        return tag.parentIds.map((id: string) => state.tags[id]).filter(Boolean) as DagTag[];
+      },
+
+      addParent: (tagId: string, parentId: string) => {
+        set((state: TagGraphState) => {
+          const tag = state.tags[tagId];
+          const parent = state.tags[parentId];
+
+          if (!tag || !parent) return state;
+          if (tag.parentIds.includes(parentId)) return state; // Already a parent
+
+          return {
+            tags: {
+              ...state.tags,
+              [tagId]: {
+                ...tag,
+                parentIds: [...tag.parentIds, parentId],
+                updatedAt: Date.now(),
+              },
+              [parentId]: {
+                ...parent,
+                children: parent.children.includes(tagId) ? parent.children : [...parent.children, tagId],
+                updatedAt: Date.now(),
+              },
+            },
+          };
+        });
+      },
+
+      removeParent: (tagId: string, parentId: string) => {
+        set((state: TagGraphState) => {
+          const tag = state.tags[tagId];
+          const parent = state.tags[parentId];
+
+          if (!tag || !parent) return state;
+
+          return {
+            tags: {
+              ...state.tags,
+              [tagId]: {
+                ...tag,
+                parentIds: tag.parentIds.filter(id => id !== parentId),
+                updatedAt: Date.now(),
+              },
+              [parentId]: {
+                ...parent,
+                children: parent.children.filter(id => id !== tagId),
+                updatedAt: Date.now(),
+              },
+            },
+          };
+        });
       },
 
       getAncestors: (tagId: string): DagTag[] => {
@@ -283,16 +337,31 @@ export const useTagGraph = create<TagGraphState>()(
     }),
     {
       name: STORAGE_KEY,
-      version: 2,
+      version: 3,
       migrate: (persistedState: any, version: number) => {
-        if (version === 1) {
+        let migratedState = persistedState;
+        let currentVersion = version;
+
+        if (currentVersion === 1) {
           // Migrate from version 1 to 2: add hiddenTags if missing
-          return {
-            ...persistedState,
-            hiddenTags: persistedState.hiddenTags || [],
-          };
+          migratedState.hiddenTags = migratedState.hiddenTags || [];
+          currentVersion = 2;
         }
-        return persistedState;
+        if (currentVersion === 2) {
+          // Migrate from version 2 to 3: convert parentId to parentIds array
+          const tags = migratedState.tags || {};
+          Object.values(tags).forEach((tag: any) => {
+            if (tag.parentId !== undefined && tag.parentId !== null) {
+              tag.parentIds = [tag.parentId];
+              delete tag.parentId;
+            } else if (!tag.parentIds) {
+              tag.parentIds = [];
+            }
+          });
+          migratedState.tags = tags;
+          currentVersion = 3;
+        }
+        return migratedState;
       },
     }
   )
