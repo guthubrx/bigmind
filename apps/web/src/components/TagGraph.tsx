@@ -5,7 +5,7 @@
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useTagGraph } from '../hooks/useTagGraph';
-import { DagTag } from '../types/dag';
+import { DagTag, RelationType } from '../types/dag';
 import './TagGraph.css';
 
 interface NodePosition {
@@ -17,6 +17,7 @@ function TagGraph() {
   const tags = useTagGraph((state: any) => Object.values(state.tags) as DagTag[]);
   const getChildren = useTagGraph((state: any) => state.getChildren);
   const getParents = useTagGraph((state: any) => state.getParents);
+  const getLinksBetween = useTagGraph((state: any) => state.getLinksBetween);
 
   const [positions, setPositions] = useState<Record<string, NodePosition>>({});
   const [zoom, setZoom] = useState(1);
@@ -28,9 +29,7 @@ function TagGraph() {
   const svgRef = useRef<SVGSVGElement>(null);
 
   // Create stable dependency key based on tag IDs
-  const tagIdKey = useMemo(() => {
-    return tags.map(t => t.id).join(',');
-  }, [tags]);
+  const tagIdKey = useMemo(() => tags.map(t => t.id).join(','), [tags]);
 
   // FR: Calculer les positions des nœuds avec un algorithme hiérarchique simple
   // EN: Calculate node positions with simple hierarchical algorithm
@@ -240,6 +239,58 @@ function TagGraph() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [focusedTagId, positions, zoom, getChildren, getParents, tags]);
 
+  // FR: Déterminer le style d'un lien selon son type
+  // EN: Determine link style based on its type
+  const getLinkStyle = (
+    sourceId: string,
+    targetId: string
+  ): {
+    marker: string;
+    stroke: string;
+    strokeDasharray: string | undefined;
+  } => {
+    const links = getLinksBetween(sourceId, targetId);
+
+    // S'il n'y a pas de lien explicite, utiliser le style hiérarchique par défaut
+    if (links.length === 0) {
+      return {
+        marker: 'url(#arrowhead-hierarchy)',
+        stroke: '#666',
+        strokeDasharray: undefined,
+      };
+    }
+
+    // Utiliser le premier lien (il ne devrait y en avoir qu'un normalement)
+    const link = links[0];
+
+    switch (link.type) {
+      case RelationType.IS_TYPE_OF:
+        return {
+          marker: 'url(#arrowhead-hierarchy)',
+          stroke: '#666',
+          strokeDasharray: undefined,
+        };
+      case RelationType.IS_RELATED_TO:
+        return {
+          marker: 'url(#arrowhead-related)',
+          stroke: '#3b82f6',
+          strokeDasharray: '5,5',
+        };
+      case RelationType.IS_PART_OF:
+        return {
+          marker: 'url(#arrowhead-part)',
+          stroke: '#22c55e',
+          strokeDasharray: undefined,
+        };
+      default:
+        return {
+          marker: 'url(#arrowhead)',
+          stroke: '#ccc',
+          strokeDasharray: undefined,
+        };
+    }
+  };
+
   if (tags.length === 0) {
     return (
       <div className="tag-graph-empty">
@@ -261,8 +312,49 @@ function TagGraph() {
         onMouseDown={handleMouseDown}
       >
         <defs>
+          {/* FR: Marqueur par défaut (hérité) */}
+          {/* EN: Default marker (legacy) */}
           <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
             <polygon points="0 0, 10 3, 0 6" fill="#666" />
+          </marker>
+
+          {/* FR: IS_TYPE_OF - Flèche pleine classique (hiérarchique) */}
+          {/* EN: IS_TYPE_OF - Classic filled arrow (hierarchical) */}
+          <marker
+            id="arrowhead-hierarchy"
+            markerWidth="10"
+            markerHeight="10"
+            refX="9"
+            refY="3"
+            orient="auto"
+          >
+            <polygon points="0 0, 10 3, 0 6" fill="#666" />
+          </marker>
+
+          {/* FR: IS_RELATED_TO - Flèche ouverte (relation générique) */}
+          {/* EN: IS_RELATED_TO - Open arrow (generic relation) */}
+          <marker
+            id="arrowhead-related"
+            markerWidth="12"
+            markerHeight="12"
+            refX="10"
+            refY="3"
+            orient="auto"
+          >
+            <path d="M0,0 L10,3 L0,6" fill="none" stroke="#3b82f6" strokeWidth="2" />
+          </marker>
+
+          {/* FR: IS_PART_OF - Diamant (composition) */}
+          {/* EN: IS_PART_OF - Diamond (composition) */}
+          <marker
+            id="arrowhead-part"
+            markerWidth="12"
+            markerHeight="12"
+            refX="10"
+            refY="4"
+            orient="auto"
+          >
+            <polygon points="0,4 4,0 8,4 4,8" fill="#22c55e" />
           </marker>
         </defs>
 
@@ -277,6 +369,8 @@ function TagGraph() {
               const targetPos = positions[child.id];
               if (!targetPos) return null;
 
+              const linkStyle = getLinkStyle(tag.id, child.id);
+
               return (
                 <line
                   key={`link-${tag.id}-${child.id}`}
@@ -284,9 +378,10 @@ function TagGraph() {
                   y1={sourcePos.y}
                   x2={targetPos.x}
                   y2={targetPos.y}
-                  stroke="#ccc"
+                  stroke={linkStyle.stroke}
                   strokeWidth="2"
-                  markerEnd="url(#arrowhead)"
+                  strokeDasharray={linkStyle.strokeDasharray}
+                  markerEnd={linkStyle.marker}
                 />
               );
             });
@@ -396,6 +491,43 @@ function TagGraph() {
         >
           Reset
         </button>
+      </div>
+
+      {/* FR: Légende des types de relations */}
+      {/* EN: Relation types legend */}
+      <div className="tag-graph-legend">
+        <div className="legend-title">Types de relations</div>
+        <div className="legend-items">
+          <div className="legend-item">
+            <svg width="60" height="20" style={{ marginRight: '8px' }}>
+              <line x1="0" y1="10" x2="50" y2="10" stroke="#666" strokeWidth="2" />
+              <polygon points="50,10 45,8 45,12" fill="#666" />
+            </svg>
+            <span>IS_TYPE_OF (Hiérarchie)</span>
+          </div>
+          <div className="legend-item">
+            <svg width="60" height="20" style={{ marginRight: '8px' }}>
+              <line
+                x1="0"
+                y1="10"
+                x2="50"
+                y2="10"
+                stroke="#3b82f6"
+                strokeWidth="2"
+                strokeDasharray="5,5"
+              />
+              <path d="M45,8 L50,10 L45,12" fill="none" stroke="#3b82f6" strokeWidth="2" />
+            </svg>
+            <span>IS_RELATED_TO (Relation)</span>
+          </div>
+          <div className="legend-item">
+            <svg width="60" height="20" style={{ marginRight: '8px' }}>
+              <line x1="0" y1="10" x2="42" y2="10" stroke="#22c55e" strokeWidth="2" />
+              <polygon points="42,10 38,7 46,10 38,13" fill="#22c55e" />
+            </svg>
+            <span>IS_PART_OF (Composition)</span>
+          </div>
+        </div>
       </div>
     </div>
   );
