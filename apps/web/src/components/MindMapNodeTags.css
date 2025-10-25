@@ -1,6 +1,6 @@
 .node-tags-container {
   position: absolute;
-  bottom: -8px;
+  bottom: -11px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
