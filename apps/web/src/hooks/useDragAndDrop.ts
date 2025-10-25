@@ -175,6 +175,9 @@ export function useDragAndDrop({
 
       allNodes.forEach((flowNode: Node) => {
         if (flowNode.id === node.id) return; // FR: Ignorer le nœud qu'on glisse / EN: Ignore the dragged node
+        if (flowNode.id.startsWith('ghost-')) return; // FR: Ignorer les nœuds fantômes / EN: Ignore ghost nodes
+        if ((flowNode.data as any)?.isGhost) return; // FR: Ignorer les nœuds fantômes / EN: Ignore ghost nodes
+        if (draggedDescendants.includes(flowNode.id)) return; // FR: Ignorer les descendants / EN: Ignore descendants
 
         const nodeX = flowNode.position.x;
         const nodeY = flowNode.position.y;
@@ -221,7 +224,7 @@ export function useDragAndDrop({
         console.log('⚠️ Invalid target: would create cycle');
       }
     },
-    [dragMode, dragTolerance, instanceRef, activeFile]
+    [dragMode, dragTolerance, instanceRef, activeFile, draggedDescendants]
   );
 
   // FR: Gérer la fin du drag des nœuds
