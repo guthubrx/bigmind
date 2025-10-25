@@ -8,6 +8,7 @@ import { Handle, Position } from '@xyflow/react';
 import { useMindmap } from '../hooks/useMindmap';
 import { useSelection } from '../hooks/useSelection';
 import { useAppSettings } from '../hooks/useAppSettings';
+import { useEditMode } from '../hooks/useEditMode';
 // FR: Types locaux pour le développement
 // EN: Local types for development
 export interface MindNode {
@@ -36,26 +37,58 @@ export interface MindMapNodeData extends MindNode {
   isSelected: boolean;
   isPrimary: boolean;
   direction?: number; // -1 gauche, +1 droite
+  computedStyle?: {
+    backgroundColor?: string;
+    textColor?: string;
+  };
 }
 
 type Props = { data: MindMapNodeData; selected?: boolean };
 
 function MindMapNode({ data, selected }: Props) {
   const { actions } = useMindmap();
-  const selectedNodeId = useSelection((s) => s.selectedNodeId);
-  const setSelectedNodeId = useSelection((s) => s.setSelectedNodeId);
-  const accentColor = useAppSettings((s) => s.accentColor);
+  const selectedNodeId = useSelection(s => s.selectedNodeId);
+  const setSelectedNodeId = useSelection(s => s.setSelectedNodeId);
+  const accentColor = useAppSettings(s => s.accentColor);
+  const setEditMode = useEditMode(s => s.setEditMode);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(data.title);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // FR: Calculer la luminosité relative d'une couleur hex
+  // EN: Calculate relative luminance of a hex color
+  const getRelativeLuminance = useCallback((hex: string): number => {
+    try {
+      const clean = hex.replace('#', '');
+      const isShort = clean.length === 3;
+      const r = parseInt(isShort ? clean[0] + clean[0] : clean.substring(0, 2), 16) / 255;
+      const g = parseInt(isShort ? clean[1] + clean[1] : clean.substring(2, 4), 16) / 255;
+      const b = parseInt(isShort ? clean[2] + clean[2] : clean.substring(4, 6), 16) / 255;
+
+      const toLinear = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+      return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+    } catch {
+      return 0.5;
+    }
+  }, []);
+
+  // FR: Choisir la couleur de texte optimale (noir ou blanc)
+  // EN: Choose optimal text color (black or white)
+  const getOptimalTextColor = useCallback(
+    (backgroundColor: string): string => {
+      const luminance = getRelativeLuminance(backgroundColor);
+      return luminance > 0.5 ? '#000000' : '#ffffff';
+    },
+    [getRelativeLuminance]
+  );
 
   // FR: Démarrer l'édition
   // EN: Start editing
   const startEditing = useCallback(() => {
     setIsEditing(true);
     setEditValue(data.title);
-    actions.setEditMode(data.id, 'title');
-  }, [actions, data.id, data.title]);
+    setEditMode(true, data.id);
+  }, [data.title, data.id, setEditMode]);
 
   // FR: Arrêter l'édition
   // EN: Stop editing
@@ -64,15 +97,19 @@ function MindMapNode({ data, selected }: Props) {
       actions.updateNodeTitle(data.id, editValue.trim());
     }
     setIsEditing(false);
-    actions.setEditMode(null, null);
-  }, [actions, data.id, data.title, editValue]);
+    setEditMode(false, null);
+  }, [actions, data.id, data.title, editValue, setEditMode]);
 
   // FR: Gérer la touche Entrée
   // EN: Handle Enter key
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' || e.key === 'Tab') {
+      e.preventDefault();
+      e.stopPropagation();
       stopEditing();
     } else if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
       setEditValue(data.title);
       stopEditing();
     }
@@ -82,7 +119,6 @@ function MindMapNode({ data, selected }: Props) {
   // EN: Handle click to select
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    actions.selectNodes([data.id], 'single');
     setSelectedNodeId(data.id);
   };
 
@@ -98,9 +134,19 @@ function MindMapNode({ data, selected }: Props) {
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // FR: TODO: Implémenter le menu contextuel
-    // EN: TODO: Implement context menu
+    const event = new CustomEvent('node-context-menu', {
+      detail: { x: e.clientX, y: e.clientY, nodeId: data.id },
+    });
+    window.dispatchEvent(event);
   };
+
+  // FR: Synchroniser editValue avec data.title quand il change (sauf si on est en train d'éditer)
+  // EN: Sync editValue with data.title when it changes (except when editing)
+  useEffect(() => {
+    if (!isEditing) {
+      setEditValue(data.title);
+    }
+  }, [data.title, isEditing]);
 
   // FR: Focus sur l'input quand l'édition commence
   // EN: Focus input when editing starts
@@ -126,6 +172,70 @@ function MindMapNode({ data, selected }: Props) {
 
   const isCurrentlySelected = !!(selected || data.isSelected || selectedNodeId === data.id);
 
+  // FR: Calculer outline selon l'état
+  // EN: Calculate outline based on state
+  let outline: string | undefined;
+  let outlineOffset: number | undefined;
+  if ((data as any).isGhost) {
+    outline = '2px dashed #666666';
+    outlineOffset = 2;
+  } else if ((data as any).isDragTarget) {
+    outline = `3px dashed ${accentColor}`;
+    outlineOffset = 4;
+  } else if (isCurrentlySelected) {
+    outline = `3px dashed ${accentColor}`;
+    outlineOffset = 4;
+  } else if (data.isPrimary) {
+    outline = `2px solid ${accentColor}`;
+    outlineOffset = 2;
+  }
+
+  const onKeyActivate = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setSelectedNodeId(data.id);
+    }
+  };
+
+  // FR: Déterminer la couleur de fond
+  // EN: Determine background color
+  let bgColor: string;
+  if ((data as any).isDragTarget) {
+    bgColor = `${accentColor}20`;
+  } else if (data.isPrimary) {
+    bgColor = accentColor;
+  } else {
+    bgColor =
+      data.computedStyle?.backgroundColor ||
+      data.style?.backgroundColor ||
+      (data.style as any)?.fill ||
+      (data.style as any)?.background ||
+      (data.style as any)?.bgColor ||
+      'white';
+  }
+
+  // FR: Déterminer l'opacité
+  // EN: Determine opacity
+  let nodeOpacity: number;
+  if ((data as any).isGhost) {
+    nodeOpacity = 0.4;
+  } else if ((data as any).isBeingDragged) {
+    nodeOpacity = 0.6;
+  } else if ((data as any).isDescendantOfDragged) {
+    nodeOpacity = 0.3;
+  } else {
+    nodeOpacity = 1;
+  }
+
+  // FR: Déterminer la couleur du texte
+  // EN: Determine text color
+  const textColor = data.isPrimary
+    ? getOptimalTextColor(accentColor)
+    : data.computedStyle?.textColor ||
+      data.style?.textColor ||
+      (data.style as any)?.color ||
+      'black';
+
   return (
     <div
       className={`
@@ -134,15 +244,21 @@ function MindMapNode({ data, selected }: Props) {
         ${isEditing ? 'editing' : ''}
         ${data.isPrimary ? '' : ''}
       `}
-      onClick={handleClick}
-      onDoubleClick={handleDoubleClick}
-      onContextMenu={handleContextMenu}
+      role="button"
+      tabIndex={(data as any).isGhost ? -1 : 0}
+      onKeyDown={(data as any).isGhost ? undefined : onKeyActivate}
+      onClick={(data as any).isGhost ? undefined : handleClick}
+      onDoubleClick={(data as any).isGhost ? undefined : handleDoubleClick}
+      onContextMenu={(data as any).isGhost ? undefined : handleContextMenu}
       style={{
         position: 'relative',
-        backgroundColor: data.style?.backgroundColor || 'white',
-        color: data.style?.textColor || 'black',
-        fontSize: data.style?.fontSize || 14,
-        fontWeight: data.style?.fontWeight || 'normal',
+        backgroundColor: bgColor,
+        opacity: nodeOpacity,
+        color: textColor,
+        fontSize: data.isPrimary ? data.style?.fontSize || 24 : data.style?.fontSize || 14,
+        fontWeight: data.isPrimary
+          ? data.style?.fontWeight || 'bold'
+          : data.style?.fontWeight || 'normal',
         borderColor: data.style?.borderColor || '#e5e7eb',
         borderStyle: data.style?.borderStyle || 'solid',
         borderWidth: 1,
@@ -150,20 +266,17 @@ function MindMapNode({ data, selected }: Props) {
         boxSizing: 'border-box',
         width: 200,
         padding: '8px 12px',
-        outline: isCurrentlySelected
-          ? `3px dashed ${accentColor}`
-          : data.isPrimary
-          ? `2px solid ${accentColor}`
-          : undefined,
-        outlineOffset: isCurrentlySelected ? 4 : data.isPrimary ? 2 : undefined,
+        outline,
+        outlineOffset,
+        boxShadow: (data as any).isDragTarget
+          ? `0 0 20px ${accentColor}, 0 0 40px ${accentColor}80,
+             0 0 60px ${accentColor}40`
+          : 'none',
       }}
     >
       {/* FR: Handles d'entrée (côté logique) */}
       {/* EN: Input handles (logical side) */}
-      {data.isPrimary ? (
-        // la racine n'a pas de parent -> pas de target
-        <></>
-      ) : (
+      {!data.isPrimary && (
         <Handle
           id={data.direction === -1 ? 'right' : 'left'}
           type="target"
@@ -180,20 +293,20 @@ function MindMapNode({ data, selected }: Props) {
             ref={inputRef}
             type="text"
             value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
+            onChange={e => setEditValue(e.target.value)}
             onBlur={stopEditing}
             onKeyDown={handleKeyDown}
             className="w-full bg-transparent border-none outline-none text-center"
             style={{
-              color: data.style?.textColor || 'black',
-              fontSize: data.style?.fontSize || 14,
-              fontWeight: data.style?.fontWeight || 'normal',
+              color: data.isPrimary ? '#ffffff' : data.style?.textColor || 'black',
+              fontSize: data.isPrimary ? data.style?.fontSize || 24 : data.style?.fontSize || 14,
+              fontWeight: data.isPrimary
+                ? data.style?.fontWeight || 'bold'
+                : data.style?.fontWeight || 'normal',
             }}
           />
         ) : (
-          <span className="text-center break-words">
-            {data.title}
-          </span>
+          <span className="text-center break-words">{data.title}</span>
         )}
       </div>
 
@@ -210,9 +323,19 @@ function MindMapNode({ data, selected }: Props) {
               <span
                 aria-label="Nombre d'enfants à gauche"
                 style={{
-                  position: 'absolute', left: -12, top: '50%', transform: 'translate(-50%, -50%)',
-                  backgroundColor: 'var(--accent-color)', color: '#fff', borderRadius: 9999,
-                  fontSize: 10, lineHeight: '14px', width: 16, height: 16, textAlign: 'center', pointerEvents: 'none'
+                  position: 'absolute',
+                  left: -12,
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  backgroundColor: 'var(--accent-color)',
+                  color: '#fff',
+                  borderRadius: 9999,
+                  fontSize: 10,
+                  lineHeight: '14px',
+                  width: 16,
+                  height: 16,
+                  textAlign: 'center',
+                  pointerEvents: 'none',
                 }}
               >
                 {(data as any).childCounts?.left ?? 0}
@@ -220,9 +343,19 @@ function MindMapNode({ data, selected }: Props) {
               <span
                 aria-label="Nombre d'enfants à droite"
                 style={{
-                  position: 'absolute', right: -12, top: '50%', transform: 'translate(50%, -50%)',
-                  backgroundColor: 'var(--accent-color)', color: '#fff', borderRadius: 9999,
-                  fontSize: 10, lineHeight: '14px', width: 16, height: 16, textAlign: 'center', pointerEvents: 'none'
+                  position: 'absolute',
+                  right: -12,
+                  top: '50%',
+                  transform: 'translate(50%, -50%)',
+                  backgroundColor: 'var(--accent-color)',
+                  color: '#fff',
+                  borderRadius: 9999,
+                  fontSize: 10,
+                  lineHeight: '14px',
+                  width: 16,
+                  height: 16,
+                  textAlign: 'center',
+                  pointerEvents: 'none',
                 }}
               >
                 {(data as any).childCounts?.right ?? 0}
@@ -244,12 +377,22 @@ function MindMapNode({ data, selected }: Props) {
             />
             <span
               aria-label="Nombre d'enfants"
-              style={{
-                position: 'absolute', top: '50%',
-                ...sideStyle,
-                backgroundColor: 'var(--accent-color)', color: '#fff', borderRadius: 9999,
-                fontSize: 10, lineHeight: '14px', width: 16, height: 16, textAlign: 'center', pointerEvents: 'none'
-              } as any}
+              style={
+                {
+                  position: 'absolute',
+                  top: '50%',
+                  ...sideStyle,
+                  backgroundColor: 'var(--accent-color)',
+                  color: '#fff',
+                  borderRadius: 9999,
+                  fontSize: 10,
+                  lineHeight: '14px',
+                  width: 16,
+                  height: 16,
+                  textAlign: 'center',
+                  pointerEvents: 'none',
+                } as any
+              }
             >
               {data.children?.length || 0}
             </span>
@@ -260,7 +403,10 @@ function MindMapNode({ data, selected }: Props) {
       {/* FR: Indicateur de sélection */}
       {/* EN: Selection indicator */}
       {data.isSelected && (
-        <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent-500 rounded-full border-2 border-white" />
+        <div
+          className="absolute -top-1 -right-1 w-3 h-3 bg-accent-500
+                     rounded-full border-2 border-white"
+        />
       )}
     </div>
   );
