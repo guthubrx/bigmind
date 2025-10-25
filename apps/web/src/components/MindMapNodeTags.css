@@ -35,11 +35,11 @@
 .node-tag-badge {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  padding: 1px 5px;
+  gap: 1px;
+  padding: 0px 4px;
   border-radius: 2px;
   color: white;
-  font-size: 8px;
+  font-size: 7px;
   font-weight: 600;
   white-space: nowrap;
   max-width: 120px;
@@ -49,6 +49,7 @@
   cursor: default;
   animation: slideInTag 0.3s ease-out;
   flex-shrink: 1;
+  line-height: 1;
 }
 
 .node-tag-badge:hover {
@@ -73,12 +74,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   padding: 0;
   border: none;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 0.5px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 0px;
   cursor: pointer;
   color: white;
   transition: all 0.2s ease;
