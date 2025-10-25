@@ -75,9 +75,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1px;
-  height: 1px;
-  padding: 0px;
+  width: auto;
+  height: auto;
+  padding: 1px;
   border: none;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 2px;
@@ -85,7 +85,7 @@
   color: white;
   transition: all 0.2s ease;
   flex-shrink: 0;
-  margin: 2px 2px;
+  margin: 2px 4px;
 }
 
 .remove-tag-btn:hover {
