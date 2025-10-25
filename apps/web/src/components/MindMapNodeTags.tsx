@@ -15,14 +15,10 @@ interface MindMapNodeTagsProps {
 }
 
 function MindMapNodeTags({ nodeId, onRemoveTag }: MindMapNodeTagsProps) {
-  const getAllTags = useTagGraph(state => state.getAllTags);
-  const getNodeTags = useNodeTags(state => state.getNodeTags);
+  const allTags = useTagGraph(state => state.getAllTags());
+  const tagIds = useNodeTags(state => state.getNodeTags(nodeId));
 
-  const tags = useMemo(() => {
-    const allTags = getAllTags();
-    const tagIds = getNodeTags(nodeId);
-    return allTags.filter(tag => tagIds.includes(tag.id));
-  }, [getAllTags, getNodeTags, nodeId]);
+  const tags = useMemo(() => allTags.filter(tag => tagIds.includes(tag.id)), [allTags, tagIds]);
 
   if (tags.length === 0) {
     return null;
