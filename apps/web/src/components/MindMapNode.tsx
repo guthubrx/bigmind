@@ -242,6 +242,11 @@ function MindMapNode({ data, selected }: Props) {
     if (isDragOverNode) {
       return `inset 0 0 10px ${accentColor}40, 0 0 20px ${accentColor}40`;
     }
+    // FR: Si c'est un réordonnancement de siblings, pas de glow (ligne affichée à la place)
+    // EN: If sibling reorder, no glow (line displayed instead)
+    if ((data as any).isSiblingReorder) {
+      return 'none';
+    }
     if ((data as any).isValidDragTarget) {
       return '0 0 20px rgba(34, 197, 94, 0.6), 0 0 40px rgba(34, 197, 94, 0.3)';
     }
@@ -261,6 +266,11 @@ function MindMapNode({ data, selected }: Props) {
   if ((data as any).isGhost) {
     outline = '2px dashed #666666';
     outlineOffset = 2;
+  } else if ((data as any).isSiblingReorder) {
+    // FR: Pas d'outline pour le réordonnancement de siblings (ligne affichée à la place)
+    // EN: No outline for sibling reorder (line displayed instead)
+    outline = undefined;
+    outlineOffset = undefined;
   } else if ((data as any).isValidDragTarget) {
     outline = '3px dashed rgb(34, 197, 94)';
     outlineOffset = 4;
@@ -512,6 +522,39 @@ function MindMapNode({ data, selected }: Props) {
       {/* FR: Tags affichés sur le nœud */}
       {/* EN: Tags displayed on node */}
       <MindMapNodeTags nodeId={data.id} onRemoveTag={tagId => untagNodeSync(data.id, tagId)} />
+
+      {/* FR: Indicateur de position de drop pour réordonnancement de siblings */}
+      {/* EN: Drop position indicator for sibling reordering */}
+      {(data as any).isSiblingReorder && (data as any).dropPosition === 'before' && (
+        <div
+          style={{
+            position: 'absolute',
+            top: -4,
+            left: 0,
+            right: 0,
+            height: 4,
+            backgroundColor: 'rgb(34, 197, 94)',
+            borderRadius: '2px 2px 0 0',
+            boxShadow: '0 0 10px rgba(34, 197, 94, 0.8), 0 0 20px rgba(34, 197, 94, 0.5)',
+            zIndex: 10,
+          }}
+        />
+      )}
+      {(data as any).isSiblingReorder && (data as any).dropPosition === 'after' && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: -4,
+            left: 0,
+            right: 0,
+            height: 4,
+            backgroundColor: 'rgb(34, 197, 94)',
+            borderRadius: '0 0 2px 2px',
+            boxShadow: '0 0 10px rgba(34, 197, 94, 0.8), 0 0 20px rgba(34, 197, 94, 0.5)',
+            zIndex: 10,
+          }}
+        />
+      )}
     </div>
   );
 }

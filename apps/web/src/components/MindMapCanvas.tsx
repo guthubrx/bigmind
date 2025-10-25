@@ -42,21 +42,21 @@ const edgeTypes: EdgeTypes = {
 };
 
 function MindMapCanvas() {
-  const activeFile = useOpenFiles((state) => state.openFiles.find(f => f.isActive) || null);
+  const activeFile = useOpenFiles(state => state.openFiles.find(f => f.isActive) || null);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<any>(null);
-  const setFlowInstance = useFlowInstance((s) => s.setInstance);
+  const setFlowInstance = useFlowInstance(s => s.setInstance);
   // const zoom = useViewport((s) => s.zoom);
   // const setZoom = useViewport((s) => s.setZoom);
-  const nodesDraggable = useCanvasOptions((s) => s.nodesDraggable);
-  const followSelection = useCanvasOptions((s) => s.followSelection);
-  const selectedNodeId = useSelection((s) => s.selectedNodeId);
-  const setSelectedNodeId = useSelection((s) => s.setSelectedNodeId);
-  const addChildToActive = useOpenFiles((s) => s.addChildToActive);
-  const updateActiveFileNode = useOpenFiles((s) => s.updateActiveFileNode);
-  const addSiblingToActive = useOpenFiles((s) => s.addSiblingToActive);
-  const removeNodeFromActive = useOpenFiles((s) => s.removeNodeFromActive);
-  const getShortcut = useShortcuts((s) => s.getShortcut);
+  const nodesDraggable = useCanvasOptions(s => s.nodesDraggable);
+  const followSelection = useCanvasOptions(s => s.followSelection);
+  const selectedNodeId = useSelection(s => s.selectedNodeId);
+  const setSelectedNodeId = useSelection(s => s.setSelectedNodeId);
+  const addChildToActive = useOpenFiles(s => s.addChildToActive);
+  const updateActiveFileNode = useOpenFiles(s => s.updateActiveFileNode);
+  const addSiblingToActive = useOpenFiles(s => s.addSiblingToActive);
+  const removeNodeFromActive = useOpenFiles(s => s.removeNodeFromActive);
+  const getShortcut = useShortcuts(s => s.getShortcut);
 
   // FR: Hook pour gérer le drag & drop des nœuds
   // EN: Hook to manage node drag & drop
@@ -71,7 +71,8 @@ function MindMapCanvas() {
     onNodeDragStart,
     onNodeDrag,
     onNodeDragStop,
-    lastDropSuccess,
+    dropPosition,
+    isSiblingReorder,
   } = useDragAndDrop({
     activeFile,
     instanceRef,
@@ -89,11 +90,11 @@ function MindMapCanvas() {
     }
 
     const nodes: Node[] = [];
-    
+
     // FR: Le parser XMind crée rootNode, pas nodes.root
     // EN: XMind parser creates rootNode, not nodes.root
     const rootNode = activeFile.content.rootNode || activeFile.content.nodes?.root;
-    
+
     if (!rootNode) {
       // console.warn('No root node');
       return [];
@@ -117,7 +118,7 @@ function MindMapCanvas() {
       const maxCharsPerLine = Math.max(8, Math.floor((NODE_WIDTH - 24) / avgCharWidth));
       let lines = 1;
       let current = 0;
-      words.forEach((w) => {
+      words.forEach(w => {
         const len = w.length + 1;
         if (current + len > maxCharsPerLine) {
           lines += 1;
@@ -162,7 +163,7 @@ function MindMapCanvas() {
       direction: number, // -1 left, 0 root, +1 right
       baseY: number // début de la bande verticale allouée
     ) => {
-      const totalHeight = subtreeHeightById[node.id] || (LINE_HEIGHT + NODE_VPAD);
+      const totalHeight = subtreeHeightById[node.id] || LINE_HEIGHT + NODE_VPAD;
       const x = level === 0 ? 0 : direction * level * LEVEL_WIDTH;
       const nodeCenterY = baseY + totalHeight / 2 - nodeOwnHeightById[node.id] / 2;
 
@@ -179,7 +180,7 @@ function MindMapCanvas() {
           isSelected: false,
           isPrimary: level === 0,
           direction,
-          childCounts: { total: (node.children?.length || 0) }
+          childCounts: { total: node.children?.length || 0 },
         },
       });
 
@@ -191,8 +192,9 @@ function MindMapCanvas() {
         // FR: Cas enfant unique: aligner verticalement le centre de l'enfant sur le parent
         // EN: Single child: align child's center with parent's center
         const onlyId = childIds[0];
-        const ch = subtreeHeightById[onlyId] || (LINE_HEIGHT + NODE_VPAD);
-        const parentCenterY = nodeCenterY + (nodeOwnHeightById[node.id] || (LINE_HEIGHT + NODE_VPAD)) / 2;
+        const ch = subtreeHeightById[onlyId] || LINE_HEIGHT + NODE_VPAD;
+        const parentCenterY =
+          nodeCenterY + (nodeOwnHeightById[node.id] || LINE_HEIGHT + NODE_VPAD) / 2;
         // FR: Respecter la bande verticale allouée pour éviter de chevaucher d'autres branches
         // EN: Respect allocated vertical band to avoid overlapping other branches
         const bandStart = baseY;
@@ -210,7 +212,7 @@ function MindMapCanvas() {
         childIds.forEach((id, idx) => (idx % 2 === 0 ? rightIds : leftIds).push(id));
 
         // FR: Injecter les compteurs gauche/droite sur la racine
-        const rootIndex = nodes.findIndex((n) => n.id === node.id);
+        const rootIndex = nodes.findIndex(n => n.id === node.id);
         if (rootIndex !== -1) {
           (nodes[rootIndex].data as any).childCounts = {
             left: leftIds.length,
@@ -220,17 +222,31 @@ function MindMapCanvas() {
         }
 
         // Droite
-        let offsetRight = nodeCenterY - (rightIds.reduce((acc, id) => acc + (subtreeHeightById[id] || (LINE_HEIGHT + NODE_VPAD)), 0) + SIBLING_GAP * Math.max(0, rightIds.length - 1)) / 2;
-        rightIds.forEach((childId) => {
-          const ch = subtreeHeightById[childId] || (LINE_HEIGHT + NODE_VPAD);
+        let offsetRight =
+          nodeCenterY -
+          (rightIds.reduce(
+            (acc, id) => acc + (subtreeHeightById[id] || LINE_HEIGHT + NODE_VPAD),
+            0
+          ) +
+            SIBLING_GAP * Math.max(0, rightIds.length - 1)) /
+            2;
+        rightIds.forEach(childId => {
+          const ch = subtreeHeightById[childId] || LINE_HEIGHT + NODE_VPAD;
           positionSubtree(activeFile.content.nodes[childId], level + 1, +1, offsetRight);
           offsetRight += ch + SIBLING_GAP;
         });
 
         // Gauche
-        let offsetLeft = nodeCenterY - (leftIds.reduce((acc, id) => acc + (subtreeHeightById[id] || (LINE_HEIGHT + NODE_VPAD)), 0) + SIBLING_GAP * Math.max(0, leftIds.length - 1)) / 2;
-        leftIds.forEach((childId) => {
-          const ch = subtreeHeightById[childId] || (LINE_HEIGHT + NODE_VPAD);
+        let offsetLeft =
+          nodeCenterY -
+          (leftIds.reduce(
+            (acc, id) => acc + (subtreeHeightById[id] || LINE_HEIGHT + NODE_VPAD),
+            0
+          ) +
+            SIBLING_GAP * Math.max(0, leftIds.length - 1)) /
+            2;
+        leftIds.forEach(childId => {
+          const ch = subtreeHeightById[childId] || LINE_HEIGHT + NODE_VPAD;
           positionSubtree(activeFile.content.nodes[childId], level + 1, -1, offsetLeft);
           offsetLeft += ch + SIBLING_GAP;
         });
@@ -239,14 +255,15 @@ function MindMapCanvas() {
         if (childIds.length === 1) {
           // FR: Alignement au centre pour enfant unique
           const onlyId = childIds[0];
-          const ch = subtreeHeightById[onlyId] || (LINE_HEIGHT + NODE_VPAD);
-          const parentCenterY = nodeCenterY + ((nodeOwnHeightById[node.id] || (LINE_HEIGHT + NODE_VPAD)) / 2);
+          const ch = subtreeHeightById[onlyId] || LINE_HEIGHT + NODE_VPAD;
+          const parentCenterY =
+            nodeCenterY + (nodeOwnHeightById[node.id] || LINE_HEIGHT + NODE_VPAD) / 2;
           const start = parentCenterY - ch / 2;
           positionSubtree(activeFile.content.nodes[onlyId], level + 1, direction, start);
         } else {
           let currentY = baseY;
           childIds.forEach((childId: string) => {
-            const ch = subtreeHeightById[childId] || (LINE_HEIGHT + NODE_VPAD);
+            const ch = subtreeHeightById[childId] || LINE_HEIGHT + NODE_VPAD;
             positionSubtree(activeFile.content.nodes[childId], level + 1, direction, currentY);
             currentY += ch + SIBLING_GAP;
           });
@@ -258,11 +275,11 @@ function MindMapCanvas() {
     // EN: Pre-compute subtree sizes
     const totalHeight = computeSubtreeHeights(rootNode);
     const startY = -totalHeight / 2;
-    
+
     // FR: Positionner depuis la racine en respectant les bandes verticales par sous-arbre
     // EN: Position from root respecting vertical bands per subtree
     positionSubtree(rootNode, 0, 0, startY);
-    
+
     // FR: Corriger les parentId après positionnement
     // EN: Fix parentId after positioning
     const fixParentIds = (node: any, parentId: string | null = null): void => {
@@ -270,7 +287,7 @@ function MindMapCanvas() {
       if (nodeIndex !== -1) {
         nodes[nodeIndex].data.parentId = parentId;
       }
-      
+
       if (node.children && node.children.length > 0) {
         node.children.forEach((childId: string) => {
           const childNode = activeFile.content.nodes[childId];
@@ -280,9 +297,9 @@ function MindMapCanvas() {
         });
       }
     };
-    
+
     fixParentIds(rootNode);
-    
+
     // console.warn('ReactFlow nodes created:', nodes.length);
     return nodes;
   }, [activeFile]);
@@ -297,11 +314,11 @@ function MindMapCanvas() {
     }
 
     const edges: Edge[] = [];
-    
+
     // FR: Le parser XMind crée rootNode, pas nodes.root
     // EN: XMind parser creates rootNode, not nodes.root
     const rootNode = activeFile.content.rootNode || activeFile.content.nodes?.root;
-    
+
     if (!rootNode) return edges;
 
     // FR: Fonction récursive pour créer les connexions en respectant la direction (gauche/droite)
@@ -317,7 +334,7 @@ function MindMapCanvas() {
         const leftIds: string[] = [];
         childIds.forEach((id, idx) => (idx % 2 === 0 ? rightIds : leftIds).push(id));
 
-        rightIds.forEach((childId) => {
+        rightIds.forEach(childId => {
           edges.push({
             id: `edge-${node.id}-${childId}`,
             source: node.id,
@@ -331,7 +348,7 @@ function MindMapCanvas() {
           if (childNode) createConnections(childNode, level + 1, +1);
         });
 
-        leftIds.forEach((childId) => {
+        leftIds.forEach(childId => {
           edges.push({
             id: `edge-${node.id}-${childId}`,
             source: node.id,
@@ -347,7 +364,7 @@ function MindMapCanvas() {
       } else {
         // FR: Aux niveaux > 0, conserver la direction du parent
         const handleId = direction === -1 ? 'left' : 'right';
-        childIds.forEach((childId) => {
+        childIds.forEach(childId => {
           edges.push({
             id: `edge-${node.id}-${childId}`,
             source: node.id,
@@ -388,9 +405,20 @@ function MindMapCanvas() {
         isDragTarget: node.id === dragTarget,
         isValidDragTarget: node.id === dragTarget && isValidTarget,
         isInvalidDragTarget: node.id === dragTarget && !isValidTarget && dragTarget !== null,
+        dropPosition: node.id === dragTarget ? dropPosition : null,
+        isSiblingReorder: node.id === dragTarget ? isSiblingReorder : false,
       },
     }));
-  }, [convertToReactFlowNodes, ghostNode, draggedNodeId, draggedDescendants, dragTarget, isValidTarget]);
+  }, [
+    convertToReactFlowNodes,
+    ghostNode,
+    draggedNodeId,
+    draggedDescendants,
+    dragTarget,
+    isValidTarget,
+    dropPosition,
+    isSiblingReorder,
+  ]);
 
   // FR: Ajouter le nœud fantôme à la liste si en cours de drag
   // EN: Add ghost node to list if dragging
@@ -421,7 +449,8 @@ function MindMapCanvas() {
     // EN: Hide edges connected to dragged node or its descendants
     return baseEdges.map(edge => {
       const isDraggedNodeEdge = edge.source === draggedNodeId || edge.target === draggedNodeId;
-      const isDescendantEdge = draggedDescendants.includes(edge.source) || draggedDescendants.includes(edge.target);
+      const isDescendantEdge =
+        draggedDescendants.includes(edge.source) || draggedDescendants.includes(edge.target);
 
       if (isDraggedNodeEdge || isDescendantEdge) {
         return {
@@ -463,7 +492,7 @@ function MindMapCanvas() {
   }, [initialEdges, setEdges]);
 
   const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
+    (params: Connection) => setEdges(eds => addEdge(params, eds)),
     [setEdges]
   );
 
@@ -472,7 +501,7 @@ function MindMapCanvas() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (!activeFile?.content?.nodes) return;
-      const key = e.key;
+      const { key } = e;
       // toggle follow
       if (key.toLowerCase() === (getShortcut('view.follow') || 'F').toLowerCase()) {
         e.preventDefault();
@@ -482,7 +511,8 @@ function MindMapCanvas() {
       }
       if (key === 'Enter') {
         if (!activeFile?.content?.nodes) return;
-        const currentId: string = selectedNodeId || activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
+        const currentId: string =
+          selectedNodeId || activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
         if (!currentId) return;
         e.preventDefault();
         const newId = addSiblingToActive(currentId, 'Nouveau nœud');
@@ -492,7 +522,8 @@ function MindMapCanvas() {
       if (key === ' ') {
         // Espace: toggle collapse/expand of current node descendants
         if (!activeFile?.content?.nodes) return;
-        const rootIdSpace: string = activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
+        const rootIdSpace: string =
+          activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
         const currentIdSpace: string = selectedNodeId || rootIdSpace;
         if (!currentIdSpace) return;
         e.preventDefault();
@@ -502,7 +533,8 @@ function MindMapCanvas() {
         updateActiveFileNode(currentIdSpace, { collapsed: newCollapsed });
         return;
       }
-      if (key !== 'ArrowUp' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowRight') return;
+      if (key !== 'ArrowUp' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowRight')
+        return;
       const nodesMap: any = activeFile.content.nodes;
       // pick current or root
       const rootId: string = activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
@@ -511,10 +543,12 @@ function MindMapCanvas() {
       if (!current) return;
       e.preventDefault();
 
-      const select = (id?: string) => { if (id && nodesMap[id]) setSelectedNodeId(id); };
+      const select = (id?: string) => {
+        if (id && nodesMap[id]) setSelectedNodeId(id);
+      };
 
       const positioned = nodesRef.current;
-      const curNode = positioned.find((n) => n.id === currentId);
+      const curNode = positioned.find(n => n.id === currentId);
       const curX = curNode?.position?.x || 0;
       const isLeftSide = currentId !== rootId && curX < 0;
 
@@ -524,39 +558,51 @@ function MindMapCanvas() {
         if (currentId === rootId) {
           // root: choose by side using key
           const desiredRight = key === 'ArrowRight';
-          let candidates = childIds.filter((cid) => {
-            const c = positioned.find((n) => n.id === cid);
+          let candidates = childIds.filter(cid => {
+            const c = positioned.find(n => n.id === cid);
             return desiredRight ? (c?.position?.x || 0) > 0 : (c?.position?.x || 0) < 0;
           });
           if (candidates.length === 0) candidates = childIds;
           // pick nearest in Euclidean distance
-          const curCenterX = (curNode?.position?.x || 0) + (((curNode?.data as any)?.width || 200) / 2);
-          const curCenterY = (curNode?.position?.y || 0) + (((curNode?.data as any)?.height || 40) / 2);
-          let bestId: string | undefined; let bestD = Number.POSITIVE_INFINITY;
+          const curCenterX =
+            (curNode?.position?.x || 0) + ((curNode?.data as any)?.width || 200) / 2;
+          const curCenterY =
+            (curNode?.position?.y || 0) + ((curNode?.data as any)?.height || 40) / 2;
+          let bestId: string | undefined;
+          let bestD = Number.POSITIVE_INFINITY;
           for (const cid of candidates) {
-            const c = positioned.find((n) => n.id === cid);
+            const c = positioned.find(n => n.id === cid);
             if (!c) continue;
-            const cx = (c.position?.x || 0) + (((c.data as any)?.width || 200) / 2);
-            const cy = (c.position?.y || 0) + (((c.data as any)?.height || 40) / 2);
-            const dx = cx - curCenterX; const dy = cy - curCenterY;
-            const d2 = dx*dx + dy*dy;
-            if (d2 < bestD) { bestD = d2; bestId = cid; }
+            const cx = (c.position?.x || 0) + ((c.data as any)?.width || 200) / 2;
+            const cy = (c.position?.y || 0) + ((c.data as any)?.height || 40) / 2;
+            const dx = cx - curCenterX;
+            const dy = cy - curCenterY;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < bestD) {
+              bestD = d2;
+              bestId = cid;
+            }
           }
           select(bestId || candidates[0]);
           return;
         }
         // non-root: closest child irrespective of side
-        const curCenterX = (curNode?.position?.x || 0) + (((curNode?.data as any)?.width || 200) / 2);
-        const curCenterY = (curNode?.position?.y || 0) + (((curNode?.data as any)?.height || 40) / 2);
-        let bestId: string | undefined; let bestD = Number.POSITIVE_INFINITY;
+        const curCenterX = (curNode?.position?.x || 0) + ((curNode?.data as any)?.width || 200) / 2;
+        const curCenterY = (curNode?.position?.y || 0) + ((curNode?.data as any)?.height || 40) / 2;
+        let bestId: string | undefined;
+        let bestD = Number.POSITIVE_INFINITY;
         for (const cid of childIds) {
-          const c = positioned.find((n) => n.id === cid);
+          const c = positioned.find(n => n.id === cid);
           if (!c) continue;
-          const cx = (c.position?.x || 0) + (((c.data as any)?.width || 200) / 2);
-          const cy = (c.position?.y || 0) + (((c.data as any)?.height || 40) / 2);
-          const dx = cx - curCenterX; const dy = cy - curCenterY;
-          const d2 = dx*dx + dy*dy;
-          if (d2 < bestD) { bestD = d2; bestId = cid; }
+          const cx = (c.position?.x || 0) + ((c.data as any)?.width || 200) / 2;
+          const cy = (c.position?.y || 0) + ((c.data as any)?.height || 40) / 2;
+          const dx = cx - curCenterX;
+          const dy = cy - curCenterY;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < bestD) {
+            bestD = d2;
+            bestId = cid;
+          }
         }
         select(bestId || childIds[0]);
       };
@@ -570,17 +616,29 @@ function MindMapCanvas() {
         }
         if (isLeftSide) {
           // Left side: Right -> parent (to the right), Left -> child (to the left)
-          if (key === 'ArrowRight') { goParent(); return; }
-          if (key === 'ArrowLeft') { gotoClosestChild(); return; }
+          if (key === 'ArrowRight') {
+            goParent();
+            return;
+          }
+          if (key === 'ArrowLeft') {
+            gotoClosestChild();
+            return;
+          }
         } else {
           // Right side: Left -> parent, Right -> child
-          if (key === 'ArrowLeft') { goParent(); return; }
-          if (key === 'ArrowRight') { gotoClosestChild(); return; }
+          if (key === 'ArrowLeft') {
+            goParent();
+            return;
+          }
+          if (key === 'ArrowRight') {
+            gotoClosestChild();
+            return;
+          }
         }
       }
 
       // siblings navigation
-      const parentId: string | null = current.parentId;
+      const { parentId } = current;
       if (!parentId) return; // root has no up/down among siblings
       const parent = nodesMap[parentId];
       const siblings: string[] = parent?.children || [];
@@ -598,21 +656,25 @@ function MindMapCanvas() {
           const pIdx = parentSiblings.indexOf(parentId);
           if (pIdx > 0) {
             const positionedA = nodesRef.current;
-            const curNodeA = positionedA.find((n) => n.id === currentId);
-            const curCY = ((curNodeA?.position?.y || 0) + ((curNodeA?.data as any)?.height || 40) / 2);
+            const curNodeA = positionedA.find(n => n.id === currentId);
+            const curCY =
+              (curNodeA?.position?.y || 0) + ((curNodeA?.data as any)?.height || 40) / 2;
             let bestId: string | undefined;
             let bestDY = Number.POSITIVE_INFINITY;
             // parcourir les parents précédents (du plus proche au plus lointain)
             for (let i = pIdx - 1; i >= 0; i -= 1) {
               const cousinParentId = parentSiblings[i];
-              const cousinChildren: string[] = (nodesMap[cousinParentId]?.children) || [];
+              const cousinChildren: string[] = nodesMap[cousinParentId]?.children || [];
               for (let j = 0; j < cousinChildren.length; j += 1) {
                 const cid = cousinChildren[j];
-                const n = positionedA.find((nn) => nn.id === cid);
+                const n = positionedA.find(nn => nn.id === cid);
                 if (n) {
                   const cy = (n.position?.y || 0) + ((n.data as any)?.height || 40) / 2;
                   const dy = Math.abs(cy - curCY);
-                  if (dy < bestDY) { bestDY = dy; bestId = cid; }
+                  if (dy < bestDY) {
+                    bestDY = dy;
+                    bestId = cid;
+                  }
                 }
               }
               if (bestId) break; // on prend sur le parent le plus proche
@@ -634,21 +696,25 @@ function MindMapCanvas() {
           const pIdx = parentSiblings.indexOf(parentId);
           if (pIdx !== -1 && pIdx < parentSiblings.length - 1) {
             const positionedB = nodesRef.current;
-            const curNodeB = positionedB.find((n) => n.id === currentId);
-            const curCY = ((curNodeB?.position?.y || 0) + ((curNodeB?.data as any)?.height || 40) / 2);
+            const curNodeB = positionedB.find(n => n.id === currentId);
+            const curCY =
+              (curNodeB?.position?.y || 0) + ((curNodeB?.data as any)?.height || 40) / 2;
             let bestId: string | undefined;
             let bestDY = Number.POSITIVE_INFINITY;
             // parcourir les parents suivants (du plus proche au plus lointain)
             for (let i = pIdx + 1; i < parentSiblings.length; i += 1) {
               const cousinParentId = parentSiblings[i];
-              const cousinChildren: string[] = (nodesMap[cousinParentId]?.children) || [];
+              const cousinChildren: string[] = nodesMap[cousinParentId]?.children || [];
               for (let j = 0; j < cousinChildren.length; j += 1) {
                 const cid = cousinChildren[j];
-                const n = positionedB.find((nn) => nn.id === cid);
+                const n = positionedB.find(nn => nn.id === cid);
                 if (n) {
                   const cy = (n.position?.y || 0) + ((n.data as any)?.height || 40) / 2;
                   const dy = Math.abs(cy - curCY);
-                  if (dy < bestDY) { bestDY = dy; bestId = cid; }
+                  if (dy < bestDY) {
+                    bestDY = dy;
+                    bestId = cid;
+                  }
                 }
               }
               if (bestId) break; // on prend sur le parent le plus proche
@@ -656,7 +722,6 @@ function MindMapCanvas() {
             if (bestId) select(bestId);
           }
         }
-        return;
       }
     };
     document.addEventListener('keydown', handler);
@@ -669,7 +734,8 @@ function MindMapCanvas() {
     const handler = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return;
       if (!activeFile?.content?.nodes) return;
-      const parentId: string = selectedNodeId || activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
+      const parentId: string =
+        selectedNodeId || activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
       if (!parentId) return;
       e.preventDefault();
       const newId = addChildToActive(parentId, 'Nouveau nœud');
@@ -685,10 +751,12 @@ function MindMapCanvas() {
     const handler = (e: KeyboardEvent) => {
       if (e.key !== 'Backspace' && e.key !== 'Delete') return;
       if (!activeFile?.content?.nodes) return;
-      const currentId: string | undefined = selectedNodeId || activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
+      const currentId: string | undefined =
+        selectedNodeId || activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
       if (!currentId) return;
       // Ne pas supprimer la racine
-      const rootId: string | undefined = activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
+      const rootId: string | undefined =
+        activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
       if (currentId === rootId) return;
       e.preventDefault();
       const parentId = removeNodeFromActive(currentId);
@@ -702,11 +770,11 @@ function MindMapCanvas() {
   useEffect(() => {
     if (!followSelection) return;
     if (!selectedNodeId) return;
-    const n = nodesRef.current.find((nn) => nn.id === selectedNodeId);
+    const n = nodesRef.current.find(nn => nn.id === selectedNodeId);
     const inst = instanceRef.current;
     if (!n || !inst) return;
-    const width = ((n.data as any)?.width || 200);
-    const height = ((n.data as any)?.height || 40);
+    const width = (n.data as any)?.width || 200;
+    const height = (n.data as any)?.height || 40;
     const x = (n.position?.x || 0) + width / 2;
     const y = (n.position?.y || 0) + height / 2;
     try {
@@ -736,7 +804,11 @@ function MindMapCanvas() {
   }
 
   return (
-    <div className="mindmap-canvas" ref={reactFlowWrapper} style={{ width: '100%', height: '100%', minHeight: '400px' }}>
+    <div
+      className="mindmap-canvas"
+      ref={reactFlowWrapper}
+      style={{ width: '100%', height: '100%', minHeight: '400px' }}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -752,7 +824,10 @@ function MindMapCanvas() {
         fitView
         attributionPosition="bottom-left"
         style={{ width: '100%', height: '100%', minHeight: '400px' }}
-        onInit={(inst) => { instanceRef.current = inst; setFlowInstance(inst); }}
+        onInit={inst => {
+          instanceRef.current = inst;
+          setFlowInstance(inst);
+        }}
       >
         <Background />
         {/* Controls retirés: le zoom est géré dans la StatusBar */}
