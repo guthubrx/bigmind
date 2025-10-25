@@ -24,6 +24,7 @@ function TagGraph() {
   const [draggingNode, setDraggingNode] = useState<string | null>(null);
   const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
+  const [focusedTagId, setFocusedTagId] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
   // Create stable dependency key based on tag IDs
@@ -34,8 +35,8 @@ function TagGraph() {
   // FR: Calculer les positions des nœuds avec un algorithme hiérarchique simple
   // EN: Calculate node positions with simple hierarchical algorithm
   // Note: Using tagIdKey to prevent infinite loops from getChildren/getParents changing refs
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     if (tags.length === 0) {
       setPositions({});
       return;
@@ -167,6 +168,78 @@ function TagGraph() {
     };
   }, [handleMouseMove, handleMouseUp]);
 
+  // Keyboard navigation
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!focusedTagId) {
+        if (e.key === 'Tab' && tags.length > 0) {
+          e.preventDefault();
+          setFocusedTagId(tags[0].id);
+        }
+        return;
+      }
+
+      const currentTag = tags.find(t => t.id === focusedTagId);
+      if (!currentTag) return;
+
+      // eslint-disable-next-line no-fallthrough
+      switch (e.key) {
+        case 'ArrowDown': {
+          e.preventDefault();
+          const children = getChildren(currentTag.id);
+          if (children.length > 0) {
+            setFocusedTagId(children[0].id);
+          }
+          break;
+        }
+        case 'ArrowUp': {
+          e.preventDefault();
+          const parents = getParents(currentTag.id);
+          if (parents.length > 0) {
+            setFocusedTagId(parents[0].id);
+          }
+          break;
+        }
+        case 'ArrowRight': {
+          e.preventDefault();
+          const children = getChildren(currentTag.id);
+          if (children.length > 0) {
+            setFocusedTagId(children[0].id);
+          }
+          break;
+        }
+        case 'ArrowLeft': {
+          e.preventDefault();
+          const parents = getParents(currentTag.id);
+          if (parents.length > 0) {
+            setFocusedTagId(parents[0].id);
+          }
+          break;
+        }
+        case 'Enter': {
+          e.preventDefault();
+          // Center view on this tag
+          if (positions[focusedTagId]) {
+            const pos = positions[focusedTagId];
+            setPan({ x: 600 - pos.x * zoom, y: 400 - pos.y * zoom });
+          }
+          break;
+        }
+        case 'Escape': {
+          e.preventDefault();
+          setFocusedTagId(null);
+          break;
+        }
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [focusedTagId, positions, zoom, getChildren, getParents, tags]);
+
   if (tags.length === 0) {
     return (
       <div className="tag-graph-empty">
@@ -227,14 +300,39 @@ function TagGraph() {
 
             const bgColor = tag.color || '#3b82f6';
             const isDragging = draggingNode === tag.id;
+            const isFocused = focusedTagId === tag.id;
+
+            const getStrokeColor = (): string => {
+              if (isDragging) return '#000';
+              return isFocused ? '#3b82f6' : 'none';
+            };
+
+            const getStrokeWidth = (): string => {
+              if (isDragging) return '2';
+              return isFocused ? '3' : '0';
+            };
 
             return (
               <g
                 key={`node-${tag.id}`}
                 data-node-id={tag.id}
                 transform={`translate(${pos.x}, ${pos.y})`}
-                className={`tag-node ${isDragging ? 'dragging' : ''}`}
+                className={`tag-node ${isDragging ? 'dragging' : ''} ${isFocused ? 'focused' : ''}`}
               >
+                {/* Focus ring when selected via keyboard */}
+                {isFocused && (
+                  <circle
+                    cx="0"
+                    cy="0"
+                    r="65"
+                    fill="none"
+                    stroke="#3b82f6"
+                    strokeWidth="3"
+                    strokeDasharray="4,2"
+                    opacity="0.6"
+                  />
+                )}
+
                 {/* Nœud rectangle */}
                 <rect
                   x="-50"
@@ -243,8 +341,8 @@ function TagGraph() {
                   height="50"
                   rx="4"
                   fill={bgColor}
-                  stroke={isDragging ? '#000' : 'none'}
-                  strokeWidth={isDragging ? '2' : '0'}
+                  stroke={getStrokeColor()}
+                  strokeWidth={getStrokeWidth()}
                   className="tag-node-rect"
                   style={{ cursor: 'move' }}
                 />

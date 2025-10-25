@@ -16,6 +16,7 @@ interface DragTagData {
   type: 'tag';
   tagId: string;
   tagLabel: string;
+  sourceNodeId?: string;
 }
 // FR: Types locaux pour le développement
 // EN: Local types for development
@@ -103,13 +104,19 @@ function MindMapNode({ data, selected }: Props) {
       try {
         const dragData: DragTagData = JSON.parse(dataJson);
         if (dragData.type === 'tag') {
+          // Add tag to target node
           tagNodeSync(data.id, dragData.tagId);
+
+          // If dragging from another node with Ctrl held, remove from source (move instead of copy)
+          if (dragData.sourceNodeId && dragData.sourceNodeId !== data.id && e.ctrlKey) {
+            untagNodeSync(dragData.sourceNodeId, dragData.tagId);
+          }
         }
       } catch {
         // Ignore invalid data
       }
     },
-    [data.id, tagNodeSync]
+    [data.id, tagNodeSync, untagNodeSync]
   );
 
   // FR: Calculer la luminosité relative d'une couleur hex

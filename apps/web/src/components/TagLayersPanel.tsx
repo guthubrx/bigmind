@@ -8,6 +8,7 @@ import { useTagGraph } from '../hooks/useTagGraph';
 import { useNodeTags } from '../hooks/useNodeTags';
 import { DagTag, RelationType } from '../types/dag';
 import { ChevronDown, ChevronRight, Trash2, Eye, EyeOff } from 'lucide-react';
+import TagContextMenu from './TagContextMenu';
 import './TagLayersPanel.css';
 
 interface ExpandedState {
@@ -34,17 +35,39 @@ function TagTreeNode({
   const isTagHidden = useTagGraph((state: any) => state.isTagHidden);
   const toggleTagVisibility = useTagGraph((state: any) => state.toggleTagVisibility);
   const createRelation = useTagGraph((state: any) => state.createRelation);
+  const addParent = useTagGraph((state: any) => state.addParent);
+  const addTag = useTagGraph((state: any) => state.addTag);
+  const updateTag = useTagGraph((state: any) => state.updateTag);
   const getTagNodes = useNodeTags((state: any) => state.getTagNodes);
   const colorInputRef = useRef<HTMLInputElement>(null);
   const [dragOverTagId, setDragOverTagId] = useState<string | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ tag: DagTag; x: number; y: number } | null>(null);
   const children = getChildren(tag.id);
   const hasChildren = children.length > 0;
   const hidden = isTagHidden(tag.id);
   const childCount = getChildCount(tag.id);
+  const getDescendantCount = useTagGraph((state: any) => state.getDescendantCount);
+  const descendantCount = getDescendantCount(tag.id);
   const nodeCount = useMemo(() => {
     const nodeIds = getTagNodes(tag.id);
     return nodeIds ? nodeIds.length : 0;
   }, [tag.id, getTagNodes]);
+  const relationCount = tag.relations ? tag.relations.length : 0;
+  const createdDate = tag.createdAt ? new Date(tag.createdAt).toLocaleDateString() : 'Unknown';
+  const modifiedDate = tag.updatedAt ? new Date(tag.updatedAt).toLocaleDateString() : 'Unknown';
+
+  const getDetailedStats = (): string => {
+    const stats = [
+      `Name: ${tag.label}`,
+      `Direct children: ${childCount}`,
+      `All descendants: ${descendantCount}`,
+      `Used in ${nodeCount} node${nodeCount !== 1 ? 's' : ''}`,
+      `Relations: ${relationCount}`,
+      `Created: ${createdDate}`,
+      `Modified: ${modifiedDate}`,
+    ];
+    return stats.join('\n');
+  };
 
   const handleColorClick = () => {
     colorInputRef.current?.click();
@@ -57,6 +80,35 @@ function TagTreeNode({
   const handleToggleVisibility = (e: React.MouseEvent) => {
     e.stopPropagation();
     toggleTagVisibility(tag.id);
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({
+      tag,
+      x: e.clientX,
+      y: e.clientY,
+    });
+  };
+
+  const handleDuplicate = (duplicateTag: DagTag) => {
+    const newTagId = `tag-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const newTag: DagTag = {
+      ...duplicateTag,
+      id: newTagId,
+      label: `${duplicateTag.label} (copy)`,
+      parentIds: [],
+      children: [],
+      relations: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+    addTag(newTag);
+  };
+
+  const handleRename = (tagId: string, newLabel: string) => {
+    updateTag(tagId, { label: newLabel });
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -80,8 +132,16 @@ function TagTreeNode({
 
       const draggedData = JSON.parse(data);
       if (draggedData.type === 'tag' && draggedData.tagId && draggedData.tagId !== tag.id) {
-        // Create relation: dragged tag → current tag (IS_RELATED_TO by default)
-        createRelation(draggedData.tagId, tag.id, RelationType.IS_RELATED_TO);
+        // Shift+Drop → Create IS_TYPE_OF (parent-child) relation
+        // Regular Drop → Create IS_RELATED_TO relation
+        if (e.shiftKey) {
+          // Dragged tag becomes child of current tag (IS_TYPE_OF relation)
+          // Make draggedTag's parent = tag.id
+          addParent(draggedData.tagId, tag.id);
+        } else {
+          // Create relation: dragged tag → current tag (IS_RELATED_TO by default)
+          createRelation(draggedData.tagId, tag.id, RelationType.IS_RELATED_TO);
+        }
       }
     } catch (error) {
       console.error('Error handling drop:', error);
@@ -110,6 +170,7 @@ function TagTreeNode({
           className={`tag-node-badge ${dragOverTagId === tag.id ? 'drag-over' : ''}`}
           style={{ backgroundColor: tag.color || '#3b82f6' }}
           onClick={handleColorClick}
+          onContextMenu={handleContextMenu}
           draggable
           onDragStart={e => {
             e.dataTransfer!.effectAllowed = 'copy';
@@ -126,11 +187,23 @@ function TagTreeNode({
           onDrop={handleDrop}
           role="button"
           tabIndex={0}
-          title="Click to change color, drag to create relation, or drop tag to link"
+          title={getDetailedStats()}
           onKeyDown={e => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               handleColorClick();
+            } else if (e.key === 'Delete' || e.key === 'Backspace') {
+              e.preventDefault();
+              onDelete();
+            } else if (e.ctrlKey && e.key === 'c') {
+              e.preventDefault();
+              navigator.clipboard.writeText(tag.label);
+            } else if (e.ctrlKey && e.key === 'd') {
+              e.preventDefault();
+              handleDuplicate(tag);
+            } else if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) {
+              e.preventDefault();
+              handleContextMenu(e as any);
             }
           }}
         >
@@ -192,6 +265,17 @@ function TagTreeNode({
             />
           ))}
         </div>
+      )}
+
+      {contextMenu && contextMenu.tag.id === tag.id && (
+        <TagContextMenu
+          tag={tag}
+          position={{ x: contextMenu.x, y: contextMenu.y }}
+          onClose={() => setContextMenu(null)}
+          onDuplicate={handleDuplicate}
+          onColorChange={onColorChange}
+          onRename={handleRename}
+        />
       )}
     </div>
   );

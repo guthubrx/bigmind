@@ -21,6 +21,20 @@ function MindMapNodeTags({ nodeId, onRemoveTag }: MindMapNodeTagsProps) {
 
   const tags = useMemo(() => allTags.filter(tag => tagIds.includes(tag.id)), [allTags, tagIds]);
 
+  const handleTagDragStart = (e: React.DragEvent, tagId: string) => {
+    e.stopPropagation();
+    e.dataTransfer.effectAllowed = 'copy';
+    e.dataTransfer.setData(
+      'application/json',
+      JSON.stringify({
+        type: 'tag',
+        tagId,
+        sourceNodeId: nodeId,
+        tagLabel: allTags.find(t => t.id === tagId)?.label || '',
+      })
+    );
+  };
+
   if (tags.length === 0) {
     return null;
   }
@@ -33,6 +47,10 @@ function MindMapNodeTags({ nodeId, onRemoveTag }: MindMapNodeTagsProps) {
           className="node-tag-badge"
           style={{ backgroundColor: tag.color || '#3b82f6' }}
           title={tag.label}
+          draggable
+          onDragStart={e => handleTagDragStart(e, tag.id)}
+          role="button"
+          tabIndex={0}
         >
           <span className="tag-label">{tag.label}</span>
           {onRemoveTag && (
