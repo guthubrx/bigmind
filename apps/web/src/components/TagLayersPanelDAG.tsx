@@ -5,6 +5,7 @@
 
 import React, { useState, useRef, useCallback } from 'react';
 import { useTagGraph } from '../hooks/useTagGraph';
+import { DagTag } from '../types/dag';
 import { eventBus } from '../utils/eventBus';
 import TagGraph from './TagGraph';
 import TagLayersPanel from './TagLayersPanel';
@@ -22,7 +23,7 @@ function TagLayersPanelDAG({ onClose }: TagLayersPanelDAGProps) {
   const [newTagName, setNewTagName] = useState('');
   const [showNewTagInput, setShowNewTagInput] = useState(false);
   const addTag = useTagGraph((state: any) => state.addTag);
-  const getAllTags = useTagGraph((state: any) => state.getAllTags);
+  const tags = useTagGraph((state: any) => Object.values(state.tags) as DagTag[]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const generateColor = (): string => {
@@ -65,7 +66,7 @@ function TagLayersPanelDAG({ onClose }: TagLayersPanelDAGProps) {
     }
   };
 
-  const tagCount = getAllTags().length;
+  const tagCount = tags.length;
   const validation = useTagGraph((state: any) => state.validateDAG)();
 
   return (

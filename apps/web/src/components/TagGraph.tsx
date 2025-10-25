@@ -14,7 +14,7 @@ interface NodePosition {
 }
 
 function TagGraph() {
-  const tags = useTagGraph((state: any) => state.getAllTags());
+  const tags = useTagGraph((state: any) => Object.values(state.tags) as DagTag[]);
   const getChildren = useTagGraph((state: any) => state.getChildren);
   const getParent = useTagGraph((state: any) => state.getParent);
 

@@ -17,7 +17,7 @@ interface NodeTagPanelProps {
 
 function NodeTagPanel({ nodeId }: NodeTagPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const allTags = useTagGraph(state => state.getAllTags());
+  const allTags = useTagGraph(state => Object.values(state.tags) as DagTag[]);
   const addTag = useTagGraph(state => state.addTag);
   const nodeTags = useNodeTags();
   const { tagNodeSync, untagNodeSync } = useMindMapDAGSync();
