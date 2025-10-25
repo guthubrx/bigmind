@@ -5,7 +5,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { DagTag, DagLink, DagValidation } from '../types/dag';
+import { DagTag, DagLink, DagValidation, RelationType } from '../types/dag';
 
 interface TagGraphState {
   // FR: Données du DAG
@@ -30,6 +30,9 @@ interface TagGraphState {
   removeLink(linkId: string): void;
   getLink(linkId: string): DagLink | undefined;
   getAllLinks(): DagLink[];
+  getLinksBetween(sourceId: string, targetId: string): DagLink[];
+  createRelation(sourceId: string, targetId: string, type: RelationType): void;
+  updateRelationType(linkId: string, type: RelationType): void;
 
   // FR: Requêtes sur la hiérarchie
   // EN: Hierarchy queries
@@ -189,6 +192,56 @@ export const useTagGraph = create<TagGraphState>()(
         return [...state.links];
       },
 
+      getLinksBetween: (sourceId: string, targetId: string): DagLink[] => {
+        const state = get();
+        return state.links.filter(
+          (link: DagLink) => link.sourceId === sourceId && link.targetId === targetId
+        );
+      },
+
+      createRelation: (sourceId: string, targetId: string, type: RelationType) => {
+        const state = get();
+        if (!state.tags[sourceId] || !state.tags[targetId]) {
+          console.warn('Cannot create relation: source or target tag does not exist');
+          return;
+        }
+
+        // Check if relation already exists
+        const existingLinks = state.links.filter(
+          (link: DagLink) => link.sourceId === sourceId && link.targetId === targetId
+        );
+        if (existingLinks.length > 0) {
+          console.warn('Relation already exists between these tags');
+          return;
+        }
+
+        const newLink: DagLink = {
+          id: `link-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          sourceId,
+          targetId,
+          type,
+        };
+
+        set((s: TagGraphState) => ({
+          links: [...s.links, newLink],
+        }));
+      },
+
+      updateRelationType: (linkId: string, type: RelationType) => {
+        set((state: TagGraphState) => {
+          const linkIndex = state.links.findIndex((link: DagLink) => link.id === linkId);
+          if (linkIndex === -1) return state;
+
+          const updatedLinks = [...state.links];
+          updatedLinks[linkIndex] = {
+            ...updatedLinks[linkIndex],
+            type,
+          };
+
+          return { links: updatedLinks };
+        });
+      },
+
       getChildren: (tagId: string): DagTag[] => {
         const state = get();
         const tag = state.tags[tagId];
@@ -221,7 +274,9 @@ export const useTagGraph = create<TagGraphState>()(
               },
               [parentId]: {
                 ...parent,
-                children: parent.children.includes(tagId) ? parent.children : [...parent.children, tagId],
+                children: parent.children.includes(tagId)
+                  ? parent.children
+                  : [...parent.children, tagId],
                 updatedAt: Date.now(),
               },
             },
@@ -339,7 +394,7 @@ export const useTagGraph = create<TagGraphState>()(
       name: STORAGE_KEY,
       version: 3,
       migrate: (persistedState: any, version: number) => {
-        let migratedState = persistedState;
+        const migratedState = persistedState;
         let currentVersion = version;
 
         if (currentVersion === 1) {
