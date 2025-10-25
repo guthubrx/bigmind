@@ -85,7 +85,7 @@
   color: white;
   transition: all 0.2s ease;
   flex-shrink: 0;
-  margin: 0 1px;
+  margin: 1px 1px;
 }
 
 .remove-tag-btn:hover {
