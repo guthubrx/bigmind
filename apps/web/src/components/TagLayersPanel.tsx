@@ -125,7 +125,7 @@ function TagTreeNode({
 }
 
 function TagLayersPanel() {
-  const tags = useTagGraph((state: any) => state.getAllTags());
+  const tags = useTagGraph((state: any) => Object.values(state.tags) as DagTag[]);
   const removeTag = useTagGraph((state: any) => state.removeTag);
   const updateTag = useTagGraph((state: any) => state.updateTag);
 
