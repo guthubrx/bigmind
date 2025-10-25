@@ -75,17 +75,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 9px;
-  height: 9px;
+  width: 7px;
+  height: 7px;
   padding: 0px;
   border: none;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 2px;
+  border-radius: 1px;
   cursor: pointer;
   color: white;
   transition: all 0.2s ease;
   flex-shrink: 0;
-  margin: 3px 4px;
+  margin: 4px 4px;
   line-height: 0;
 }
 
