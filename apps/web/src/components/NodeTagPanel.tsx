@@ -7,7 +7,8 @@ import React, { useState, useMemo } from 'react';
 import { useTagGraph } from '../hooks/useTagGraph';
 import { useNodeTags } from '../hooks/useNodeTags';
 import { useMindMapDAGSync } from '../hooks/useMindMapDAGSync';
-import { X, Plus } from 'lucide-react';
+import { X, Plus, Sparkles } from 'lucide-react';
+import { DagTag } from '../types/dag';
 import './NodeTagPanel.css';
 
 interface NodeTagPanelProps {
@@ -17,6 +18,7 @@ interface NodeTagPanelProps {
 function NodeTagPanel({ nodeId }: NodeTagPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const allTags = useTagGraph(state => state.getAllTags());
+  const addTag = useTagGraph(state => state.addTag);
   const nodeTags = useNodeTags();
   const { tagNodeSync, untagNodeSync } = useMindMapDAGSync();
 
@@ -43,6 +45,52 @@ function NodeTagPanel({ nodeId }: NodeTagPanelProps) {
 
   const handleRemoveTag = (tagId: string) => {
     untagNodeSync(nodeId, tagId);
+  };
+
+  const generateRandomColor = (): string => {
+    const colors = [
+      '#3b82f6',
+      '#ef4444',
+      '#10b981',
+      '#f59e0b',
+      '#8b5cf6',
+      '#ec4899',
+      '#14b8a6',
+      '#f97316',
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
+
+  const getNoTagsMessage = (): string => {
+    if (
+      searchQuery.trim() &&
+      allTags.some(t => t.label.toLowerCase() === searchQuery.toLowerCase())
+    ) {
+      return 'Tag already assigned to this node';
+    }
+    if (allTags.length === nodeTagIds.length) {
+      return 'All tags are already assigned';
+    }
+    return 'No tags match your search';
+  };
+
+  const handleCreateNewTag = () => {
+    if (!searchQuery.trim()) return;
+
+    const newTagId = `tag-${Date.now()}`;
+    const newTag: DagTag = {
+      id: newTagId,
+      label: searchQuery.trim(),
+      color: generateRandomColor(),
+      children: [],
+      relations: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+
+    addTag(newTag);
+    tagNodeSync(nodeId, newTagId);
+    setSearchQuery('');
   };
 
   return (
@@ -81,15 +129,32 @@ function NodeTagPanel({ nodeId }: NodeTagPanelProps) {
       {/* Available tags */}
       <div className="node-tag-section">
         <div className="section-title">Available tags</div>
-        <input
-          type="text"
-          className="tag-search-input"
-          placeholder="Search tags..."
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-        />
+        <div className="search-with-create">
+          <input
+            type="text"
+            className="tag-search-input"
+            placeholder="Search or create..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && searchQuery.trim() && filteredAvailableTags.length === 0) {
+                handleCreateNewTag();
+              }
+            }}
+          />
+          {searchQuery.trim() && filteredAvailableTags.length === 0 && (
+            <button
+              type="button"
+              className="create-tag-btn"
+              onClick={handleCreateNewTag}
+              title={`Create "${searchQuery.trim()}"`}
+            >
+              <Sparkles size={14} />
+            </button>
+          )}
+        </div>
 
-        {filteredAvailableTags.length > 0 ? (
+        {filteredAvailableTags.length > 0 && (
           <div className="tag-list">
             {filteredAvailableTags.map(tag => (
               <button
@@ -108,12 +173,9 @@ function NodeTagPanel({ nodeId }: NodeTagPanelProps) {
               </button>
             ))}
           </div>
-        ) : (
-          <div className="no-tags-message">
-            {allTags.length === nodeTagIds.length
-              ? 'All tags are already assigned'
-              : 'No tags match your search'}
-          </div>
+        )}
+        {filteredAvailableTags.length === 0 && (
+          <div className="no-tags-message">{getNoTagsMessage()}</div>
         )}
       </div>
     </div>

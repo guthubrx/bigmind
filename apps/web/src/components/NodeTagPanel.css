@@ -51,7 +51,14 @@
   letter-spacing: 0.5px;
 }
 
+.search-with-create {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .tag-search-input {
+  flex: 1;
   padding: 6px 8px;
   border: 1px solid #e5e7eb;
   border-radius: 4px;
@@ -64,6 +71,32 @@
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.create-tag-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #3b82f6;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-radius: 4px;
+  cursor: pointer;
+  color: white;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.create-tag-btn:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  transform: translateY(-1px);
+}
+
+.create-tag-btn:active {
+  transform: translateY(0);
 }
 
 .tag-list {
