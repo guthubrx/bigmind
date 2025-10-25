@@ -17,6 +17,17 @@
   left: -85px;
 }
 
+@keyframes slideInTag {
+  from {
+    opacity: 0;
+    transform: translateX(-8px) translateY(-50%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(-50%);
+  }
+}
+
 .node-tag-badge {
   display: inline-flex;
   align-items: center;
@@ -30,13 +41,19 @@
   max-width: 140px;
   min-width: 0;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
   cursor: default;
+  animation: slideInTag 0.3s ease-out;
 }
 
 .node-tag-badge:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
   transform: translateY(-1px);
+}
+
+.node-tag-badge:focus-within {
+  outline: 2px solid white;
+  outline-offset: 1px;
 }
 
 .tag-label {
@@ -59,7 +76,7 @@
   border-radius: 2px;
   cursor: pointer;
   color: white;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
@@ -70,4 +87,9 @@
 
 .remove-tag-btn:active {
   transform: scale(0.95);
+}
+
+.remove-tag-btn:focus {
+  outline: 1px solid white;
+  outline-offset: -1px;
 }
