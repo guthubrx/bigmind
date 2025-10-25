@@ -85,7 +85,7 @@
   color: white;
   transition: all 0.2s ease;
   flex-shrink: 0;
-  margin: 2px 4px;
+  margin: 2px -2px;
   line-height: 0;
 }
 
