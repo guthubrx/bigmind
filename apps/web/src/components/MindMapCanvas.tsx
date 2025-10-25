@@ -422,14 +422,17 @@ function MindMapCanvas() {
     nodesRef.current = nodes;
   }, [nodes]);
 
-  // FR: Mettre à jour les nœuds quand le fichier actif change
-  // EN: Update nodes when active file changes
+  // FR: Synchroniser les nœuds ReactFlow avec initialNodes (pour le ghost node)
+  // EN: Sync ReactFlow nodes with initialNodes (for ghost node)
   React.useEffect(() => {
-    const newNodes = convertToReactFlowNodes();
-    const newEdges = convertToReactFlowEdges();
-    setNodes(newNodes as any);
-    setEdges(newEdges);
-  }, [activeFile, activeFile?.content?.nodes, convertToReactFlowNodes, convertToReactFlowEdges, setNodes, setEdges]);
+    setNodes(initialNodes as any);
+  }, [initialNodes, setNodes]);
+
+  // FR: Synchroniser les arêtes ReactFlow avec initialEdges
+  // EN: Sync ReactFlow edges with initialEdges
+  React.useEffect(() => {
+    setEdges(initialEdges);
+  }, [initialEdges, setEdges]);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
