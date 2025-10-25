@@ -391,8 +391,8 @@ export function useDragAndDrop({
           return;
         }
 
-        // FR: Vérifier si la cible est un sibling (même parent)
-        // EN: Check if target is a sibling (same parent)
+        // FR: Vérifier si la cible est un sibling (même parent) ET qu'on veut réordonner
+        // EN: Check if target is a sibling (same parent) AND we want to reorder
         const draggedNode = active.content.nodes[node.id];
         const targetNode = active.content.nodes[dragTarget];
 
@@ -400,10 +400,11 @@ export function useDragAndDrop({
           draggedNode &&
           targetNode &&
           draggedNode.parentId === targetNode.parentId &&
-          draggedNode.parentId !== null
+          draggedNode.parentId !== null &&
+          isSiblingReorder // FR: Vérifier qu'on est bien dans la zone de réordonnancement / EN: Check we're in reorder zone
         ) {
-          // FR: C'est un sibling - réordonner au lieu de reparenter
-          // EN: It's a sibling - reorder instead of reparent
+          // FR: C'est un sibling ET on veut réordonner (zone haute/basse)
+          // EN: It's a sibling AND we want to reorder (top/bottom zone)
           console.log(`🔄 Réordonnancement de siblings: ${node.id} ↔ ${dragTarget}`);
 
           // FR: Déterminer si on insère avant ou après basé sur la position Y
@@ -476,6 +477,7 @@ export function useDragAndDrop({
       draggedNodeIds,
       originalPositions,
       isValidTarget,
+      isSiblingReorder,
     ]
   );
 
