@@ -438,3 +438,107 @@ export class MoveNodeWithSubtreeCommand implements Command {
     return Date.now();
   }
 }
+
+// FR: Commande pour réordonner les enfants (siblings) d'un même parent
+// EN: Command to reorder children (siblings) of the same parent
+export class ReorderSiblingCommand implements Command {
+  private previousIndex: number = -1;
+
+  constructor(
+    private nodeId: NodeID,
+    private targetSiblingId: NodeID,
+    private insertBefore: boolean // true = insérer avant, false = insérer après
+  ) {}
+
+  execute(state: MindMap): MindMap {
+    return produce(state, draft => {
+      const node = draft.nodes[this.nodeId];
+      const targetSibling = draft.nodes[this.targetSiblingId];
+
+      if (!node || !targetSibling) {
+        console.error('Node or target sibling not found');
+        return;
+      }
+
+      // FR: Vérifier qu'ils ont le même parent
+      // EN: Check they have the same parent
+      if (node.parentId !== targetSibling.parentId) {
+        console.error('Nodes do not have the same parent');
+        return;
+      }
+
+      const parentId = node.parentId;
+      if (!parentId) {
+        console.error('Cannot reorder root node');
+        return;
+      }
+
+      const parent = draft.nodes[parentId];
+      if (!parent || !parent.children) {
+        console.error('Parent not found or has no children');
+        return;
+      }
+
+      // FR: Trouver les index actuels
+      // EN: Find current indices
+      const currentIndex = parent.children.indexOf(this.nodeId);
+      const targetIndex = parent.children.indexOf(this.targetSiblingId);
+
+      if (currentIndex === -1 || targetIndex === -1) {
+        console.error('Node or target not found in parent children');
+        return;
+      }
+
+      // FR: Sauvegarder l'index précédent pour undo
+      // EN: Save previous index for undo
+      this.previousIndex = currentIndex;
+
+      // FR: Retirer le nœud de sa position actuelle
+      // EN: Remove node from current position
+      parent.children.splice(currentIndex, 1);
+
+      // FR: Calculer le nouvel index après retrait
+      // EN: Calculate new index after removal
+      let newTargetIndex = parent.children.indexOf(this.targetSiblingId);
+
+      // FR: Insérer avant ou après la cible
+      // EN: Insert before or after target
+      if (this.insertBefore) {
+        parent.children.splice(newTargetIndex, 0, this.nodeId);
+      } else {
+        parent.children.splice(newTargetIndex + 1, 0, this.nodeId);
+      }
+
+      console.log(`🔄 Reordered ${this.nodeId}: ${currentIndex} → ${this.insertBefore ? newTargetIndex : newTargetIndex + 1}`);
+    });
+  }
+
+  undo(state: MindMap): MindMap {
+    return produce(state, draft => {
+      const node = draft.nodes[this.nodeId];
+      if (!node || !node.parentId || this.previousIndex === -1) return;
+
+      const parent = draft.nodes[node.parentId];
+      if (!parent || !parent.children) return;
+
+      // FR: Retirer le nœud de sa position actuelle
+      // EN: Remove node from current position
+      const currentIndex = parent.children.indexOf(this.nodeId);
+      if (currentIndex !== -1) {
+        parent.children.splice(currentIndex, 1);
+      }
+
+      // FR: Réinsérer à l'index précédent
+      // EN: Reinsert at previous index
+      parent.children.splice(this.previousIndex, 0, this.nodeId);
+    });
+  }
+
+  get description(): string {
+    return `Réordonner ${this.nodeId} ${this.insertBefore ? 'avant' : 'après'} ${this.targetSiblingId}`;
+  }
+
+  get timestamp(): number {
+    return Date.now();
+  }
+}

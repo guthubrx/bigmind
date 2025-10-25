@@ -10,7 +10,7 @@ import { useOpenFiles } from './useOpenFiles';
 import { useSelection } from './useSelection';
 import { getAllDescendants, isDescendant } from '../utils/nodeUtils';
 import type { OpenFile } from './useOpenFiles';
-import { ReparentNodeCommand, MoveNodeWithSubtreeCommand } from '@bigmind/core';
+import { ReparentNodeCommand, MoveNodeWithSubtreeCommand, ReorderSiblingCommand } from '@bigmind/core';
 
 /**
  * FR: Valide si on peut reparenter un nœud sur un autre
@@ -312,8 +312,8 @@ export function useDragAndDrop({
         console.log('✅ Nœud et arborescence déplacés avec succès');
         setLastDropSuccess(true);
       } else if (dragMode === 'reparent' && dragTarget) {
-        // FR: Mode reparenting - rattacher le nœud
-        // EN: Reparenting mode - reattach the node
+        // FR: Mode reparenting - rattacher le nœud OU réordonner les siblings
+        // EN: Reparenting mode - reattach node OR reorder siblings
         if (!isValidTarget) {
           console.log('❌ Invalid reparent: would create cycle');
           setLastDropSuccess(false);
@@ -321,26 +321,66 @@ export function useDragAndDrop({
           return;
         }
 
-        console.log(`🔄 Rattachement: ${node.id} → ${dragTarget}`);
+        // FR: Vérifier si la cible est un sibling (même parent)
+        // EN: Check if target is a sibling (same parent)
+        const draggedNode = active.content.nodes[node.id];
+        const targetNode = active.content.nodes[dragTarget];
 
-        // FR: Utiliser la commande ReparentNodeCommand pour undo/redo
-        // EN: Use ReparentNodeCommand for undo/redo
-        const command = new ReparentNodeCommand(node.id, dragTarget);
-        const currentMap = active.content as any;
-        const newMap = command.execute(currentMap);
+        if (draggedNode && targetNode && draggedNode.parentId === targetNode.parentId && draggedNode.parentId !== null) {
+          // FR: C'est un sibling - réordonner au lieu de reparenter
+          // EN: It's a sibling - reorder instead of reparent
+          console.log(`🔄 Réordonnancement de siblings: ${node.id} ↔ ${dragTarget}`);
 
-        console.log('📝 Command executed: ReparentNode', {
-          nodeId: node.id,
-          newParentId: dragTarget,
-        });
+          // FR: Déterminer si on insère avant ou après basé sur la position Y
+          // EN: Determine if we insert before or after based on Y position
+          const position = instanceRef.current?.screenToFlowPosition({
+            x: event.clientX,
+            y: event.clientY,
+          });
 
-        // FR: Mettre à jour l'état
-        // EN: Update state
-        useOpenFiles.setState(state => ({
-          openFiles: state.openFiles.map(f => (f.isActive ? { ...f, content: newMap } : f)),
-        }));
+          const targetFlowNode = instanceRef.current?.getNodes().find((n: Node) => n.id === dragTarget);
+          const insertBefore = position && targetFlowNode ? position.y < (targetFlowNode.position.y + 25) : false;
 
-        console.log('✅ Nœud rattaché avec succès');
+          const command = new ReorderSiblingCommand(node.id, dragTarget, insertBefore);
+          const currentMap = active.content as any;
+          const newMap = command.execute(currentMap);
+
+          console.log('📝 Command executed: ReorderSibling', {
+            nodeId: node.id,
+            targetId: dragTarget,
+            insertBefore,
+          });
+
+          // FR: Mettre à jour l'état
+          // EN: Update state
+          useOpenFiles.setState(state => ({
+            openFiles: state.openFiles.map(f => (f.isActive ? { ...f, content: newMap } : f)),
+          }));
+
+          console.log('✅ Siblings réordonnés avec succès');
+        } else {
+          // FR: Pas un sibling - reparenter normalement
+          // EN: Not a sibling - reparent normally
+          console.log(`🔄 Rattachement: ${node.id} → ${dragTarget}`);
+
+          const command = new ReparentNodeCommand(node.id, dragTarget);
+          const currentMap = active.content as any;
+          const newMap = command.execute(currentMap);
+
+          console.log('📝 Command executed: ReparentNode', {
+            nodeId: node.id,
+            newParentId: dragTarget,
+          });
+
+          // FR: Mettre à jour l'état
+          // EN: Update state
+          useOpenFiles.setState(state => ({
+            openFiles: state.openFiles.map(f => (f.isActive ? { ...f, content: newMap } : f)),
+          }));
+
+          console.log('✅ Nœud rattaché avec succès');
+        }
+
         setLastDropSuccess(true);
       } else {
         console.log('❌ No drag target in reparent mode, resetting states');
