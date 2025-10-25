@@ -3,10 +3,11 @@
  * EN: Hierarchical tag visualization panel
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { useTagGraph } from '../hooks/useTagGraph';
+import { useNodeTags } from '../hooks/useNodeTags';
 import { DagTag } from '../types/dag';
-import { ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Trash2, Eye, EyeOff } from 'lucide-react';
 import './TagLayersPanel.css';
 
 interface ExpandedState {
@@ -29,9 +30,19 @@ function TagTreeNode({
   depth: number;
 }) {
   const getChildren = useTagGraph((state: any) => state.getChildren);
+  const getChildCount = useTagGraph((state: any) => state.getChildCount);
+  const isTagHidden = useTagGraph((state: any) => state.isTagHidden);
+  const toggleTagVisibility = useTagGraph((state: any) => state.toggleTagVisibility);
+  const getNodeIds = useNodeTags((state: any) => state.getNodeIds);
   const colorInputRef = useRef<HTMLInputElement>(null);
   const children = getChildren(tag.id);
   const hasChildren = children.length > 0;
+  const hidden = isTagHidden(tag.id);
+  const childCount = getChildCount(tag.id);
+  const nodeCount = useMemo(() => {
+    const nodeIds = getNodeIds(tag.id);
+    return nodeIds ? nodeIds.length : 0;
+  }, [tag.id, getNodeIds]);
 
   const handleColorClick = () => {
     colorInputRef.current?.click();
@@ -41,9 +52,17 @@ function TagTreeNode({
     onColorChange(tag.id, e.target.value);
   };
 
+  const handleToggleVisibility = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleTagVisibility(tag.id);
+  };
+
   return (
     <div className="tag-tree-node">
-      <div className="tag-tree-node-content" style={{ paddingLeft: `${depth * 20}px` }}>
+      <div
+        className={`tag-tree-node-content ${hidden ? 'hidden' : ''}`}
+        style={{ paddingLeft: `${depth * 20}px` }}
+      >
         {hasChildren && (
           <button
             type="button"
@@ -81,7 +100,17 @@ function TagTreeNode({
             }
           }}
         >
-          {tag.label.substring(0, 20)}
+          <div className="tag-label-with-counts">
+            <span className="tag-label">{tag.label.substring(0, 20)}</span>
+            {(childCount > 0 || nodeCount > 0) && (
+              <div className="tag-counts">
+                {childCount > 0 && (
+                  <span className="count-badge count-children">{childCount}E</span>
+                )}
+                {nodeCount > 0 && <span className="count-badge count-nodes">{nodeCount}N</span>}
+              </div>
+            )}
+          </div>
           <input
             ref={colorInputRef}
             type="color"
@@ -91,6 +120,16 @@ function TagTreeNode({
             aria-label={`Change color for ${tag.label}`}
           />
         </div>
+
+        <button
+          type="button"
+          className="tag-visibility-btn"
+          onClick={handleToggleVisibility}
+          title={hidden ? 'Show tag' : 'Hide tag'}
+          aria-label={`${hidden ? 'Show' : 'Hide'} ${tag.label}`}
+        >
+          {hidden ? <EyeOff size={14} /> : <Eye size={14} />}
+        </button>
 
         <button
           type="button"

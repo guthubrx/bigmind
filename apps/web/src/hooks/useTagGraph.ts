@@ -12,6 +12,7 @@ interface TagGraphState {
   // EN: DAG data
   tags: Record<string, DagTag>;
   links: DagLink[];
+  hiddenTags: string[];
 
   // FR: Actions de gestion des tags
   // EN: Tag management actions
@@ -34,6 +35,19 @@ interface TagGraphState {
   getParent(tagId: string): DagTag | undefined;
   getAncestors(tagId: string): DagTag[];
   getDescendants(tagId: string): DagTag[];
+
+  // FR: Compteurs
+  // EN: Counters
+  getChildCount(tagId: string): number;
+  getDescendantCount(tagId: string): number;
+  getNodeCount(tagId: string): number;
+
+  // FR: Visibilité des tags
+  // EN: Tag visibility
+  isTagHidden(tagId: string): boolean;
+  toggleTagVisibility(tagId: string): void;
+  setTagVisibility(tagId: string, hidden: boolean): void;
+  getHiddenTags(): string[];
 
   // FR: Validation
   // EN: Validation
@@ -63,6 +77,7 @@ export const useTagGraph = create<TagGraphState>()(
     (set: SetState, get: GetState) => ({
       tags: {},
       links: [] as DagLink[],
+      hiddenTags: [],
 
       addTag: (tag: DagTag) => {
         set((state: TagGraphState) => {
@@ -197,6 +212,24 @@ export const useTagGraph = create<TagGraphState>()(
         return descendantIds.map((id: string) => state.tags[id]).filter(Boolean) as DagTag[];
       },
 
+      getChildCount: (tagId: string): number => {
+        const state = get();
+        const tag = state.tags[tagId];
+        if (!tag) return 0;
+        return tag.children.length;
+      },
+
+      getDescendantCount: (tagId: string): number => {
+        const state = get();
+        const descendantIds = DagValidation.getDescendants(state.tags, tagId);
+        return descendantIds.length;
+      },
+
+      getNodeCount: (_tagId: string): number =>
+        // Compter les nœuds qui ont ce tag (depuis useNodeTags)
+        // Pour maintenant, retourner 0 car on n'a pas accès à useNodeTags ici
+        // On va améliorer ça en passant useNodeTags depuis le composant
+        0,
       validateDAG: (): { valid: boolean; errors: string[] } => {
         const state = get();
         return DagValidation.validateDAG(state.tags);
@@ -207,8 +240,41 @@ export const useTagGraph = create<TagGraphState>()(
         return DagValidation.hasCycle(state.tags, tagId);
       },
 
+      isTagHidden: (tagId: string): boolean => {
+        const state = get();
+        return state.hiddenTags.includes(tagId);
+      },
+
+      toggleTagVisibility: (tagId: string) => {
+        set((state: TagGraphState) => {
+          const newHiddenTags = state.hiddenTags.includes(tagId)
+            ? state.hiddenTags.filter(id => id !== tagId)
+            : [...state.hiddenTags, tagId];
+          return { hiddenTags: newHiddenTags };
+        });
+      },
+
+      setTagVisibility: (tagId: string, hidden: boolean) => {
+        set((state: TagGraphState) => {
+          const isCurrentlyHidden = state.hiddenTags.includes(tagId);
+          if (hidden === isCurrentlyHidden) {
+            // No change needed
+            return state;
+          }
+          const newHiddenTags = hidden
+            ? [...state.hiddenTags, tagId]
+            : state.hiddenTags.filter(id => id !== tagId);
+          return { hiddenTags: newHiddenTags };
+        });
+      },
+
+      getHiddenTags: (): string[] => {
+        const state = get();
+        return [...state.hiddenTags];
+      },
+
       clear: () => {
-        set({ tags: {}, links: [] });
+        set({ tags: {}, links: [], hiddenTags: [] });
       },
 
       initialize: (tags: Record<string, DagTag>, links: DagLink[]) => {
@@ -217,10 +283,14 @@ export const useTagGraph = create<TagGraphState>()(
     }),
     {
       name: STORAGE_KEY,
-      version: 1,
+      version: 2,
       migrate: (persistedState: any, version: number) => {
         if (version === 1) {
-          return persistedState;
+          // Migrate from version 1 to 2: add hiddenTags if missing
+          return {
+            ...persistedState,
+            hiddenTags: persistedState.hiddenTags || [],
+          };
         }
         return persistedState;
       },
