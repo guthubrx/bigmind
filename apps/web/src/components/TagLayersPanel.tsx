@@ -6,7 +6,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { useTagGraph } from '../hooks/useTagGraph';
 import { useNodeTags } from '../hooks/useNodeTags';
-import { DagTag } from '../types/dag';
+import { DagTag, RelationType } from '../types/dag';
 import { ChevronDown, ChevronRight, Trash2, Eye, EyeOff } from 'lucide-react';
 import './TagLayersPanel.css';
 
@@ -33,8 +33,10 @@ function TagTreeNode({
   const getChildCount = useTagGraph((state: any) => state.getChildCount);
   const isTagHidden = useTagGraph((state: any) => state.isTagHidden);
   const toggleTagVisibility = useTagGraph((state: any) => state.toggleTagVisibility);
+  const createRelation = useTagGraph((state: any) => state.createRelation);
   const getTagNodes = useNodeTags((state: any) => state.getTagNodes);
   const colorInputRef = useRef<HTMLInputElement>(null);
+  const [dragOverTagId, setDragOverTagId] = useState<string | null>(null);
   const children = getChildren(tag.id);
   const hasChildren = children.length > 0;
   const hidden = isTagHidden(tag.id);
@@ -57,6 +59,35 @@ function TagTreeNode({
     toggleTagVisibility(tag.id);
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'link';
+    setDragOverTagId(tag.id);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOverTagId(null);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOverTagId(null);
+
+    try {
+      const data = e.dataTransfer.getData('application/json');
+      if (!data) return;
+
+      const draggedData = JSON.parse(data);
+      if (draggedData.type === 'tag' && draggedData.tagId && draggedData.tagId !== tag.id) {
+        // Create relation: dragged tag → current tag (IS_RELATED_TO by default)
+        createRelation(draggedData.tagId, tag.id, RelationType.IS_RELATED_TO);
+      }
+    } catch (error) {
+      console.error('Error handling drop:', error);
+    }
+  };
+
   return (
     <div className="tag-tree-node">
       <div
@@ -76,7 +107,7 @@ function TagTreeNode({
         {!hasChildren && <div className="tree-toggle-spacer" />}
 
         <div
-          className="tag-node-badge"
+          className={`tag-node-badge ${dragOverTagId === tag.id ? 'drag-over' : ''}`}
           style={{ backgroundColor: tag.color || '#3b82f6' }}
           onClick={handleColorClick}
           draggable
@@ -90,9 +121,12 @@ function TagTreeNode({
           onDragEnd={e => {
             e.dataTransfer!.dropEffect = 'none';
           }}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
           role="button"
           tabIndex={0}
-          title="Click to change color or drag to assign to a node"
+          title="Click to change color, drag to create relation, or drop tag to link"
           onKeyDown={e => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();

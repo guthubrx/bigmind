@@ -171,6 +171,12 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+.tag-node-badge.drag-over {
+  filter: brightness(1.2);
+  box-shadow: 0 0 0 2px #3b82f6, 0 4px 12px rgba(59, 130, 246, 0.4);
+  transform: scale(1.05);
+}
+
 .tag-node-badge:focus {
   outline: 2px solid rgba(0, 0, 0, 0.3);
   outline-offset: 2px;
