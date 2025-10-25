@@ -11,11 +11,10 @@ import './MindMapNodeTags.css';
 
 interface MindMapNodeTagsProps {
   nodeId: string;
-  direction?: number;
   onRemoveTag?: (tagId: string) => void;
 }
 
-function MindMapNodeTags({ nodeId, direction, onRemoveTag }: MindMapNodeTagsProps) {
+function MindMapNodeTags({ nodeId, onRemoveTag }: MindMapNodeTagsProps) {
   const getAllTags = useTagGraph(state => state.getAllTags);
   const getNodeTags = useNodeTags(state => state.getNodeTags);
 
@@ -29,15 +28,8 @@ function MindMapNodeTags({ nodeId, direction, onRemoveTag }: MindMapNodeTagsProp
     return null;
   }
 
-  // FR: Si direction est -1 (nœud à gauche), afficher les tags à droite. Sinon à gauche.
-  // EN: If direction is -1 (node on left), show tags on right. Otherwise on left.
-  const isOnLeft = direction === -1;
-  const containerClass = isOnLeft
-    ? 'node-tags-container node-tags-right'
-    : 'node-tags-container node-tags-left';
-
   return (
-    <div className={containerClass}>
+    <div className="node-tags-container">
       {tags.map(tag => (
         <div
           key={tag.id}
