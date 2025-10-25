@@ -269,7 +269,7 @@ function MindMapNode({ data, selected }: Props) {
         borderRadius: data.style?.borderRadius || 8,
         boxSizing: 'border-box',
         width: 200,
-        padding: '8px 12px',
+        padding: '4px 12px',
         outline,
         outlineOffset,
         boxShadow: (data as any).isDragTarget
