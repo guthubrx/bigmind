@@ -3,7 +3,7 @@
  * EN: Hierarchical tag visualization panel
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useTagGraph } from '../hooks/useTagGraph';
 import { DagTag } from '../types/dag';
 import { ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
@@ -18,17 +18,28 @@ function TagTreeNode({
   expanded,
   onToggle,
   onDelete,
+  onColorChange,
   depth,
 }: {
   tag: DagTag;
   expanded: boolean;
   onToggle: () => void;
   onDelete: () => void;
+  onColorChange: (tagId: string, color: string) => void;
   depth: number;
 }) {
   const getChildren = useTagGraph((state: any) => state.getChildren);
+  const colorInputRef = useRef<HTMLInputElement>(null);
   const children = getChildren(tag.id);
   const hasChildren = children.length > 0;
+
+  const handleColorClick = () => {
+    colorInputRef.current?.click();
+  };
+
+  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onColorChange(tag.id, e.target.value);
+  };
 
   return (
     <div className="tag-tree-node">
@@ -45,8 +56,29 @@ function TagTreeNode({
         )}
         {!hasChildren && <div className="tree-toggle-spacer" />}
 
-        <div className="tag-node-badge" style={{ backgroundColor: tag.color || '#3b82f6' }}>
+        <div
+          className="tag-node-badge"
+          style={{ backgroundColor: tag.color || '#3b82f6' }}
+          onClick={handleColorClick}
+          role="button"
+          tabIndex={0}
+          title="Click to change color"
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleColorClick();
+            }
+          }}
+        >
           {tag.label.substring(0, 20)}
+          <input
+            ref={colorInputRef}
+            type="color"
+            value={tag.color || '#3b82f6'}
+            onChange={handleColorChange}
+            style={{ display: 'none' }}
+            aria-label={`Change color for ${tag.label}`}
+          />
         </div>
 
         <button
@@ -71,6 +103,7 @@ function TagTreeNode({
               onDelete={() => {
                 // Will be handled by parent
               }}
+              onColorChange={onColorChange}
               depth={depth + 1}
             />
           ))}
@@ -83,6 +116,7 @@ function TagTreeNode({
 function TagLayersPanel() {
   const tags = useTagGraph((state: any) => state.getAllTags());
   const removeTag = useTagGraph((state: any) => state.removeTag);
+  const updateTag = useTagGraph((state: any) => state.updateTag);
 
   const [expandedState, setExpandedState] = useState<ExpandedState>(
     Object.fromEntries(tags.map((tag: DagTag) => [tag.id, true]))
@@ -104,6 +138,10 @@ function TagLayersPanel() {
     if (window.confirm('Are you sure you want to delete this tag?')) {
       removeTag(tagId);
     }
+  };
+
+  const handleColorChange = (tagId: string, color: string) => {
+    updateTag(tagId, { color });
   };
 
   if (tags.length === 0) {
@@ -129,6 +167,7 @@ function TagLayersPanel() {
             expanded={expandedState[tag.id] ?? true}
             onToggle={() => handleToggle(tag.id)}
             onDelete={() => handleDelete(tag.id)}
+            onColorChange={handleColorChange}
             depth={0}
           />
         ))}

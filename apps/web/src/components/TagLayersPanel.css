@@ -98,6 +98,19 @@
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.tag-node-badge:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.tag-node-badge:focus {
+  outline: 2px solid rgba(0, 0, 0, 0.3);
+  outline-offset: 2px;
 }
 
 .tag-delete-btn {
