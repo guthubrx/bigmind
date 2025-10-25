@@ -5,14 +5,17 @@
 
 import React, { useState, useRef, useCallback } from 'react';
 import { useTagGraph } from '../hooks/useTagGraph';
+import { useDagExportImport } from '../hooks/useDagExportImport';
 import { DagTag } from '../types/dag';
 import { eventBus } from '../utils/eventBus';
 import TagGraph from './TagGraph';
 import TagLayersPanel from './TagLayersPanel';
-import { Plus, Eye, EyeOff } from 'lucide-react';
+import DagStatsPanel from './DagStatsPanel';
+import DagSearchPanel from './DagSearchPanel';
+import { Plus, Eye, EyeOff, BarChart3, Search, Download, Upload, Zap } from 'lucide-react';
 import './TagLayersPanelDAG.css';
 
-export type ViewMode = 'graph' | 'list';
+export type ViewMode = 'graph' | 'list' | 'stats' | 'search' | 'tools';
 
 interface TagLayersPanelDAGProps {
   onClose?: () => void;
@@ -25,6 +28,8 @@ function TagLayersPanelDAG({ onClose }: TagLayersPanelDAGProps) {
   const addTag = useTagGraph((state: any) => state.addTag);
   const tags = useTagGraph((state: any) => Object.values(state.tags) as DagTag[]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { downloadDag, importDag } = useDagExportImport();
 
   const generateColor = (): string => {
     const colors = [
@@ -66,6 +71,39 @@ function TagLayersPanelDAG({ onClose }: TagLayersPanelDAGProps) {
     }
   };
 
+  const handleExport = useCallback(() => {
+    downloadDag(`bigmind-dag-${Date.now()}.json`);
+  }, [downloadDag]);
+
+  const handleImportClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = event => {
+        const content = event.target?.result as string;
+        const success = importDag(content);
+        if (success) {
+          alert('DAG imported successfully!');
+        } else {
+          alert('Failed to import DAG. Check console for errors.');
+        }
+      };
+      reader.readAsText(file);
+
+      // Reset input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    },
+    [importDag]
+  );
+
   const tagCount = tags.length;
   const validation = useTagGraph((state: any) => state.validateDAG)();
 
@@ -104,6 +142,33 @@ function TagLayersPanelDAG({ onClose }: TagLayersPanelDAGProps) {
               aria-label="Show list view"
             >
               <Eye size={16} />
+            </button>
+            <button
+              type="button"
+              className={`toggle-btn ${viewMode === 'stats' ? 'active' : ''}`}
+              onClick={() => setViewMode('stats')}
+              title="Statistics"
+              aria-label="Show statistics"
+            >
+              <BarChart3 size={16} />
+            </button>
+            <button
+              type="button"
+              className={`toggle-btn ${viewMode === 'search' ? 'active' : ''}`}
+              onClick={() => setViewMode('search')}
+              title="Search"
+              aria-label="Show search"
+            >
+              <Search size={16} />
+            </button>
+            <button
+              type="button"
+              className={`toggle-btn ${viewMode === 'tools' ? 'active' : ''}`}
+              onClick={() => setViewMode('tools')}
+              title="Tools"
+              aria-label="Show tools"
+            >
+              <Zap size={16} />
             </button>
           </div>
 
@@ -179,7 +244,44 @@ function TagLayersPanelDAG({ onClose }: TagLayersPanelDAGProps) {
       {/* FR: Contenu principal */}
       {/* EN: Main content */}
       <div className="tag-layers-dag-content">
-        {viewMode === 'graph' ? <TagGraph /> : <TagLayersPanel />}
+        {viewMode === 'graph' && <TagGraph />}
+        {viewMode === 'list' && <TagLayersPanel />}
+        {viewMode === 'stats' && <DagStatsPanel />}
+        {viewMode === 'search' && <DagSearchPanel />}
+        {viewMode === 'tools' && (
+          <div className="tools-panel">
+            <div className="tools-header">
+              <h3>DAG Tools</h3>
+            </div>
+            <div className="tools-buttons">
+              <button
+                type="button"
+                className="tool-button export-btn"
+                onClick={handleExport}
+                title="Export DAG as JSON"
+              >
+                <Download size={16} />
+                <span>Export</span>
+              </button>
+              <button
+                type="button"
+                className="tool-button import-btn"
+                onClick={handleImportClick}
+                title="Import DAG from JSON"
+              >
+                <Upload size={16} />
+                <span>Import</span>
+              </button>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleFileSelect}
+              style={{ display: 'none' }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
