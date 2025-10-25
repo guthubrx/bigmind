@@ -1,0 +1,53 @@
+.node-tags-container {
+  position: absolute;
+  bottom: 0;
+  right: -80px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: auto;
+}
+
+.node-tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border-radius: 3px;
+  color: white;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  max-width: 120px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.tag-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.remove-tag-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  cursor: pointer;
+  color: white;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.remove-tag-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.remove-tag-btn:active {
+  transform: scale(0.9);
+}

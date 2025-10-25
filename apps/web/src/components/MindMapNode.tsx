@@ -9,6 +9,8 @@ import { useMindmap } from '../hooks/useMindmap';
 import { useSelection } from '../hooks/useSelection';
 import { useAppSettings } from '../hooks/useAppSettings';
 import { useEditMode } from '../hooks/useEditMode';
+import { useMindMapDAGSync } from '../hooks/useMindMapDAGSync';
+import MindMapNodeTags from './MindMapNodeTags';
 // FR: Types locaux pour le développement
 // EN: Local types for development
 export interface MindNode {
@@ -51,6 +53,7 @@ function MindMapNode({ data, selected }: Props) {
   const setSelectedNodeId = useSelection(s => s.setSelectedNodeId);
   const accentColor = useAppSettings(s => s.accentColor);
   const setEditMode = useEditMode(s => s.setEditMode);
+  const { untagNodeSync } = useMindMapDAGSync();
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(data.title);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -408,6 +411,10 @@ function MindMapNode({ data, selected }: Props) {
                      rounded-full border-2 border-white"
         />
       )}
+
+      {/* FR: Tags affichés sur le nœud */}
+      {/* EN: Tags displayed on node */}
+      <MindMapNodeTags nodeId={data.id} onRemoveTag={tagId => untagNodeSync(data.id, tagId)} />
     </div>
   );
 }
