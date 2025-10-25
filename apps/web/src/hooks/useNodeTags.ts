@@ -19,12 +19,15 @@ interface NodeTagsState {
   // EN: Actions
   tagNode(nodeId: string, tagId: string): void;
   untagNode(nodeId: string, tagId: string): void;
+  batchTagNode(nodeId: string, tagIds: string[]): void;
+  batchUntagNode(nodeId: string, tagIds: string[]): void;
   getNodeTags(nodeId: string): string[];
   getTagNodes(tagId: string): string[];
   removeNodeCompletely(nodeId: string): void;
   removeTagCompletely(tagId: string): void;
   clear(): void;
   initialize(nodeTagMap: Record<string, string[]>, tagNodeMap: Record<string, string[]>): void;
+  isNodeTagged(nodeId: string, tagId: string): boolean;
 }
 
 const STORAGE_KEY = 'bigmind-node-tags';
@@ -76,6 +79,58 @@ export const useNodeTags = create<NodeTagsState>()(
             tagNodeMap: newTagNodeMap,
           };
         });
+      },
+
+      batchTagNode: (nodeId: string, tagIds: string[]) => {
+        set(state => {
+          const newNodeTagMap = { ...state.nodeTagMap };
+          const newTagNodeMap = { ...state.tagNodeMap };
+
+          if (!newNodeTagMap[nodeId]) {
+            newNodeTagMap[nodeId] = new Set();
+          }
+
+          tagIds.forEach(tagId => {
+            newNodeTagMap[nodeId].add(tagId);
+
+            if (!newTagNodeMap[tagId]) {
+              newTagNodeMap[tagId] = new Set();
+            }
+            newTagNodeMap[tagId].add(nodeId);
+          });
+
+          return {
+            nodeTagMap: newNodeTagMap,
+            tagNodeMap: newTagNodeMap,
+          };
+        });
+      },
+
+      batchUntagNode: (nodeId: string, tagIds: string[]) => {
+        set(state => {
+          const newNodeTagMap = { ...state.nodeTagMap };
+          const newTagNodeMap = { ...state.tagNodeMap };
+
+          tagIds.forEach(tagId => {
+            if (newNodeTagMap[nodeId]) {
+              newNodeTagMap[nodeId].delete(tagId);
+            }
+            if (newTagNodeMap[tagId]) {
+              newTagNodeMap[tagId].delete(nodeId);
+            }
+          });
+
+          return {
+            nodeTagMap: newNodeTagMap,
+            tagNodeMap: newTagNodeMap,
+          };
+        });
+      },
+
+      isNodeTagged: (nodeId: string, tagId: string): boolean => {
+        const state = get();
+        const tags = state.nodeTagMap[nodeId];
+        return tags ? tags.has(tagId) : false;
       },
 
       getNodeTags: (nodeId: string): string[] => {

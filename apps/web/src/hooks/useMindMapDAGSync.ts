@@ -3,52 +3,88 @@
  * EN: Hook to synchronize DAG and MindMap bidirectionally
  */
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useNodeTags } from './useNodeTags';
 import { eventBus } from '../utils/eventBus';
 import { useMindmap } from './useMindmap';
 
 interface UseMindMapDAGSyncOptions {
   enabled?: boolean;
+  debounceMs?: number;
 }
 
+const DEFAULT_DEBOUNCE_MS = 50;
+
 export function useMindMapDAGSync(options: UseMindMapDAGSyncOptions = {}) {
-  const { enabled = true } = options;
+  const { enabled = true, debounceMs = DEFAULT_DEBOUNCE_MS } = options;
 
   const nodeTags = useNodeTags();
   const mindmapState = useMindmap();
+  const debounceTimerRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
-  // FR: Synchroniser un nœud avec les tags du DAG
-  // EN: Sync a node with tags from DAG
+  // FR: Synchroniser un nœud avec débouncing pour performance
+  // EN: Sync a node with debouncing for performance
   const syncNodeTags = useCallback(
-    (nodeId: string) => {
-      const tags = nodeTags.getNodeTags(nodeId);
-      // Émettre un événement pour que les composants se mettent à jour
-      eventBus.emit('node:updated', {
-        nodeId,
-        updates: { tags },
-      });
+    (nodeId: string, immediate = false) => {
+      const executeSync = () => {
+        const tags = nodeTags.getNodeTags(nodeId);
+        // Émettre un événement pour que les composants se mettent à jour
+        eventBus.emit('node:updated', {
+          nodeId,
+          updates: { tags },
+        });
+        // Nettoyer le timer
+        debounceTimerRef.current.delete(nodeId);
+      };
+
+      if (immediate) {
+        executeSync();
+        return;
+      }
+
+      // Annuler le timer précédent s'il existe
+      const existingTimer = debounceTimerRef.current.get(nodeId);
+      if (existingTimer) {
+        clearTimeout(existingTimer);
+      }
+
+      // Créer un nouveau timer
+      const newTimer = setTimeout(() => {
+        executeSync();
+      }, debounceMs);
+
+      debounceTimerRef.current.set(nodeId, newTimer);
     },
-    [nodeTags]
+    [nodeTags, debounceMs]
   );
 
-  // FR: Ajouter un tag à un nœud
-  // EN: Add a tag to a node
+  // FR: Nettoyer les timers au unmount
+  // EN: Clean up timers on unmount
+  useEffect(
+    () => () => {
+      debounceTimerRef.current.forEach(timer => clearTimeout(timer));
+      debounceTimerRef.current.clear();
+    },
+    []
+  );
+
+  // FR: Ajouter un tag à un nœud (synchrone)
+  // EN: Add a tag to a node (synchronous)
   const tagNodeSync = useCallback(
     (nodeId: string, tagId: string) => {
       nodeTags.tagNode(nodeId, tagId);
-      syncNodeTags(nodeId);
+      syncNodeTags(nodeId, true); // immediate: true pour opérations critiques
       eventBus.emit('node:tagged', { nodeId, tagId });
     },
     [nodeTags, syncNodeTags]
   );
 
-  // FR: Retirer un tag d'un nœud
-  // EN: Remove a tag from a node
+  // FR: Retirer un tag d'un nœud (synchrone)
+  // EN: Remove a tag from a node (synchronous)
   const untagNodeSync = useCallback(
     (nodeId: string, tagId: string) => {
       nodeTags.untagNode(nodeId, tagId);
-      syncNodeTags(nodeId);
+      syncNodeTags(nodeId, true); // immediate: true pour opérations critiques
       eventBus.emit('node:untagged', { nodeId, tagId });
     },
     [nodeTags, syncNodeTags]
@@ -116,11 +152,11 @@ export function useMindMapDAGSync(options: UseMindMapDAGSyncOptions = {}) {
     }
 
     const unsubscribe = eventBus.on('sync:refresh', () => {
-      // Rafraîchir tous les nœuds
+      // Rafraîchir tous les nœuds immédiatement
       if (mindmapState.mindMap) {
         const { nodes } = mindmapState.mindMap;
         Object.keys(nodes).forEach(nodeId => {
-          syncNodeTags(nodeId);
+          syncNodeTags(nodeId, true); // immediate: true pour refresh complet
         });
       }
     });

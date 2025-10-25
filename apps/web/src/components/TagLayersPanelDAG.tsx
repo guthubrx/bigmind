@@ -3,8 +3,9 @@
  * EN: DAG tag panel with graph and list views
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useTagGraph } from '../hooks/useTagGraph';
+import { eventBus } from '../utils/eventBus';
 import TagGraph from './TagGraph';
 import TagLayersPanel from './TagLayersPanel';
 import { Plus, Eye, EyeOff } from 'lucide-react';
@@ -38,7 +39,7 @@ function TagLayersPanelDAG({ onClose }: TagLayersPanelDAGProps) {
     return colors[Math.floor(Math.random() * colors.length)];
   };
 
-  const handleAddTag = () => {
+  const handleAddTag = useCallback(() => {
     if (newTagName.trim()) {
       const tagId = `tag-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       addTag({
@@ -50,8 +51,11 @@ function TagLayersPanelDAG({ onClose }: TagLayersPanelDAGProps) {
       });
       setNewTagName('');
       setShowNewTagInput(false);
+      // Émettre un événement pour synchroniser avec la MindMap
+      eventBus.emit('tag:created', { tagId, label: newTagName.trim() });
+      eventBus.emit('sync:refresh', {});
     }
-  };
+  }, [newTagName, addTag]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
