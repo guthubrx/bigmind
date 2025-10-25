@@ -4,28 +4,30 @@
  */
 
 import React, { useState } from 'react';
-import { 
-  Type, 
-  Palette, 
-  AlignLeft, 
-  AlignCenter, 
+import {
+  Type,
+  Palette,
+  AlignLeft,
+  AlignCenter,
   AlignRight,
   Bold,
   Italic,
   Underline,
-  Settings
+  Settings,
+  Tag,
 } from 'lucide-react';
 import { useMindmap } from '../hooks/useMindmap';
 import { useOpenFiles } from '../hooks/useOpenFiles';
 import { useSelection } from '../hooks/useSelection';
+import NodeTagPanel from './NodeTagPanel';
 import './NodeProperties.css';
 
 function NodeProperties() {
   const { selection } = useMindmap();
-  const activeFile = useOpenFiles((state) => state.openFiles.find(f => f.isActive) || null);
-  const selectedNodeId = useSelection((s) => s.selectedNodeId) || selection.primaryNode;
-  const updateActiveFileNode = useOpenFiles((s) => s.updateActiveFileNode);
-  const [activeTab, setActiveTab] = useState<'content' | 'style' | 'advanced'>('content');
+  const activeFile = useOpenFiles(state => state.openFiles.find(f => f.isActive) || null);
+  const selectedNodeId = useSelection(s => s.selectedNodeId) || selection.primaryNode;
+  const updateActiveFileNode = useOpenFiles(s => s.updateActiveFileNode);
+  const [activeTab, setActiveTab] = useState<'content' | 'style' | 'tags' | 'advanced'>('content');
 
   const selectedNode = selectedNodeId ? activeFile?.content?.nodes?.[selectedNodeId] : null;
 
@@ -51,7 +53,7 @@ function NodeProperties() {
       <div className="panel-header">
         <span>Propriétés</span>
       </div>
-      
+
       <div className="panel-content">
         {/* FR: Onglets */}
         {/* EN: Tabs */}
@@ -71,6 +73,14 @@ function NodeProperties() {
           >
             <Palette className="icon-small" />
             Style
+          </button>
+          <button
+            type="button"
+            className={`tab ${activeTab === 'tags' ? 'active' : ''}`}
+            onClick={() => setActiveTab('tags')}
+          >
+            <Tag className="icon-small" />
+            Tags
           </button>
           <button
             type="button"
@@ -95,10 +105,13 @@ function NodeProperties() {
                   value={selectedNode.title}
                   className="input"
                   placeholder="Titre du nœud"
-                  onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { title: e.target.value })}
+                  onChange={e =>
+                    selectedNodeId &&
+                    updateActiveFileNode(selectedNodeId, { title: e.target.value })
+                  }
                 />
               </div>
-              
+
               <div className="form-group">
                 <label htmlFor="np-notes">Notes</label>
                 <textarea
@@ -107,7 +120,10 @@ function NodeProperties() {
                   className="input textarea"
                   placeholder="Notes additionnelles..."
                   rows={4}
-                  onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { notes: e.target.value })}
+                  onChange={e =>
+                    selectedNodeId &&
+                    updateActiveFileNode(selectedNodeId, { notes: e.target.value })
+                  }
                 />
               </div>
 
@@ -138,13 +154,23 @@ function NodeProperties() {
                     type="color"
                     value={selectedNode.style?.backgroundColor || '#ffffff'}
                     className="color-input"
-                    onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, backgroundColor: e.target.value } })}
+                    onChange={e =>
+                      selectedNodeId &&
+                      updateActiveFileNode(selectedNodeId, {
+                        style: { ...selectedNode.style, backgroundColor: e.target.value },
+                      })
+                    }
                   />
                   <input
                     type="text"
                     value={selectedNode.style?.backgroundColor || '#ffffff'}
                     className="input"
-                    onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, backgroundColor: e.target.value } })}
+                    onChange={e =>
+                      selectedNodeId &&
+                      updateActiveFileNode(selectedNodeId, {
+                        style: { ...selectedNode.style, backgroundColor: e.target.value },
+                      })
+                    }
                   />
                 </div>
               </div>
@@ -157,13 +183,23 @@ function NodeProperties() {
                     type="color"
                     value={selectedNode.style?.textColor || '#000000'}
                     className="color-input"
-                    onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, textColor: e.target.value } })}
+                    onChange={e =>
+                      selectedNodeId &&
+                      updateActiveFileNode(selectedNodeId, {
+                        style: { ...selectedNode.style, textColor: e.target.value },
+                      })
+                    }
                   />
                   <input
                     type="text"
                     value={selectedNode.style?.textColor || '#000000'}
                     className="input"
-                    onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, textColor: e.target.value } })}
+                    onChange={e =>
+                      selectedNodeId &&
+                      updateActiveFileNode(selectedNodeId, {
+                        style: { ...selectedNode.style, textColor: e.target.value },
+                      })
+                    }
                   />
                 </div>
               </div>
@@ -177,7 +213,12 @@ function NodeProperties() {
                   className="input"
                   min="8"
                   max="72"
-                  onChange={(e) => selectedNodeId && updateActiveFileNode(selectedNodeId, { style: { ...selectedNode.style, fontSize: Number(e.target.value) } })}
+                  onChange={e =>
+                    selectedNodeId &&
+                    updateActiveFileNode(selectedNodeId, {
+                      style: { ...selectedNode.style, fontSize: Number(e.target.value) },
+                    })
+                  }
                 />
               </div>
 
@@ -198,16 +239,17 @@ function NodeProperties() {
             </div>
           )}
 
+          {activeTab === 'tags' && selectedNodeId && (
+            <div className="tags-tab">
+              <NodeTagPanel nodeId={selectedNodeId} />
+            </div>
+          )}
+
           {activeTab === 'advanced' && (
             <div className="advanced-tab">
               <div className="form-group">
                 <label htmlFor="np-nodeid">ID du nœud</label>
-                <input
-                  type="text"
-                  value={selectedNode.id}
-                  className="input"
-                  readOnly
-                />
+                <input type="text" value={selectedNode.id} className="input" readOnly />
               </div>
 
               <div className="form-group">
