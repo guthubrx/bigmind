@@ -414,7 +414,11 @@ function MindMapNode({ data, selected }: Props) {
 
       {/* FR: Tags affichés sur le nœud */}
       {/* EN: Tags displayed on node */}
-      <MindMapNodeTags nodeId={data.id} onRemoveTag={tagId => untagNodeSync(data.id, tagId)} />
+      <MindMapNodeTags
+        nodeId={data.id}
+        direction={data.direction}
+        onRemoveTag={tagId => untagNodeSync(data.id, tagId)}
+      />
     </div>
   );
 }
