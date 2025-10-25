@@ -33,16 +33,16 @@ function TagTreeNode({
   const getChildCount = useTagGraph((state: any) => state.getChildCount);
   const isTagHidden = useTagGraph((state: any) => state.isTagHidden);
   const toggleTagVisibility = useTagGraph((state: any) => state.toggleTagVisibility);
-  const getNodeIds = useNodeTags((state: any) => state.getNodeIds);
+  const getTagNodes = useNodeTags((state: any) => state.getTagNodes);
   const colorInputRef = useRef<HTMLInputElement>(null);
   const children = getChildren(tag.id);
   const hasChildren = children.length > 0;
   const hidden = isTagHidden(tag.id);
   const childCount = getChildCount(tag.id);
   const nodeCount = useMemo(() => {
-    const nodeIds = getNodeIds(tag.id);
+    const nodeIds = getTagNodes(tag.id);
     return nodeIds ? nodeIds.length : 0;
-  }, [tag.id, getNodeIds]);
+  }, [tag.id, getTagNodes]);
 
   const handleColorClick = () => {
     colorInputRef.current?.click();
