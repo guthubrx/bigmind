@@ -246,28 +246,40 @@ export function useDragAndDrop({
         const draggedNode = activeFile.content.nodes[node.id];
         const targetMindNode = activeFile.content.nodes[targetNode.id];
 
+        // FR: Calculer les trois zones du nœud cible
+        // EN: Calculate the three zones of the target node
+        const targetNodeY = targetNode.position.y;
+        const nodeHeight = 50; // FR: Hauteur approximative / EN: Approximate height
+        const topZoneEnd = targetNodeY + nodeHeight * 0.25; // FR: 25% supérieur / EN: Top 25%
+        const bottomZoneStart = targetNodeY + nodeHeight * 0.75; // FR: 25% inférieur / EN: Bottom 25%
+
         if (
           draggedNode &&
           targetMindNode &&
           draggedNode.parentId === targetMindNode.parentId &&
           draggedNode.parentId !== null
         ) {
-          // FR: C'est un sibling - déterminer la position (before/after)
-          // EN: It's a sibling - determine position (before/after)
-          setIsSiblingReorder(true);
+          // FR: C'est un sibling potentiel - vérifier dans quelle zone on est
+          // EN: It's a potential sibling - check which zone we're in
 
-          // FR: Calculer si on est dans la moitié haute ou basse du nœud
-          // EN: Calculate if we're in the top or bottom half of the node
-          const targetNodeY = targetNode.position.y;
-          const nodeHeight = 50; // FR: Hauteur approximative / EN: Approximate height
-          const midY = targetNodeY + nodeHeight / 2;
-
-          if (position.y < midY) {
+          if (position.y < topZoneEnd) {
+            // FR: Zone haute (25% supérieur) - réordonnancement avant
+            // EN: Top zone (top 25%) - reorder before
+            setIsSiblingReorder(true);
             setDropPosition('before');
-            console.log('📍 Drop position: BEFORE (top half)');
-          } else {
+            console.log('📍 Drop position: BEFORE (top zone - sibling reorder)');
+          } else if (position.y > bottomZoneStart) {
+            // FR: Zone basse (25% inférieur) - réordonnancement après
+            // EN: Bottom zone (bottom 25%) - reorder after
+            setIsSiblingReorder(true);
             setDropPosition('after');
-            console.log('📍 Drop position: AFTER (bottom half)');
+            console.log('📍 Drop position: AFTER (bottom zone - sibling reorder)');
+          } else {
+            // FR: Zone centrale (50% au milieu) - reparenting (devient enfant)
+            // EN: Center zone (middle 50%) - reparenting (becomes child)
+            setIsSiblingReorder(false);
+            setDropPosition('center');
+            console.log('📍 Drop position: CENTER (middle zone - reparenting sibling as child)');
           }
         } else {
           // FR: Pas un sibling - reparenting normal
