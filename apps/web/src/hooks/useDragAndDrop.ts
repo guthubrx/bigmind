@@ -9,7 +9,7 @@ import type { Node } from '@xyflow/react';
 import { useOpenFiles } from './useOpenFiles';
 import { getAllDescendants, isDescendant } from '../utils/nodeUtils';
 import type { OpenFile } from './useOpenFiles';
-import { ReparentNodeCommand } from '@bigmind/core';
+import { ReparentNodeCommand, MoveNodeWithSubtreeCommand } from '@bigmind/core';
 
 /**
  * FR: Valide si on peut reparenter un nœud sur un autre
@@ -246,29 +246,12 @@ export function useDragAndDrop({
 
         console.log('📍 New position:', position, 'Offset:', offset);
 
-        // FR: Mettre à jour les positions du nœud et de son arborescence
-        // EN: Update positions of node and its subtree
-        const newContent = { ...active.content };
+        // FR: Utiliser la commande MoveNodeWithSubtreeCommand pour undo/redo
+        // EN: Use MoveNodeWithSubtreeCommand for undo/redo support
+        const command = new MoveNodeWithSubtreeCommand(node.id, position, offset);
+        const newContent = command.execute(active.content);
+
         const allNodesToMove = [node.id, ...getAllDescendants(node.id, active.content.nodes)];
-
-        allNodesToMove.forEach(nodeId => {
-          const currentNode = newContent.nodes[nodeId];
-          if (currentNode) {
-            if (nodeId === node.id) {
-              // Position absolue pour le nœud principal
-              currentNode.x = position.x;
-              currentNode.y = position.y;
-            } else {
-              // Décalage relatif pour les descendants
-              const originalPos = active.content.nodes[nodeId];
-              if (originalPos) {
-                currentNode.x = (originalPos.x || 0) + offset.x;
-                currentNode.y = (originalPos.y || 0) + offset.y;
-              }
-            }
-          }
-        });
-
         console.log('📝 Subtree moved', {
           nodeId: node.id,
           newPosition: position,
