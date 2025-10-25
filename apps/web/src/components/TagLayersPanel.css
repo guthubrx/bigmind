@@ -46,6 +46,25 @@
 
 .tag-tree-node {
   margin: 0;
+  position: relative;
+}
+
+.tag-tree-children {
+  position: relative;
+  margin-left: 12px;
+  padding-left: 8px;
+  border-left: 1px solid #e5e7eb;
+}
+
+/* Horizontal connector line from vertical line to child nodes */
+.tag-tree-children .tag-tree-node::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 16px;
+  width: 8px;
+  height: 1px;
+  background-color: #e5e7eb;
 }
 
 .tag-tree-node-content {
