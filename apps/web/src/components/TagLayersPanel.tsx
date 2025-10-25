@@ -1,0 +1,140 @@
+/**
+ * FR: Panneau de visualisation hiérarchique des tags
+ * EN: Hierarchical tag visualization panel
+ */
+
+import React, { useState } from 'react';
+import { useTagGraph } from '../hooks/useTagGraph';
+import { DagTag } from '../types/dag';
+import { ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
+import './TagLayersPanel.css';
+
+interface ExpandedState {
+  [tagId: string]: boolean;
+}
+
+function TagTreeNode({
+  tag,
+  expanded,
+  onToggle,
+  onDelete,
+  depth,
+}: {
+  tag: DagTag;
+  expanded: boolean;
+  onToggle: () => void;
+  onDelete: () => void;
+  depth: number;
+}) {
+  const getChildren = useTagGraph((state: any) => state.getChildren);
+  const children = getChildren(tag.id);
+  const hasChildren = children.length > 0;
+
+  return (
+    <div className="tag-tree-node">
+      <div className="tag-tree-node-content" style={{ paddingLeft: `${depth * 20}px` }}>
+        {hasChildren && (
+          <button
+            type="button"
+            className="tree-toggle-btn"
+            onClick={onToggle}
+            aria-label={expanded ? 'Collapse' : 'Expand'}
+          >
+            {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+          </button>
+        )}
+        {!hasChildren && <div className="tree-toggle-spacer" />}
+
+        <div className="tag-node-badge" style={{ backgroundColor: tag.color || '#3b82f6' }}>
+          {tag.label.substring(0, 20)}
+        </div>
+
+        <button
+          type="button"
+          className="tag-delete-btn"
+          onClick={onDelete}
+          title="Delete tag"
+          aria-label={`Delete ${tag.label}`}
+        >
+          <Trash2 size={14} />
+        </button>
+      </div>
+
+      {expanded && children.length > 0 && (
+        <div className="tag-tree-children">
+          {children.map((child: DagTag) => (
+            <TagTreeNode
+              key={child.id}
+              tag={child}
+              expanded
+              onToggle={() => {}}
+              onDelete={() => {
+                // Will be handled by parent
+              }}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TagLayersPanel() {
+  const tags = useTagGraph((state: any) => state.getAllTags());
+  const removeTag = useTagGraph((state: any) => state.removeTag);
+
+  const [expandedState, setExpandedState] = useState<ExpandedState>(
+    Object.fromEntries(tags.map((tag: DagTag) => [tag.id, true]))
+  );
+
+  // FR: Obtenir les balises racine (sans parent)
+  // EN: Get root tags (without parent)
+  const rootTags = tags.filter((tag: DagTag) => !tag.parentId);
+
+  const handleToggle = (tagId: string) => {
+    setExpandedState(prev => ({
+      ...prev,
+      [tagId]: !prev[tagId],
+    }));
+  };
+
+  const handleDelete = (tagId: string) => {
+    // eslint-disable-next-line no-alert
+    if (window.confirm('Are you sure you want to delete this tag?')) {
+      removeTag(tagId);
+    }
+  };
+
+  if (tags.length === 0) {
+    return (
+      <div className="tag-layers-empty">
+        <p>Aucun tag. Créez-en un dans le panneau DAG.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="tag-layers-panel">
+      <div className="tag-layers-header">
+        <h3>Tags Hierarchy</h3>
+        <span className="tag-count">{tags.length}</span>
+      </div>
+
+      <div className="tag-layers-tree">
+        {rootTags.map((tag: DagTag) => (
+          <TagTreeNode
+            key={tag.id}
+            tag={tag}
+            expanded={expandedState[tag.id] ?? true}
+            onToggle={() => handleToggle(tag.id)}
+            onDelete={() => handleDelete(tag.id)}
+            depth={0}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default TagLayersPanel;
