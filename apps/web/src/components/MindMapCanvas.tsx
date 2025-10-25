@@ -410,7 +410,35 @@ function MindMapCanvas() {
     ];
   }, [nodesWithDragStates, ghostNode]);
 
-  const initialEdges = useMemo(() => convertToReactFlowEdges(), [convertToReactFlowEdges]);
+  // FR: Appliquer les états de drag aux arêtes (cacher les liens du nœud draggé)
+  // EN: Apply drag states to edges (hide links of dragged node)
+  const edgesWithDragStates = useMemo(() => {
+    const baseEdges = convertToReactFlowEdges();
+
+    if (!draggedNodeId) return baseEdges;
+
+    // FR: Cacher les edges connectés au nœud draggé ou ses descendants
+    // EN: Hide edges connected to dragged node or its descendants
+    return baseEdges.map(edge => {
+      const isDraggedNodeEdge = edge.source === draggedNodeId || edge.target === draggedNodeId;
+      const isDescendantEdge = draggedDescendants.includes(edge.source) || draggedDescendants.includes(edge.target);
+
+      if (isDraggedNodeEdge || isDescendantEdge) {
+        return {
+          ...edge,
+          style: {
+            ...edge.style,
+            opacity: 0,
+          },
+          animated: false,
+        };
+      }
+
+      return edge;
+    });
+  }, [convertToReactFlowEdges, draggedNodeId, draggedDescendants]);
+
+  const initialEdges = useMemo(() => edgesWithDragStates, [edgesWithDragStates]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes as any);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
