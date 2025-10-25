@@ -7,6 +7,7 @@
 import { useCallback, useState } from 'react';
 import type { Node } from '@xyflow/react';
 import { useOpenFiles } from './useOpenFiles';
+import { useSelection } from './useSelection';
 import { getAllDescendants, isDescendant } from '../utils/nodeUtils';
 import type { OpenFile } from './useOpenFiles';
 import { ReparentNodeCommand, MoveNodeWithSubtreeCommand } from '@bigmind/core';
@@ -59,13 +60,16 @@ export function useDragAndDrop({
   activeFile,
   instanceRef,
 }: UseDragAndDropParams): UseDragAndDropReturn {
+  const selectedNodeIds = useSelection((s) => s.selectedNodeIds);
   const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null);
+  const [draggedNodeIds, setDraggedNodeIds] = useState<string[]>([]);
   const [draggedDescendants, setDraggedDescendants] = useState<string[]>([]);
   const [dragTarget, setDragTarget] = useState<string | null>(null);
   const [isValidTarget, setIsValidTarget] = useState(false);
   const [ghostNode, setGhostNode] = useState<Node | null>(null);
   const [dragMode, setDragMode] = useState<'reparent' | 'free'>('free');
   const [lastDropSuccess, setLastDropSuccess] = useState(false);
+  const [originalPositions, setOriginalPositions] = useState<Record<string, { x: number; y: number }>>({});
 
   // FR: Tolérance de drag pour détecter la cible (en pixels)
   // EN: Drag tolerance to detect target (in pixels)
@@ -75,10 +79,12 @@ export function useDragAndDrop({
   // EN: Reset drag states
   const resetStates = useCallback(() => {
     setDraggedNodeId(null);
+    setDraggedNodeIds([]);
     setDraggedDescendants([]);
     setDragTarget(null);
     setIsValidTarget(false);
     setGhostNode(null);
+    setOriginalPositions({});
   }, []);
 
   // FR: Gérer le début du drag des nœuds
@@ -88,9 +94,28 @@ export function useDragAndDrop({
       console.log('🚀 onNodeDragStart triggered for node:', node.id);
       setDraggedNodeId(node.id);
 
+      // FR: Vérifier si le nœud draggé est dans la sélection pour drag multi-sélection
+      // EN: Check if dragged node is in selection for multi-select drag
+      const isNodeInSelection = selectedNodeIds.includes(node.id);
+      const nodesToDrag = isNodeInSelection ? selectedNodeIds : [node.id];
+      setDraggedNodeIds(nodesToDrag);
+
+      console.log('📦 Nodes being dragged:', nodesToDrag, 'Multi-select:', isNodeInSelection);
+
+      // FR: Sauvegarder les positions originales de tous les nœuds draggés
+      // EN: Save original positions of all dragged nodes
+      if (!activeFile?.content?.nodes) return;
+      const positions: Record<string, { x: number; y: number }> = {};
+      nodesToDrag.forEach((nodeId) => {
+        const n = activeFile.content.nodes[nodeId];
+        if (n) {
+          positions[nodeId] = { x: n.x || 0, y: n.y || 0 };
+        }
+      });
+      setOriginalPositions(positions);
+
       // FR: Calculer les descendants du nœud qu'on glisse pour l'effet de transparence
       // EN: Calculate descendants of dragged node for transparency effect
-      if (!activeFile?.content?.nodes) return;
       const descendants = getAllDescendants(node.id, activeFile.content.nodes);
       setDraggedDescendants(descendants);
       console.log('👥 Dragged node descendants:', descendants);
@@ -109,7 +134,7 @@ export function useDragAndDrop({
       setGhostNode(ghost);
       console.log('👻 Ghost node created:', ghost.id);
     },
-    [activeFile?.content?.nodes]
+    [activeFile?.content?.nodes, selectedNodeIds]
   );
 
   // FR: Gérer le drag des nœuds pour afficher l'indicateur visuel
@@ -245,17 +270,34 @@ export function useDragAndDrop({
         };
 
         console.log('📍 New position:', position, 'Offset:', offset);
+        console.log('📦 Moving', draggedNodeIds.length, 'nodes');
 
-        // FR: Utiliser la commande MoveNodeWithSubtreeCommand pour undo/redo
-        // EN: Use MoveNodeWithSubtreeCommand for undo/redo support
-        const command = new MoveNodeWithSubtreeCommand(node.id, position, offset);
-        const newContent = command.execute(active.content);
+        // FR: Gérer le drag multi-sélection
+        // EN: Handle multi-select drag
+        let newContent = { ...active.content };
+        if (draggedNodeIds.length > 1) {
+          // FR: Drag multi-sélection - appliquer le même offset à tous les nœuds sélectionnés
+          // EN: Multi-select drag - apply same offset to all selected nodes
+          draggedNodeIds.forEach((draggedId) => {
+            const command = new MoveNodeWithSubtreeCommand(draggedId, {
+              x: (originalPositions[draggedId]?.x || 0) + offset.x,
+              y: (originalPositions[draggedId]?.y || 0) + offset.y,
+            }, offset);
+            newContent = command.execute(newContent);
+          });
+        } else {
+          // FR: Drag simple - utiliser la commande de déplacement normal
+          // EN: Single drag - use normal move command
+          const command = new MoveNodeWithSubtreeCommand(node.id, position, offset);
+          newContent = command.execute(active.content);
+        }
 
         const allNodesToMove = [node.id, ...getAllDescendants(node.id, active.content.nodes)];
-        console.log('📝 Subtree moved', {
+        console.log('📝 Nodes moved', {
           nodeId: node.id,
           newPosition: position,
           movedNodes: allNodesToMove.length,
+          selectedNodesMoved: draggedNodeIds.length,
         });
 
         // FR: Mettre à jour l'état
@@ -304,7 +346,7 @@ export function useDragAndDrop({
 
       resetStates();
     },
-    [dragTarget, dragMode, instanceRef, activeFile, resetStates]
+    [dragTarget, dragMode, instanceRef, activeFile, resetStates, draggedNodeIds, originalPositions]
   );
 
   return {
