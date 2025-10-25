@@ -272,10 +272,10 @@ function MindMapNode({ data, selected }: Props) {
     outline = '2px dashed #666666';
     outlineOffset = 2;
   } else if ((data as any).isSiblingReorder) {
-    // FR: Pas d'outline pour le réordonnancement de siblings (ligne affichée à la place)
-    // EN: No outline for sibling reorder (line displayed instead)
-    outline = undefined;
-    outlineOffset = undefined;
+    // FR: Réordonnancement de siblings - outline VERT en pointillé
+    // EN: Sibling reorder - GREEN dashed outline
+    outline = '3px dashed rgb(34, 197, 94)';
+    outlineOffset = 4;
   } else if ((data as any).isValidDragTarget && (data as any).dropPosition === 'center') {
     // FR: Reparenting (zone centrale) - outline BLEU
     // EN: Reparenting (center zone) - BLUE outline
@@ -308,7 +308,11 @@ function MindMapNode({ data, selected }: Props) {
   // FR: Déterminer la couleur de fond
   // EN: Determine background color
   let bgColor: string;
-  if ((data as any).isValidDragTarget && (data as any).dropPosition === 'center') {
+  if ((data as any).isSiblingReorder) {
+    // FR: Réordonnancement de siblings - fond VERT léger
+    // EN: Sibling reorder - light GREEN background
+    bgColor = 'rgba(34, 197, 94, 0.05)';
+  } else if ((data as any).isValidDragTarget && (data as any).dropPosition === 'center') {
     // FR: Reparenting (zone centrale) - fond BLEU
     // EN: Reparenting (center zone) - BLUE background
     bgColor = 'rgba(59, 130, 246, 0.1)';
