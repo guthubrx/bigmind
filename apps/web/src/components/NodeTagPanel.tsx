@@ -4,8 +4,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { useTagGraph } from '../hooks/useTagGraph';
-import { useNodeTags } from '../hooks/useNodeTags';
+import { useTagStore } from '../hooks/useTagStore';
 import { useMindMapDAGSync } from '../hooks/useMindMapDAGSync';
 import { X, Plus, Sparkles } from 'lucide-react';
 import { DagTag } from '../types/dag';
@@ -17,12 +16,12 @@ interface NodeTagPanelProps {
 
 function NodeTagPanel({ nodeId }: NodeTagPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const allTags = useTagGraph(state => Object.values(state.tags) as DagTag[]);
-  const addTag = useTagGraph(state => state.addTag);
-  const nodeTags = useNodeTags();
+  const allTags = useTagStore(state => Object.values(state.tags));
+  const addTag = useTagStore(state => state.addTag);
+  const getNodeTags = useTagStore(state => state.getNodeTags);
   const { tagNodeSync, untagNodeSync } = useMindMapDAGSync();
 
-  const nodeTagIds = useMemo(() => nodeTags.getNodeTags(nodeId), [nodeId, nodeTags]);
+  const nodeTagIds = useMemo(() => getNodeTags(nodeId), [nodeId, getNodeTags]);
 
   const filteredAvailableTags = useMemo(
     () =>

@@ -4,7 +4,7 @@
  */
 
 import { useCallback } from 'react';
-import { useTagGraph } from './useTagGraph';
+import { useTagStore } from './useTagStore';
 import {
   CollaborationMetadata,
   CollaborativeTag,
@@ -16,7 +16,7 @@ import {
 } from '../utils/dagCollaboration';
 
 export const useDagCollaboration = () => {
-  const tags = useTagGraph((state: any) => state.tags);
+  const tags = useTagStore(state => state.tags);
 
   // Initialize DAG metadata if not exists
   const initializeDagMetadata = useCallback(

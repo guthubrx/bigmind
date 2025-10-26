@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { useTagGraph } from '../hooks/useTagGraph';
+import { useTagStore } from '../hooks/useTagStore';
 import { DagTag, RelationType } from '../types/dag';
 import './TagGraph.css';
 
@@ -14,10 +14,10 @@ interface NodePosition {
 }
 
 function TagGraph() {
-  const tags = useTagGraph((state: any) => Object.values(state.tags) as DagTag[]);
-  const getChildren = useTagGraph((state: any) => state.getChildren);
-  const getParents = useTagGraph((state: any) => state.getParents);
-  const getLinksBetween = useTagGraph((state: any) => state.getLinksBetween);
+  const tags = useTagStore(state => Object.values(state.tags));
+  const getChildren = useTagStore(state => state.getChildren);
+  const getParents = useTagStore(state => state.getParents);
+  const getLinksBetween = useTagStore(state => state.getLinksBetween);
 
   const [positions, setPositions] = useState<Record<string, NodePosition>>({});
   const [zoom, setZoom] = useState(1);
@@ -34,7 +34,6 @@ function TagGraph() {
   // FR: Calculer les positions des nœuds avec un algorithme hiérarchique simple
   // EN: Calculate node positions with simple hierarchical algorithm
   // Note: Using tagIdKey to prevent infinite loops from getChildren/getParents changing refs
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (tags.length === 0) {
       setPositions({});
@@ -98,7 +97,8 @@ function TagGraph() {
       });
 
     setPositions(newPositions);
-  }, [tagIdKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tagIdKey, getChildren, getParents]);
 
   // FR: Gérer le zoom avec la molette
   // EN: Handle zoom with mouse wheel

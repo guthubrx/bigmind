@@ -3,8 +3,7 @@
  * EN: Hook for DAG export/import
  */
 
-import { useTagGraph } from './useTagGraph';
-import { useNodeTags } from './useNodeTags';
+import { useTagStore } from './useTagStore';
 import { DagTag, DagLink } from '../types/dag';
 
 interface DagExportData {
@@ -16,11 +15,11 @@ interface DagExportData {
 }
 
 export const useDagExportImport = () => {
-  const tags = useTagGraph((state: any) => state.tags);
-  const links = useTagGraph((state: any) => state.links);
-  const initialize = useTagGraph((state: any) => state.initialize);
-  const nodeTagMap = useNodeTags((state: any) => state.nodeTagMap);
-  const initializeNodeTags = useNodeTags((state: any) => state.initialize);
+  const tags = useTagStore(state => state.tags);
+  const links = useTagStore(state => state.links);
+  const nodeTagMap = useTagStore(state => state.nodeTagMap);
+  // eslint-disable-next-line prefer-destructuring
+  const initialize = useTagStore.getState().initialize;
 
   const exportDag = (): string => {
     const nodeTagMapArray: Record<string, string[]> = {};
@@ -47,11 +46,18 @@ export const useDagExportImport = () => {
         throw new Error('Invalid DAG data: missing tags or links');
       }
 
-      // Initialize both stores
-      initialize(data.tags, data.links);
-      if (data.nodeTagMap) {
-        initializeNodeTags(data.nodeTagMap, {});
-      }
+      // FR: Convertir nodeTagMap en format attendu par useTagStore
+      // EN: Convert nodeTagMap to format expected by useTagStore
+      const nodeTags: Record<string, string[]> = data.nodeTagMap || {};
+
+      // Initialize unified store
+      initialize({
+        tags: data.tags,
+        links: data.links,
+        nodeTags,
+        tagNodes: {}, // Sera recalculé par initialize
+        hiddenTags: [],
+      });
 
       return true;
     } catch (error) {

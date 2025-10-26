@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { useTagGraph } from '../hooks/useTagGraph';
+import { useTagStore } from '../hooks/useTagStore';
 import { DagTag } from '../types/dag';
 import { Search, X } from 'lucide-react';
 import './DagSearchPanel.css';
@@ -16,7 +16,7 @@ interface SearchResult {
 
 function DagSearchPanel() {
   const [query, setQuery] = useState('');
-  const tags = useTagGraph((state: any) => Object.values(state.tags) as DagTag[]);
+  const tags = useTagStore(state => Object.values(state.tags));
 
   const results = useMemo(() => {
     if (!query.trim()) {

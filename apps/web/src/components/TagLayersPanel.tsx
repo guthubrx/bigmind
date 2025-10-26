@@ -4,8 +4,7 @@
  */
 
 import React, { useState, useRef, useMemo } from 'react';
-import { useTagGraph } from '../hooks/useTagGraph';
-import { useNodeTags } from '../hooks/useNodeTags';
+import { useTagStore } from '../hooks/useTagStore';
 import { DagTag, RelationType } from '../types/dag';
 import {
   ChevronDown,
@@ -45,15 +44,14 @@ function TagTreeNode({
   expandedState: ExpandedState;
   onToggleChild: (tagId: string) => void;
 }) {
-  const getChildren = useTagGraph((state: any) => state.getChildren);
-  const getChildCount = useTagGraph((state: any) => state.getChildCount);
-  const isTagHidden = useTagGraph((state: any) => state.isTagHidden);
-  const toggleTagVisibility = useTagGraph((state: any) => state.toggleTagVisibility);
-  const addParent = useTagGraph((state: any) => state.addParent);
-  const addTag = useTagGraph((state: any) => state.addTag);
-  const updateTag = useTagGraph((state: any) => state.updateTag);
-  const getTagNodes = useNodeTags((state: any) => state.getTagNodes);
-  const getLinksBetween = useTagGraph((state: any) => state.getLinksBetween);
+  const getChildren = useTagStore(state => state.getChildren);
+  const isTagHidden = useTagStore(state => state.isTagHidden);
+  const toggleTagVisibility = useTagStore(state => state.toggleTagVisibility);
+  const addParent = useTagStore(state => state.addParent);
+  const addTag = useTagStore(state => state.addTag);
+  const updateTag = useTagStore(state => state.updateTag);
+  const getTagNodes = useTagStore(state => state.getTagNodes);
+  const getLinksBetween = useTagStore(state => state.getLinksBetween);
   const colorInputRef = useRef<HTMLInputElement>(null);
   const [dragOverTagId, setDragOverTagId] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{ tag: DagTag; x: number; y: number } | null>(
@@ -62,13 +60,23 @@ function TagTreeNode({
   const children = getChildren(tag.id);
   const hasChildren = children.length > 0;
   const hidden = isTagHidden(tag.id);
-  const childCount = getChildCount(tag.id);
-  const getDescendantCount = useTagGraph((state: any) => state.getDescendantCount);
-  const descendantCount = getDescendantCount(tag.id);
+  const childCount = children.length;
   const nodeCount = useMemo(() => {
     const nodeIds = getTagNodes(tag.id);
     return nodeIds ? nodeIds.length : 0;
   }, [tag.id, getTagNodes]);
+
+  // FR: Calculer le nombre de descendants récursivement
+  // EN: Calculate descendant count recursively
+  const descendantCount = useMemo(() => {
+    const countDescendants = (tagId: string): number => {
+      const tagChildren = getChildren(tagId);
+      if (tagChildren.length === 0) return 0;
+      return tagChildren.reduce((acc, child) => acc + 1 + countDescendants(child.id), 0);
+    };
+    return countDescendants(tag.id);
+  }, [tag.id, getChildren]);
+
   const relationCount = tag.relations ? tag.relations.length : 0;
   const createdDate = tag.createdAt ? new Date(tag.createdAt).toLocaleDateString() : 'Unknown';
   const modifiedDate = tag.updatedAt ? new Date(tag.updatedAt).toLocaleDateString() : 'Unknown';
@@ -408,9 +416,9 @@ function TagTreeNode({
 }
 
 function TagLayersPanel() {
-  const tags = useTagGraph((state: any) => Object.values(state.tags) as DagTag[]);
-  const removeTag = useTagGraph((state: any) => state.removeTag);
-  const updateTag = useTagGraph((state: any) => state.updateTag);
+  const tags = useTagStore(state => Object.values(state.tags));
+  const removeTag = useTagStore(state => state.removeTag);
+  const updateTag = useTagStore(state => state.updateTag);
 
   // FR: État d'expansion pour TOUS les tags, pas juste les racines
   // EN: Expansion state for ALL tags, not just roots

@@ -11,8 +11,7 @@ import {
   TreeItem,
 } from 'react-complex-tree';
 import 'react-complex-tree/lib/style-modern.css';
-import { useTagGraph } from '../hooks/useTagGraph';
-import { useNodeTags } from '../hooks/useNodeTags';
+import { useTagStore } from '../hooks/useTagStore';
 import { DagTag, RelationType } from '../types/dag';
 import { Trash2, Eye, EyeOff, ArrowRight, Link2, Package } from 'lucide-react';
 import './TagLayersPanelRCT.css';
@@ -22,15 +21,15 @@ import './TagLayersPanelRCT.css';
 type TagTreeItem = TreeItem<DagTag>;
 
 function TagLayersPanelRCT() {
-  const tags = useTagGraph((state: any) => Object.values(state.tags) as DagTag[]);
-  const removeTag = useTagGraph((state: any) => state.removeTag);
-  const addTag = useTagGraph((state: any) => state.addTag);
-  const isTagHidden = useTagGraph((state: any) => state.isTagHidden);
-  const toggleTagVisibility = useTagGraph((state: any) => state.toggleTagVisibility);
-  const addParent = useTagGraph((state: any) => state.addParent);
-  const getLinksBetween = useTagGraph((state: any) => state.getLinksBetween);
-  const getNodeTags = useNodeTags((state: any) => state.getTagNodes);
-  const tagNodeMap = useNodeTags((state: any) => state.tagNodeMap);
+  const tags = useTagStore(state => Object.values(state.tags));
+  const removeTag = useTagStore(state => state.removeTag);
+  const addTag = useTagStore(state => state.addTag);
+  const isTagHidden = useTagStore(state => state.isTagHidden);
+  const toggleTagVisibility = useTagStore(state => state.toggleTagVisibility);
+  const addParent = useTagStore(state => state.addParent);
+  const getLinksBetween = useTagStore(state => state.getLinksBetween);
+  const getTagNodes = useTagStore(state => state.getTagNodes);
+  const tagNodeMap = useTagStore(state => state.tagNodeMap);
 
   // FR: Nettoyer les parentIds orphelins
   // EN: Clean orphaned parentIds
@@ -237,7 +236,7 @@ function TagLayersPanelRCT() {
 
       const tag = item.data;
       const hidden = isTagHidden(tag.id);
-      const nodeCount = getNodeTags(tag.id)?.length || 0;
+      const nodeCount = getTagNodes(tag.id)?.length || 0;
       const childCount = tag.children?.length || 0;
 
       // FR: Déterminer l'icône de relation avec le parent
@@ -329,7 +328,7 @@ function TagLayersPanelRCT() {
         </div>
       );
     },
-    [isTagHidden, getNodeTags, getLinksBetween, toggleTagVisibility, removeTag]
+    [isTagHidden, getTagNodes, getLinksBetween, toggleTagVisibility, removeTag]
   );
 
   if (tags.length === 0) {

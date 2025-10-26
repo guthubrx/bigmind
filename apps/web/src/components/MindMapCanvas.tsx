@@ -28,8 +28,7 @@ import MindMapEdge from './MindMapEdge';
 import { useFlowInstance } from '../hooks/useFlowInstance';
 import { useShortcuts } from '../hooks/useShortcuts';
 import { useDragAndDrop } from '../hooks/useDragAndDrop';
-import { useTagGraph } from '../hooks/useTagGraph';
-import { useNodeTags } from '../hooks/useNodeTags';
+import { useTagStore } from '../hooks/useTagStore';
 
 // FR: Types de nœuds personnalisés
 // EN: Custom node types
@@ -62,8 +61,8 @@ function MindMapCanvas() {
 
   // FR: Hooks pour filtrer les nœuds par tags cachés
   // EN: Hooks to filter nodes by hidden tags
-  const hiddenTags = useTagGraph(s => s.hiddenTags);
-  const getNodeTags = useNodeTags(s => s.getNodeTags);
+  const hiddenTags = useTagStore(s => s.hiddenTags);
+  const getNodeTags = useTagStore(s => s.getNodeTags);
 
   // FR: Hook pour gérer le drag & drop des nœuds
   // EN: Hook to manage node drag & drop

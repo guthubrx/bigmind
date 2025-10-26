@@ -4,9 +4,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { useTagGraph } from '../hooks/useTagGraph';
-import { useNodeTags } from '../hooks/useNodeTags';
-import { DagTag } from '../types/dag';
+import { useTagStore } from '../hooks/useTagStore';
 import { X } from 'lucide-react';
 import './MindMapNodeTags.css';
 
@@ -16,8 +14,8 @@ interface MindMapNodeTagsProps {
 }
 
 function MindMapNodeTags({ nodeId, onRemoveTag }: MindMapNodeTagsProps) {
-  const allTags = useTagGraph(state => Object.values(state.tags) as DagTag[]);
-  const tagIds = useNodeTags(state => state.getNodeTags(nodeId));
+  const allTags = useTagStore(state => Object.values(state.tags));
+  const tagIds = useTagStore(state => state.getNodeTags(nodeId));
 
   const tags = useMemo(() => allTags.filter(tag => tagIds.includes(tag.id)), [allTags, tagIds]);
 

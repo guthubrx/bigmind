@@ -5,7 +5,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Copy, Trash2, Copy as Duplicate, Eye, EyeOff, Edit } from 'lucide-react';
-import { useTagGraph } from '../hooks/useTagGraph';
+import { useTagStore } from '../hooks/useTagStore';
 import { DagTag } from '../types/dag';
 import './TagContextMenu.css';
 
@@ -26,9 +26,9 @@ function TagContextMenu({
   onColorChange,
   onRename,
 }: TagContextMenuProps) {
-  const removeTag = useTagGraph(state => state.removeTag);
-  const isTagHidden = useTagGraph(state => state.isTagHidden);
-  const toggleTagVisibility = useTagGraph(state => state.toggleTagVisibility);
+  const removeTag = useTagStore(state => state.removeTag);
+  const isTagHidden = useTagStore(state => state.isTagHidden);
+  const toggleTagVisibility = useTagStore(state => state.toggleTagVisibility);
   const menuRef = useRef<HTMLDivElement>(null);
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(tag.label);
