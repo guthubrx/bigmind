@@ -264,6 +264,29 @@ function DockableLayout() {
 
       renderValues.stickyButtons = [
         <button
+          key="close-tab"
+          type="button"
+          className="flexlayout__tab_toolbar_button"
+          title="Fermer l'onglet actif"
+          onClick={() => {
+            // FR: Fermer l'onglet sélectionné
+            // EN: Close selected tab
+            model.doAction(Actions.deleteTab(selectedTab.getId()));
+          }}
+          style={{
+            padding: '4px 8px',
+            fontSize: '14px',
+            background: 'transparent',
+            border: '1px solid var(--border-color, #e2e8f0)',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            color: 'var(--fg-secondary)',
+            marginLeft: '4px',
+          }}
+        >
+          ✕
+        </button>,
+        <button
           key="split-horizontal"
           type="button"
           className="flexlayout__tab_toolbar_button"
