@@ -8,7 +8,7 @@ import { usePlatform } from '../hooks/usePlatform';
 import { X, Palette } from 'lucide-react';
 import { useAppSettings } from '../hooks/useAppSettings';
 import { getAllThemes } from '../themes/colorThemes';
-import { useMindmap } from '../hooks/useMindmap';
+import { useOpenFiles } from '../hooks/useOpenFiles';
 
 function SettingsPage() {
   const navigate = useNavigate();
@@ -16,13 +16,14 @@ function SettingsPage() {
   const setAccentColor = useAppSettings(s => s.setAccentColor);
   const themeId = useAppSettings(s => s.themeId);
   const setTheme = useAppSettings(s => s.setTheme);
+  const getCurrentTheme = useAppSettings(s => s.getCurrentTheme);
   const allThemes = getAllThemes();
   const shortcuts = useShortcuts(s => s.map);
   const setShortcut = useShortcuts(s => s.setShortcut);
   const resetShortcuts = useShortcuts(s => s.resetDefaults);
   const [section, setSection] = useState<'appearance' | 'shortcuts'>('appearance');
   const platform = usePlatform();
-  const { actions: mindmapActions } = useMindmap();
+  const applyAutomaticColorsToAll = useOpenFiles(s => s.applyAutomaticColorsToAll);
   const pastelBg = (alpha: number = 0.06) => {
     const hex = (accentColor || '#3b82f6').replace('#', '');
     const r = parseInt(hex.substring(0, 2), 16) || 59;
@@ -199,7 +200,10 @@ function SettingsPage() {
                     <button
                       type="button"
                       className="btn"
-                      onClick={() => mindmapActions.applyAutomaticColorsToAll()}
+                      onClick={() => {
+                        const theme = getCurrentTheme();
+                        applyAutomaticColorsToAll(theme);
+                      }}
                       style={{
                         display: 'flex',
                         alignItems: 'center',

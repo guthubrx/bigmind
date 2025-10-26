@@ -29,6 +29,7 @@ import { useFlowInstance } from '../hooks/useFlowInstance';
 import { useShortcuts } from '../hooks/useShortcuts';
 import { useDragAndDrop } from '../hooks/useDragAndDrop';
 import { useTagStore } from '../hooks/useTagStore';
+import { useAppSettings } from '../hooks/useAppSettings';
 
 // FR: Types de nœuds personnalisés
 // EN: Custom node types
@@ -57,12 +58,18 @@ function MindMapCanvas() {
   const updateActiveFileNode = useOpenFiles(s => s.updateActiveFileNode);
   const addSiblingToActive = useOpenFiles(s => s.addSiblingToActive);
   const removeNodeFromActive = useOpenFiles(s => s.removeNodeFromActive);
+  const applyAutomaticColorsToAll = useOpenFiles(s => s.applyAutomaticColorsToAll);
   const getShortcut = useShortcuts(s => s.getShortcut);
 
   // FR: Hooks pour filtrer les nœuds par tags cachés
   // EN: Hooks to filter nodes by hidden tags
   const hiddenTags = useTagStore(s => s.hiddenTags);
   const getNodeTags = useTagStore(s => s.getNodeTags);
+
+  // FR: Hook pour le thème
+  // EN: Hook for theme
+  const themeId = useAppSettings(s => s.themeId);
+  const getCurrentTheme = useAppSettings(s => s.getCurrentTheme);
 
   // FR: Hook pour gérer le drag & drop des nœuds
   // EN: Hook to manage node drag & drop
@@ -513,6 +520,16 @@ function MindMapCanvas() {
   React.useEffect(() => {
     setEdges(initialEdges);
   }, [initialEdges, setEdges]);
+
+  // FR: Appliquer automatiquement les couleurs quand le thème change
+  // EN: Automatically apply colors when theme changes
+  useEffect(() => {
+    if (activeFile) {
+      const theme = getCurrentTheme();
+      applyAutomaticColorsToAll(theme);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [themeId]); // Seulement quand le thème change
 
   const onConnect = useCallback(
     (params: Connection) => setEdges(eds => addEdge(params, eds)),

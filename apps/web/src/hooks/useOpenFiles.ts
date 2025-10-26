@@ -6,6 +6,7 @@
 import { create } from 'zustand';
 import { XMindParser } from '../parsers/XMindParser';
 import { v4 as uuidv4 } from 'uuid';
+import { getNodeColor } from '../utils/nodeColors';
 
 export interface OpenFile {
   id: string;
@@ -46,6 +47,7 @@ interface OpenFilesState {
   addChildToActive: (parentId: string, title?: string) => string | null;
   removeNodeFromActive: (nodeId: string) => string | null; // returns parentId if removed
   addSiblingToActive: (siblingOfId: string, title?: string) => string | null;
+  applyAutomaticColorsToAll: (theme: any) => void;
 }
 
 /**
@@ -327,5 +329,42 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       ),
     }));
     return newId;
+  },
+
+  // FR: Appliquer les couleurs automatiques à tous les nœuds
+  // EN: Apply automatic colors to all nodes
+  applyAutomaticColorsToAll: (theme: any) => {
+    const state = get();
+    const active = state.openFiles.find(f => f.isActive);
+    if (!active || !active.content || !active.content.nodes) return;
+
+    const rootId = active.content.rootNode?.id || active.content.nodes?.root?.id;
+    if (!rootId) return;
+
+    const nodes = { ...active.content.nodes } as Record<string, any>;
+    const updatedNodes: Record<string, any> = {};
+
+    // FR: Appliquer la couleur automatique à chaque nœud
+    // EN: Apply automatic color to each node
+    Object.keys(nodes).forEach(nodeId => {
+      const node = nodes[nodeId];
+      const autoColor = getNodeColor(nodeId, nodes, rootId, theme);
+
+      updatedNodes[nodeId] = {
+        ...node,
+        style: {
+          ...node.style,
+          backgroundColor: autoColor,
+        },
+      };
+    });
+
+    const updatedContent = { ...active.content, nodes: updatedNodes };
+    set(prev => ({
+      ...prev,
+      openFiles: prev.openFiles.map(f =>
+        f.id === active.id ? { ...f, content: updatedContent } : f
+      ),
+    }));
   },
 }));
