@@ -132,21 +132,50 @@
 /* FR: Zone de drop centrale pour diviser un tabset */
 /* EN: Center drop zone for splitting a tabset */
 .flexlayout__outline_rect {
-  border: 3px dashed var(--accent-color);
-  background: var(--accent-light, rgba(59, 130, 246, 0.1));
-  z-index: 1000;
+  border: 4px solid var(--accent-color) !important;
+  background: var(--accent-light, rgba(59, 130, 246, 0.4)) !important;
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.6) !important;
+  z-index: 1000 !important;
+  pointer-events: none;
+}
+
+/* FR: Indicateur de drop en cours */
+/* EN: Drop in progress indicator */
+.flexlayout__outline_rect_edge {
+  border: 4px solid var(--accent-color) !important;
+  background: var(--accent-light, rgba(59, 130, 246, 0.5)) !important;
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.6) !important;
+  z-index: 1000 !important;
 }
 
 /* FR: Zone de drop au survol */
 /* EN: Hover drop zone */
-.flexlayout__tabset_content:hover {
+.flexlayout__tabset_content {
   position: relative;
+  min-height: 100px;
 }
 
 .flexlayout__tabset--drop-target {
   outline: 3px dashed var(--accent-color);
   outline-offset: -3px;
   background: var(--accent-light, rgba(59, 130, 246, 0.05));
+}
+
+/* FR: Overlay pour montrer les zones de drop quand on glisse */
+/* EN: Overlay to show drop zones when dragging */
+.flexlayout__tabset_content::after {
+  content: '';
+  position: absolute;
+  inset: 20px;
+  border: 2px dashed transparent;
+  pointer-events: none;
+  transition: all 0.2s;
+}
+
+.flexlayout__tabset_content:has(+ .flexlayout__outline_rect)::after,
+.flexlayout__drag_rect ~ * .flexlayout__tabset_content::after {
+  border-color: var(--accent-color);
+  background: var(--accent-light, rgba(59, 130, 246, 0.1));
 }
 
 .flexlayout__tabset_sizer {

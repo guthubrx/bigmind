@@ -110,7 +110,7 @@ const DEFAULT_LAYOUT: IJsonModel = {
   },
 };
 
-const STORAGE_KEY = 'bigmind_layout_config';
+const STORAGE_KEY = 'bigmind_layout_config_v2'; // v2 pour forcer le nouveau layout par défaut
 
 function DockableLayout() {
   const layoutRef = useRef<Layout>(null);
