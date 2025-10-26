@@ -208,12 +208,17 @@ function TagTreeNode({
 
       const draggedData = JSON.parse(data);
       if (draggedData.type === 'tag' && draggedData.tagId && draggedData.tagId !== tag.id) {
+        console.log(`[TagLayersPanel] Drag-drop: ${draggedData.tagLabel} → ${tag.label}`);
+        console.log(`[TagLayersPanel] Making ${draggedData.tagId} a child of ${tag.id}`);
+
         // FR: Drop normal → Le tag devient fils (IS_TYPE_OF par défaut)
         // EN: Regular drop → Tag becomes child (IS_TYPE_OF by default)
         addParent(draggedData.tagId, tag.id);
+
+        console.log('[TagLayersPanel] addParent called successfully');
       }
     } catch (error) {
-      console.error('Error handling drop:', error);
+      console.error('[TagLayersPanel] Error handling drop:', error);
     }
   };
 

@@ -259,14 +259,26 @@ export const useTagGraph = create<TagGraphState>()((set: SetState, get: GetState
       },
 
       addParent: (tagId: string, parentId: string) => {
+        console.log(`[useTagGraph] addParent called: child=${tagId}, parent=${parentId}`);
+
         set((state: TagGraphState) => {
           const tag = state.tags[tagId];
           const parent = state.tags[parentId];
 
-          if (!tag || !parent) return state;
-          if (tag.parentIds.includes(parentId)) return state; // Already a parent
+          if (!tag || !parent) {
+            console.error('[useTagGraph] Tag ou parent introuvable:', { tag: !!tag, parent: !!parent });
+            return state;
+          }
 
-          return {
+          if (tag.parentIds.includes(parentId)) {
+            console.log('[useTagGraph] Déjà parent, aucun changement');
+            return state; // Already a parent
+          }
+
+          console.log(`[useTagGraph] Ajout de ${parentId} comme parent de ${tagId}`);
+          console.log(`[useTagGraph] Avant: tag.parentIds=`, tag.parentIds, 'parent.children=', parent.children);
+
+          const newState = {
             tags: {
               ...state.tags,
               [tagId]: {
@@ -283,6 +295,10 @@ export const useTagGraph = create<TagGraphState>()((set: SetState, get: GetState
               },
             },
           };
+
+          console.log(`[useTagGraph] Après: parentIds=`, newState.tags[tagId].parentIds, 'children=', newState.tags[parentId].children);
+
+          return newState;
         });
       },
 
