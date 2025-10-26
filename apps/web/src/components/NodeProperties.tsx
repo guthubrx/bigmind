@@ -34,9 +34,6 @@ function NodeProperties() {
   if (!selectedNode) {
     return (
       <div className="node-properties">
-        <div className="panel-header">
-          <span>Propriétés</span>
-        </div>
         <div className="panel-content">
           <div className="no-selection">
             <Settings className="icon" />
@@ -50,10 +47,6 @@ function NodeProperties() {
 
   return (
     <div className="node-properties">
-      <div className="panel-header">
-        <span>Propriétés</span>
-      </div>
-
       <div className="panel-content">
         {/* FR: Onglets */}
         {/* EN: Tabs */}
@@ -98,13 +91,13 @@ function NodeProperties() {
           {activeTab === 'content' && (
             <div className="content-tab">
               <div className="form-group">
-                <label htmlFor="np-title">Titre</label>
+                <div className="form-label">Titre</div>
                 <input
-                  id="np-title"
                   type="text"
                   value={selectedNode.title}
                   className="input"
                   placeholder="Titre du nœud"
+                  aria-label="Titre du nœud"
                   onChange={e =>
                     selectedNodeId &&
                     updateActiveFileNode(selectedNodeId, { title: e.target.value })
@@ -113,12 +106,12 @@ function NodeProperties() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="np-notes">Notes</label>
+                <div className="form-label">Notes</div>
                 <textarea
-                  id="np-notes"
                   value={selectedNode.notes || ''}
                   className="input textarea"
                   placeholder="Notes additionnelles..."
+                  aria-label="Notes additionnelles"
                   rows={4}
                   onChange={e =>
                     selectedNodeId &&
@@ -128,7 +121,7 @@ function NodeProperties() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="np-alignment">Alignement</label>
+                <div className="form-label">Alignement</div>
                 <div className="alignment-buttons">
                   <button type="button" className="btn" title="Gauche">
                     <AlignLeft className="icon-small" />
@@ -147,13 +140,13 @@ function NodeProperties() {
           {activeTab === 'style' && (
             <div className="style-tab">
               <div className="form-group">
-                <label htmlFor="np-bg">Couleur de fond</label>
+                <div className="form-label">Couleur de fond</div>
                 <div className="color-input-group">
                   <input
-                    id="np-bg"
                     type="color"
                     value={selectedNode.style?.backgroundColor || '#ffffff'}
                     className="color-input"
+                    aria-label="Couleur de fond"
                     onChange={e =>
                       selectedNodeId &&
                       updateActiveFileNode(selectedNodeId, {
@@ -165,6 +158,7 @@ function NodeProperties() {
                     type="text"
                     value={selectedNode.style?.backgroundColor || '#ffffff'}
                     className="input"
+                    aria-label="Code couleur de fond"
                     onChange={e =>
                       selectedNodeId &&
                       updateActiveFileNode(selectedNodeId, {
@@ -176,13 +170,13 @@ function NodeProperties() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="np-fg">Couleur du texte</label>
+                <div className="form-label">Couleur du texte</div>
                 <div className="color-input-group">
                   <input
-                    id="np-fg"
                     type="color"
                     value={selectedNode.style?.textColor || '#000000'}
                     className="color-input"
+                    aria-label="Couleur du texte"
                     onChange={e =>
                       selectedNodeId &&
                       updateActiveFileNode(selectedNodeId, {
@@ -194,6 +188,7 @@ function NodeProperties() {
                     type="text"
                     value={selectedNode.style?.textColor || '#000000'}
                     className="input"
+                    aria-label="Code couleur du texte"
                     onChange={e =>
                       selectedNodeId &&
                       updateActiveFileNode(selectedNodeId, {
@@ -205,12 +200,12 @@ function NodeProperties() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="np-fontsize">Taille de police</label>
+                <div className="form-label">Taille de police</div>
                 <input
-                  id="np-fontsize"
                   type="number"
                   value={selectedNode.style?.fontSize || 14}
                   className="input"
+                  aria-label="Taille de police"
                   min="8"
                   max="72"
                   onChange={e =>
@@ -223,7 +218,7 @@ function NodeProperties() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="np-fontstyle">Style de police</label>
+                <div className="form-label">Style de police</div>
                 <div className="font-style-buttons">
                   <button type="button" className="btn" title="Gras">
                     <Bold className="icon-small" />
@@ -248,52 +243,63 @@ function NodeProperties() {
           {activeTab === 'advanced' && (
             <div className="advanced-tab">
               <div className="form-group">
-                <label htmlFor="np-nodeid">ID du nœud</label>
-                <input type="text" value={selectedNode.id} className="input" readOnly />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="np-parent">Nœud parent</label>
+                <div className="form-label">ID du nœud</div>
                 <input
                   type="text"
-                  value={selectedNode.parentId || 'Aucun'}
+                  value={selectedNode.id}
                   className="input"
+                  aria-label="ID du nœud"
                   readOnly
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="np-position">Position</label>
+                <div className="form-label">Nœud parent</div>
+                <input
+                  type="text"
+                  value={selectedNode.parentId || 'Aucun'}
+                  className="input"
+                  aria-label="Nœud parent"
+                  readOnly
+                />
+              </div>
+
+              <div className="form-group">
+                <div className="form-label">Position</div>
                 <div className="position-inputs">
                   <input
                     type="number"
                     value={selectedNode.x || 0}
                     className="input"
                     placeholder="X"
+                    aria-label="Position X"
                   />
                   <input
                     type="number"
                     value={selectedNode.y || 0}
                     className="input"
                     placeholder="Y"
+                    aria-label="Position Y"
                   />
                 </div>
               </div>
 
               <div className="form-group">
-                <label htmlFor="np-size">Taille</label>
+                <div className="form-label">Taille</div>
                 <div className="size-inputs">
                   <input
                     type="number"
                     value={selectedNode.width || 200}
                     className="input"
                     placeholder="Largeur"
+                    aria-label="Largeur du nœud"
                   />
                   <input
                     type="number"
                     value={selectedNode.height || 40}
                     className="input"
                     placeholder="Hauteur"
+                    aria-label="Hauteur du nœud"
                   />
                 </div>
               </div>
