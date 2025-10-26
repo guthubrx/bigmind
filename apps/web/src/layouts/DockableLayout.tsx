@@ -32,6 +32,7 @@ const DEFAULT_LAYOUT: IJsonModel = {
     tabSetMinHeight: 100,
     splitterSize: 8,
     enableEdgeDock: true,
+    enableRotateBorderIcons: false,
   },
   borders: [],
   layout: {
@@ -44,6 +45,7 @@ const DEFAULT_LAYOUT: IJsonModel = {
         type: 'tabset',
         weight: 15,
         selected: 0,
+        enableDivide: true,
         children: [
           {
             type: 'tab',
@@ -59,12 +61,13 @@ const DEFAULT_LAYOUT: IJsonModel = {
           },
         ],
       },
-      // FR: Canvas au centre
-      // EN: Canvas in the center
+      // FR: Canvas au centre (pas de division pour le canvas)
+      // EN: Canvas in the center (no division for canvas)
       {
         type: 'tabset',
         weight: 55,
         enableTabStrip: false,
+        enableDivide: false,
         children: [
           {
             type: 'tab',
@@ -83,6 +86,7 @@ const DEFAULT_LAYOUT: IJsonModel = {
           {
             type: 'tabset',
             weight: 50,
+            enableDivide: true,
             children: [
               {
                 type: 'tab',
@@ -95,6 +99,7 @@ const DEFAULT_LAYOUT: IJsonModel = {
           {
             type: 'tabset',
             weight: 50,
+            enableDivide: true,
             children: [
               {
                 type: 'tab',

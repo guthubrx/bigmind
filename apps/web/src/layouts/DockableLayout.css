@@ -123,11 +123,47 @@
   z-index: 1000;
 }
 
+/* FR: Zones de drop sur les bords - BEAUCOUP PLUS GRANDES */
+/* EN: Edge drop zones - MUCH LARGER */
 .flexlayout__edge_rect {
-  background: var(--accent-light, rgba(59, 130, 246, 0.3));
-  border: 3px solid var(--accent-color);
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
-  z-index: 1000;
+  background: var(--accent-light, rgba(59, 130, 246, 0.4)) !important;
+  border: 4px solid var(--accent-color) !important;
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.6) !important;
+  z-index: 10000 !important;
+}
+
+/* FR: Rendre les zones de drop plus grandes (30% au lieu de ~20%) */
+/* EN: Make drop zones larger (30% instead of ~20%) */
+.flexlayout__tabset_content {
+  position: relative;
+}
+
+/* FR: Augmenter la sensibilité des zones de drop verticales */
+/* EN: Increase sensitivity of vertical drop zones */
+.flexlayout__layout:not(:has(.flexlayout__drag_rect)) .flexlayout__tabset_content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 35%;
+  pointer-events: none;
+  border: 2px dashed transparent;
+  transition: all 0.15s;
+  z-index: 1;
+}
+
+.flexlayout__layout:not(:has(.flexlayout__drag_rect)) .flexlayout__tabset_content::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 35%;
+  pointer-events: none;
+  border: 2px dashed transparent;
+  transition: all 0.15s;
+  z-index: 1;
 }
 
 .flexlayout__drag_rect {
