@@ -22,8 +22,8 @@ const DEFAULT_LAYOUT: IJsonModel = {
   global: {
     tabEnableClose: false,
     tabEnableRename: false,
-    tabSetEnableMaximize: false,
-    tabSetEnableDivide: false,
+    tabSetEnableMaximize: true,
+    tabSetEnableDivide: true,
     tabSetEnableDrop: true,
     tabSetEnableDrag: true,
     tabEnableDrag: true,
