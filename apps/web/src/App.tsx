@@ -10,11 +10,20 @@ import MainLayout from './layouts/MainLayout';
 import SettingsPage from './pages/Settings';
 import { useAppSettings } from './hooks/useAppSettings';
 import { useTagGraphFileSync } from './hooks/useTagGraphFileSync';
+import { clearTagsLocalStorage } from './utils/clearTagsLocalStorage';
 import './App.css';
 
 function App() {
   const { mindMap, actions } = useMindmap();
   const loadAppSettings = useAppSettings(s => s.load);
+
+  // FR: Nettoyer le localStorage des anciens tags (une seule fois au démarrage)
+  // EN: Clean localStorage of old tags (once on startup)
+  useEffect(() => {
+    clearTagsLocalStorage();
+    // eslint-disable-next-line no-console
+    console.log('[App] LocalStorage nettoyé - les tags sont maintenant dans bigmind.json');
+  }, []);
 
   // FR: Synchroniser les tags avec le fichier actif
   // EN: Sync tags with active file

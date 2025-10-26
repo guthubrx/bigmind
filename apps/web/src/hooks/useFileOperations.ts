@@ -10,8 +10,7 @@ import { XMindParser } from '../parsers/XMindParser';
 import JSZip from 'jszip';
 import { useViewport } from './useViewport';
 import { useCanvasOptions } from './useCanvasOptions';
-import { useTagGraph } from './useTagGraph';
-import { useNodeTags } from './useNodeTags';
+import { useTagStore } from './useTagStore';
 
 /**
  * FR: Hook pour gérer l'ouverture de fichiers
@@ -145,27 +144,21 @@ export const useFileOperations = () => {
                 : null,
           });
 
-          // FR: Charger les tags dans les stores
-          // EN: Load tags into stores
+          // FR: Charger les tags dans le store unifié
+          // EN: Load tags into unified store
           if (loadedTags) {
             try {
-              // Charger dans useTagGraph
-              if (loadedTags.tags || loadedTags.links) {
-                useTagGraph.getState().initialize(loadedTags.tags || {}, loadedTags.links || []);
-                const tagCount = Object.keys(loadedTags.tags || {}).length;
-                // eslint-disable-next-line no-console
-                console.log(`[FileOps] Chargé ${tagCount} tags pour ${fileId}`);
-              }
-
-              // Charger dans useNodeTags
-              if (loadedTags.nodeTags || loadedTags.tagNodes) {
-                useNodeTags
-                  .getState()
-                  .initialize(loadedTags.nodeTags || {}, loadedTags.tagNodes || {});
-                const assocCount = Object.keys(loadedTags.nodeTags || {}).length;
-                // eslint-disable-next-line no-console
-                console.log(`[FileOps] Chargé ${assocCount} associations nœud→tag`);
-              }
+              useTagStore.getState().initialize({
+                tags: loadedTags.tags || {},
+                links: loadedTags.links || [],
+                nodeTags: loadedTags.nodeTags || {},
+                tagNodes: loadedTags.tagNodes || {},
+                hiddenTags: loadedTags.hiddenTags || [],
+              });
+              const tagCount = Object.keys(loadedTags.tags || {}).length;
+              const assocCount = Object.keys(loadedTags.nodeTags || {}).length;
+              // eslint-disable-next-line no-console
+              console.log(`[FileOps] Chargé ${tagCount} tags et ${assocCount} associations`);
             } catch (err) {
               console.error('[FileOps] Erreur lors du chargement des tags:', err);
             }
@@ -243,23 +236,20 @@ export const useFileOperations = () => {
             content: adaptedContent,
           });
 
-          // FR: Charger les tags dans les stores
-          // EN: Load tags into stores
+          // FR: Charger les tags dans le store unifié
+          // EN: Load tags into unified store
           if (loadedTagsFallback) {
             try {
-              if (loadedTagsFallback.tags || loadedTagsFallback.links) {
-                useTagGraph
-                  .getState()
-                  .initialize(loadedTagsFallback.tags || {}, loadedTagsFallback.links || []);
-                const fbTagCount = Object.keys(loadedTagsFallback.tags || {}).length;
-                // eslint-disable-next-line no-console
-                console.log(`[FileOps] Chargé ${fbTagCount} tags (fallback)`);
-              }
-              if (loadedTagsFallback.nodeTags || loadedTagsFallback.tagNodes) {
-                useNodeTags
-                  .getState()
-                  .initialize(loadedTagsFallback.nodeTags || {}, loadedTagsFallback.tagNodes || {});
-              }
+              useTagStore.getState().initialize({
+                tags: loadedTagsFallback.tags || {},
+                links: loadedTagsFallback.links || [],
+                nodeTags: loadedTagsFallback.nodeTags || {},
+                tagNodes: loadedTagsFallback.tagNodes || {},
+                hiddenTags: loadedTagsFallback.hiddenTags || [],
+              });
+              const fbTagCount = Object.keys(loadedTagsFallback.tags || {}).length;
+              // eslint-disable-next-line no-console
+              console.log(`[FileOps] Chargé ${fbTagCount} tags (fallback)`);
             } catch (err) {
               console.error('[FileOps] Erreur lors du chargement des tags (fallback):', err);
             }
@@ -362,27 +352,9 @@ export const useFileOperations = () => {
         nodesDraggable: useCanvasOptions.getState().nodesDraggable,
       };
 
-      // FR: Sauvegarder les tags et les associations
-      // EN: Save tags and associations
-      const tagGraphState = useTagGraph.getState();
-      const nodeTagsState = useNodeTags.getState();
-
-      overlay.tags = {
-        tags: tagGraphState.tags,
-        links: tagGraphState.links,
-        nodeTags: Object.fromEntries(
-          Object.entries(nodeTagsState.nodeTagMap).map(([nodeId, tagSet]) => [
-            nodeId,
-            Array.from(tagSet),
-          ])
-        ),
-        tagNodes: Object.fromEntries(
-          Object.entries(nodeTagsState.tagNodeMap).map(([tagId, nodeSet]) => [
-            tagId,
-            Array.from(nodeSet),
-          ])
-        ),
-      };
+      // FR: Sauvegarder les tags depuis le store unifié
+      // EN: Save tags from unified store
+      overlay.tags = useTagStore.getState().export();
 
       zip.file('bigmind.json', JSON.stringify(overlay, null, 2));
     } catch (e) {
