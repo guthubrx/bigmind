@@ -370,19 +370,28 @@ function TagLayersPanel() {
   // EN: Expansion state for ALL tags, not just roots
   const [expandedState, setExpandedState] = useState<ExpandedState>({});
 
+  // FR: Mémoriser la clé des tags pour éviter les boucles infinies
+  // EN: Memoize tag key to avoid infinite loops
+  const tagIdsKey = React.useMemo(() => tags.map(t => t.id).sort().join(','), [tags]);
+
   // FR: Initialiser l'état d'expansion pour les nouveaux tags
   // EN: Initialize expansion state for new tags
   React.useEffect(() => {
+    const tagIds = tagIdsKey.split(',').filter(Boolean);
     setExpandedState(prev => {
+      let changed = false;
       const newState = { ...prev };
-      tags.forEach((tag: DagTag) => {
-        if (!(tag.id in newState)) {
-          newState[tag.id] = true; // Par défaut: expanded
+
+      tagIds.forEach((tagId: string) => {
+        if (!(tagId in newState)) {
+          newState[tagId] = true; // Par défaut: expanded
+          changed = true;
         }
       });
-      return newState;
+
+      return changed ? newState : prev;
     });
-  }, [tags]);
+  }, [tagIdsKey]);
 
   // FR: Obtenir les balises racine (sans parent)
   // EN: Get root tags (without parent)
