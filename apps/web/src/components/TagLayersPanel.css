@@ -80,12 +80,12 @@
   content: '';
   position: absolute;
   left: -16px;
-  top: 14px;
-  width: 12px;
-  height: 14px;
+  top: 16px;
+  width: 14px;
+  height: 12px;
   border-left: 1px solid #d1d5db;
   border-bottom: 1px solid #d1d5db;
-  border-bottom-left-radius: 6px;
+  border-bottom-left-radius: 5px;
   pointer-events: none;
 }
 
