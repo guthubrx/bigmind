@@ -9,11 +9,16 @@ import { useMindmap } from './hooks/useMindmap';
 import MainLayout from './layouts/MainLayout';
 import SettingsPage from './pages/Settings';
 import { useAppSettings } from './hooks/useAppSettings';
+import { useTagGraphFileSync } from './hooks/useTagGraphFileSync';
 import './App.css';
 
 function App() {
   const { mindMap, actions } = useMindmap();
   const loadAppSettings = useAppSettings(s => s.load);
+
+  // FR: Synchroniser les tags avec le fichier actif
+  // EN: Sync tags with active file
+  useTagGraphFileSync();
 
   // FR: Initialiser une nouvelle carte au chargement
   // EN: Initialize a new map on load
