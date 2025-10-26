@@ -22,6 +22,7 @@
     "jszip": "^3.10.1",
     "lucide-react": "^0.294.0",
     "react": "^18.2.0",
+    "react-arborist": "^3.4.3",
     "react-complex-tree": "^2.6.1",
     "react-dom": "^18.2.0",
     "react-i18next": "^13.5.0",

@@ -13,10 +13,12 @@ import TagLayersPanelRCT from '../components/TagLayersPanelRCT';
 import StatusBar from '../components/StatusBar';
 import CollapseButton from '../components/CollapseButton';
 import { useColumnCollapse } from '../hooks/useColumnCollapse';
+import { useTagStore } from '../hooks/useTagStore';
 import './MainLayout.css';
 
 function MainLayout() {
   const { toggleColumn, isCollapsed } = useColumnCollapse();
+  const tagsCount = useTagStore(state => Object.keys(state.tags).length);
 
   return (
     <div className="main-layout">
@@ -115,7 +117,26 @@ function MainLayout() {
                 {/* EN: Tags DAG column */}
                 <div className={`tags-column ${isCollapsed('tags') ? 'collapsed' : ''}`}>
                   <div className="column-header">
-                    <span className="column-title">Tags & Layers</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="column-title">Tags & Layers</span>
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minWidth: '24px',
+                          height: '20px',
+                          padding: '0 6px',
+                          background: 'rgba(255, 255, 255, 0.2)',
+                          borderRadius: '10px',
+                          fontSize: '11px',
+                          fontWeight: '600',
+                          color: 'inherit',
+                        }}
+                      >
+                        {tagsCount}
+                      </span>
+                    </div>
                     <CollapseButton
                       isCollapsed={isCollapsed('tags')}
                       onToggle={() => toggleColumn('tags')}

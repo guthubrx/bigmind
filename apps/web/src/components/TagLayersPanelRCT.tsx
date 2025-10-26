@@ -1,306 +1,85 @@
 /**
- * FR: Panneau de visualisation hiérarchique des tags avec react-complex-tree
- * EN: Hierarchical tag visualization panel with react-complex-tree
+ * FR: Panneau de visualisation hiérarchique des tags avec react-arborist
+ * EN: Hierarchical tag visualization panel with react-arborist
  */
 
-import React, { useMemo, useCallback } from 'react';
-import {
-  UncontrolledTreeEnvironment,
-  Tree,
-  StaticTreeDataProvider,
-  TreeItem,
-} from 'react-complex-tree';
-import 'react-complex-tree/lib/style-modern.css';
+import React, { useMemo, useCallback, useRef } from 'react';
+import { Tree, NodeRendererProps, TreeApi } from 'react-arborist';
 import { useTagStore } from '../hooks/useTagStore';
 import { DagTag, RelationType } from '../types/dag';
-import { Trash2, Eye, EyeOff, ArrowRight, Link2, Package } from 'lucide-react';
+import { Trash2, Eye, EyeOff, ArrowRight, Link2, Package, ChevronRight } from 'lucide-react';
 import './TagLayersPanelRCT.css';
 
-// FR: Pas besoin d'interface custom, on utilise TreeItem directement
-// EN: No need for custom interface, use TreeItem directly
-type TagTreeItem = TreeItem<DagTag>;
+// FR: Interface pour les données de l'arbre
+// EN: Interface for tree data
+interface TagTreeNode {
+  id: string;
+  name: string;
+  children?: TagTreeNode[];
+  data: DagTag;
+}
 
 function TagLayersPanelRCT() {
-  // FR: Utiliser le store complet pour forcer la réactivité
-  // EN: Use full store to force reactivity
   const tagsObject = useTagStore(state => state.tags);
   const tags = Object.values(tagsObject);
+  const rootOrder = useTagStore(state => state.rootOrder);
   const removeTag = useTagStore(state => state.removeTag);
-  const addTag = useTagStore(state => state.addTag);
   const isTagHidden = useTagStore(state => state.isTagHidden);
   const toggleTagVisibility = useTagStore(state => state.toggleTagVisibility);
   const addParent = useTagStore(state => state.addParent);
   const removeParent = useTagStore(state => state.removeParent);
+  const reorderChildren = useTagStore(state => state.reorderChildren);
   const getLinksBetween = useTagStore(state => state.getLinksBetween);
   const getTagNodes = useTagStore(state => state.getTagNodes);
-  const tagNodeMap = useTagStore(state => state.tagNodeMap);
 
-  // FR: État d'expansion des nœuds
-  // EN: Node expansion state
-  const [expandedItems, setExpandedItems] = React.useState<string[]>([]);
+  const treeRef = useRef<TreeApi<TagTreeNode>>(null);
 
-  // FR: Nettoyer les parentIds orphelins
-  // EN: Clean orphaned parentIds
-  const cleanOrphanedParents = useCallback(() => {
-    const validTagIds = new Set(tags.map(t => t.id));
-    let fixedCount = 0;
+  // FR: Convertir les tags en structure d'arbre
+  // EN: Convert tags to tree structure
+  const treeData = useMemo<TagTreeNode[]>(() => {
+    const buildNode = (tag: DagTag): TagTreeNode => {
+      const childTags = tag.children
+        .map(childId => tags.find(t => t.id === childId))
+        .filter((t): t is DagTag => t !== undefined);
 
-    tags.forEach(tag => {
-      const invalidParents = tag.parentIds.filter(parentId => !validTagIds.has(parentId));
-      if (invalidParents.length > 0) {
-        // eslint-disable-next-line no-console
-        console.log(
-          `[TagLayersPanelRCT] Fixing tag "${tag.label}": removing invalid parents`,
-          invalidParents
-        );
-        const validParents = tag.parentIds.filter(parentId => validTagIds.has(parentId));
-        const updatedTag = { ...tag, parentIds: validParents };
-        addTag(updatedTag); // Update via addTag
-        fixedCount += 1;
-      }
-    });
-
-    if (fixedCount > 0) {
-      // eslint-disable-next-line no-alert
-      alert(`Nettoyé ${fixedCount} tag(s) avec parents orphelins`);
-    } else {
-      // eslint-disable-next-line no-alert
-      alert('Aucun parent orphelin trouvé');
-    }
-  }, [tags, addTag]);
-
-  // FR: Synchroniser les tags manquants depuis useNodeTags vers useTagGraph
-  // EN: Sync missing tags from useNodeTags to useTagGraph
-  const syncMissingTags = useCallback(() => {
-    // eslint-disable-next-line no-console
-    console.log('[TagLayersPanelRCT] Syncing missing tags...');
-    // eslint-disable-next-line no-console
-    console.log('[TagLayersPanelRCT] Current tags in TagGraph:', tags);
-    // eslint-disable-next-line no-console
-    console.log('[TagLayersPanelRCT] TagNodeMap:', tagNodeMap);
-
-    const existingTagIds = new Set(tags.map(t => t.id));
-    const allTagIds = new Set(Object.keys(tagNodeMap));
-
-    const missingTagIds = Array.from(allTagIds).filter(id => !existingTagIds.has(id));
-
-    // eslint-disable-next-line no-console
-    console.log('[TagLayersPanelRCT] Missing tag IDs:', missingTagIds);
-
-    const colors = [
-      '#3b82f6',
-      '#ef4444',
-      '#10b981',
-      '#f59e0b',
-      '#8b5cf6',
-      '#ec4899',
-      '#14b8a6',
-      '#f97316',
-    ];
-
-    missingTagIds.forEach((tagId, index) => {
-      const newTag: DagTag = {
-        id: tagId,
-        label: `Tag ${tagId.substring(4, 8)}`, // Fallback label
-        color: colors[index % colors.length],
-        parentIds: [],
-        children: [],
-        relations: [],
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+      return {
+        id: tag.id,
+        name: tag.label,
+        data: tag,
+        // FR: IMPORTANT: Toujours définir children (même vide) pour permettre le drop
+        // EN: IMPORTANT: Always define children (even empty) to allow drop
+        children: childTags.length > 0 ? childTags.map(buildNode) : [],
       };
-      // eslint-disable-next-line no-console
-      console.log('[TagLayersPanelRCT] Creating missing tag:', newTag);
-      addTag(newTag);
-    });
-
-    if (missingTagIds.length > 0) {
-      // Nettoyer les parents orphelins après avoir créé les tags
-      setTimeout(() => cleanOrphanedParents(), 200);
-      // eslint-disable-next-line no-alert
-      alert(`Synchronisé ${missingTagIds.length} tag(s) manquant(s)`);
-    } else {
-      // eslint-disable-next-line no-alert
-      alert('Tous les tags sont déjà synchronisés');
-    }
-  }, [tags, tagNodeMap, addTag, cleanOrphanedParents]);
-
-  // FR: Convertir les DagTag en TreeItem pour react-complex-tree
-  // EN: Convert DagTag to TreeItem for react-complex-tree
-  const treeItems = useMemo<Record<string, TagTreeItem>>(() => {
-    // eslint-disable-next-line no-console
-    console.log('[TagLayersPanelRCT] Building tree with', tags.length, 'tags:', tags);
-    // eslint-disable-next-line no-console
-    console.log(
-      '[TagLayersPanelRCT] Tags object:',
-      tags.map(t => ({ id: t.id, label: t.label, parentIds: t.parentIds }))
-    );
-
-    const items: Record<string, TagTreeItem> = {
-      root: {
-        index: 'root',
-        children: [] as string[],
-        data: {
-          id: 'root',
-          label: 'Root',
-          parentIds: [],
-          children: [],
-          relations: [],
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        },
-        isFolder: true,
-        canMove: false,
-        canRename: false,
-      },
     };
 
-    // FR: Ajouter tous les tags
-    // EN: Add all tags
-    tags.forEach((tag: DagTag) => {
-      const hasChildren = tag.children && tag.children.length > 0;
-      items[tag.id] = {
-        index: tag.id,
-        children: tag.children || [],
-        data: tag,
-        // FR: Folder seulement si le tag a des enfants
-        // EN: Folder only if tag has children
-        isFolder: hasChildren,
-        canMove: true,
-        canRename: true,
-      };
+    // FR: Obtenir uniquement les tags racines (sans parent)
+    // EN: Get only root tags (without parent)
+    const rootTags = tags.filter(tag => !tag.parentIds || tag.parentIds.length === 0);
+
+    // FR: Trier les tags racines selon rootOrder
+    // EN: Sort root tags according to rootOrder
+    const sortedRootTags = rootTags.sort((a, b) => {
+      const indexA = rootOrder.indexOf(a.id);
+      const indexB = rootOrder.indexOf(b.id);
+      // FR: Si un tag n'est pas dans rootOrder, le mettre à la fin
+      // EN: If a tag is not in rootOrder, put it at the end
+      if (indexA === -1 && indexB === -1) return 0;
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      return indexA - indexB;
     });
 
-    // FR: Construire la hiérarchie - Seuls les tags SANS parent à la racine
-    // EN: Build hierarchy - Only tags WITHOUT parent at root
-    const rootTags = tags.filter((tag: DagTag) => !tag.parentIds || tag.parentIds.length === 0);
-    items.root.children = rootTags.map((tag: DagTag) => tag.id);
+    return sortedRootTags.map(buildNode);
+  }, [tags, rootOrder]);
 
-    // eslint-disable-next-line no-console
-    console.log(
-      '[TagLayersPanelRCT] Root tags (no parent):',
-      rootTags.map(t => t.label)
-    );
-    // eslint-disable-next-line no-console
-    console.log(
-      '[TagLayersPanelRCT] All tags with parents:',
-      tags
-        .filter(t => t.parentIds && t.parentIds.length > 0)
-        .map(t => `${t.label} (parents: ${t.parentIds.join(', ')})`)
-    );
-
-    return items;
-  }, [tags]);
-
-  // FR: Clé stable pour forcer le refresh quand les IDs ou les relations changent
-  // EN: Stable key to force refresh when IDs or relations change
-  const treeKey = useMemo(() => {
-    // Inclure les IDs et les relations parent-enfant
-    const relations = tags
-      .flatMap(t => t.children?.map(c => `${t.id}->${c}`) || [])
-      .sort()
-      .join('|');
-    const sortedIds = tags
-      .map(t => t.id)
-      .sort()
-      .join(',');
-    return `${sortedIds}::${relations}`;
-  }, [tags]);
-
-  // FR: Data provider pour react-complex-tree
-  // EN: Data provider for react-complex-tree
-  const dataProvider = useMemo(
-    () =>
-      new StaticTreeDataProvider(treeItems, (item, newName) => ({
-        ...item,
-        data: { ...item.data, label: newName },
-      })),
-    [treeItems]
-  );
-
-  // FR: Obtenir le titre d'un item
-  // EN: Get item title
-  const getItemTitle = useCallback((item: TreeItem<DagTag>) => item.data.label, []);
-
-  // FR: Contrôler si un item peut être déposé sur une cible
-  // EN: Control if an item can be dropped on a target
-  const canDropAt = useCallback((items: TreeItem<DagTag>[], target: any) => {
-    // eslint-disable-next-line no-console
-    console.log('[RCT] canDropAt - items:', items, 'target:', target);
-
-    // Ne pas permettre de déposer sur la racine
-    if (target.targetType === 'root') {
-      // eslint-disable-next-line no-console
-      console.log('[RCT] canDropAt - REJECTED: target is root');
-      return false;
-    }
-
-    // Ne pas permettre de déposer un tag sur lui-même
-    if (items.length > 0 && items[0].index === target.targetItem) {
-      // eslint-disable-next-line no-console
-      console.log('[RCT] canDropAt - REJECTED: dropping on self');
-      return false;
-    }
-
-    // Autoriser le drop sur un item (tag) même s'il n'est pas un folder
-    if (target.targetType === 'item') {
-      // eslint-disable-next-line no-console
-      console.log('[RCT] canDropAt - ACCEPTED: dropping on item');
-      return true;
-    }
-
-    // eslint-disable-next-line no-console
-    console.log('[RCT] canDropAt - ACCEPTED');
-    return true;
-  }, []);
-
-  // FR: Gérer le drag-drop pour créer des filiations
-  // EN: Handle drag-drop to create parent-child relationships
-  const onDrop = useCallback(
-    (items: TreeItem<DagTag>[], target: any) => {
-      // eslint-disable-next-line no-console
-      console.log('[RCT] Drop:', items, 'onto', target);
-
-      if (items.length > 0 && target && target.targetItem !== 'root') {
-        const draggedId = items[0].index as string;
-        const targetId = target.targetItem as string;
-
-        if (draggedId !== targetId) {
-          const draggedTag = tags.find(t => t.id === draggedId);
-          const targetTag = tags.find(t => t.id === targetId);
-
-          if (draggedTag && targetTag) {
-            // eslint-disable-next-line no-console
-            console.log(
-              `[RCT] Creating parent-child: "${draggedTag.label}" → "${targetTag.label}"`
-            );
-            addParent(draggedId, targetId);
-          }
-        }
-      }
-    },
-    [addParent, tags]
-  );
-
-  // FR: Rendu personnalisé du titre uniquement (pas du wrapper)
-  // EN: Custom title rendering only (not the wrapper)
-  const renderItemTitle = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ({ item }: any) => {
-      if (item.index === 'root') return null;
-
-      const tag = item.data;
+  // FR: Composant de rendu personnalisé pour chaque nœud
+  // EN: Custom render component for each node
+  const Node = useCallback(
+    ({ node, style, dragHandle }: NodeRendererProps<TagTreeNode>) => {
+      const tag = node.data.data;
       const hidden = isTagHidden(tag.id);
       const nodeCount = getTagNodes(tag.id)?.length || 0;
       const childCount = tag.children?.length || 0;
-
-      // eslint-disable-next-line no-console
-      console.log(
-        `[renderItemTitle] Tag: ${tag.label}, children:`,
-        tag.children,
-        'childCount:',
-        childCount
-      );
 
       // FR: Obtenir les noms des enfants pour le tooltip
       // EN: Get children names for tooltip
@@ -335,75 +114,175 @@ function TagLayersPanelRCT() {
         }
       }
 
+      // FR: Déterminer le type de drop (sur le nœud ou entre les nœuds)
+      // EN: Determine drop type (on node or between nodes)
+      const dropPosition = node.state.willReceiveDrop ? 'true' : 'false';
+
       return (
-        <div className={`rct-tag-item-content ${hidden ? 'hidden' : ''}`}>
-          {relationIcon && (
-            <div className="rct-relation-icon-wrapper">
-              <div className="rct-relation-icon">{relationIcon}</div>
-              <button
-                type="button"
-                className="rct-remove-parent-btn"
-                onClick={e => {
-                  e.stopPropagation();
-                  if (tag.parentIds && tag.parentIds.length > 0) {
-                    const parentId = tag.parentIds[0];
-                    removeParent(tag.id, parentId);
-                  }
-                }}
-                onMouseDown={e => e.stopPropagation()}
-                title="Retirer de son parent"
-              >
-                ×
-              </button>
-            </div>
-          )}
-
-          <button
-            type="button"
-            className="rct-tag-visibility-btn"
-            onClick={e => {
-              e.stopPropagation();
-              toggleTagVisibility(tag.id);
-            }}
-            onMouseDown={e => e.stopPropagation()}
-            title={hidden ? 'Show tag' : 'Hide tag'}
-          >
-            {hidden ? <EyeOff size={14} /> : <Eye size={14} />}
-          </button>
-
-          <div className="rct-tag-badge" style={{ backgroundColor: tag.color || '#3b82f6' }}>
-            <span className="rct-tag-label">{tag.label.substring(0, 20)}</span>
-            {(childCount > 0 || nodeCount > 0) && (
-              <div className="rct-tag-counts">
-                {childCount > 0 && (
-                  <span className="count-badge count-children" title={`Enfants: ${childrenNames}`}>
-                    {childCount}E
-                  </span>
-                )}
-                {nodeCount > 0 && <span className="count-badge count-nodes">{nodeCount}N</span>}
-              </div>
-            )}
+        <div
+          style={style}
+          ref={dragHandle}
+          className={`arborist-node ${hidden ? 'hidden' : ''}`}
+          data-drop-target={dropPosition}
+          onClick={() => node.isInternal && node.toggle()}
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              if (node.isInternal) node.toggle();
+            }
+          }}
+          role="button"
+          tabIndex={0}
+        >
+          {/* FR: Colonne fixe pour les yeux */}
+          {/* EN: Fixed column for eyes */}
+          <div className="eye-column">
+            <button
+              type="button"
+              className="eye-btn"
+              onClick={e => {
+                e.stopPropagation();
+                toggleTagVisibility(tag.id);
+              }}
+              title={hidden ? 'Show tag' : 'Hide tag'}
+            >
+              {hidden ? <EyeOff size={14} /> : <Eye size={14} />}
+            </button>
           </div>
 
-          <button
-            type="button"
-            className="rct-tag-delete-btn"
-            onClick={e => {
-              e.stopPropagation();
-              // eslint-disable-next-line no-alert
-              if (window.confirm(`Delete tag "${tag.label}"?`)) {
-                removeTag(tag.id);
-              }
-            }}
-            onMouseDown={e => e.stopPropagation()}
-            title="Delete tag"
-          >
-            <Trash2 size={14} />
-          </button>
+          {/* FR: Contenu du nœud */}
+          {/* EN: Node content */}
+          <div className="node-content">
+            {/* FR: Flèche d'expansion */}
+            {/* EN: Expansion arrow */}
+            <div className="expansion-arrow">
+              {node.isInternal && childCount > 0 && (
+                <ChevronRight
+                  size={16}
+                  style={{
+                    transform: node.isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s',
+                  }}
+                />
+              )}
+            </div>
+
+            {/* FR: Icône de relation */}
+            {/* EN: Relation icon */}
+            {relationIcon && <div className="relation-icon">{relationIcon}</div>}
+
+            {/* FR: Badge du tag */}
+            {/* EN: Tag badge */}
+            <div className="tag-badge" style={{ backgroundColor: tag.color || '#3b82f6' }}>
+              <span className="tag-label">{tag.label.substring(0, 20)}</span>
+              {(childCount > 0 || nodeCount > 0) && (
+                <div className="tag-counts">
+                  {childCount > 0 && (
+                    <span
+                      className="count-badge count-children"
+                      title={`Enfants: ${childrenNames}`}
+                    >
+                      {childCount}E
+                    </span>
+                  )}
+                  {nodeCount > 0 && <span className="count-badge count-nodes">{nodeCount}N</span>}
+                </div>
+              )}
+            </div>
+
+            {/* FR: Bouton supprimer */}
+            {/* EN: Delete button */}
+            <button
+              type="button"
+              className="delete-btn"
+              onClick={e => {
+                e.stopPropagation();
+                // eslint-disable-next-line no-alert
+                if (window.confirm(`Delete tag "${tag.label}"?`)) {
+                  removeTag(tag.id);
+                }
+              }}
+              title="Delete tag"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
         </div>
       );
     },
-    [isTagHidden, getTagNodes, getLinksBetween, toggleTagVisibility, removeTag, removeParent, tags]
+    [isTagHidden, getTagNodes, getLinksBetween, toggleTagVisibility, removeTag, tags]
+  );
+
+  // FR: Gérer le drop
+  // EN: Handle drop
+  const onMove = useCallback(
+    ({
+      dragIds,
+      parentId,
+      index,
+    }: {
+      dragIds: string[];
+      parentId: string | null;
+      index: number;
+    }) => {
+      if (dragIds.length === 0) return;
+
+      const draggedId = dragIds[0];
+      const draggedTag = tags.find(t => t.id === draggedId);
+      if (!draggedTag) return;
+
+      // FR: Déterminer le parent actuel
+      // EN: Determine current parent
+      const currentParentId =
+        draggedTag.parentIds && draggedTag.parentIds.length > 0 ? draggedTag.parentIds[0] : null;
+
+      // eslint-disable-next-line no-console
+      console.log(
+        '[Arborist] Move:',
+        draggedTag.label,
+        'from parent:',
+        currentParentId,
+        'to parent:',
+        parentId,
+        'at index:',
+        index
+      );
+
+      // FR: Si le parent change → créer relation parent-enfant
+      // EN: If parent changes → create parent-child relationship
+      if (currentParentId !== parentId) {
+        // eslint-disable-next-line no-console
+        console.log('[Arborist] Parent change detected, updating relations...');
+
+        // FR: Enlever TOUS les anciens parents
+        // EN: Remove ALL old parents
+        if (draggedTag.parentIds && draggedTag.parentIds.length > 0) {
+          draggedTag.parentIds.forEach(oldParentId => {
+            // eslint-disable-next-line no-console
+            console.log('[Arborist] Removing parent:', oldParentId);
+            removeParent(draggedId, oldParentId);
+          });
+        }
+
+        // FR: Ajouter au nouveau parent (si pas null = racine)
+        // EN: Add to new parent (if not null = root)
+        if (parentId) {
+          // eslint-disable-next-line no-console
+          console.log('[Arborist] Adding new parent:', parentId);
+          addParent(draggedId, parentId);
+        } else {
+          // eslint-disable-next-line no-console
+          console.log('[Arborist] Moving to root (no parent)');
+        }
+      } else {
+        // FR: Même parent → réordonner les enfants
+        // EN: Same parent → reorder children
+        // eslint-disable-next-line no-console
+        console.log('[Arborist] Same parent, reordering to index:', index);
+        reorderChildren(parentId, draggedId, index);
+      }
+    },
+    [tags, addParent, removeParent, reorderChildren]
   );
 
   if (tags.length === 0) {
@@ -416,72 +295,22 @@ function TagLayersPanelRCT() {
 
   return (
     <div className="tag-layers-panel-rct">
-      <div className="tag-layers-header">
-        <h3>Tags</h3>
-        <div style={{ display: 'flex', gap: '4px', marginRight: '8px' }}>
-          <button
-            type="button"
-            onClick={syncMissingTags}
-            className="sync-tags-btn"
-            title="Synchroniser les tags manquants"
-            style={{
-              padding: '4px 8px',
-              fontSize: '11px',
-              background: '#3b82f6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
-            Sync
-          </button>
-          <button
-            type="button"
-            onClick={cleanOrphanedParents}
-            className="clean-tags-btn"
-            title="Nettoyer les parents orphelins"
-            style={{
-              padding: '4px 8px',
-              fontSize: '11px',
-              background: '#10b981',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
-            Clean
-          </button>
-        </div>
-        <span className="tag-count">{tags.length}</span>
-      </div>
-
-      <div className="tag-layers-tree-rct">
-        <UncontrolledTreeEnvironment
-          key={treeKey}
-          dataProvider={dataProvider}
-          getItemTitle={getItemTitle}
-          viewState={{
-            'tag-tree': {
-              expandedItems,
-            },
-          }}
-          onExpandItem={item => {
-            setExpandedItems(prev => [...prev, item.index as string]);
-          }}
-          onCollapseItem={item => {
-            setExpandedItems(prev => prev.filter(id => id !== item.index));
-          }}
-          canDragAndDrop
-          canDropOnNonFolder
-          canReorderItems
-          canDropAt={canDropAt}
-          onDrop={onDrop}
-          renderItemTitle={renderItemTitle}
+      <div className="tag-layers-tree-arborist">
+        <Tree
+          ref={treeRef}
+          data={treeData}
+          openByDefault={false}
+          width="100%"
+          height={600}
+          indent={8}
+          rowHeight={36}
+          overscanCount={10}
+          onMove={onMove}
+          disableDrop={() => false}
+          disableEdit
         >
-          <Tree treeId="tag-tree" rootItem="root" treeLabel="Tag Hierarchy" />
-        </UncontrolledTreeEnvironment>
+          {Node}
+        </Tree>
       </div>
     </div>
   );

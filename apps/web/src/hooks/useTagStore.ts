@@ -24,6 +24,10 @@ interface TagStoreState {
   // EN: Relations between tags (lineage)
   links: DagLink[];
 
+  // FR: Ordre des tags racine
+  // EN: Root tags order
+  rootOrder: string[];
+
   // FR: Associations nœud → tags
   // EN: Node to tags mapping
   nodeTagMap: Record<string, Set<string>>;
@@ -50,6 +54,7 @@ interface TagStoreState {
   removeParent(tagId: string, parentId: string): void;
   getChildren(tagId: string): DagTag[];
   getParents(tagId: string): DagTag[];
+  reorderChildren(parentId: string | null, childId: string, newIndex: number): void;
 
   // === Actions sur les liens ===
 
@@ -77,6 +82,7 @@ interface TagStoreState {
   initialize(data: {
     tags?: Record<string, DagTag>;
     links?: DagLink[];
+    rootOrder?: string[];
     nodeTags?: Record<string, string[]>;
     tagNodes?: Record<string, string[]>;
     hiddenTags?: string[];
@@ -84,6 +90,7 @@ interface TagStoreState {
   export(): {
     tags: Record<string, DagTag>;
     links: DagLink[];
+    rootOrder: string[];
     nodeTags: Record<string, string[]>;
     tagNodes: Record<string, string[]>;
     hiddenTags: string[];
@@ -93,6 +100,7 @@ interface TagStoreState {
 export const useTagStore = create<TagStoreState>((set, get) => ({
   tags: {},
   links: [],
+  rootOrder: [],
   nodeTagMap: {},
   tagNodeMap: {},
   hiddenTags: [],
@@ -100,19 +108,30 @@ export const useTagStore = create<TagStoreState>((set, get) => ({
   // === Tags ===
 
   addTag: (tag: DagTag) => {
-    set(state => ({
-      tags: {
-        ...state.tags,
-        [tag.id]: {
-          ...tag,
-          parentIds: tag.parentIds || [],
-          children: tag.children || [],
-          relations: tag.relations || [],
-          createdAt: tag.createdAt || Date.now(),
-          updatedAt: Date.now(),
+    set(state => {
+      const isRoot = !tag.parentIds || tag.parentIds.length === 0;
+      const isNewTag = !state.tags[tag.id];
+
+      return {
+        tags: {
+          ...state.tags,
+          [tag.id]: {
+            ...tag,
+            parentIds: tag.parentIds || [],
+            children: tag.children || [],
+            relations: tag.relations || [],
+            createdAt: tag.createdAt || Date.now(),
+            updatedAt: Date.now(),
+          },
         },
-      },
-    }));
+        // FR: Ajouter à rootOrder si c'est un nouveau tag root
+        // EN: Add to rootOrder if it's a new root tag
+        rootOrder:
+          isRoot && isNewTag && !state.rootOrder.includes(tag.id)
+            ? [...state.rootOrder, tag.id]
+            : state.rootOrder,
+      };
+    });
   },
 
   removeTag: (tagId: string) => {
@@ -142,11 +161,15 @@ export const useTagStore = create<TagStoreState>((set, get) => ({
       const cleanedTagNodeMap = { ...state.tagNodeMap };
       delete cleanedTagNodeMap[tagId];
 
+      // Retirer de rootOrder
+      const cleanedRootOrder = state.rootOrder.filter(id => id !== tagId);
+
       return {
         tags: cleanedTags,
         links: cleanedLinks,
         nodeTagMap: cleanedNodeTagMap,
         tagNodeMap: cleanedTagNodeMap,
+        rootOrder: cleanedRootOrder,
       };
     });
   },
@@ -195,6 +218,11 @@ export const useTagStore = create<TagStoreState>((set, get) => ({
         updatedChildren
       );
 
+      // FR: Si le tag était root, le retirer de rootOrder
+      // EN: If tag was root, remove it from rootOrder
+      const wasRoot = tag.parentIds.length === 0;
+      const newRootOrder = wasRoot ? state.rootOrder.filter(id => id !== tagId) : state.rootOrder;
+
       return {
         tags: {
           ...state.tags,
@@ -209,6 +237,7 @@ export const useTagStore = create<TagStoreState>((set, get) => ({
             updatedAt: Date.now(),
           },
         },
+        rootOrder: newRootOrder,
       };
     });
   },
@@ -250,6 +279,65 @@ export const useTagStore = create<TagStoreState>((set, get) => ({
     const tag = state.tags[tagId];
     if (!tag) return [];
     return tag.parentIds.map(id => state.tags[id]).filter(Boolean);
+  },
+
+  reorderChildren: (parentId: string | null, childId: string, newIndex: number) => {
+    set(state => {
+      if (parentId === null) {
+        // FR: Réordonner les tags racine
+        // EN: Reorder root tags
+        const oldIndex = state.rootOrder.indexOf(childId);
+        if (oldIndex === -1) {
+          // eslint-disable-next-line no-console
+          console.log('[reorderChildren] Child not found in rootOrder');
+          return state;
+        }
+
+        const newRootOrder = [...state.rootOrder];
+        newRootOrder.splice(oldIndex, 1); // Retirer de l'ancienne position
+        newRootOrder.splice(newIndex, 0, childId); // Insérer à la nouvelle position
+
+        // eslint-disable-next-line no-console
+        console.log(
+          `[reorderChildren] Root level: moving "${
+            state.tags[childId]?.label || childId
+          }" from index ${oldIndex} to ${newIndex}`,
+          newRootOrder
+        );
+
+        return { rootOrder: newRootOrder };
+      }
+
+      const parent = state.tags[parentId];
+      if (!parent) return state;
+
+      // FR: Créer une nouvelle liste d'enfants avec l'élément réordonné
+      // EN: Create new children list with reordered element
+      const oldIndex = parent.children.indexOf(childId);
+      if (oldIndex === -1) return state; // L'enfant n'est pas dans la liste
+
+      const newChildren = [...parent.children];
+      newChildren.splice(oldIndex, 1); // Retirer de l'ancienne position
+      newChildren.splice(newIndex, 0, childId); // Insérer à la nouvelle position
+
+      // eslint-disable-next-line no-console
+      console.log(
+        `[reorderChildren] Parent "${parent.label}": ` +
+          `moving child from index ${oldIndex} to ${newIndex}`,
+        newChildren
+      );
+
+      return {
+        tags: {
+          ...state.tags,
+          [parentId]: {
+            ...parent,
+            children: newChildren,
+            updatedAt: Date.now(),
+          },
+        },
+      };
+    });
   },
 
   // === Liens ===
@@ -384,6 +472,7 @@ export const useTagStore = create<TagStoreState>((set, get) => ({
     set({
       tags: {},
       links: [],
+      rootOrder: [],
       nodeTagMap: {},
       tagNodeMap: {},
       hiddenTags: [],
@@ -394,6 +483,7 @@ export const useTagStore = create<TagStoreState>((set, get) => ({
     set({
       tags: data.tags || {},
       links: data.links || [],
+      rootOrder: data.rootOrder || [],
       nodeTagMap: Object.fromEntries(
         Object.entries(data.nodeTags || {}).map(([nodeId, tagIds]) => [nodeId, new Set(tagIds)])
       ),
@@ -409,6 +499,7 @@ export const useTagStore = create<TagStoreState>((set, get) => ({
     return {
       tags: state.tags,
       links: state.links,
+      rootOrder: state.rootOrder,
       nodeTags: Object.fromEntries(
         Object.entries(state.nodeTagMap).map(([nodeId, tagSet]) => [nodeId, Array.from(tagSet)])
       ),
