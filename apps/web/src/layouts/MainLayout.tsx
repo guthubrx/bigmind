@@ -9,7 +9,7 @@ import FileTabs from '../components/FileTabs';
 import NodeExplorer from '../components/NodeExplorer';
 import MindMapCanvas from '../components/MindMapCanvas';
 import NodeProperties from '../components/NodeProperties';
-import TagLayersPanelDAG from '../components/TagLayersPanelDAG';
+import TagLayersPanelRCT from '../components/TagLayersPanelRCT';
 import StatusBar from '../components/StatusBar';
 import CollapseButton from '../components/CollapseButton';
 import { useColumnCollapse } from '../hooks/useColumnCollapse';
@@ -127,7 +127,7 @@ function MainLayout() {
                       <span className="vertical-text">TAGS</span>
                     </div>
                   )}
-                  {!isCollapsed('tags') && <TagLayersPanelDAG />}
+                  {!isCollapsed('tags') && <TagLayersPanelRCT />}
                 </div>
               </div>
 
