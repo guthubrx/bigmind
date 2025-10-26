@@ -168,6 +168,7 @@ function DockableLayout() {
       setIsDragging(true);
       mainEl.classList.add('tab-is-dragging');
     };
+
     const handleDragEnd = () => {
       setIsDragging(false);
       mainEl.classList.remove('tab-is-dragging');
