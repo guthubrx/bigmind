@@ -21,7 +21,10 @@ import './TagLayersPanelRCT.css';
 type TagTreeItem = TreeItem<DagTag>;
 
 function TagLayersPanelRCT() {
-  const tags = useTagStore(state => Object.values(state.tags));
+  // FR: Utiliser le store complet pour forcer la réactivité
+  // EN: Use full store to force reactivity
+  const tagsObject = useTagStore(state => state.tags);
+  const tags = Object.values(tagsObject);
   const removeTag = useTagStore(state => state.removeTag);
   const addTag = useTagStore(state => state.addTag);
   const isTagHidden = useTagStore(state => state.isTagHidden);
@@ -122,6 +125,8 @@ function TagLayersPanelRCT() {
   const treeItems = useMemo<Record<string, TagTreeItem>>(() => {
     // eslint-disable-next-line no-console
     console.log('[TagLayersPanelRCT] Building tree with', tags.length, 'tags:', tags);
+    // eslint-disable-next-line no-console
+    console.log('[TagLayersPanelRCT] Tags object:', tags.map(t => ({ id: t.id, label: t.label, parentIds: t.parentIds })));
 
     const items: Record<string, TagTreeItem> = {
       root: {
