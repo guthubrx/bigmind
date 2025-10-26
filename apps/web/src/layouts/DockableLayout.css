@@ -113,6 +113,16 @@
   background: var(--border-color, #e2e8f0);
 }
 
+.flexlayout__splitter_horz {
+  height: 1px !important;
+  background: var(--border-color, #e2e8f0);
+}
+
+.flexlayout__splitter_vert {
+  width: 1px !important;
+  background: var(--border-color, #e2e8f0);
+}
+
 .flexlayout__splitter:hover {
   background: var(--accent-color);
 }
