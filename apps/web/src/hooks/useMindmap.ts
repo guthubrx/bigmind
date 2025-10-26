@@ -4,6 +4,8 @@
  */
 
 import { useState, useCallback } from 'react';
+import { useAppSettings } from './useAppSettings';
+import { getNodeColor } from '../utils/nodeColors';
 
 // FR: Types simplifiés pour le développement
 // EN: Simplified types for development
@@ -84,6 +86,7 @@ const createEmptyMindMap = (name: string = 'Nouvelle carte'): MindMap => {
 // FR: Hook personnalisé pour utiliser le store
 // EN: Custom hook to use the store
 export const useMindmap = () => {
+  const getCurrentTheme = useAppSettings(s => s.getCurrentTheme);
   const [mindMap, setMindMap] = useState<MindMap | null>(null);
   const [selection, setSelection] = useState<SelectionState>({
     selectedNodes: [],
@@ -142,6 +145,15 @@ export const useMindmap = () => {
               parent.children.push(newNode.id);
             }
           }
+
+          // FR: Appliquer la couleur automatique basée sur le thème
+          // EN: Apply automatic color based on theme
+          const theme = getCurrentTheme();
+          const autoColor = getNodeColor(newNode.id, newNodes, prev.rootId, theme);
+          newNode.style = {
+            ...newNode.style,
+            backgroundColor: autoColor,
+          };
 
           return {
             ...prev,
@@ -294,8 +306,37 @@ export const useMindmap = () => {
       setEditMode: (nodeId: NodeID | null, field: 'title' | 'notes' | null) => {
         setEditMode({ nodeId, field });
       },
+
+      // FR: Appliquer les couleurs automatiques à tous les nœuds
+      // EN: Apply automatic colors to all nodes
+      applyAutomaticColorsToAll: () => {
+        setMindMap(prev => {
+          if (!prev) return prev;
+
+          const theme = getCurrentTheme();
+          const updatedNodes: Record<NodeID, MindNode> = {};
+
+          Object.keys(prev.nodes).forEach(nodeId => {
+            const node = prev.nodes[nodeId];
+            const autoColor = getNodeColor(nodeId, prev.nodes, prev.rootId, theme);
+
+            updatedNodes[nodeId] = {
+              ...node,
+              style: {
+                ...node.style,
+                backgroundColor: autoColor,
+              },
+            };
+          });
+
+          return {
+            ...prev,
+            nodes: updatedNodes,
+          };
+        });
+      },
     }),
-    []
+    [getCurrentTheme]
   );
 
   return {

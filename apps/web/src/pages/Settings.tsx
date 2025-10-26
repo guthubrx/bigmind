@@ -5,9 +5,10 @@ import StatusBar from '../components/StatusBar';
 import '../layouts/MainLayout.css';
 import { useShortcuts, ShortcutAction } from '../hooks/useShortcuts';
 import { usePlatform } from '../hooks/usePlatform';
-import { X } from 'lucide-react';
+import { X, Palette } from 'lucide-react';
 import { useAppSettings } from '../hooks/useAppSettings';
 import { getAllThemes } from '../themes/colorThemes';
+import { useMindmap } from '../hooks/useMindmap';
 
 function SettingsPage() {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ function SettingsPage() {
   const resetShortcuts = useShortcuts(s => s.resetDefaults);
   const [section, setSection] = useState<'appearance' | 'shortcuts'>('appearance');
   const platform = usePlatform();
+  const { actions: mindmapActions } = useMindmap();
   const pastelBg = (alpha: number = 0.06) => {
     const hex = (accentColor || '#3b82f6').replace('#', '');
     const r = parseInt(hex.substring(0, 2), 16) || 59;
@@ -151,79 +153,62 @@ function SettingsPage() {
                     </select>
                   </div>
 
-                  {/* FR: Aperçu du thème */}
-                  {/* EN: Theme preview */}
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(4, 1fr)',
-                      gap: 8,
-                      padding: 12,
-                      border: '1px solid #e2e8f0',
-                      borderRadius: 6,
-                      background: 'white',
-                    }}
-                  >
-                    {(() => {
-                      const currentTheme = allThemes.find(t => t.id === themeId);
-                      if (!currentTheme) return null;
-                      return (
-                        <>
-                          <div style={{ textAlign: 'center', fontSize: 11, color: '#64748b' }}>
-                            <div
-                              style={{
-                                width: '100%',
-                                height: 32,
-                                backgroundColor: currentTheme.colors.background,
-                                border: '1px solid #e2e8f0',
-                                borderRadius: 4,
-                                marginBottom: 4,
-                              }}
-                            />
-                            Fond
-                          </div>
-                          <div style={{ textAlign: 'center', fontSize: 11, color: '#64748b' }}>
-                            <div
-                              style={{
-                                width: '100%',
-                                height: 32,
-                                backgroundColor: currentTheme.colors.nodeBackground,
-                                border: '1px solid #e2e8f0',
-                                borderRadius: 4,
-                                marginBottom: 4,
-                              }}
-                            />
-                            Nœuds
-                          </div>
-                          <div style={{ textAlign: 'center', fontSize: 11, color: '#64748b' }}>
-                            <div
-                              style={{
-                                width: '100%',
-                                height: 32,
-                                backgroundColor: currentTheme.colors.accent,
-                                border: '1px solid #e2e8f0',
-                                borderRadius: 4,
-                                marginBottom: 4,
-                              }}
-                            />
-                            Accent
-                          </div>
-                          <div style={{ textAlign: 'center', fontSize: 11, color: '#64748b' }}>
-                            <div
-                              style={{
-                                width: '100%',
-                                height: 32,
-                                backgroundColor: currentTheme.colors.foreground,
-                                border: '1px solid #e2e8f0',
-                                borderRadius: 4,
-                                marginBottom: 4,
-                              }}
-                            />
-                            Texte
-                          </div>
-                        </>
-                      );
-                    })()}
+                  {/* FR: Palette de 10 couleurs */}
+                  {/* EN: 10-color palette */}
+                  <div>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 500,
+                        marginBottom: 8,
+                        color: '#475569',
+                      }}
+                    >
+                      Palette de couleurs (10 couleurs pour les nœuds)
+                    </div>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(5, 1fr)',
+                        gap: 8,
+                        padding: 12,
+                        border: '1px solid #e2e8f0',
+                        borderRadius: 6,
+                        background: 'white',
+                        marginBottom: 12,
+                      }}
+                    >
+                      {(() => {
+                        const currentTheme = allThemes.find(t => t.id === themeId);
+                        if (!currentTheme || !currentTheme.palette) return null;
+                        return currentTheme.palette.map(color => (
+                          <div
+                            key={color}
+                            style={{
+                              width: '100%',
+                              height: 40,
+                              backgroundColor: color,
+                              border: '1px solid #e2e8f0',
+                              borderRadius: 4,
+                            }}
+                            title={color}
+                          />
+                        ));
+                      })()}
+                    </div>
+                    <button
+                      type="button"
+                      className="btn"
+                      onClick={() => mindmapActions.applyAutomaticColorsToAll()}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                      }}
+                    >
+                      <Palette size={16} />
+                      Appliquer les couleurs de la palette aux nœuds
+                    </button>
                   </div>
 
                   {/* FR: Couleur d'accent personnalisée */}
