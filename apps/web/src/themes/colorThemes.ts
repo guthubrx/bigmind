@@ -36,6 +36,9 @@ export interface ColorTheme {
     error: string;
     info: string;
   };
+  // FR: Palette de 10 couleurs pour les nœuds
+  // EN: 10-color palette for nodes
+  palette: string[];
 }
 
 export const COLOR_THEMES: Record<string, ColorTheme> = {
@@ -58,6 +61,18 @@ export const COLOR_THEMES: Record<string, ColorTheme> = {
       error: '#ef4444',
       info: '#3b82f6',
     },
+    palette: [
+      '#3b82f6', // Blue
+      '#8b5cf6', // Purple
+      '#ec4899', // Pink
+      '#ef4444', // Red
+      '#f59e0b', // Orange
+      '#eab308', // Yellow
+      '#84cc16', // Lime
+      '#10b981', // Green
+      '#14b8a6', // Teal
+      '#06b6d4', // Cyan
+    ],
   },
 
   dark: {
@@ -79,6 +94,18 @@ export const COLOR_THEMES: Record<string, ColorTheme> = {
       error: '#f87171',
       info: '#60a5fa',
     },
+    palette: [
+      '#60a5fa', // Blue
+      '#a78bfa', // Purple
+      '#f472b6', // Pink
+      '#f87171', // Red
+      '#fb923c', // Orange
+      '#fbbf24', // Yellow
+      '#a3e635', // Lime
+      '#34d399', // Green
+      '#2dd4bf', // Teal
+      '#22d3ee', // Cyan
+    ],
   },
 
   nord: {
@@ -100,6 +127,18 @@ export const COLOR_THEMES: Record<string, ColorTheme> = {
       error: '#bf616a',
       info: '#81a1c1',
     },
+    palette: [
+      '#88c0d0', // Frost Cyan
+      '#81a1c1', // Frost Blue
+      '#5e81ac', // Frost Dark Blue
+      '#8fbcbb', // Frost Teal
+      '#a3be8c', // Aurora Green
+      '#ebcb8b', // Aurora Yellow
+      '#d08770', // Aurora Orange
+      '#bf616a', // Aurora Red
+      '#b48ead', // Aurora Purple
+      '#d8dee9', // Snow Storm
+    ],
   },
 
   gruvbox: {
@@ -121,6 +160,18 @@ export const COLOR_THEMES: Record<string, ColorTheme> = {
       error: '#fb4934',
       info: '#83a598',
     },
+    palette: [
+      '#fb4934', // Red
+      '#fe8019', // Orange
+      '#fabd2f', // Yellow
+      '#b8bb26', // Green
+      '#8ec07c', // Aqua
+      '#83a598', // Blue
+      '#d3869b', // Purple
+      '#d65d0e', // Dark Orange
+      '#458588', // Dark Blue
+      '#98971a', // Dark Green
+    ],
   },
 
   'gruvbox-light': {
@@ -142,6 +193,18 @@ export const COLOR_THEMES: Record<string, ColorTheme> = {
       error: '#9d0006',
       info: '#076678',
     },
+    palette: [
+      '#9d0006', // Red
+      '#af3a03', // Orange
+      '#b57614', // Yellow
+      '#79740e', // Green
+      '#427b58', // Aqua
+      '#076678', // Blue
+      '#8f3f71', // Purple
+      '#d65d0e', // Bright Orange
+      '#cc241d', // Bright Red
+      '#98971a', // Bright Green
+    ],
   },
 
   solarized: {
@@ -163,6 +226,18 @@ export const COLOR_THEMES: Record<string, ColorTheme> = {
       error: '#dc322f',
       info: '#268bd2',
     },
+    palette: [
+      '#268bd2', // Blue
+      '#2aa198', // Cyan
+      '#859900', // Green
+      '#b58900', // Yellow
+      '#cb4b16', // Orange
+      '#dc322f', // Red
+      '#d33682', // Magenta
+      '#6c71c4', // Violet
+      '#93a1a1', // Base1
+      '#839496', // Base0
+    ],
   },
 
   'solarized-light': {
@@ -184,6 +259,18 @@ export const COLOR_THEMES: Record<string, ColorTheme> = {
       error: '#dc322f',
       info: '#268bd2',
     },
+    palette: [
+      '#268bd2', // Blue
+      '#2aa198', // Cyan
+      '#859900', // Green
+      '#b58900', // Yellow
+      '#cb4b16', // Orange
+      '#dc322f', // Red
+      '#d33682', // Magenta
+      '#6c71c4', // Violet
+      '#586e75', // Base01
+      '#657b83', // Base00
+    ],
   },
 
   dracula: {
@@ -205,6 +292,18 @@ export const COLOR_THEMES: Record<string, ColorTheme> = {
       error: '#ff5555',
       info: '#8be9fd',
     },
+    palette: [
+      '#bd93f9', // Purple
+      '#ff79c6', // Pink
+      '#ff5555', // Red
+      '#ffb86c', // Orange
+      '#f1fa8c', // Yellow
+      '#50fa7b', // Green
+      '#8be9fd', // Cyan
+      '#6272a4', // Blue
+      '#ff6e67', // Light Red
+      '#9580ff', // Light Purple
+    ],
   },
 
   monokai: {
@@ -226,6 +325,18 @@ export const COLOR_THEMES: Record<string, ColorTheme> = {
       error: '#f92672',
       info: '#66d9ef',
     },
+    palette: [
+      '#f92672', // Magenta
+      '#fd971f', // Orange
+      '#e6db74', // Yellow
+      '#a6e22e', // Green
+      '#66d9ef', // Cyan
+      '#ae81ff', // Purple
+      '#fd5ff0', // Pink
+      '#cc6633', // Brown
+      '#49483e', // Dark Gray
+      '#75715e', // Comment Gray
+    ],
   },
 };
 
