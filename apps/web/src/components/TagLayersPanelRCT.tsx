@@ -150,12 +150,13 @@ function TagLayersPanelRCT() {
     // FR: Ajouter tous les tags
     // EN: Add all tags
     tags.forEach((tag: DagTag) => {
-      const hasChildren = tag.children && tag.children.length > 0;
       items[tag.id] = {
         index: tag.id,
         children: tag.children || [],
         data: tag,
-        isFolder: hasChildren,
+        // FR: Toujours des folders pour permettre le drop
+        // EN: Always folders to allow drop
+        isFolder: true,
         canMove: true,
         canRename: true,
       };
@@ -207,10 +208,25 @@ function TagLayersPanelRCT() {
   // FR: Contrôler si un item peut être déposé sur une cible
   // EN: Control if an item can be dropped on a target
   const canDropAt = useCallback((items: TreeItem<DagTag>[], target: any) => {
+    // eslint-disable-next-line no-console
+    console.log('[RCT] canDropAt - items:', items, 'target:', target);
+
     // Ne pas permettre de déposer sur la racine
-    if (target.targetType === 'root') return false;
+    if (target.targetType === 'root') {
+      // eslint-disable-next-line no-console
+      console.log('[RCT] canDropAt - REJECTED: target is root');
+      return false;
+    }
+
     // Ne pas permettre de déposer un tag sur lui-même
-    if (items.length > 0 && items[0].index === target.targetItem) return false;
+    if (items.length > 0 && items[0].index === target.targetItem) {
+      // eslint-disable-next-line no-console
+      console.log('[RCT] canDropAt - REJECTED: dropping on self');
+      return false;
+    }
+
+    // eslint-disable-next-line no-console
+    console.log('[RCT] canDropAt - ACCEPTED');
     return true;
   }, []);
 
@@ -300,6 +316,11 @@ function TagLayersPanelRCT() {
               e.stopPropagation();
               toggleTagVisibility(tag.id);
             }}
+            onPointerDown={e => {
+              // FR: Ne pas bloquer le drag
+              // EN: Don't block drag
+              e.stopPropagation();
+            }}
             title={hidden ? 'Show tag' : 'Hide tag'}
           >
             {hidden ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -308,19 +329,6 @@ function TagLayersPanelRCT() {
           <div
             className="rct-tag-badge"
             style={{ backgroundColor: tag.color || '#3b82f6' }}
-            role="button"
-            tabIndex={0}
-            onClick={e => {
-              e.stopPropagation();
-              // TODO: Color picker
-            }}
-            onKeyDown={e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                e.stopPropagation();
-                // TODO: Color picker
-              }
-            }}
           >
             <span className="rct-tag-label">{tag.label.substring(0, 20)}</span>
             {(childCount > 0 || nodeCount > 0) && (
@@ -342,6 +350,11 @@ function TagLayersPanelRCT() {
               if (window.confirm(`Delete tag "${tag.label}"?`)) {
                 removeTag(tag.id);
               }
+            }}
+            onPointerDown={e => {
+              // FR: Ne pas bloquer le drag
+              // EN: Don't block drag
+              e.stopPropagation();
             }}
             title="Delete tag"
           >
