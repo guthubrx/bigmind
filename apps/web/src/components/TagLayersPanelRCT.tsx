@@ -24,15 +24,74 @@ type TagTreeItem = TreeItem<DagTag>;
 function TagLayersPanelRCT() {
   const tags = useTagGraph((state: any) => Object.values(state.tags) as DagTag[]);
   const removeTag = useTagGraph((state: any) => state.removeTag);
+  const addTag = useTagGraph((state: any) => state.addTag);
   const isTagHidden = useTagGraph((state: any) => state.isTagHidden);
   const toggleTagVisibility = useTagGraph((state: any) => state.toggleTagVisibility);
   const addParent = useTagGraph((state: any) => state.addParent);
   const getLinksBetween = useTagGraph((state: any) => state.getLinksBetween);
   const getNodeTags = useNodeTags((state: any) => state.getTagNodes);
+  const tagNodeMap = useNodeTags((state: any) => state.tagNodeMap);
+
+  // FR: Synchroniser les tags manquants depuis useNodeTags vers useTagGraph
+  // EN: Sync missing tags from useNodeTags to useTagGraph
+  const syncMissingTags = useCallback(() => {
+    // eslint-disable-next-line no-console
+    console.log('[TagLayersPanelRCT] Syncing missing tags...');
+    // eslint-disable-next-line no-console
+    console.log('[TagLayersPanelRCT] Current tags in TagGraph:', tags);
+    // eslint-disable-next-line no-console
+    console.log('[TagLayersPanelRCT] TagNodeMap:', tagNodeMap);
+
+    const existingTagIds = new Set(tags.map(t => t.id));
+    const allTagIds = new Set(Object.keys(tagNodeMap));
+
+    const missingTagIds = Array.from(allTagIds).filter(id => !existingTagIds.has(id));
+
+    // eslint-disable-next-line no-console
+    console.log('[TagLayersPanelRCT] Missing tag IDs:', missingTagIds);
+
+    const colors = [
+      '#3b82f6',
+      '#ef4444',
+      '#10b981',
+      '#f59e0b',
+      '#8b5cf6',
+      '#ec4899',
+      '#14b8a6',
+      '#f97316',
+    ];
+
+    missingTagIds.forEach((tagId, index) => {
+      const newTag: DagTag = {
+        id: tagId,
+        label: `Tag ${tagId.substring(4, 8)}`, // Fallback label
+        color: colors[index % colors.length],
+        parentIds: [],
+        children: [],
+        relations: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      // eslint-disable-next-line no-console
+      console.log('[TagLayersPanelRCT] Creating missing tag:', newTag);
+      addTag(newTag);
+    });
+
+    if (missingTagIds.length > 0) {
+      // eslint-disable-next-line no-alert
+      alert(`Synchronisé ${missingTagIds.length} tag(s) manquant(s)`);
+    } else {
+      // eslint-disable-next-line no-alert
+      alert('Tous les tags sont déjà synchronisés');
+    }
+  }, [tags, tagNodeMap, addTag]);
 
   // FR: Convertir les DagTag en TreeItem pour react-complex-tree
   // EN: Convert DagTag to TreeItem for react-complex-tree
   const treeItems = useMemo<Record<string, TagTreeItem>>(() => {
+    // eslint-disable-next-line no-console
+    console.log('[TagLayersPanelRCT] Building tree with', tags.length, 'tags:', tags);
+
     const items: Record<string, TagTreeItem> = {
       root: {
         index: 'root',
@@ -65,10 +124,14 @@ function TagLayersPanelRCT() {
       };
     });
 
-    // FR: Construire la hiérarchie - tags racine sous root
-    // EN: Build hierarchy - root tags under root
-    const rootTags = tags.filter((tag: DagTag) => !tag.parentIds || tag.parentIds.length === 0);
-    items.root.children = rootTags.map((tag: DagTag) => tag.id);
+    // FR: Construire la hiérarchie - TOUS les tags à la racine pour debug
+    // EN: Build hierarchy - ALL tags at root for debugging
+    items.root.children = tags.map((tag: DagTag) => tag.id);
+
+    // eslint-disable-next-line no-console
+    console.log('[TagLayersPanelRCT] Root children:', items.root.children);
+    // eslint-disable-next-line no-console
+    console.log('[TagLayersPanelRCT] Tree items:', items);
 
     return items;
   }, [tags]);
@@ -221,6 +284,24 @@ function TagLayersPanelRCT() {
     <div className="tag-layers-panel-rct">
       <div className="tag-layers-header">
         <h3>Tags</h3>
+        <button
+          type="button"
+          onClick={syncMissingTags}
+          className="sync-tags-btn"
+          title="Synchroniser les tags manquants"
+          style={{
+            padding: '4px 8px',
+            fontSize: '11px',
+            background: '#3b82f6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            marginRight: '8px',
+          }}
+        >
+          Sync
+        </button>
         <span className="tag-count">{tags.length}</span>
       </div>
 
