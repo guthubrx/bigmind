@@ -255,24 +255,24 @@ function DockableLayout() {
         return;
       }
 
+      // FR: Trouver l'onglet sélectionné
+      // EN: Find selected tab
+      const selectedTabIndex = tabSetNode.getSelected();
+      const selectedTab = tabs[selectedTabIndex];
+
+      if (!selectedTab) return;
+
       renderValues.stickyButtons = [
         <button
           key="split-horizontal"
           type="button"
           className="flexlayout__tab_toolbar_button"
-          title="Diviser horizontalement (côte à côté)"
+          title="Diviser horizontalement (déplacer l'onglet actif à droite)"
           onClick={() => {
+            // FR: Déplacer l'onglet sélectionné vers la droite
+            // EN: Move selected tab to the right
             model.doAction(
-              Actions.addNode(
-                {
-                  type: 'tab',
-                  name: 'Nouveau',
-                  component: 'properties',
-                },
-                tabSetNode.getId(),
-                DockLocation.RIGHT,
-                0
-              )
+              Actions.moveNode(selectedTab.getId(), tabSetNode.getId(), DockLocation.RIGHT, 0)
             );
           }}
           style={{
@@ -292,19 +292,12 @@ function DockableLayout() {
           key="split-vertical"
           type="button"
           className="flexlayout__tab_toolbar_button"
-          title="Diviser verticalement (l'un sous l'autre)"
+          title="Diviser verticalement (déplacer l'onglet actif en bas)"
           onClick={() => {
+            // FR: Déplacer l'onglet sélectionné vers le bas
+            // EN: Move selected tab to the bottom
             model.doAction(
-              Actions.addNode(
-                {
-                  type: 'tab',
-                  name: 'Nouveau',
-                  component: 'properties',
-                },
-                tabSetNode.getId(),
-                DockLocation.BOTTOM,
-                0
-              )
+              Actions.moveNode(selectedTab.getId(), tabSetNode.getId(), DockLocation.BOTTOM, 0)
             );
           }}
           style={{
