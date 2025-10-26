@@ -7,7 +7,7 @@ import React, { useState, useRef, useMemo } from 'react';
 import { useTagGraph } from '../hooks/useTagGraph';
 import { useNodeTags } from '../hooks/useNodeTags';
 import { DagTag, RelationType } from '../types/dag';
-import { ChevronDown, ChevronRight, Trash2, Eye, EyeOff } from 'lucide-react';
+import { ChevronDown, ChevronRight, Trash2, Eye, EyeOff, ArrowRight, Link2, Package } from 'lucide-react';
 import TagContextMenu from './TagContextMenu';
 import './TagLayersPanel.css';
 
@@ -22,6 +22,7 @@ function TagTreeNode({
   onDelete,
   onColorChange,
   depth,
+  parentId,
 }: {
   tag: DagTag;
   expanded: boolean;
@@ -29,6 +30,7 @@ function TagTreeNode({
   onDelete: () => void;
   onColorChange: (tagId: string, color: string) => void;
   depth: number;
+  parentId?: string;
 }) {
   const getChildren = useTagGraph((state: any) => state.getChildren);
   const getChildCount = useTagGraph((state: any) => state.getChildCount);
@@ -39,9 +41,12 @@ function TagTreeNode({
   const addTag = useTagGraph((state: any) => state.addTag);
   const updateTag = useTagGraph((state: any) => state.updateTag);
   const getTagNodes = useNodeTags((state: any) => state.getTagNodes);
+  const getLinksBetween = useTagGraph((state: any) => state.getLinksBetween);
   const colorInputRef = useRef<HTMLInputElement>(null);
   const [dragOverTagId, setDragOverTagId] = useState<string | null>(null);
-  const [contextMenu, setContextMenu] = useState<{ tag: DagTag; x: number; y: number } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ tag: DagTag; x: number; y: number } | null>(
+    null
+  );
   const children = getChildren(tag.id);
   const hasChildren = children.length > 0;
   const hidden = isTagHidden(tag.id);
@@ -55,6 +60,73 @@ function TagTreeNode({
   const relationCount = tag.relations ? tag.relations.length : 0;
   const createdDate = tag.createdAt ? new Date(tag.createdAt).toLocaleDateString() : 'Unknown';
   const modifiedDate = tag.updatedAt ? new Date(tag.updatedAt).toLocaleDateString() : 'Unknown';
+
+  // FR: Déterminer le type de relation avec le parent
+  // EN: Determine relation type with parent
+  const getRelationIcon = (): {
+    icon: React.ReactElement;
+    color: string;
+    label: string;
+  } | null => {
+    if (!parentId) return null;
+
+    const links = getLinksBetween(parentId, tag.id);
+    if (links.length === 0) {
+      // Par défaut, relation hiérarchique (IS_TYPE_OF)
+      return {
+        icon: <ArrowRight size={12} />,
+        color: '#666',
+        label: 'Hierarchical (IS_TYPE_OF)',
+      };
+    }
+
+    const link = links[0];
+    switch (link.type) {
+      case RelationType.IS_TYPE_OF:
+        return {
+          icon: <ArrowRight size={12} />,
+          color: '#666',
+          label: 'Hierarchical (IS_TYPE_OF)',
+        };
+      case RelationType.IS_RELATED_TO:
+        return {
+          icon: <Link2 size={12} />,
+          color: '#3b82f6',
+          label: 'Related (IS_RELATED_TO)',
+        };
+      case RelationType.IS_PART_OF:
+        return {
+          icon: <Package size={12} />,
+          color: '#22c55e',
+          label: 'Part of (IS_PART_OF)',
+        };
+      default:
+        return null;
+    }
+  };
+
+  const relationIcon = getRelationIcon();
+
+  // FR: Obtenir la classe CSS pour les lignes de connexion
+  // EN: Get CSS class for connection lines
+  const getRelationClass = (childId: string): string => {
+    const links = getLinksBetween(tag.id, childId);
+    if (links.length === 0) {
+      return 'relation-is-type-of'; // Par défaut
+    }
+
+    const link = links[0];
+    switch (link.type) {
+      case RelationType.IS_TYPE_OF:
+        return 'relation-is-type-of';
+      case RelationType.IS_RELATED_TO:
+        return 'relation-is-related-to';
+      case RelationType.IS_PART_OF:
+        return 'relation-is-part-of';
+      default:
+        return '';
+    }
+  };
 
   const getDetailedStats = (): string => {
     const stats = [
@@ -166,6 +238,16 @@ function TagTreeNode({
         )}
         {!hasChildren && <div className="tree-toggle-spacer" />}
 
+        {relationIcon && (
+          <div
+            className="relation-icon"
+            style={{ color: relationIcon.color }}
+            title={relationIcon.label}
+          >
+            {relationIcon.icon}
+          </div>
+        )}
+
         <div
           className={`tag-node-badge ${dragOverTagId === tag.id ? 'drag-over' : ''}`}
           style={{ backgroundColor: tag.color || '#3b82f6' }}
@@ -250,19 +332,21 @@ function TagTreeNode({
       </div>
 
       {expanded && children.length > 0 && (
-        <div className="tag-tree-children">
+        <div>
           {children.map((child: DagTag) => (
-            <TagTreeNode
-              key={child.id}
-              tag={child}
-              expanded
-              onToggle={() => {}}
-              onDelete={() => {
-                // Will be handled by parent
-              }}
-              onColorChange={onColorChange}
-              depth={depth + 1}
-            />
+            <div key={child.id} className={`tag-tree-children ${getRelationClass(child.id)}`}>
+              <TagTreeNode
+                tag={child}
+                expanded
+                onToggle={() => {}}
+                onDelete={() => {
+                  // Will be handled by parent
+                }}
+                onColorChange={onColorChange}
+                depth={depth + 1}
+                parentId={tag.id}
+              />
+            </div>
           ))}
         </div>
       )}
