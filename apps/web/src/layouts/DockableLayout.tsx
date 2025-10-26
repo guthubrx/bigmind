@@ -24,14 +24,14 @@ const DEFAULT_LAYOUT: IJsonModel = {
     tabEnableRename: false,
     tabSetEnableMaximize: true,
     tabSetEnableDivide: true,
-    tabSetEnableDrop: true,
+    tabSetEnableDrop: false, // FR: Désactiver drop au centre pour forcer split sur bords / EN: Disable center drop to force edge split
     tabSetEnableDrag: true,
     tabEnableDrag: true,
     borderEnableDrop: true,
     tabSetMinWidth: 100,
     tabSetMinHeight: 100,
     splitterSize: 8,
-    enableEdgeDock: true, // FR: Réactiver pour permettre les drops / EN: Re-enable to allow drops
+    enableEdgeDock: true,
     enableRotateBorderIcons: false,
   },
   borders: [],
@@ -115,7 +115,7 @@ const DEFAULT_LAYOUT: IJsonModel = {
   },
 };
 
-const STORAGE_KEY = 'bigmind_layout_config_v5'; // v5 pour réactiver enableEdgeDock
+const STORAGE_KEY = 'bigmind_layout_config_v6'; // v6 pour désactiver tabSetEnableDrop
 
 function DockableLayout() {
   const layoutRef = useRef<Layout>(null);

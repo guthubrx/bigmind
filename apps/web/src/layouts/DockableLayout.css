@@ -123,10 +123,12 @@
   z-index: 1000;
 }
 
-/* FR: Rendre les zones edge invisibles mais fonctionnelles */
-/* EN: Make edge zones invisible but functional */
+/* FR: Rendre les zones edge VISIBLES pour debug (vert) */
+/* EN: Make edge zones VISIBLE for debug (green) */
 .flexlayout__edge_rect {
-  opacity: 0 !important;
+  border: 4px solid green !important;
+  background: rgba(0, 255, 0, 0.2) !important;
+  z-index: 10000 !important;
   pointer-events: auto !important;
 }
 
@@ -136,24 +138,14 @@
   position: relative;
 }
 
-/* FR: Zones de drop personnalisées pour split haut/bas - TOUTES visibles pendant le drag */
-/* EN: Custom drop zones for top/bottom split - ALL visible during drag */
+/* FR: Zones de drop personnalisées pour split haut/bas - MASQUÉES temporairement pour debug */
+/* EN: Custom drop zones for top/bottom split - HIDDEN temporarily for debug */
 
-/* FR: Style de base pour les zones - Bien visibles même non survolées */
-/* EN: Base style for zones - Well visible even when not hovered */
-/* FR: Afficher sur TOUS les tabsets y compris le canvas */
-/* EN: Display on ALL tabsets including canvas */
+/* FR: Style de base pour les zones - MASQUÉES */
+/* EN: Base style for zones - HIDDEN */
 .tab-is-dragging .flexlayout__tabset_content::before,
 .tab-is-dragging .flexlayout__tabset_content::after {
-  content: '';
-  position: absolute;
-  pointer-events: none !important;
-  border: 3px dashed var(--accent-color);
-  background: var(--accent-light, rgba(59, 130, 246, 0.12));
-  border-radius: 8px;
-  transition: all 0.15s ease-in-out;
-  z-index: 1;
-  opacity: 0.7;
+  display: none !important;
 }
 
 /* FR: Zone haute (45% du haut) avec gap clair au milieu */
@@ -244,10 +236,12 @@
   }
 }
 
-/* FR: Indicateur de drop en cours - Invisible mais fonctionnel */
-/* EN: Drop in progress indicator - Invisible but functional */
+/* FR: Indicateur de drop en cours - VISIBLE pour debug (jaune) */
+/* EN: Drop in progress indicator - VISIBLE for debug (yellow) */
 .flexlayout__outline_rect_edge {
-  opacity: 0 !important;
+  border: 4px solid yellow !important;
+  background: rgba(255, 255, 0, 0.2) !important;
+  z-index: 10000 !important;
   pointer-events: auto !important;
 }
 
