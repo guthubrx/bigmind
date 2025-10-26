@@ -23,6 +23,8 @@ function TagTreeNode({
   onColorChange,
   depth,
   parentId,
+  expandedState,
+  onToggleChild,
 }: {
   tag: DagTag;
   expanded: boolean;
@@ -31,6 +33,8 @@ function TagTreeNode({
   onColorChange: (tagId: string, color: string) => void;
   depth: number;
   parentId?: string;
+  expandedState: ExpandedState;
+  onToggleChild: (tagId: string) => void;
 }) {
   const getChildren = useTagGraph((state: any) => state.getChildren);
   const getChildCount = useTagGraph((state: any) => state.getChildCount);
@@ -215,10 +219,7 @@ function TagTreeNode({
 
   return (
     <div className="tag-tree-node">
-      <div
-        className={`tag-tree-node-content ${hidden ? 'hidden' : ''}`}
-        style={{ paddingLeft: `${depth * 20}px` }}
-      >
+      <div className={`tag-tree-node-content ${hidden ? 'hidden' : ''}`}>
         {hasChildren && (
           <button
             type="button"
@@ -330,14 +331,16 @@ function TagTreeNode({
             <div key={child.id} className={`tag-tree-children ${getRelationClass(child.id)}`}>
               <TagTreeNode
                 tag={child}
-                expanded
-                onToggle={() => {}}
+                expanded={expandedState[child.id] ?? true}
+                onToggle={() => onToggleChild(child.id)}
                 onDelete={() => {
                   // Will be handled by parent
                 }}
                 onColorChange={onColorChange}
                 depth={depth + 1}
                 parentId={tag.id}
+                expandedState={expandedState}
+                onToggleChild={onToggleChild}
               />
             </div>
           ))}
@@ -363,9 +366,23 @@ function TagLayersPanel() {
   const removeTag = useTagGraph((state: any) => state.removeTag);
   const updateTag = useTagGraph((state: any) => state.updateTag);
 
-  const [expandedState, setExpandedState] = useState<ExpandedState>(
-    Object.fromEntries(tags.map((tag: DagTag) => [tag.id, true]))
-  );
+  // FR: État d'expansion pour TOUS les tags, pas juste les racines
+  // EN: Expansion state for ALL tags, not just roots
+  const [expandedState, setExpandedState] = useState<ExpandedState>({});
+
+  // FR: Initialiser l'état d'expansion pour les nouveaux tags
+  // EN: Initialize expansion state for new tags
+  React.useEffect(() => {
+    setExpandedState(prev => {
+      const newState = { ...prev };
+      tags.forEach((tag: DagTag) => {
+        if (!(tag.id in newState)) {
+          newState[tag.id] = true; // Par défaut: expanded
+        }
+      });
+      return newState;
+    });
+  }, [tags]);
 
   // FR: Obtenir les balises racine (sans parent)
   // EN: Get root tags (without parent)
@@ -414,6 +431,8 @@ function TagLayersPanel() {
             onDelete={() => handleDelete(tag.id)}
             onColorChange={handleColorChange}
             depth={0}
+            expandedState={expandedState}
+            onToggleChild={handleToggle}
           />
         ))}
       </div>
