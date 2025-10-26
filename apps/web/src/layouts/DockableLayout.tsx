@@ -31,7 +31,7 @@ const DEFAULT_LAYOUT: IJsonModel = {
     tabSetMinWidth: 100,
     tabSetMinHeight: 100,
     splitterSize: 8,
-    enableEdgeDock: true,
+    enableEdgeDock: false, // FR: Désactiver les zones edge par défaut / EN: Disable default edge zones
     enableRotateBorderIcons: false,
   },
   borders: [],
@@ -115,7 +115,7 @@ const DEFAULT_LAYOUT: IJsonModel = {
   },
 };
 
-const STORAGE_KEY = 'bigmind_layout_config_v2'; // v2 pour forcer le nouveau layout par défaut
+const STORAGE_KEY = 'bigmind_layout_config_v3'; // v3 pour forcer la config sans edge zones
 
 function DockableLayout() {
   const layoutRef = useRef<Layout>(null);
@@ -132,10 +132,14 @@ function DockableLayout() {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
 
-      // FR: Trouver tous les tabsets sous la souris
-      // EN: Find all tabsets under mouse
+      // FR: Trouver tous les tabsets sous la souris (sauf le canvas)
+      // EN: Find all tabsets under mouse (except canvas)
       const tabsets = mainEl.querySelectorAll('.flexlayout__tabset_content');
       tabsets.forEach(tabset => {
+        // FR: Ignorer le canvas
+        // EN: Ignore canvas
+        if (tabset.querySelector('.canvas-panel')) return;
+
         const rect = tabset.getBoundingClientRect();
         const mouseY = e.clientY;
         const midY = rect.top + rect.height / 2;
@@ -156,9 +160,13 @@ function DockableLayout() {
       });
     };
 
-    const handleDragStart = () => setIsDragging(true);
+    const handleDragStart = () => {
+      setIsDragging(true);
+      mainEl.classList.add('tab-is-dragging');
+    };
     const handleDragEnd = () => {
       setIsDragging(false);
+      mainEl.classList.remove('tab-is-dragging');
       // FR: Nettoyer toutes les classes
       // EN: Clean up all classes
       const tabsets = mainEl.querySelectorAll('.flexlayout__tabset_content');

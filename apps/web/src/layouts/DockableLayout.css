@@ -123,13 +123,10 @@
   z-index: 1000;
 }
 
-/* FR: Zones de drop sur les bords - BEAUCOUP PLUS GRANDES */
-/* EN: Edge drop zones - MUCH LARGER */
+/* FR: MASQUER les zones de drop sur les bords par défaut */
+/* EN: HIDE default edge drop zones */
 .flexlayout__edge_rect {
-  background: var(--accent-light, rgba(59, 130, 246, 0.4)) !important;
-  border: 4px solid var(--accent-color) !important;
-  box-shadow: 0 0 30px rgba(59, 130, 246, 0.6) !important;
-  z-index: 10000 !important;
+  display: none !important;
 }
 
 /* FR: Rendre les zones de drop plus grandes (30% au lieu de ~20%) */
@@ -138,13 +135,15 @@
   position: relative;
 }
 
-/* FR: Zones de drop personnalisées pour split haut/bas - Toujours visibles pendant drag */
-/* EN: Custom drop zones for top/bottom split - Always visible during drag */
+/* FR: Zones de drop personnalisées pour split haut/bas - Visibles pendant le drag */
+/* EN: Custom drop zones for top/bottom split - Visible during drag */
 
-/* FR: Style de base pour les zones (léger) */
-/* EN: Base style for zones (subtle) */
-.flexlayout__layout:has(.flexlayout__tab_button--dragging) .flexlayout__tabset_content::before,
-.flexlayout__layout:has(.flexlayout__tab_button--dragging) .flexlayout__tabset_content::after {
+/* FR: Style de base pour les zones (léger) - Affichées pendant le drag */
+/* EN: Base style for zones (subtle) - Displayed during drag */
+/* FR: Exclure le canvas avec :not(:has(.canvas-panel)) */
+/* EN: Exclude canvas with :not(:has(.canvas-panel)) */
+.tab-is-dragging .flexlayout__tabset_content:not(:has(.canvas-panel))::before,
+.tab-is-dragging .flexlayout__tabset_content:not(:has(.canvas-panel))::after {
   content: '';
   position: absolute;
   left: 8px;
@@ -154,20 +153,20 @@
   background: var(--accent-light, rgba(59, 130, 246, 0.08));
   border-radius: 8px;
   transition: all 0.15s ease-in-out;
-  z-index: 5;
+  z-index: 5000;
   opacity: 0.5;
 }
 
 /* FR: Zone haute (50% du haut) */
 /* EN: Top zone (top 50%) */
-.flexlayout__layout:has(.flexlayout__tab_button--dragging) .flexlayout__tabset_content::before {
+.tab-is-dragging .flexlayout__tabset_content:not(:has(.canvas-panel))::before {
   top: 8px;
   height: calc(50% - 12px);
 }
 
 /* FR: Zone basse (50% du bas) */
 /* EN: Bottom zone (bottom 50%) */
-.flexlayout__layout:has(.flexlayout__tab_button--dragging) .flexlayout__tabset_content::after {
+.tab-is-dragging .flexlayout__tabset_content:not(:has(.canvas-panel))::after {
   bottom: 8px;
   height: calc(50% - 12px);
 }
