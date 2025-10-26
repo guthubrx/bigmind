@@ -7,11 +7,15 @@ import { useShortcuts, ShortcutAction } from '../hooks/useShortcuts';
 import { usePlatform } from '../hooks/usePlatform';
 import { X } from 'lucide-react';
 import { useAppSettings } from '../hooks/useAppSettings';
+import { getAllThemes } from '../themes/colorThemes';
 
 function SettingsPage() {
   const navigate = useNavigate();
   const accentColor = useAppSettings(s => s.accentColor);
   const setAccentColor = useAppSettings(s => s.setAccentColor);
+  const themeId = useAppSettings(s => s.themeId);
+  const setTheme = useAppSettings(s => s.setTheme);
+  const allThemes = getAllThemes();
   const shortcuts = useShortcuts(s => s.map);
   const setShortcut = useShortcuts(s => s.setShortcut);
   const resetShortcuts = useShortcuts(s => s.resetDefaults);
@@ -60,6 +64,7 @@ function SettingsPage() {
             }}
           >
             <button
+              type="button"
               aria-label="Fermer les paramètres"
               className="btn"
               onClick={() => navigate('/')}
@@ -119,15 +124,118 @@ function SettingsPage() {
                   }}
                 >
                   <h2 style={{ fontSize: 18, fontWeight: 600 }}>Apparence</h2>
+
+                  {/* FR: Sélecteur de thème */}
+                  {/* EN: Theme selector */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <label htmlFor="accentColor" style={{ width: 220 }}>
-                      Couleur d&apos;accent
-                    </label>
+                    <span style={{ width: 220 }}>Thème</span>
+                    <select
+                      id="theme"
+                      value={themeId}
+                      onChange={e => setTheme(e.target.value)}
+                      className="input"
+                      aria-label="Sélectionner un thème"
+                      style={{
+                        flex: 1,
+                        height: 32,
+                        border: '1px solid #e2e8f0',
+                        borderRadius: 6,
+                        padding: '0 8px',
+                      }}
+                    >
+                      {allThemes.map(theme => (
+                        <option key={theme.id} value={theme.id}>
+                          {theme.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* FR: Aperçu du thème */}
+                  {/* EN: Theme preview */}
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(4, 1fr)',
+                      gap: 8,
+                      padding: 12,
+                      border: '1px solid #e2e8f0',
+                      borderRadius: 6,
+                      background: 'white',
+                    }}
+                  >
+                    {(() => {
+                      const currentTheme = allThemes.find(t => t.id === themeId);
+                      if (!currentTheme) return null;
+                      return (
+                        <>
+                          <div style={{ textAlign: 'center', fontSize: 11, color: '#64748b' }}>
+                            <div
+                              style={{
+                                width: '100%',
+                                height: 32,
+                                backgroundColor: currentTheme.colors.background,
+                                border: '1px solid #e2e8f0',
+                                borderRadius: 4,
+                                marginBottom: 4,
+                              }}
+                            />
+                            Fond
+                          </div>
+                          <div style={{ textAlign: 'center', fontSize: 11, color: '#64748b' }}>
+                            <div
+                              style={{
+                                width: '100%',
+                                height: 32,
+                                backgroundColor: currentTheme.colors.nodeBackground,
+                                border: '1px solid #e2e8f0',
+                                borderRadius: 4,
+                                marginBottom: 4,
+                              }}
+                            />
+                            Nœuds
+                          </div>
+                          <div style={{ textAlign: 'center', fontSize: 11, color: '#64748b' }}>
+                            <div
+                              style={{
+                                width: '100%',
+                                height: 32,
+                                backgroundColor: currentTheme.colors.accent,
+                                border: '1px solid #e2e8f0',
+                                borderRadius: 4,
+                                marginBottom: 4,
+                              }}
+                            />
+                            Accent
+                          </div>
+                          <div style={{ textAlign: 'center', fontSize: 11, color: '#64748b' }}>
+                            <div
+                              style={{
+                                width: '100%',
+                                height: 32,
+                                backgroundColor: currentTheme.colors.foreground,
+                                border: '1px solid #e2e8f0',
+                                borderRadius: 4,
+                                marginBottom: 4,
+                              }}
+                            />
+                            Texte
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+
+                  {/* FR: Couleur d'accent personnalisée */}
+                  {/* EN: Custom accent color */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{ width: 220 }}>Couleur d&apos;accent personnalisée</span>
                     <input
                       id="accentColor"
                       type="color"
                       value={accentColor}
                       onChange={e => setAccentColor(e.target.value)}
+                      aria-label="Choisir une couleur d'accent"
                       style={{
                         width: 44,
                         height: 28,

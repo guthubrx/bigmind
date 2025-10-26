@@ -59,6 +59,8 @@ function MindMapNode({ data, selected }: Props) {
   const selectedNodeId = useSelection(s => s.selectedNodeId);
   const setSelectedNodeId = useSelection(s => s.setSelectedNodeId);
   const accentColor = useAppSettings(s => s.accentColor);
+  const getCurrentTheme = useAppSettings(s => s.getCurrentTheme);
+  const currentTheme = getCurrentTheme();
   const setEditMode = useEditMode(s => s.setEditMode);
   const { untagNodeSync, tagNodeSync } = useMindMapDAGSync();
   const [isEditing, setIsEditing] = useState(false);
@@ -331,7 +333,7 @@ function MindMapNode({ data, selected }: Props) {
       (data.style as any)?.fill ||
       (data.style as any)?.background ||
       (data.style as any)?.bgColor ||
-      'white';
+      currentTheme.colors.nodeBackground;
   }
 
   // FR: Déterminer l'opacité
@@ -358,7 +360,7 @@ function MindMapNode({ data, selected }: Props) {
     : data.computedStyle?.textColor ||
       data.style?.textColor ||
       (data.style as any)?.color ||
-      'black';
+      currentTheme.colors.nodeText;
 
   return (
     <div
