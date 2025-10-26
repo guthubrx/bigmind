@@ -32,6 +32,36 @@ function TagLayersPanelRCT() {
   const getNodeTags = useNodeTags((state: any) => state.getTagNodes);
   const tagNodeMap = useNodeTags((state: any) => state.tagNodeMap);
 
+  // FR: Nettoyer les parentIds orphelins
+  // EN: Clean orphaned parentIds
+  const cleanOrphanedParents = useCallback(() => {
+    const validTagIds = new Set(tags.map(t => t.id));
+    let fixedCount = 0;
+
+    tags.forEach(tag => {
+      const invalidParents = tag.parentIds.filter(parentId => !validTagIds.has(parentId));
+      if (invalidParents.length > 0) {
+        // eslint-disable-next-line no-console
+        console.log(
+          `[TagLayersPanelRCT] Fixing tag "${tag.label}": removing invalid parents`,
+          invalidParents
+        );
+        const validParents = tag.parentIds.filter(parentId => validTagIds.has(parentId));
+        const updatedTag = { ...tag, parentIds: validParents };
+        addTag(updatedTag); // Update via addTag
+        fixedCount += 1;
+      }
+    });
+
+    if (fixedCount > 0) {
+      // eslint-disable-next-line no-alert
+      alert(`Nettoyé ${fixedCount} tag(s) avec parents orphelins`);
+    } else {
+      // eslint-disable-next-line no-alert
+      alert('Aucun parent orphelin trouvé');
+    }
+  }, [tags, addTag]);
+
   // FR: Synchroniser les tags manquants depuis useNodeTags vers useTagGraph
   // EN: Sync missing tags from useNodeTags to useTagGraph
   const syncMissingTags = useCallback(() => {
@@ -78,13 +108,15 @@ function TagLayersPanelRCT() {
     });
 
     if (missingTagIds.length > 0) {
+      // Nettoyer les parents orphelins après avoir créé les tags
+      setTimeout(() => cleanOrphanedParents(), 200);
       // eslint-disable-next-line no-alert
       alert(`Synchronisé ${missingTagIds.length} tag(s) manquant(s)`);
     } else {
       // eslint-disable-next-line no-alert
       alert('Tous les tags sont déjà synchronisés');
     }
-  }, [tags, tagNodeMap, addTag]);
+  }, [tags, tagNodeMap, addTag, cleanOrphanedParents]);
 
   // FR: Convertir les DagTag en TreeItem pour react-complex-tree
   // EN: Convert DagTag to TreeItem for react-complex-tree
@@ -312,24 +344,42 @@ function TagLayersPanelRCT() {
     <div className="tag-layers-panel-rct">
       <div className="tag-layers-header">
         <h3>Tags</h3>
-        <button
-          type="button"
-          onClick={syncMissingTags}
-          className="sync-tags-btn"
-          title="Synchroniser les tags manquants"
-          style={{
-            padding: '4px 8px',
-            fontSize: '11px',
-            background: '#3b82f6',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            marginRight: '8px',
-          }}
-        >
-          Sync
-        </button>
+        <div style={{ display: 'flex', gap: '4px', marginRight: '8px' }}>
+          <button
+            type="button"
+            onClick={syncMissingTags}
+            className="sync-tags-btn"
+            title="Synchroniser les tags manquants"
+            style={{
+              padding: '4px 8px',
+              fontSize: '11px',
+              background: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Sync
+          </button>
+          <button
+            type="button"
+            onClick={cleanOrphanedParents}
+            className="clean-tags-btn"
+            title="Nettoyer les parents orphelins"
+            style={{
+              padding: '4px 8px',
+              fontSize: '11px',
+              background: '#10b981',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Clean
+          </button>
+        </div>
         <span className="tag-count">{tags.length}</span>
       </div>
 
