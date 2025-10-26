@@ -281,7 +281,7 @@ function DockableLayout() {
             borderRadius: '4px',
             cursor: 'pointer',
             color: 'var(--fg-secondary)',
-            marginLeft: '4px',
+            marginLeft: '2px',
           }}
         >
           ✕
@@ -306,7 +306,7 @@ function DockableLayout() {
             borderRadius: '4px',
             cursor: 'pointer',
             color: 'var(--fg-secondary)',
-            marginLeft: '4px',
+            marginLeft: '2px',
           }}
         >
           ⬌
@@ -331,7 +331,7 @@ function DockableLayout() {
             borderRadius: '4px',
             cursor: 'pointer',
             color: 'var(--fg-secondary)',
-            marginLeft: '4px',
+            marginLeft: '2px',
           }}
         >
           ⬍

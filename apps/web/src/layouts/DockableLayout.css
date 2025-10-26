@@ -47,7 +47,7 @@
   height: 100%;
   overflow: auto;
   background: var(--bg);
-  padding: 8px;
+  padding: 4px;
 }
 
 .panel-content.canvas-panel {
@@ -98,7 +98,7 @@
 .flexlayout__tabset_header_sizer {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .flexlayout__tabset_tabbar_outer {
