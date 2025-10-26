@@ -16,7 +16,7 @@
 .dockable-menu-bar {
   flex: 0 0 auto;
   height: 40px;
-  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  border-bottom: 0.5px solid var(--border-color, #e2e8f0);
   background: var(--bg-secondary);
 }
 
@@ -29,14 +29,14 @@
 .dockable-tab-bar {
   flex: 0 0 auto;
   height: 32px;
-  border-top: 1px solid var(--border-color, #e2e8f0);
+  border-top: 0.5px solid var(--border-color, #e2e8f0);
   background: var(--bg-secondary);
 }
 
 .dockable-status-bar {
   flex: 0 0 auto;
   height: 24px;
-  border-top: 1px solid var(--border-color, #e2e8f0);
+  border-top: 0.5px solid var(--border-color, #e2e8f0);
   background: var(--bg-secondary);
 }
 
@@ -64,7 +64,7 @@
 .flexlayout__tab {
   background: var(--bg-secondary);
   color: var(--fg);
-  border: 1px solid var(--border-color, #e2e8f0);
+  border: 0.5px solid var(--border-color, #e2e8f0);
 }
 
 .flexlayout__tab_button {
@@ -85,12 +85,12 @@
 
 .flexlayout__tabset {
   background: var(--bg-secondary);
-  border: 1px solid var(--border-color, #e2e8f0);
+  border: 0.5px solid var(--border-color, #e2e8f0);
 }
 
 .flexlayout__tabset_header {
   background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  border-bottom: 0.5px solid var(--border-color, #e2e8f0);
   display: flex;
   align-items: center;
 }
@@ -143,7 +143,7 @@
 
 .flexlayout__border {
   background: var(--bg-secondary);
-  border: 1px solid var(--border-color, #e2e8f0);
+  border: 0.5px solid var(--border-color, #e2e8f0);
 }
 
 .flexlayout__border_button {
