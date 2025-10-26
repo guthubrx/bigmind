@@ -53,45 +53,82 @@
   position: relative;
   margin-left: 0;
   /* padding-left géré dynamiquement via style inline selon la profondeur */
-  border-left: 2px solid #e5e7eb;
 }
 
-/* Horizontal connector line from vertical line to child nodes */
-.tag-tree-children .tag-tree-node::before {
+/* FR: Ligne verticale principale (trait du parent) */
+/* EN: Main vertical line (parent's line) */
+.tag-tree-children::before {
   content: '';
   position: absolute;
-  left: -24px;
-  top: 18px;
-  width: 16px;
-  height: 2px;
-  background-color: #e5e7eb;
+  left: 8px; /* Décalé de la bordure pour un look plus aéré */
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  background-color: #d1d5db;
   pointer-events: none;
 }
 
-/* Relation type specific colors */
-.tag-tree-children.relation-is-type-of {
-  border-left-color: #9ca3af;
+/* FR: Arrêter la ligne verticale au dernier enfant */
+/* EN: Stop vertical line at last child */
+.tag-tree-children:last-child::before {
+  bottom: calc(100% - 28px); /* S'arrête au milieu du dernier élément */
 }
 
-.tag-tree-children.relation-is-type-of .tag-tree-node::before {
+/* FR: Ligne horizontale + coin arrondi façon Apple */
+/* EN: Horizontal line + rounded corner Apple-style */
+.tag-tree-children .tag-tree-node::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: 14px;
+  width: 12px;
+  height: 14px;
+  border-left: 1.5px solid #d1d5db;
+  border-bottom: 1.5px solid #d1d5db;
+  border-bottom-left-radius: 6px;
+  pointer-events: none;
+}
+
+/* FR: Couleurs spécifiques par type de relation */
+/* EN: Relation type specific colors */
+
+/* IS_TYPE_OF - Hiérarchique (gris) */
+.tag-tree-children.relation-is-type-of::before {
   background-color: #9ca3af;
 }
 
-.tag-tree-children.relation-is-related-to {
-  border-left-color: #3b82f6;
-  border-left-style: dashed;
+.tag-tree-children.relation-is-type-of .tag-tree-node::before {
+  border-left-color: #9ca3af;
+  border-bottom-color: #9ca3af;
+}
+
+/* IS_RELATED_TO - Association (bleu, pointillé) */
+.tag-tree-children.relation-is-related-to::before {
+  background: repeating-linear-gradient(
+    to bottom,
+    #3b82f6 0px,
+    #3b82f6 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  width: 1.5px;
 }
 
 .tag-tree-children.relation-is-related-to .tag-tree-node::before {
-  background-color: #3b82f6;
+  border-left-color: #3b82f6;
+  border-bottom-color: #3b82f6;
+  border-left-style: dashed;
+  border-bottom-style: dashed;
 }
 
-.tag-tree-children.relation-is-part-of {
-  border-left-color: #22c55e;
+/* IS_PART_OF - Composition (vert) */
+.tag-tree-children.relation-is-part-of::before {
+  background-color: #22c55e;
 }
 
 .tag-tree-children.relation-is-part-of .tag-tree-node::before {
-  background-color: #22c55e;
+  border-left-color: #22c55e;
+  border-bottom-color: #22c55e;
 }
 
 .tag-tree-node-content {
