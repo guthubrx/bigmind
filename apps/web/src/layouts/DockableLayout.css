@@ -123,10 +123,11 @@
   z-index: 1000;
 }
 
-/* FR: MASQUER les zones de drop sur les bords par défaut */
-/* EN: HIDE default edge drop zones */
+/* FR: Rendre les zones edge invisibles mais fonctionnelles */
+/* EN: Make edge zones invisible but functional */
 .flexlayout__edge_rect {
-  display: none !important;
+  opacity: 0 !important;
+  pointer-events: auto !important;
 }
 
 /* FR: Rendre les zones de drop plus grandes (30% au lieu de ~20%) */
@@ -223,12 +224,11 @@
   z-index: 1000;
 }
 
-/* FR: Zone de drop centrale pour diviser un tabset */
-/* EN: Center drop zone for splitting a tabset */
+/* FR: Zone de drop centrale pour diviser un tabset - Invisible mais fonctionnelle */
+/* EN: Center drop zone for splitting a tabset - Invisible but functional */
 .flexlayout__outline_rect {
-  /* FR: Masquer le rectangle par défaut, nos zones personnalisées suffisent */
-  /* EN: Hide default rectangle, our custom zones are enough */
-  display: none !important;
+  opacity: 0 !important;
+  pointer-events: auto !important;
 }
 
 @keyframes pulse-split {
@@ -242,12 +242,11 @@
   }
 }
 
-/* FR: Indicateur de drop en cours */
-/* EN: Drop in progress indicator */
+/* FR: Indicateur de drop en cours - Invisible mais fonctionnel */
+/* EN: Drop in progress indicator - Invisible but functional */
 .flexlayout__outline_rect_edge {
-  /* FR: Masquer aussi le rectangle edge */
-  /* EN: Hide edge rectangle too */
-  display: none !important;
+  opacity: 0 !important;
+  pointer-events: auto !important;
 }
 
 /* FR: Zone de drop au survol */

@@ -31,7 +31,7 @@ const DEFAULT_LAYOUT: IJsonModel = {
     tabSetMinWidth: 100,
     tabSetMinHeight: 100,
     splitterSize: 8,
-    enableEdgeDock: false, // FR: Désactiver les zones edge par défaut / EN: Disable default edge zones
+    enableEdgeDock: true, // FR: Réactiver pour permettre les drops / EN: Re-enable to allow drops
     enableRotateBorderIcons: false,
   },
   borders: [],
@@ -115,7 +115,7 @@ const DEFAULT_LAYOUT: IJsonModel = {
   },
 };
 
-const STORAGE_KEY = 'bigmind_layout_config_v4'; // v4 pour afficher 6 zones (3 colonnes × 2)
+const STORAGE_KEY = 'bigmind_layout_config_v5'; // v5 pour réactiver enableEdgeDock
 
 function DockableLayout() {
   const layoutRef = useRef<Layout>(null);
