@@ -91,6 +91,14 @@
 .flexlayout__tabset_header {
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color, #e2e8f0);
+  display: flex;
+  align-items: center;
+}
+
+.flexlayout__tabset_header_sizer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .flexlayout__tabset_tabbar_outer {

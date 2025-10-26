@@ -4,7 +4,7 @@
  */
 
 import React, { useRef, useCallback } from 'react';
-import { Layout, Model, TabNode, IJsonModel } from 'flexlayout-react';
+import { Layout, Model, TabNode, IJsonModel, Actions, DockLocation } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
 import MenuBar from '../components/MenuBar';
 import FileTabs from '../components/FileTabs';
@@ -231,6 +231,86 @@ function DockableLayout() {
     []
   );
 
+  // FR: Rendu personnalisé du header du tabset pour ajouter boutons de split
+  // EN: Custom tabset header rendering to add split buttons
+  const onRenderTabSet = useCallback(
+    (tabSetNode: any, renderValues: any) => {
+      // Ne pas ajouter de boutons sur le canvas
+      const tabs = tabSetNode.getChildren();
+      if (tabs.length > 0 && tabs[0].getComponent() === 'canvas') {
+        return;
+      }
+
+      renderValues.stickyButtons = [
+        <button
+          key="split-horizontal"
+          type="button"
+          className="flexlayout__tab_toolbar_button"
+          title="Diviser horizontalement (côte à côté)"
+          onClick={() => {
+            model.doAction(
+              Actions.addNode(
+                {
+                  type: 'tab',
+                  name: 'Nouveau',
+                  component: 'properties',
+                },
+                tabSetNode.getId(),
+                DockLocation.RIGHT,
+                0
+              )
+            );
+          }}
+          style={{
+            padding: '4px 8px',
+            fontSize: '16px',
+            background: 'transparent',
+            border: '1px solid var(--border-color, #e2e8f0)',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            color: 'var(--fg-secondary)',
+            marginLeft: '4px',
+          }}
+        >
+          ⬌
+        </button>,
+        <button
+          key="split-vertical"
+          type="button"
+          className="flexlayout__tab_toolbar_button"
+          title="Diviser verticalement (l'un sous l'autre)"
+          onClick={() => {
+            model.doAction(
+              Actions.addNode(
+                {
+                  type: 'tab',
+                  name: 'Nouveau',
+                  component: 'properties',
+                },
+                tabSetNode.getId(),
+                DockLocation.BOTTOM,
+                0
+              )
+            );
+          }}
+          style={{
+            padding: '4px 8px',
+            fontSize: '16px',
+            background: 'transparent',
+            border: '1px solid var(--border-color, #e2e8f0)',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            color: 'var(--fg-secondary)',
+            marginLeft: '4px',
+          }}
+        >
+          ⬍
+        </button>,
+      ];
+    },
+    [model]
+  );
+
   return (
     <div className="dockable-layout">
       {/* FR: Barre de menu */}
@@ -248,6 +328,7 @@ function DockableLayout() {
           factory={factory}
           onModelChange={onModelChange}
           onRenderTab={onRenderTab}
+          onRenderTabSet={onRenderTabSet}
           onAction={onAction}
         />
       </div>
