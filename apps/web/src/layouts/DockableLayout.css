@@ -116,14 +116,37 @@
 }
 
 .flexlayout__edge_rect {
-  background: var(--accent-light, rgba(59, 130, 246, 0.2));
-  border: 2px solid var(--accent-color);
+  background: var(--accent-light, rgba(59, 130, 246, 0.3));
+  border: 3px solid var(--accent-color);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+  z-index: 1000;
 }
 
 .flexlayout__drag_rect {
-  background: var(--accent-light, rgba(59, 130, 246, 0.2));
-  border: 2px solid var(--accent-color);
+  background: var(--accent-light, rgba(59, 130, 246, 0.3));
+  border: 3px solid var(--accent-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+}
+
+/* FR: Zone de drop centrale pour diviser un tabset */
+/* EN: Center drop zone for splitting a tabset */
+.flexlayout__outline_rect {
+  border: 3px dashed var(--accent-color);
+  background: var(--accent-light, rgba(59, 130, 246, 0.1));
+  z-index: 1000;
+}
+
+/* FR: Zone de drop au survol */
+/* EN: Hover drop zone */
+.flexlayout__tabset_content:hover {
+  position: relative;
+}
+
+.flexlayout__tabset--drop-target {
+  outline: 3px dashed var(--accent-color);
+  outline-offset: -3px;
+  background: var(--accent-light, rgba(59, 130, 246, 0.05));
 }
 
 .flexlayout__tabset_sizer {

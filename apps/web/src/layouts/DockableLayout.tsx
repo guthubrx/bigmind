@@ -28,6 +28,10 @@ const DEFAULT_LAYOUT: IJsonModel = {
     tabSetEnableDrag: true,
     tabEnableDrag: true,
     borderEnableDrop: true,
+    tabSetMinWidth: 100,
+    tabSetMinHeight: 100,
+    splitterSize: 8,
+    enableEdgeDock: true,
   },
   borders: [],
   layout: {
@@ -70,24 +74,35 @@ const DEFAULT_LAYOUT: IJsonModel = {
           },
         ],
       },
-      // FR: Colonne droite avec Propriétés et Tags
-      // EN: Right column with Properties and Tags
+      // FR: Colonne droite avec Propriétés en haut et Tags en bas
+      // EN: Right column with Properties on top and Tags on bottom
       {
-        type: 'tabset',
+        type: 'column',
         weight: 30,
-        selected: 0,
         children: [
           {
-            type: 'tab',
-            name: 'Propriétés',
-            component: 'properties',
-            enableClose: false,
+            type: 'tabset',
+            weight: 50,
+            children: [
+              {
+                type: 'tab',
+                name: 'Propriétés',
+                component: 'properties',
+                enableClose: false,
+              },
+            ],
           },
           {
-            type: 'tab',
-            name: 'Tags & Layers',
-            component: 'tags',
-            enableClose: false,
+            type: 'tabset',
+            weight: 50,
+            children: [
+              {
+                type: 'tab',
+                name: 'Tags & Layers',
+                component: 'tags',
+                enableClose: false,
+              },
+            ],
           },
         ],
       },
@@ -207,6 +222,15 @@ function DockableLayout() {
     [tagsCount]
   );
 
+  // FR: Action personnalisée pour permettre le drop sur les tabsets
+  // EN: Custom action to allow drop on tabsets
+  const onAction = useCallback(
+    (action: any) =>
+      // Laisser flexlayout gérer toutes les actions par défaut
+      action,
+    []
+  );
+
   return (
     <div className="dockable-layout">
       {/* FR: Barre de menu */}
@@ -224,6 +248,7 @@ function DockableLayout() {
           factory={factory}
           onModelChange={onModelChange}
           onRenderTab={onRenderTab}
+          onAction={onAction}
         />
       </div>
 
