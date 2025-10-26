@@ -183,6 +183,18 @@ export const useTagStore = create<TagStoreState>((set, get) => ({
 
       if (!tag || !parent || tag.parentIds.includes(parentId)) return state;
 
+      const updatedChildren = (parent.children || []).includes(tagId)
+        ? parent.children || []
+        : [...(parent.children || []), tagId];
+
+      // eslint-disable-next-line no-console
+      console.log(
+        `[addParent] ${tag.label} → ${parent.label}, parent.children avant:`,
+        parent.children,
+        'après:',
+        updatedChildren
+      );
+
       return {
         tags: {
           ...state.tags,
@@ -193,9 +205,7 @@ export const useTagStore = create<TagStoreState>((set, get) => ({
           },
           [parentId]: {
             ...parent,
-            children: parent.children.includes(tagId)
-              ? parent.children
-              : [...parent.children, tagId],
+            children: updatedChildren,
             updatedAt: Date.now(),
           },
         },

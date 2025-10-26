@@ -58,29 +58,26 @@
 /* FR: Personnalisation de react-complex-tree */
 /* EN: react-complex-tree customization */
 
-.rct-tag-item {
+.rct-tag-item-content {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 8px;
-  cursor: grab;
-  transition: background-color 0.2s;
+  width: 100%;
 }
 
-.rct-tag-item:active {
-  cursor: grabbing;
-}
-
-.rct-tag-item:hover {
-  background-color: #f3f4f6;
-}
-
-.rct-tag-item.hidden {
+.rct-tag-item-content.hidden {
   opacity: 0.4;
 }
 
-.rct-tag-item.hidden .rct-tag-badge {
+.rct-tag-item-content.hidden .rct-tag-badge {
   filter: grayscale(100%);
+}
+
+.rct-relation-icon-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
 }
 
 .rct-relation-icon {
@@ -90,10 +87,39 @@
   flex-shrink: 0;
   opacity: 0.7;
   transition: opacity 0.2s;
+  pointer-events: none;
 }
 
-.rct-tag-item:hover .rct-relation-icon {
+.rct-tree-item-title-container:hover .rct-relation-icon {
   opacity: 1;
+}
+
+.rct-remove-parent-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: none;
+  background: rgba(220, 38, 38, 0.8);
+  color: white;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.2s, background-color 0.2s;
+  pointer-events: auto;
+}
+
+.rct-tree-item-title-container:hover .rct-remove-parent-btn {
+  opacity: 1;
+}
+
+.rct-remove-parent-btn:hover {
+  background: rgba(220, 38, 38, 1);
 }
 
 .rct-tag-visibility-btn {
@@ -108,6 +134,7 @@
   cursor: pointer;
   color: #9ca3af;
   transition: color 0.2s;
+  pointer-events: auto;
 }
 
 .rct-tag-visibility-btn:hover {
@@ -133,6 +160,7 @@
   transition: all 0.2s;
   user-select: none;
   -webkit-user-select: none;
+  pointer-events: none;
 }
 
 .rct-tag-badge:hover {
@@ -189,9 +217,10 @@
   transition: color 0.2s;
   opacity: 0;
   margin-left: auto;
+  pointer-events: auto;
 }
 
-.rct-tag-item:hover .rct-tag-delete-btn {
+.rct-tree-item-title-container:hover .rct-tag-delete-btn {
   opacity: 1;
 }
 
@@ -212,6 +241,19 @@
   --rct-color-nonfocustree-item-selected-text: #374151;
   --rct-item-height: auto;
   --rct-bar-height: 0px;
+  --rct-item-indent: 24px;
+}
+
+/* FR: Mise en surbrillance du tag cible pendant le drag */
+/* EN: Highlight target tag during drag */
+.rct-tree-item-li[data-rct-item-interactive='true'].rct-tree-item-dragging-over {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-radius: 4px;
+}
+
+.rct-tree-item-li[data-rct-item-interactive='true'].rct-tree-item-dragging-over .rct-tag-badge {
+  box-shadow: 0 0 0 2px #3b82f6;
+  transform: scale(1.02);
 }
 
 .rct-tree-item-li {
@@ -219,11 +261,15 @@
 }
 
 .rct-tree-item-title-container {
-  padding: 0 !important;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+  padding-right: 8px !important;
 }
 
 .rct-tree-item-arrow {
-  width: 24px;
+  width: 24px !important;
+  min-width: 24px !important;
+  max-width: 24px !important;
   height: 24px;
   display: flex;
   align-items: center;
@@ -231,6 +277,7 @@
   color: #6b7280;
   cursor: pointer;
   transition: color 0.2s;
+  flex-shrink: 0;
 }
 
 .rct-tree-item-arrow:hover {
