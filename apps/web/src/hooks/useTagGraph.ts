@@ -4,7 +4,6 @@
  */
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import { DagTag, DagLink, DagValidation, RelationType } from '../types/dag';
 
 interface TagGraphState {
@@ -13,6 +12,7 @@ interface TagGraphState {
   tags: Record<string, DagTag>;
   links: DagLink[];
   hiddenTags: string[];
+  currentFileId: string | null; // FR: ID du fichier actif / EN: Active file ID
 
   // FR: Actions de gestion des tags
   // EN: Tag management actions
@@ -63,9 +63,12 @@ interface TagGraphState {
   // EN: Utilities
   clear(): void;
   initialize(tags: Record<string, DagTag>, links: DagLink[]): void;
+  loadFileData(fileId: string): void; // FR: Charger les tags d'un fichier / EN: Load tags for a file
+  saveFileData(fileId: string): void; // FR: Sauvegarder les tags du fichier / EN: Save tags for a file
 }
 
-const STORAGE_KEY = 'bigmind-tags';
+const getStorageKey = (fileId: string | null) =>
+  fileId ? `bigmind-tags-${fileId}` : 'bigmind-tags-temp';
 
 type SetState = (
   partial:
@@ -77,12 +80,11 @@ type SetState = (
 
 type GetState = () => TagGraphState;
 
-export const useTagGraph = create<TagGraphState>()(
-  persist(
-    (set: SetState, get: GetState) => ({
-      tags: {},
-      links: [] as DagLink[],
-      hiddenTags: [],
+export const useTagGraph = create<TagGraphState>()((set: SetState, get: GetState) => ({
+  tags: {},
+  links: [] as DagLink[],
+  hiddenTags: [],
+  currentFileId: null,
 
       addTag: (tag: DagTag) => {
         set((state: TagGraphState) => {
@@ -389,35 +391,51 @@ export const useTagGraph = create<TagGraphState>()(
       initialize: (tags: Record<string, DagTag>, links: DagLink[]) => {
         set({ tags, links });
       },
-    }),
-    {
-      name: STORAGE_KEY,
-      version: 3,
-      migrate: (persistedState: any, version: number) => {
-        const migratedState = persistedState;
-        let currentVersion = version;
 
-        if (currentVersion === 1) {
-          // Migrate from version 1 to 2: add hiddenTags if missing
-          migratedState.hiddenTags = migratedState.hiddenTags || [];
-          currentVersion = 2;
+      // FR: Charger les données d'un fichier spécifique
+      // EN: Load data for a specific file
+      loadFileData: (fileId: string) => {
+        const storageKey = getStorageKey(fileId);
+        const stored = localStorage.getItem(storageKey);
+
+        if (stored) {
+          try {
+            const data = JSON.parse(stored);
+            set({
+              tags: data.tags || {},
+              links: data.links || [],
+              hiddenTags: data.hiddenTags || [],
+              currentFileId: fileId,
+            });
+            console.log(`[TagGraph] Chargé ${Object.keys(data.tags || {}).length} tags pour le fichier ${fileId}`);
+          } catch (error) {
+            console.error('[TagGraph] Erreur lors du chargement:', error);
+            set({ tags: {}, links: [], hiddenTags: [], currentFileId: fileId });
+          }
+        } else {
+          // FR: Pas de données sauvegardées, initialiser vide
+          // EN: No saved data, initialize empty
+          set({ tags: {}, links: [], hiddenTags: [], currentFileId: fileId });
+          console.log(`[TagGraph] Aucune donnée pour le fichier ${fileId}, initialisation vide`);
         }
-        if (currentVersion === 2) {
-          // Migrate from version 2 to 3: convert parentId to parentIds array
-          const tags = migratedState.tags || {};
-          Object.values(tags).forEach((tag: any) => {
-            if (tag.parentId !== undefined && tag.parentId !== null) {
-              tag.parentIds = [tag.parentId];
-              delete tag.parentId;
-            } else if (!tag.parentIds) {
-              tag.parentIds = [];
-            }
-          });
-          migratedState.tags = tags;
-          currentVersion = 3;
-        }
-        return migratedState;
       },
-    }
-  )
-);
+
+      // FR: Sauvegarder les données du fichier actuel
+      // EN: Save data for current file
+      saveFileData: (fileId: string) => {
+        const state = get();
+        const storageKey = getStorageKey(fileId);
+        const data = {
+          tags: state.tags,
+          links: state.links,
+          hiddenTags: state.hiddenTags,
+        };
+
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(data));
+          console.log(`[TagGraph] Sauvegardé ${Object.keys(data.tags).length} tags pour le fichier ${fileId}`);
+        } catch (error) {
+          console.error('[TagGraph] Erreur lors de la sauvegarde:', error);
+        }
+      },
+    }));
