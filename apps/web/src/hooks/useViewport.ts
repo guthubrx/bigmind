@@ -5,9 +5,7 @@ interface ViewportState {
   setZoom: (zoom: number) => void;
 }
 
-export const useViewport = create<ViewportState>((set) => ({
+export const useViewport = create<ViewportState>(set => ({
   zoom: 1,
   setZoom: (zoom: number) => set({ zoom }),
 }));
-
-

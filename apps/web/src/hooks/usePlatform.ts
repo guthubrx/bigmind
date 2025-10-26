@@ -23,7 +23,7 @@ export const usePlatform = (): PlatformInfo => {
     isWindows: false,
     isLinux: false,
     modifierKey: 'Ctrl',
-    modifierSymbol: 'Ctrl'
+    modifierSymbol: 'Ctrl',
   });
 
   useEffect(() => {
@@ -31,17 +31,17 @@ export const usePlatform = (): PlatformInfo => {
     // EN: Detect platform based on userAgent and navigator.platform
     const userAgent = navigator.userAgent.toLowerCase();
     const platform = navigator.platform.toLowerCase();
-    
+
     const isMac = platform.includes('mac') || userAgent.includes('mac');
     const isWindows = platform.includes('win') || userAgent.includes('windows');
     const isLinux = platform.includes('linux') || userAgent.includes('linux');
-    
+
     setPlatformInfo({
       isMac,
       isWindows,
       isLinux,
       modifierKey: isMac ? 'Cmd' : 'Ctrl',
-      modifierSymbol: isMac ? '⌘' : 'Ctrl'
+      modifierSymbol: isMac ? '⌘' : 'Ctrl',
     });
   }, []);
 
@@ -62,7 +62,7 @@ export const formatShortcut = (shortcut: string, platformInfo: PlatformInfo): st
       .replace(/Shift\+/g, '⇧')
       .replace(/Shift/g, '⇧');
   }
-  
+
   return shortcut;
 };
 
@@ -70,14 +70,11 @@ export const formatShortcut = (shortcut: string, platformInfo: PlatformInfo): st
  * FR: Fonction utilitaire pour obtenir le nom de la touche modificateur
  * EN: Utility function to get modifier key name
  */
-export const getModifierKey = (platformInfo: PlatformInfo): string => {
-  return platformInfo.modifierKey;
-};
+export const getModifierKey = (platformInfo: PlatformInfo): string => platformInfo.modifierKey;
 
 /**
  * FR: Fonction utilitaire pour obtenir le symbole de la touche modificateur
  * EN: Utility function to get modifier key symbol
  */
-export const getModifierSymbol = (platformInfo: PlatformInfo): string => {
-  return platformInfo.modifierSymbol;
-};
+export const getModifierSymbol = (platformInfo: PlatformInfo): string =>
+  platformInfo.modifierSymbol;

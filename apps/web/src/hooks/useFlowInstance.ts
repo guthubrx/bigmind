@@ -5,9 +5,7 @@ interface FlowInstanceState {
   setInstance: (inst: any | null) => void;
 }
 
-export const useFlowInstance = create<FlowInstanceState>((set) => ({
+export const useFlowInstance = create<FlowInstanceState>(set => ({
   instance: null,
-  setInstance: (inst) => set({ instance: inst })
+  setInstance: inst => set({ instance: inst }),
 }));
-
-

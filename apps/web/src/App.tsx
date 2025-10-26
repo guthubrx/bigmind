@@ -13,7 +13,7 @@ import './App.css';
 
 function App() {
   const { mindMap, actions } = useMindmap();
-  const loadAppSettings = useAppSettings((s) => s.load);
+  const loadAppSettings = useAppSettings(s => s.load);
 
   // FR: Initialiser une nouvelle carte au chargement
   // EN: Initialize a new map on load

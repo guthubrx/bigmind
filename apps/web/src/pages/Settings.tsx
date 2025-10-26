@@ -10,11 +10,11 @@ import { useAppSettings } from '../hooks/useAppSettings';
 
 function SettingsPage() {
   const navigate = useNavigate();
-  const accentColor = useAppSettings((s) => s.accentColor);
-  const setAccentColor = useAppSettings((s) => s.setAccentColor);
-  const shortcuts = useShortcuts((s) => s.map);
-  const setShortcut = useShortcuts((s) => s.setShortcut);
-  const resetShortcuts = useShortcuts((s) => s.resetDefaults);
+  const accentColor = useAppSettings(s => s.accentColor);
+  const setAccentColor = useAppSettings(s => s.setAccentColor);
+  const shortcuts = useShortcuts(s => s.map);
+  const setShortcut = useShortcuts(s => s.setShortcut);
+  const resetShortcuts = useShortcuts(s => s.resetDefaults);
   const [section, setSection] = useState<'appearance' | 'shortcuts'>('appearance');
   const platform = usePlatform();
   const pastelBg = (alpha: number = 0.06) => {
@@ -30,7 +30,7 @@ function SettingsPage() {
     if (e.ctrlKey || e.metaKey) parts.push(platform.isMac ? 'Cmd' : 'Ctrl');
     if (e.shiftKey) parts.push('Shift');
     if (e.altKey) parts.push('Alt');
-    const key = e.key;
+    const { key } = e;
     // ignore modifier-only
     if (key && !['Control', 'Shift', 'Alt', 'Meta'].includes(key)) {
       let main = key;
@@ -49,7 +49,16 @@ function SettingsPage() {
           <MenuBar />
         </div>
         <div style={{ padding: 16, flex: '1 1 auto', overflow: 'hidden' }}>
-          <div style={{ display: 'flex', height: '100%', border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden', position: 'relative' }}>
+          <div
+            style={{
+              display: 'flex',
+              height: '100%',
+              border: '1px solid #e2e8f0',
+              borderRadius: 8,
+              overflow: 'hidden',
+              position: 'relative',
+            }}
+          >
             <button
               aria-label="Fermer les paramètres"
               className="btn"
@@ -60,7 +69,9 @@ function SettingsPage() {
             </button>
             {/* Sidebar */}
             <aside style={{ width: 240, background: '#f8fafc', borderRight: '1px solid #e2e8f0' }}>
-              <div style={{ padding: 12, borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Paramètres</div>
+              <div style={{ padding: 12, borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>
+                Paramètres
+              </div>
               <nav>
                 <button
                   type="button"
@@ -70,7 +81,7 @@ function SettingsPage() {
                     justifyContent: 'flex-start',
                     border: 'none',
                     borderRadius: 0,
-                    background: section === 'appearance' ? 'rgba(0,0,0,0.04)' : 'transparent'
+                    background: section === 'appearance' ? 'rgba(0,0,0,0.04)' : 'transparent',
                   }}
                   onClick={() => setSection('appearance')}
                 >
@@ -80,8 +91,11 @@ function SettingsPage() {
                   type="button"
                   className="btn"
                   style={{
-                    width: '100%', justifyContent: 'flex-start', border: 'none', borderRadius: 0,
-                    background: section === 'shortcuts' ? 'rgba(0,0,0,0.04)' : 'transparent'
+                    width: '100%',
+                    justifyContent: 'flex-start',
+                    border: 'none',
+                    borderRadius: 0,
+                    background: section === 'shortcuts' ? 'rgba(0,0,0,0.04)' : 'transparent',
                   }}
                   onClick={() => setSection('shortcuts')}
                 >
@@ -93,16 +107,34 @@ function SettingsPage() {
             {/* Content */}
             <section style={{ flex: 1, overflow: 'auto', padding: 24 }}>
               {section === 'appearance' && (
-                <div style={{ display: 'grid', gap: 16, maxWidth: 520, border: '1px solid #e2e8f0', borderRadius: 8, padding: 16, background: pastelBg(0.03) }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gap: 16,
+                    maxWidth: 520,
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 8,
+                    padding: 16,
+                    background: pastelBg(0.03),
+                  }}
+                >
                   <h2 style={{ fontSize: 18, fontWeight: 600 }}>Apparence</h2>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <label htmlFor="accentColor" style={{ width: 220 }}>Couleur d&apos;accent</label>
+                    <label htmlFor="accentColor" style={{ width: 220 }}>
+                      Couleur d&apos;accent
+                    </label>
                     <input
                       id="accentColor"
                       type="color"
                       value={accentColor}
-                      onChange={(e) => setAccentColor(e.target.value)}
-                      style={{ width: 44, height: 28, padding: 0, border: '1px solid #e2e8f0', borderRadius: 6 }}
+                      onChange={e => setAccentColor(e.target.value)}
+                      style={{
+                        width: 44,
+                        height: 28,
+                        padding: 0,
+                        border: '1px solid #e2e8f0',
+                        borderRadius: 6,
+                      }}
                     />
                     <span style={{ marginLeft: 8 }}>{accentColor}</span>
                   </div>
@@ -111,20 +143,47 @@ function SettingsPage() {
 
               {section === 'shortcuts' && (
                 <div>
-                  <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Raccourcis clavier</h2>
+                  <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>
+                    Raccourcis clavier
+                  </h2>
                   {(() => {
-                    const groups: Record<string, Array<[string,string]>> = {};
+                    const groups: Record<string, Array<[string, string]>> = {};
                     Object.entries(shortcuts).forEach(([action, acc]) => {
                       const cat = action.split('.')[0] || 'autres';
                       (groups[cat] = groups[cat] || []).push([action, acc]);
                     });
-                    const order = ['file','edit','view','insert','tools','autres'];
+                    const order = ['file', 'edit', 'view', 'insert', 'tools', 'autres'];
                     return order
-                      .filter((k) => groups[k] && groups[k].length)
-                      .map((cat) => (
-                        <div key={cat} style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 12, marginBottom: 12, background: pastelBg(0.03) }}>
-                          <div style={{ fontWeight: 600, marginBottom: 8, textTransform: 'capitalize' }}>{cat}</div>
-                          <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 8, alignItems: 'center', maxWidth: 700 }}>
+                      .filter(k => groups[k] && groups[k].length)
+                      .map(cat => (
+                        <div
+                          key={cat}
+                          style={{
+                            border: '1px solid #e2e8f0',
+                            borderRadius: 8,
+                            padding: 12,
+                            marginBottom: 12,
+                            background: pastelBg(0.03),
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontWeight: 600,
+                              marginBottom: 8,
+                              textTransform: 'capitalize',
+                            }}
+                          >
+                            {cat}
+                          </div>
+                          <div
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: '260px 1fr',
+                              gap: 8,
+                              alignItems: 'center',
+                              maxWidth: 700,
+                            }}
+                          >
                             {groups[cat].map(([action, acc]) => {
                               const inputId = `shortcut-${action}`;
                               return (
@@ -136,8 +195,10 @@ function SettingsPage() {
                                     id={inputId}
                                     type="text"
                                     value={acc}
-                                    onChange={(e) => setShortcut(action as ShortcutAction, e.target.value)}
-                                    onKeyDown={(e) => {
+                                    onChange={e =>
+                                      setShortcut(action as ShortcutAction, e.target.value)
+                                    }
+                                    onKeyDown={e => {
                                       e.preventDefault();
                                       const accel = toAccelerator(e);
                                       if (accel) setShortcut(action as ShortcutAction, accel);
@@ -154,11 +215,12 @@ function SettingsPage() {
                       ));
                   })()}
                   <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
-                    <button type="button" className="btn" onClick={resetShortcuts}>Réinitialiser par défaut</button>
+                    <button type="button" className="btn" onClick={resetShortcuts}>
+                      Réinitialiser par défaut
+                    </button>
                   </div>
                 </div>
               )}
-
             </section>
           </div>
         </div>
@@ -171,5 +233,3 @@ function SettingsPage() {
 }
 
 export default SettingsPage;
-
-

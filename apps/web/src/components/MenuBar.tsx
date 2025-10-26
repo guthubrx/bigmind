@@ -5,15 +5,15 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  FileText, 
-  Edit, 
-  Eye, 
-  Plus, 
-  Palette, 
-  Settings, 
+import {
+  FileText,
+  Edit,
+  Eye,
+  Plus,
+  Palette,
+  Settings,
   HelpCircle,
-  ChevronDown
+  ChevronDown,
 } from 'lucide-react';
 import { usePlatform, formatShortcut } from '../hooks/usePlatform';
 import { useFileOperations } from '../hooks/useFileOperations';
@@ -53,7 +53,7 @@ function MenuBar() {
           }
           break;
         default:
-          // console.warn(`Action: ${action}`);
+        // console.warn(`Action: ${action}`);
       }
     } catch (error) {
       console.error(`❌ Erreur lors de l'action ${action}:`, error);
@@ -76,7 +76,7 @@ function MenuBar() {
         { label: 'Sauvegarder sous...', shortcut: getShortcut('Ctrl+Shift+S') },
         { label: 'Exporter...', shortcut: getShortcut('Ctrl+E') },
         { label: 'Imprimer...', shortcut: getShortcut('Ctrl+P') },
-      ]
+      ],
     },
     {
       id: 'edit',
@@ -90,7 +90,7 @@ function MenuBar() {
         { label: 'Coller', shortcut: getShortcut('Ctrl+V') },
         { label: 'Supprimer', shortcut: 'Suppr' },
         { label: 'Sélectionner tout', shortcut: getShortcut('Ctrl+A') },
-      ]
+      ],
     },
     {
       id: 'view',
@@ -102,7 +102,7 @@ function MenuBar() {
         { label: 'Zoom normal', shortcut: getShortcut('Ctrl+0') },
         { label: 'Ajuster à la fenêtre', shortcut: getShortcut('Ctrl+Shift+0') },
         { label: 'Plein écran', shortcut: 'F11' },
-      ]
+      ],
     },
     {
       id: 'insert',
@@ -114,7 +114,7 @@ function MenuBar() {
         { label: 'Nouveau nœud parent', shortcut: 'Shift+Tab' },
         { label: 'Image...', shortcut: getShortcut('Ctrl+I') },
         { label: 'Lien...', shortcut: getShortcut('Ctrl+L') },
-      ]
+      ],
     },
     {
       id: 'format',
@@ -125,7 +125,7 @@ function MenuBar() {
         { label: 'Couleur...', shortcut: getShortcut('Ctrl+Shift+C') },
         { label: 'Style...', shortcut: getShortcut('Ctrl+Shift+S') },
         { label: 'Alignement...', shortcut: getShortcut('Ctrl+Shift+A') },
-      ]
+      ],
     },
     {
       id: 'tools',
@@ -135,7 +135,7 @@ function MenuBar() {
         { label: 'Préférences...', shortcut: getShortcut('Ctrl+,') },
         { label: 'Thèmes...', shortcut: getShortcut('Ctrl+Shift+T') },
         { label: 'Plugins...', shortcut: getShortcut('Ctrl+Shift+P') },
-      ]
+      ],
     },
     {
       id: 'help',
@@ -145,15 +145,15 @@ function MenuBar() {
         { label: 'Documentation', shortcut: 'F1' },
         { label: 'Raccourcis clavier', shortcut: getShortcut('Ctrl+?') },
         { label: 'À propos', shortcut: getShortcut('Ctrl+Shift+A') },
-      ]
-    }
+      ],
+    },
   ];
 
   return (
     <div className="menu-bar" style={{ justifyContent: 'flex-start' }}>
       <div className="menu-logo" />
-      {menuItems.map((menu) => (
-        <div 
+      {menuItems.map(menu => (
+        <div
           key={menu.id}
           className={`menu-item ${activeMenu === menu.id ? 'active' : ''}`}
           onMouseEnter={() => setActiveMenu(menu.id)}
@@ -164,12 +164,12 @@ function MenuBar() {
             <span>{menu.label}</span>
             <ChevronDown className="icon-small" />
           </button>
-          
+
           {activeMenu === menu.id && (
             <div className="menu-dropdown">
               {menu.items.map((item, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className="menu-item-option"
                   onClick={() => {
                     if (menu.id === 'tools' && item.label.startsWith('Préférences')) {

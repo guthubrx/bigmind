@@ -9,13 +9,11 @@ type CanvasOptionsState = {
   setFollowSelection: (v: boolean) => void;
 };
 
-export const useCanvasOptions = create<CanvasOptionsState>((set) => ({
+export const useCanvasOptions = create<CanvasOptionsState>(set => ({
   nodesDraggable: true,
   nodesConnectable: true,
   elementsSelectable: true,
   followSelection: true,
-  toggleNodesDraggable: () => set((s) => ({ nodesDraggable: !s.nodesDraggable })),
-  setFollowSelection: (v) => set({ followSelection: v }),
+  toggleNodesDraggable: () => set(s => ({ nodesDraggable: !s.nodesDraggable })),
+  setFollowSelection: v => set({ followSelection: v }),
 }));
-
-

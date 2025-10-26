@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { 
+import {
   Search,
   ChevronDown,
   ChevronRight,
@@ -12,13 +12,13 @@ import {
   Square,
   Triangle,
   Star,
-  Heart
+  Heart,
 } from 'lucide-react';
 import { useOpenFiles } from '../hooks/useOpenFiles';
 import './NodeExplorer.css';
 
 const NodeExplorer: React.FC = () => {
-  const activeFile = useOpenFiles((state) => state.openFiles.find(f => f.isActive) || null);
+  const activeFile = useOpenFiles(state => state.openFiles.find(f => f.isActive) || null);
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root'])); // Étendre le nœud racine par défaut
 
@@ -52,7 +52,7 @@ const NodeExplorer: React.FC = () => {
       console.log('❌ Pas de nodes dans activeFile.content');
       return null;
     }
-    
+
     const node = activeFile.content.nodes[nodeId];
     if (!node) {
       console.log('❌ Nœud non trouvé:', nodeId);
@@ -65,7 +65,7 @@ const NodeExplorer: React.FC = () => {
     const hasChildren = node.children && node.children.length > 0;
     const IconComponent = getNodeIcon(nodeId);
 
-    console.log('🔍 État d\'expansion:', isExpanded, 'hasChildren:', hasChildren);
+    console.log("🔍 État d'expansion:", isExpanded, 'hasChildren:', hasChildren);
 
     return (
       <div key={nodeId} className="node-item">
@@ -83,7 +83,7 @@ const NodeExplorer: React.FC = () => {
           {hasChildren ? (
             <button
               className="expand-button"
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 toggleNodeExpansion(nodeId);
               }}
@@ -107,16 +107,16 @@ const NodeExplorer: React.FC = () => {
           <span className="node-title">{node.title}</span>
         </div>
 
-            {/* FR: Enfants du nœud */}
-            {/* EN: Node children */}
-            {hasChildren && isExpanded && (
-              <div className="node-children">
-                {node.children.map((childId: string) => {
-                  console.log('🌳 Rendu enfant:', childId);
-                  return renderNode(childId, level + 1);
-                })}
-              </div>
-            )}
+        {/* FR: Enfants du nœud */}
+        {/* EN: Node children */}
+        {hasChildren && isExpanded && (
+          <div className="node-children">
+            {node.children.map((childId: string) => {
+              console.log('🌳 Rendu enfant:', childId);
+              return renderNode(childId, level + 1);
+            })}
+          </div>
+        )}
       </div>
     );
   };
@@ -149,7 +149,7 @@ const NodeExplorer: React.FC = () => {
         <span>Explorateur de nœuds</span>
         <span className="file-name-small">{activeFile.name}</span>
       </div>
-      
+
       <div className="panel-content">
         {/* FR: Barre de recherche */}
         {/* EN: Search bar */}
@@ -159,7 +159,7 @@ const NodeExplorer: React.FC = () => {
             type="text"
             placeholder="Rechercher un nœud..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
             className="search-input"
           />
         </div>

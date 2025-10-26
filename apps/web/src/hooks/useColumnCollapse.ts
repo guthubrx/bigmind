@@ -13,9 +13,9 @@ interface ColumnCollapseState {
 
 export const useColumnCollapse = create<ColumnCollapseState>((set, get) => ({
   collapsedColumns: new Set(),
-  
+
   toggleColumn: (columnId: string) => {
-    set((state) => {
+    set(state => {
       const newCollapsedColumns = new Set(state.collapsedColumns);
       if (newCollapsedColumns.has(columnId)) {
         newCollapsedColumns.delete(columnId);
@@ -25,9 +25,6 @@ export const useColumnCollapse = create<ColumnCollapseState>((set, get) => ({
       return { collapsedColumns: newCollapsedColumns };
     });
   },
-  
-  isCollapsed: (columnId: string) => {
-    return get().collapsedColumns.has(columnId);
-  },
-}));
 
+  isCollapsed: (columnId: string) => get().collapsedColumns.has(columnId),
+}));

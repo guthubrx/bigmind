@@ -37,7 +37,7 @@ export class FreeMindParser {
       // EN: Simple XML parser (for MVP, using basic approach)
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-      
+
       const mapElement = xmlDoc.querySelector('map');
       if (!mapElement) {
         throw new Error('Fichier .mm invalide : élément map manquant');
@@ -52,8 +52,8 @@ export class FreeMindParser {
         root: this.parseNode(rootNode),
         metadata: {
           version: mapElement.getAttribute('version') || '1.0',
-          name: rootNode.getAttribute('TEXT') || 'Carte sans nom'
-        }
+          name: rootNode.getAttribute('TEXT') || 'Carte sans nom',
+        },
       };
     } catch (error) {
       console.error('Erreur lors du parsing du fichier .mm:', error);
@@ -68,20 +68,22 @@ export class FreeMindParser {
    */
   private static parseNode(nodeElement: Element): FreeMindNode {
     const text = nodeElement.getAttribute('TEXT') || '';
-    const id = nodeElement.getAttribute('ID') || `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+    const id =
+      nodeElement.getAttribute('ID') ||
+      `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
     const attributes: any = {};
     const folded = nodeElement.getAttribute('FOLDED');
     const color = nodeElement.getAttribute('COLOR');
     const style = nodeElement.getAttribute('STYLE');
-    
+
     if (folded) attributes.FOLDED = folded;
     if (color) attributes.COLOR = color;
     if (style) attributes.STYLE = style;
 
     const children: FreeMindNode[] = [];
     const childNodes = nodeElement.querySelectorAll(':scope > node');
-    
+
     childNodes.forEach(childNode => {
       children.push(this.parseNode(childNode));
     });
@@ -90,7 +92,7 @@ export class FreeMindParser {
       id,
       text,
       children: children.length > 0 ? children : undefined,
-      attributes: Object.keys(attributes).length > 0 ? attributes : undefined
+      attributes: Object.keys(attributes).length > 0 ? attributes : undefined,
     };
   }
 
@@ -108,7 +110,7 @@ export class FreeMindParser {
         parentId,
         children: [] as string[],
         collapsed: node.attributes?.FOLDED === 'true',
-        style: node.attributes?.COLOR ? { backgroundColor: node.attributes.COLOR } : undefined
+        style: node.attributes?.COLOR ? { backgroundColor: node.attributes.COLOR } : undefined,
       };
 
       nodes[node.id] = bigMindNode;
@@ -134,8 +136,8 @@ export class FreeMindParser {
         name: freeMindMap.metadata.name,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        locale: 'fr'
-      }
+        locale: 'fr',
+      },
     };
   }
 }

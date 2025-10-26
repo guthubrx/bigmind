@@ -4,14 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { 
-  FileText, 
-  Palette, 
-  Layers, 
-  Search,
-  ChevronDown,
-  ChevronRight
-} from 'lucide-react';
+import { FileText, Palette, Layers, Search, ChevronDown, ChevronRight } from 'lucide-react';
 import { useMindmap } from '../hooks/useMindmap';
 
 const Sidebar: React.FC = () => {
@@ -60,7 +53,7 @@ const Sidebar: React.FC = () => {
           {/* EN: Expansion icon */}
           {hasChildren ? (
             <button
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 toggleNodeExpansion(nodeId);
               }}
@@ -78,23 +71,17 @@ const Sidebar: React.FC = () => {
 
           {/* FR: Titre du nœud */}
           {/* EN: Node title */}
-          <span className="text-sm truncate flex-1">
-            {node.title}
-          </span>
+          <span className="text-sm truncate flex-1">{node.title}</span>
 
           {/* FR: Indicateur de sélection */}
           {/* EN: Selection indicator */}
-          {isSelected && (
-            <div className="w-2 h-2 bg-accent-500 rounded-full ml-2" />
-          )}
+          {isSelected && <div className="w-2 h-2 bg-accent-500 rounded-full ml-2" />}
         </div>
 
         {/* FR: Enfants du nœud */}
         {/* EN: Node children */}
         {hasChildren && isExpanded && (
-          <div>
-            {node.children.map(childId => renderNode(childId, level + 1))}
-          </div>
+          <div>{node.children.map(childId => renderNode(childId, level + 1))}</div>
         )}
       </div>
     );
@@ -120,9 +107,10 @@ const Sidebar: React.FC = () => {
           onClick={() => setActiveTab('outline')}
           className={`
             flex-1 px-4 py-2 text-sm font-medium
-            ${activeTab === 'outline' 
-              ? 'text-accent-600 border-b-2 border-accent-600' 
-              : 'text-foreground-tertiary hover:text-foreground'
+            ${
+              activeTab === 'outline'
+                ? 'text-accent-600 border-b-2 border-accent-600'
+                : 'text-foreground-tertiary hover:text-foreground'
             }
           `}
         >
@@ -133,9 +121,10 @@ const Sidebar: React.FC = () => {
           onClick={() => setActiveTab('styles')}
           className={`
             flex-1 px-4 py-2 text-sm font-medium
-            ${activeTab === 'styles' 
-              ? 'text-accent-600 border-b-2 border-accent-600' 
-              : 'text-foreground-tertiary hover:text-foreground'
+            ${
+              activeTab === 'styles'
+                ? 'text-accent-600 border-b-2 border-accent-600'
+                : 'text-foreground-tertiary hover:text-foreground'
             }
           `}
         >
@@ -146,9 +135,10 @@ const Sidebar: React.FC = () => {
           onClick={() => setActiveTab('layers')}
           className={`
             flex-1 px-4 py-2 text-sm font-medium
-            ${activeTab === 'layers' 
-              ? 'text-accent-600 border-b-2 border-accent-600' 
-              : 'text-foreground-tertiary hover:text-foreground'
+            ${
+              activeTab === 'layers'
+                ? 'text-accent-600 border-b-2 border-accent-600'
+                : 'text-foreground-tertiary hover:text-foreground'
             }
           `}
         >
@@ -175,37 +165,27 @@ const Sidebar: React.FC = () => {
 
             {/* FR: Liste des nœuds */}
             {/* EN: Node list */}
-            <div className="space-y-1">
-              {mindMap && renderNode(mindMap.rootId)}
-            </div>
+            <div className="space-y-1">{mindMap && renderNode(mindMap.rootId)}</div>
           </div>
         )}
 
         {activeTab === 'styles' && (
           <div className="p-4">
-            <h3 className="text-sm font-medium text-foreground mb-3">
-              Styles de nœuds
-            </h3>
-            
+            <h3 className="text-sm font-medium text-foreground mb-3">Styles de nœuds</h3>
+
             {/* FR: TODO: Implémenter les styles */}
             {/* EN: TODO: Implement styles */}
-            <div className="text-sm text-foreground-tertiary">
-              Styles à implémenter
-            </div>
+            <div className="text-sm text-foreground-tertiary">Styles à implémenter</div>
           </div>
         )}
 
         {activeTab === 'layers' && (
           <div className="p-4">
-            <h3 className="text-sm font-medium text-foreground mb-3">
-              Calques
-            </h3>
-            
+            <h3 className="text-sm font-medium text-foreground mb-3">Calques</h3>
+
             {/* FR: TODO: Implémenter les calques */}
             {/* EN: TODO: Implement layers */}
-            <div className="text-sm text-foreground-tertiary">
-              Calques à implémenter
-            </div>
+            <div className="text-sm text-foreground-tertiary">Calques à implémenter</div>
           </div>
         )}
       </div>

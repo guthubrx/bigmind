@@ -11,12 +11,12 @@ import { useAppSettings } from '../hooks/useAppSettings';
 import './StatusBar.css';
 
 function StatusBar() {
-  const inst = useFlowInstance((s) => s.instance);
-  const nodesDraggable = useCanvasOptions((s) => s.nodesDraggable);
-  const toggleNodesDraggable = useCanvasOptions((s) => s.toggleNodesDraggable);
-  const followSelection = useCanvasOptions((s) => s.followSelection);
-  const setFollowSelection = useCanvasOptions((s) => s.setFollowSelection);
-  const accentColor = useAppSettings((s) => s.accentColor);
+  const inst = useFlowInstance(s => s.instance);
+  const nodesDraggable = useCanvasOptions(s => s.nodesDraggable);
+  const toggleNodesDraggable = useCanvasOptions(s => s.toggleNodesDraggable);
+  const followSelection = useCanvasOptions(s => s.followSelection);
+  const setFollowSelection = useCanvasOptions(s => s.setFollowSelection);
+  const accentColor = useAppSettings(s => s.accentColor);
 
   const [zoomDraft, setZoomDraft] = useState<string>('100');
 
@@ -46,7 +46,7 @@ function StatusBar() {
     ].join('');
     return {
       background: grad,
-      borderTop: `1px solid rgba(${r},${g},${b},0.25)`
+      borderTop: `1px solid rgba(${r},${g},${b},0.25)`,
     } as React.CSSProperties;
   }, [accentColor]);
 
@@ -56,38 +56,60 @@ function StatusBar() {
       <div className="status-center" style={{ flex: 1 }} />
       <div className="status-right">
         <div className="zoom-group">
-        <button type="button" className="btn" onClick={() => {
-          const cur = inst?.getZoom?.() || 1;
-          const nz = Math.max(0.1, cur / 1.2);
-          inst?.setViewport?.({ zoom: nz });
-          setZoomDraft(String(Math.round(nz * 100)));
-        }} title="Zoom arrière">
-          <ZoomOut className="icon-small" />
-        </button>
-        <input
-          type="number"
-          min={10}
-          max={400}
-          step={5}
-          value={zoomDraft}
-          onChange={(e) => setZoomDraft(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') applyZoomDraft(); }}
-          style={{ width: 64, margin: '0 8px' }}
-          aria-label="Niveau de zoom en pourcentage"
-        />
-        <button type="button" className="btn" onClick={() => {
-          const cur = inst?.getZoom?.() || 1;
-          const nz = Math.min(4, cur * 1.2);
-          inst?.setViewport?.({ zoom: nz });
-          setZoomDraft(String(Math.round(nz * 100)));
-        }} title="Zoom avant">
-          <ZoomIn className="icon-small" />
-        </button>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              const cur = inst?.getZoom?.() || 1;
+              const nz = Math.max(0.1, cur / 1.2);
+              inst?.setViewport?.({ zoom: nz });
+              setZoomDraft(String(Math.round(nz * 100)));
+            }}
+            title="Zoom arrière"
+          >
+            <ZoomOut className="icon-small" />
+          </button>
+          <input
+            type="number"
+            min={10}
+            max={400}
+            step={5}
+            value={zoomDraft}
+            onChange={e => setZoomDraft(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') applyZoomDraft();
+            }}
+            style={{ width: 64, margin: '0 8px' }}
+            aria-label="Niveau de zoom en pourcentage"
+          />
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              const cur = inst?.getZoom?.() || 1;
+              const nz = Math.min(4, cur * 1.2);
+              inst?.setViewport?.({ zoom: nz });
+              setZoomDraft(String(Math.round(nz * 100)));
+            }}
+            title="Zoom avant"
+          >
+            <ZoomIn className="icon-small" />
+          </button>
         </div>
-        <button type="button" className="btn" onClick={() => inst?.fitView?.({ padding: 0.2 })} title="Centrer">
+        <button
+          type="button"
+          className="btn"
+          onClick={() => inst?.fitView?.({ padding: 0.2 })}
+          title="Centrer"
+        >
           <Maximize className="icon-small" />
         </button>
-        <button type="button" className="btn" onClick={toggleNodesDraggable} title={nodesDraggable ? 'Verrouiller déplacement' : 'Déverrouiller déplacement'}>
+        <button
+          type="button"
+          className="btn"
+          onClick={toggleNodesDraggable}
+          title={nodesDraggable ? 'Verrouiller déplacement' : 'Déverrouiller déplacement'}
+        >
           {nodesDraggable ? <Lock className="icon-small" /> : <Unlock className="icon-small" />}
         </button>
         {followSelection && (

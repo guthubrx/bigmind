@@ -4,16 +4,16 @@
  */
 
 import React from 'react';
-import { 
-  Plus, 
-  Trash2, 
-  Undo, 
-  Redo, 
-  Save, 
-  FolderOpen, 
+import {
+  Plus,
+  Trash2,
+  Undo,
+  Redo,
+  Save,
+  FolderOpen,
   Download,
   Settings,
-  HelpCircle
+  HelpCircle,
 } from 'lucide-react';
 import { useMindmap } from '../hooks/useMindmap';
 
@@ -30,21 +30,21 @@ const Toolbar: React.FC = () => {
         e.preventDefault();
         if (canUndo) actions.undo();
       }
-      
+
       // FR: Ctrl/Cmd + Y ou Ctrl/Cmd + Shift + Z pour refaire
       // EN: Ctrl/Cmd + Y or Ctrl/Cmd + Shift + Z to redo
       if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
         e.preventDefault();
         if (canRedo) actions.redo();
       }
-      
+
       // FR: Ctrl/Cmd + S pour sauvegarder
       // EN: Ctrl/Cmd + S to save
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
         handleSave();
       }
-      
+
       // FR: Supprimer pour effacer la sélection
       // EN: Delete to clear selection
       if (e.key === 'Delete' || e.key === 'Backspace') {
@@ -61,7 +61,7 @@ const Toolbar: React.FC = () => {
   // EN: Save the map
   const handleSave = () => {
     if (!mindMap) return;
-    
+
     // FR: TODO: Implémenter la sauvegarde
     // EN: TODO: Implement saving
     console.log('Sauvegarde de la carte:', mindMap);
@@ -79,7 +79,7 @@ const Toolbar: React.FC = () => {
   // EN: Export the map
   const handleExport = () => {
     if (!mindMap) return;
-    
+
     // FR: TODO: Implémenter l'export
     // EN: TODO: Implement export
     console.log('Export de la carte:', mindMap);
@@ -97,7 +97,7 @@ const Toolbar: React.FC = () => {
   // EN: Add a new node
   const handleAddNode = () => {
     if (!mindMap) return;
-    
+
     actions.addNode(mindMap.rootId, 'Nouveau nœud', { x: 100, y: 100 });
   };
 
@@ -141,7 +141,7 @@ const Toolbar: React.FC = () => {
         >
           <Undo className="w-4 h-4" />
         </button>
-        
+
         <button
           onClick={actions.redo}
           disabled={!canRedo}
@@ -155,9 +155,7 @@ const Toolbar: React.FC = () => {
       {/* FR: Section centrale - Titre de la carte */}
       {/* EN: Center section - Map title */}
       <div className="flex-1 text-center">
-        <h1 className="text-lg font-semibold text-foreground">
-          {mindMap?.meta.name || 'BigMind'}
-        </h1>
+        <h1 className="text-lg font-semibold text-foreground">{mindMap?.meta.name || 'BigMind'}</h1>
       </div>
 
       {/* FR: Section droite - Actions de fichier */}
@@ -199,19 +197,13 @@ const Toolbar: React.FC = () => {
 
         {/* FR: Bouton Paramètres */}
         {/* EN: Settings button */}
-        <button
-          className="action-button secondary"
-          title="Paramètres"
-        >
+        <button className="action-button secondary" title="Paramètres">
           <Settings className="w-4 h-4" />
         </button>
 
         {/* FR: Bouton Aide */}
         {/* EN: Help button */}
-        <button
-          className="action-button secondary"
-          title="Aide"
-        >
+        <button className="action-button secondary" title="Aide">
           <HelpCircle className="w-4 h-4" />
         </button>
       </div>
