@@ -13,7 +13,6 @@ import { useTagGraph } from './useTagGraph';
  */
 export function useTagGraphFileSync() {
   const activeFileId = useOpenFiles(state => state.activeFileId);
-  const loadFileData = useTagGraph(state => state.loadFileData);
   const saveFileData = useTagGraph(state => state.saveFileData);
   const clear = useTagGraph(state => state.clear);
   const tags = useTagGraph(state => state.tags);
@@ -29,12 +28,14 @@ export function useTagGraphFileSync() {
       saveFileData(previousFileId);
     }
 
-    // FR: Charger les tags du nouveau fichier ou vider si aucun fichier
-    // EN: Load tags for new file or clear if no file
-    if (activeFileId) {
-      console.log(`[TagGraphFileSync] Chargement des tags pour le fichier ${activeFileId}`);
-      loadFileData(activeFileId);
-    } else {
+    // FR: Ne PAS charger automatiquement depuis localStorage
+    // Les tags sont maintenant chargés depuis bigmind.json dans useFileOperations
+    // On vide juste quand il n'y a pas de fichier actif
+    // EN: Do NOT automatically load from localStorage
+    // Tags are now loaded from bigmind.json in useFileOperations
+    // Just clear when there's no active file
+    if (!activeFileId) {
+      // eslint-disable-next-line no-console
       console.log('[TagGraphFileSync] Aucun fichier actif, vidage des tags');
       clear();
     }
@@ -42,12 +43,12 @@ export function useTagGraphFileSync() {
     // FR: Mettre à jour la référence
     // EN: Update reference
     previousFileIdRef.current = activeFileId;
-  }, [activeFileId, loadFileData, saveFileData, clear]);
+  }, [activeFileId, saveFileData, clear]);
 
   // FR: Sauvegarder automatiquement quand les tags ou liens changent
   // EN: Auto-save when tags or links change
   useEffect(() => {
-    if (!activeFileId) return;
+    if (!activeFileId) return undefined;
 
     // FR: Debounce de 500ms pour éviter trop de sauvegardes
     // EN: Debounce 500ms to avoid too many saves

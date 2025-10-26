@@ -10,6 +10,8 @@ import { XMindParser } from '../parsers/XMindParser';
 import JSZip from 'jszip';
 import { useViewport } from './useViewport';
 import { useCanvasOptions } from './useCanvasOptions';
+import { useTagGraph } from './useTagGraph';
+import { useNodeTags } from './useNodeTags';
 
 /**
  * FR: Hook pour gérer l'ouverture de fichiers
@@ -17,7 +19,6 @@ import { useCanvasOptions } from './useCanvasOptions';
  */
 export const useFileOperations = () => {
   const { openFile: addFileToOpenFiles, createNewFile } = useOpenFiles();
-  const { getActiveFile } = useOpenFiles.getState();
 
   /**
    * FR: Ouvrir un fichier .mm (FreeMind)
@@ -108,6 +109,7 @@ export const useFileOperations = () => {
           }
 
           // FR: Appliquer bigmind.json embarqué si présent dans l'archive
+          let loadedTags: any = null;
           try {
             const zip = await JSZip.loadAsync(arrayBuffer);
             const sidecar = zip.file('bigmind.json');
@@ -120,6 +122,11 @@ export const useFileOperations = () => {
                     adaptedContent.nodes[id] = { ...adaptedContent.nodes[id], ...patch };
                   }
                 });
+              }
+              // FR: Sauvegarder les tags pour les charger après
+              // EN: Save tags to load them later
+              if (data?.tags) {
+                loadedTags = data.tags;
               }
             }
           } catch (e) {
@@ -137,6 +144,33 @@ export const useFileOperations = () => {
                 ? xMindMap.sheetsMeta[0].id
                 : null,
           });
+
+          // FR: Charger les tags dans les stores
+          // EN: Load tags into stores
+          if (loadedTags) {
+            try {
+              // Charger dans useTagGraph
+              if (loadedTags.tags || loadedTags.links) {
+                useTagGraph.getState().initialize(loadedTags.tags || {}, loadedTags.links || []);
+                const tagCount = Object.keys(loadedTags.tags || {}).length;
+                // eslint-disable-next-line no-console
+                console.log(`[FileOps] Chargé ${tagCount} tags pour ${fileId}`);
+              }
+
+              // Charger dans useNodeTags
+              if (loadedTags.nodeTags || loadedTags.tagNodes) {
+                useNodeTags
+                  .getState()
+                  .initialize(loadedTags.nodeTags || {}, loadedTags.tagNodes || {});
+                const assocCount = Object.keys(loadedTags.nodeTags || {}).length;
+                // eslint-disable-next-line no-console
+                console.log(`[FileOps] Chargé ${assocCount} associations nœud→tag`);
+              }
+            } catch (err) {
+              console.error('[FileOps] Erreur lors du chargement des tags:', err);
+            }
+          }
+
           return fileId;
         } catch (standardError) {
           const stdMsg =
@@ -181,6 +215,7 @@ export const useFileOperations = () => {
             // Ignore errors
           }
 
+          let loadedTagsFallback: any = null;
           try {
             const zip = await JSZip.loadAsync(arrayBuffer);
             const sidecar = zip.file('bigmind.json');
@@ -194,16 +229,43 @@ export const useFileOperations = () => {
                   }
                 });
               }
+              if (data?.tags) {
+                loadedTagsFallback = data.tags;
+              }
             }
           } catch (e) {
             // Ignore errors
           }
 
-          return addFileToOpenFiles({
+          const fileIdFallback = addFileToOpenFiles({
             name: file.name,
             type: 'xmind',
             content: adaptedContent,
           });
+
+          // FR: Charger les tags dans les stores
+          // EN: Load tags into stores
+          if (loadedTagsFallback) {
+            try {
+              if (loadedTagsFallback.tags || loadedTagsFallback.links) {
+                useTagGraph
+                  .getState()
+                  .initialize(loadedTagsFallback.tags || {}, loadedTagsFallback.links || []);
+                const fbTagCount = Object.keys(loadedTagsFallback.tags || {}).length;
+                // eslint-disable-next-line no-console
+                console.log(`[FileOps] Chargé ${fbTagCount} tags (fallback)`);
+              }
+              if (loadedTagsFallback.nodeTags || loadedTagsFallback.tagNodes) {
+                useNodeTags
+                  .getState()
+                  .initialize(loadedTagsFallback.nodeTags || {}, loadedTagsFallback.tagNodes || {});
+              }
+            } catch (err) {
+              console.error('[FileOps] Erreur lors du chargement des tags (fallback):', err);
+            }
+          }
+
+          return fileIdFallback;
         }
       } catch (error) {
         console.error("Erreur lors de l'ouverture du fichier .xmind:", error);
@@ -265,7 +327,7 @@ export const useFileOperations = () => {
   // FR: Exporter le fichier actif en .xmind en fusionnant l'overlay local dans content.json
   // EN: Export the active file to .xmind merging overlay into content.json
   const exportActiveXMind = useCallback(async () => {
-    const active = getActiveFile();
+    const active = useOpenFiles.getState().getActiveFile();
     if (!active || active.type !== 'xmind' || !active.content)
       throw new Error('Aucun fichier XMind actif');
 
@@ -289,7 +351,7 @@ export const useFileOperations = () => {
     const json = [{ class: 'sheet', rootTopic: buildTopic(active.content.rootNode.id) }];
     zip.file('content.json', JSON.stringify(json, null, 2));
 
-    // FR: Ecrire le sidecar embarqué
+    // FR: Ecrire le sidecar embarqué avec tags
     try {
       const overlay: any = { nodes: {} };
       Object.values(active.content.nodes).forEach((n: any) => {
@@ -299,6 +361,29 @@ export const useFileOperations = () => {
         zoom: useViewport.getState().zoom,
         nodesDraggable: useCanvasOptions.getState().nodesDraggable,
       };
+
+      // FR: Sauvegarder les tags et les associations
+      // EN: Save tags and associations
+      const tagGraphState = useTagGraph.getState();
+      const nodeTagsState = useNodeTags.getState();
+
+      overlay.tags = {
+        tags: tagGraphState.tags,
+        links: tagGraphState.links,
+        nodeTags: Object.fromEntries(
+          Object.entries(nodeTagsState.nodeTagMap).map(([nodeId, tagSet]) => [
+            nodeId,
+            Array.from(tagSet),
+          ])
+        ),
+        tagNodes: Object.fromEntries(
+          Object.entries(nodeTagsState.tagNodeMap).map(([tagId, nodeSet]) => [
+            tagId,
+            Array.from(nodeSet),
+          ])
+        ),
+      };
+
       zip.file('bigmind.json', JSON.stringify(overlay, null, 2));
     } catch (e) {
       // Ignore errors
