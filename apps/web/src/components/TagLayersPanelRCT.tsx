@@ -389,6 +389,7 @@ function TagLayersPanelRCT() {
 
       <div className="tag-layers-tree-rct">
         <UncontrolledTreeEnvironment
+          key={tags.map(t => t.id).join(',')}
           dataProvider={dataProvider}
           getItemTitle={getItemTitle}
           viewState={{}}
