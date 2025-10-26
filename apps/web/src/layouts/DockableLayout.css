@@ -1,0 +1,174 @@
+/**
+ * FR: Styles pour le layout avec panneaux dockables
+ * EN: Styles for dockable panels layout
+ */
+
+.dockable-layout {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.dockable-menu-bar {
+  flex: 0 0 auto;
+  height: 40px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  background: var(--bg-secondary);
+}
+
+.dockable-main {
+  flex: 1 1 auto;
+  overflow: hidden;
+  position: relative;
+}
+
+.dockable-tab-bar {
+  flex: 0 0 auto;
+  height: 32px;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  background: var(--bg-secondary);
+}
+
+.dockable-status-bar {
+  flex: 0 0 auto;
+  height: 24px;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  background: var(--bg-secondary);
+}
+
+/* FR: Styles des panneaux */
+/* EN: Panel styles */
+.panel-content {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background: var(--bg);
+  padding: 8px;
+}
+
+.panel-content.canvas-panel {
+  padding: 0;
+  overflow: hidden;
+}
+
+/* FR: Personnalisation de flexlayout */
+/* EN: Flexlayout customization */
+.flexlayout__layout {
+  background: var(--bg);
+}
+
+.flexlayout__tab {
+  background: var(--bg-secondary);
+  color: var(--fg);
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.flexlayout__tab_button {
+  color: var(--fg-secondary);
+  background: transparent;
+}
+
+.flexlayout__tab_button:hover {
+  background: var(--bg-tertiary);
+  color: var(--fg);
+}
+
+.flexlayout__tab_button--selected {
+  background: var(--bg);
+  color: var(--fg);
+  border-bottom: 2px solid var(--accent-color);
+}
+
+.flexlayout__tabset {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.flexlayout__tabset_header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.flexlayout__tabset_tabbar_outer {
+  background: var(--bg-secondary);
+}
+
+.flexlayout__tabset_content {
+  background: var(--bg);
+}
+
+.flexlayout__splitter {
+  background: var(--border-color, #e2e8f0);
+}
+
+.flexlayout__splitter:hover {
+  background: var(--accent-color);
+}
+
+.flexlayout__splitter_drag {
+  background: var(--accent-color);
+  opacity: 0.5;
+  z-index: 1000;
+}
+
+.flexlayout__edge_rect {
+  background: var(--accent-light, rgba(59, 130, 246, 0.2));
+  border: 2px solid var(--accent-color);
+}
+
+.flexlayout__drag_rect {
+  background: var(--accent-light, rgba(59, 130, 246, 0.2));
+  border: 2px solid var(--accent-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.flexlayout__tabset_sizer {
+  background: var(--bg-secondary);
+}
+
+.flexlayout__border {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.flexlayout__border_button {
+  color: var(--fg-secondary);
+  background: transparent;
+}
+
+.flexlayout__border_button:hover {
+  background: var(--bg-tertiary);
+  color: var(--fg);
+}
+
+.flexlayout__border_button--selected {
+  background: var(--bg);
+  color: var(--fg);
+  border-left: 3px solid var(--accent-color);
+}
+
+/* FR: Icônes de drag */
+/* EN: Drag icons */
+.flexlayout__tab_button_leading,
+.flexlayout__tab_button_trailing {
+  color: var(--fg-muted);
+}
+
+.flexlayout__tab_button_leading:hover,
+.flexlayout__tab_button_trailing:hover {
+  color: var(--fg);
+}
+
+/* FR: Animation du drag & drop */
+/* EN: Drag & drop animation */
+.flexlayout__tab_button--dragging {
+  opacity: 0.5;
+}
+
+.flexlayout__tabset--maximized {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}

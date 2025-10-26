@@ -17,6 +17,7 @@
     "@types/uuid": "^11.0.0",
     "@xyflow/react": "^12.8.6",
     "dexie": "^4.0.1",
+    "flexlayout-react": "^0.8.17",
     "html-to-image": "^1.11.11",
     "i18next": "^23.7.6",
     "jszip": "^3.10.1",

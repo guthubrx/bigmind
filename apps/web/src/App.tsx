@@ -6,7 +6,7 @@
 import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useMindmap } from './hooks/useMindmap';
-import MainLayout from './layouts/MainLayout';
+import DockableLayout from './layouts/DockableLayout';
 import SettingsPage from './pages/Settings';
 import { useAppSettings } from './hooks/useAppSettings';
 import { useTagGraphFileSync } from './hooks/useTagGraphFileSync';
@@ -46,8 +46,8 @@ function App() {
   return (
     <div className="app">
       <Routes>
-        <Route path="/" element={<MainLayout />} />
-        <Route path="/map/:id" element={<MainLayout />} />
+        <Route path="/" element={<DockableLayout />} />
+        <Route path="/map/:id" element={<DockableLayout />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </div>
