@@ -337,7 +337,11 @@ function MindMapNode({ data, selected }: Props) {
   // FR: Déterminer l'opacité
   // EN: Determine opacity
   let nodeOpacity: number;
-  if ((data as any).isGhost) {
+  if ((data as any).isHiddenByTag) {
+    // FR: Nœud caché par un tag masqué
+    // EN: Node hidden by a masked tag
+    nodeOpacity = 0.15;
+  } else if ((data as any).isGhost) {
     nodeOpacity = 0.4;
   } else if ((data as any).isBeingDragged) {
     nodeOpacity = 0.6;

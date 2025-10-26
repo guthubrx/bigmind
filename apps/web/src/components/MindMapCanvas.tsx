@@ -28,6 +28,8 @@ import MindMapEdge from './MindMapEdge';
 import { useFlowInstance } from '../hooks/useFlowInstance';
 import { useShortcuts } from '../hooks/useShortcuts';
 import { useDragAndDrop } from '../hooks/useDragAndDrop';
+import { useTagGraph } from '../hooks/useTagGraph';
+import { useNodeTags } from '../hooks/useNodeTags';
 
 // FR: Types de nœuds personnalisés
 // EN: Custom node types
@@ -57,6 +59,11 @@ function MindMapCanvas() {
   const addSiblingToActive = useOpenFiles(s => s.addSiblingToActive);
   const removeNodeFromActive = useOpenFiles(s => s.removeNodeFromActive);
   const getShortcut = useShortcuts(s => s.getShortcut);
+
+  // FR: Hooks pour filtrer les nœuds par tags cachés
+  // EN: Hooks to filter nodes by hidden tags
+  const hiddenTags = useTagGraph(s => s.hiddenTags);
+  const getNodeTags = useNodeTags(s => s.getNodeTags);
 
   // FR: Hook pour gérer le drag & drop des nœuds
   // EN: Hook to manage node drag & drop
@@ -400,22 +407,30 @@ function MindMapCanvas() {
   const nodesWithDragStates = useMemo(() => {
     const baseNodes = convertToReactFlowNodes();
 
-    // FR: Ajouter les propriétés de drag à chaque nœud
-    // EN: Add drag properties to each node
-    return baseNodes.map(node => ({
-      ...node,
-      data: {
-        ...node.data,
-        isGhost: node.id === ghostNode?.id,
-        isBeingDragged: node.id === draggedNodeId,
-        isDescendantOfDragged: draggedNodeId && draggedDescendants.includes(node.id),
-        isDragTarget: node.id === dragTarget,
-        isValidDragTarget: node.id === dragTarget && isValidTarget,
-        isInvalidDragTarget: node.id === dragTarget && !isValidTarget && dragTarget !== null,
-        dropPosition: node.id === dragTarget ? dropPosition : null,
-        isSiblingReorder: node.id === dragTarget ? isSiblingReorder : false,
-      },
-    }));
+    // FR: Ajouter les propriétés de drag et de filtrage par tags à chaque nœud
+    // EN: Add drag and tag filtering properties to each node
+    return baseNodes.map(node => {
+      // FR: Vérifier si le nœud a au moins un tag caché
+      // EN: Check if node has at least one hidden tag
+      const nodeTags = getNodeTags(node.id);
+      const hasHiddenTag = nodeTags ? nodeTags.some(tagId => hiddenTags.includes(tagId)) : false;
+
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          isGhost: node.id === ghostNode?.id,
+          isBeingDragged: node.id === draggedNodeId,
+          isDescendantOfDragged: draggedNodeId && draggedDescendants.includes(node.id),
+          isDragTarget: node.id === dragTarget,
+          isValidDragTarget: node.id === dragTarget && isValidTarget,
+          isInvalidDragTarget: node.id === dragTarget && !isValidTarget && dragTarget !== null,
+          dropPosition: node.id === dragTarget ? dropPosition : null,
+          isSiblingReorder: node.id === dragTarget ? isSiblingReorder : false,
+          isHiddenByTag: hasHiddenTag,
+        },
+      };
+    });
   }, [
     convertToReactFlowNodes,
     ghostNode,
@@ -425,6 +440,8 @@ function MindMapCanvas() {
     isValidTarget,
     dropPosition,
     isSiblingReorder,
+    hiddenTags,
+    getNodeTags,
   ]);
 
   // FR: Ajouter le nœud fantôme à la liste si en cours de drag
