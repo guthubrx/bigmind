@@ -119,77 +119,7 @@ const STORAGE_KEY = 'bigmind_layout_config_v7'; // v7 réactive tabSetEnableDrop
 
 function DockableLayout() {
   const layoutRef = useRef<Layout>(null);
-  const mainRef = useRef<HTMLDivElement>(null);
   const tagsCount = useTagStore(state => Object.keys(state.tags).length);
-  const [isDragging, setIsDragging] = React.useState(false);
-
-  // FR: Détecter la position de la souris pendant le drag pour illuminer la bonne zone
-  // EN: Detect mouse position during drag to illuminate the right zone
-  React.useEffect(() => {
-    const mainEl = mainRef.current;
-    if (!mainEl) return undefined;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging) return;
-
-      // FR: Trouver le tabset sous la souris et la zone (haut ou bas)
-      // EN: Find the tabset under mouse and zone (top or bottom)
-      const tabsets = mainEl.querySelectorAll('.flexlayout__tabset_content');
-
-      tabsets.forEach(tabset => {
-        const rect = tabset.getBoundingClientRect();
-        const mouseY = e.clientY;
-        const mouseX = e.clientX;
-        const midY = rect.top + rect.height / 2;
-
-        // FR: Vérifier si la souris est dans ce tabset
-        // EN: Check if mouse is in this tabset
-        const isInTabset =
-          mouseY >= rect.top &&
-          mouseY <= rect.bottom &&
-          mouseX >= rect.left &&
-          mouseX <= rect.right;
-
-        if (isInTabset) {
-          if (mouseY < midY) {
-            tabset.classList.add('drop-zone-top-active');
-            tabset.classList.remove('drop-zone-bottom-active');
-          } else {
-            tabset.classList.add('drop-zone-bottom-active');
-            tabset.classList.remove('drop-zone-top-active');
-          }
-        } else {
-          tabset.classList.remove('drop-zone-top-active', 'drop-zone-bottom-active');
-        }
-      });
-    };
-
-    const handleDragStart = () => {
-      setIsDragging(true);
-      mainEl.classList.add('tab-is-dragging');
-    };
-
-    const handleDragEnd = () => {
-      setIsDragging(false);
-      mainEl.classList.remove('tab-is-dragging');
-      // FR: Nettoyer toutes les classes
-      // EN: Clean up all classes
-      const tabsets = mainEl.querySelectorAll('.flexlayout__tabset_content');
-      tabsets.forEach(tabset => {
-        tabset.classList.remove('drop-zone-top-active', 'drop-zone-bottom-active');
-      });
-    };
-
-    mainEl.addEventListener('mousemove', handleMouseMove);
-    mainEl.addEventListener('dragstart', handleDragStart, true);
-    mainEl.addEventListener('dragend', handleDragEnd, true);
-
-    return () => {
-      mainEl.removeEventListener('mousemove', handleMouseMove);
-      mainEl.removeEventListener('dragstart', handleDragStart, true);
-      mainEl.removeEventListener('dragend', handleDragEnd, true);
-    };
-  }, [isDragging]);
 
   // FR: Charger la configuration sauvegardée ou utiliser la configuration par défaut
   // EN: Load saved configuration or use default configuration
@@ -405,7 +335,7 @@ function DockableLayout() {
 
       {/* FR: Zone principale avec panneaux flexibles */}
       {/* EN: Main area with flexible panels */}
-      <div ref={mainRef} className="dockable-main">
+      <div className="dockable-main">
         <Layout
           ref={layoutRef}
           model={model}
