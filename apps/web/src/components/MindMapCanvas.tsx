@@ -203,7 +203,14 @@ function MindMapCanvas() {
         if (base < bandStart) base = bandStart;
         if (base + ch > bandEnd) base = Math.max(bandStart, bandEnd - ch);
         const childNode = activeFile.content.nodes[onlyId];
-        const childDirection = level === 0 ? (direction === 0 ? +1 : direction) : direction;
+        // FR: Déterminer la direction pour l'enfant
+        // EN: Determine direction for child
+        let childDirection: number;
+        if (level === 0) {
+          childDirection = direction === 0 ? +1 : direction;
+        } else {
+          childDirection = direction;
+        }
         positionSubtree(childNode, level + 1, childDirection, base);
       } else if (level === 0) {
         // FR: Au niveau racine: répartition alternée droite/gauche, chaque côté conserve l'ordre vertical et sa propre bande
@@ -250,24 +257,24 @@ function MindMapCanvas() {
           positionSubtree(activeFile.content.nodes[childId], level + 1, -1, offsetLeft);
           offsetLeft += ch + SIBLING_GAP;
         });
+      } else if (childIds.length > 1) {
+        // FR: Conserver l'ordre et la direction du parent - Plusieurs enfants
+        // EN: Keep parent order and direction - Multiple children
+        let currentY = baseY;
+        childIds.forEach((childId: string) => {
+          const ch = subtreeHeightById[childId] || LINE_HEIGHT + NODE_VPAD;
+          positionSubtree(activeFile.content.nodes[childId], level + 1, direction, currentY);
+          currentY += ch + SIBLING_GAP;
+        });
       } else {
-        // FR: Conserver l'ordre et la direction du parent
-        if (childIds.length === 1) {
-          // FR: Alignement au centre pour enfant unique
-          const onlyId = childIds[0];
-          const ch = subtreeHeightById[onlyId] || LINE_HEIGHT + NODE_VPAD;
-          const parentCenterY =
-            nodeCenterY + (nodeOwnHeightById[node.id] || LINE_HEIGHT + NODE_VPAD) / 2;
-          const start = parentCenterY - ch / 2;
-          positionSubtree(activeFile.content.nodes[onlyId], level + 1, direction, start);
-        } else {
-          let currentY = baseY;
-          childIds.forEach((childId: string) => {
-            const ch = subtreeHeightById[childId] || LINE_HEIGHT + NODE_VPAD;
-            positionSubtree(activeFile.content.nodes[childId], level + 1, direction, currentY);
-            currentY += ch + SIBLING_GAP;
-          });
-        }
+        // FR: Conserver l'ordre et la direction du parent - Alignement au centre pour enfant unique
+        // EN: Keep parent order and direction - Center alignment for single child
+        const onlyId = childIds[0];
+        const ch = subtreeHeightById[onlyId] || LINE_HEIGHT + NODE_VPAD;
+        const parentCenterY =
+          nodeCenterY + (nodeOwnHeightById[node.id] || LINE_HEIGHT + NODE_VPAD) / 2;
+        const start = parentCenterY - ch / 2;
+        positionSubtree(activeFile.content.nodes[onlyId], level + 1, direction, start);
       }
     };
 
@@ -496,10 +503,45 @@ function MindMapCanvas() {
     [setEdges]
   );
 
+  // FR: Fonction utilitaire pour vérifier si on doit ignorer les raccourcis clavier
+  // EN: Utility function to check if keyboard shortcuts should be ignored
+  const shouldIgnoreKeyboardEvent = (e: KeyboardEvent): boolean => {
+    const target = e.target as HTMLElement;
+    const activeElement = document.activeElement as HTMLElement;
+
+    // FR: Ignorer si on est dans un champ de saisie
+    // EN: Ignore if in an input field
+    if (
+      target?.tagName === 'INPUT' ||
+      target?.tagName === 'TEXTAREA' ||
+      target?.contentEditable === 'true' ||
+      activeElement?.tagName === 'INPUT' ||
+      activeElement?.tagName === 'TEXTAREA' ||
+      activeElement?.contentEditable === 'true'
+    ) {
+      return true;
+    }
+
+    // FR: Ignorer si on est dans un panneau latéral
+    // EN: Ignore if in a side panel
+    if (
+      target?.closest?.('.tag-layers-panel') ||
+      target?.closest?.('.files-column') ||
+      target?.closest?.('.node-explorer-column') ||
+      target?.closest?.('.dag-search-panel') ||
+      target?.closest?.('.node-tag-panel')
+    ) {
+      return true;
+    }
+
+    return false;
+  };
+
   // FR: Navigation clavier dans l'arborescence avec les flèches
   // EN: Keyboard navigation in the tree using arrow keys
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      if (shouldIgnoreKeyboardEvent(e)) return;
       if (!activeFile?.content?.nodes) return;
       const { key } = e;
       // toggle follow
@@ -733,6 +775,7 @@ function MindMapCanvas() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return;
+      if (shouldIgnoreKeyboardEvent(e)) return;
       if (!activeFile?.content?.nodes) return;
       const parentId: string =
         selectedNodeId || activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
@@ -750,6 +793,7 @@ function MindMapCanvas() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key !== 'Backspace' && e.key !== 'Delete') return;
+      if (shouldIgnoreKeyboardEvent(e)) return;
       if (!activeFile?.content?.nodes) return;
       const currentId: string | undefined =
         selectedNodeId || activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
