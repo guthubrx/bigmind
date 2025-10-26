@@ -61,13 +61,13 @@ const DEFAULT_LAYOUT: IJsonModel = {
           },
         ],
       },
-      // FR: Canvas au centre (pas de division pour le canvas)
-      // EN: Canvas in the center (no division for canvas)
+      // FR: Canvas au centre
+      // EN: Canvas in the center
       {
         type: 'tabset',
         weight: 55,
         enableTabStrip: false,
-        enableDivide: false,
+        enableDivide: true,
         children: [
           {
             type: 'tab',
@@ -115,7 +115,7 @@ const DEFAULT_LAYOUT: IJsonModel = {
   },
 };
 
-const STORAGE_KEY = 'bigmind_layout_config_v3'; // v3 pour forcer la config sans edge zones
+const STORAGE_KEY = 'bigmind_layout_config_v4'; // v4 pour afficher 6 zones (3 colonnes × 2)
 
 function DockableLayout() {
   const layoutRef = useRef<Layout>(null);
@@ -132,21 +132,26 @@ function DockableLayout() {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
 
-      // FR: Trouver tous les tabsets sous la souris (sauf le canvas)
-      // EN: Find all tabsets under mouse (except canvas)
+      // FR: Trouver le tabset sous la souris et la zone (haut ou bas)
+      // EN: Find the tabset under mouse and zone (top or bottom)
       const tabsets = mainEl.querySelectorAll('.flexlayout__tabset_content');
-      tabsets.forEach(tabset => {
-        // FR: Ignorer le canvas
-        // EN: Ignore canvas
-        if (tabset.querySelector('.canvas-panel')) return;
 
+      tabsets.forEach(tabset => {
         const rect = tabset.getBoundingClientRect();
         const mouseY = e.clientY;
+        const mouseX = e.clientX;
         const midY = rect.top + rect.height / 2;
 
-        // FR: Ajouter classe selon si souris est en haut ou en bas
-        // EN: Add class based on whether mouse is on top or bottom
-        if (mouseY >= rect.top && mouseY <= rect.bottom) {
+        // FR: Vérifier si la souris est dans ce tabset
+        // EN: Check if mouse is in this tabset
+        const isInTabset =
+          mouseY >= rect.top &&
+          mouseY <= rect.bottom &&
+          mouseX >= rect.left &&
+          mouseX <= rect.right;
+
+        if (isInTabset) {
+          foundTarget = true;
           if (mouseY < midY) {
             tabset.classList.add('drop-zone-top-active');
             tabset.classList.remove('drop-zone-bottom-active');
