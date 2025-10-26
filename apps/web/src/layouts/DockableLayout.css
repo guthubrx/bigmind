@@ -126,126 +126,15 @@
 /* FR: Masquer les zones edge par défaut */
 /* EN: Hide default edge zones */
 .flexlayout__edge_rect {
-  opacity: 0 !important;
-  pointer-events: auto !important;
+  display: none !important;
 }
 
-/* FR: Rendre les zones de drop plus grandes (30% au lieu de ~20%) */
-/* EN: Make drop zones larger (30% instead of ~20%) */
-.flexlayout__tabset_content {
-  position: relative;
-}
-
-/* FR: ZONES PERSONNALISÉES DÉSACTIVÉES - Test avec flexlayout natif */
-/* EN: CUSTOM ZONES DISABLED - Test with native flexlayout */
-
-/* FR: Illuminer FORTEMENT la zone survolée */
-/* EN: Strongly illuminate the hovered zone */
-
-/* FR: Zone haute active (souris dans la moitié haute) */
-/* EN: Active top zone (mouse in top half) */
-.drop-zone-top-active::before {
-  border-width: 6px !important;
-  border-color: var(--accent-color) !important;
-  background: var(--accent-light, rgba(59, 130, 246, 0.35)) !important;
-  opacity: 1 !important;
-  box-shadow:
-    inset 0 0 0 3px white,
-    inset 0 0 30px rgba(59, 130, 246, 0.4),
-    0 0 40px rgba(59, 130, 246, 1) !important;
-  animation: pulse-split 1.2s ease-in-out infinite;
-}
-
-/* FR: Zone basse active (souris dans la moitié basse) */
-/* EN: Active bottom zone (mouse in bottom half) */
-.drop-zone-bottom-active::after {
-  border-width: 6px !important;
-  border-color: var(--accent-color) !important;
-  background: var(--accent-light, rgba(59, 130, 246, 0.35)) !important;
-  opacity: 1 !important;
-  box-shadow:
-    inset 0 0 0 3px white,
-    inset 0 0 30px rgba(59, 130, 246, 0.4),
-    0 0 40px rgba(59, 130, 246, 1) !important;
-  animation: pulse-split 1.2s ease-in-out infinite;
-}
-
-/* FR: Garder l'autre zone visible mais atténuée */
-/* EN: Keep the other zone visible but dimmed */
-.drop-zone-top-active::after {
-  opacity: 0.4 !important;
-  border-width: 2px !important;
-}
-
-.drop-zone-bottom-active::before {
-  opacity: 0.4 !important;
-  border-width: 2px !important;
-}
-
+/* FR: Masquer toutes les zones de drop par défaut */
+/* EN: Hide all default drop zones */
+.flexlayout__outline_rect,
+.flexlayout__outline_rect_edge,
 .flexlayout__drag_rect {
-  background: var(--accent-light, rgba(59, 130, 246, 0.3));
-  border: 3px solid var(--accent-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-}
-
-/* FR: Zone de drop centrale - VISIBLE DEBUG (rouge) */
-/* EN: Center drop zone - VISIBLE DEBUG (red) */
-.flexlayout__outline_rect {
-  border: 4px solid red !important;
-  background: rgba(255, 0, 0, 0.3) !important;
-  z-index: 10000 !important;
-  pointer-events: auto !important;
-}
-
-@keyframes pulse-split {
-  0%, 100% {
-    border-width: 4px;
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
-  }
-  50% {
-    border-width: 5px;
-    box-shadow: 0 0 40px rgba(59, 130, 246, 1);
-  }
-}
-
-/* FR: Indicateur de drop sur les bords - VISIBLE DEBUG (jaune) */
-/* EN: Edge drop indicator - VISIBLE DEBUG (yellow) */
-.flexlayout__outline_rect_edge {
-  border: 4px solid yellow !important;
-  background: rgba(255, 255, 0, 0.3) !important;
-  z-index: 10000 !important;
-  pointer-events: auto !important;
-}
-
-/* FR: Zone de drop au survol */
-/* EN: Hover drop zone */
-.flexlayout__tabset_content {
-  position: relative;
-  min-height: 100px;
-}
-
-.flexlayout__tabset--drop-target {
-  outline: 3px dashed var(--accent-color);
-  outline-offset: -3px;
-  background: var(--accent-light, rgba(59, 130, 246, 0.05));
-}
-
-/* FR: Overlay pour montrer les zones de drop quand on glisse */
-/* EN: Overlay to show drop zones when dragging */
-.flexlayout__tabset_content::after {
-  content: '';
-  position: absolute;
-  inset: 20px;
-  border: 2px dashed transparent;
-  pointer-events: none;
-  transition: all 0.2s;
-}
-
-.flexlayout__tabset_content:has(+ .flexlayout__outline_rect)::after,
-.flexlayout__drag_rect ~ * .flexlayout__tabset_content::after {
-  border-color: var(--accent-color);
-  background: var(--accent-light, rgba(59, 130, 246, 0.1));
+  display: none !important;
 }
 
 .flexlayout__tabset_sizer {
