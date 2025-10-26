@@ -204,16 +204,9 @@ function TagTreeNode({
 
       const draggedData = JSON.parse(data);
       if (draggedData.type === 'tag' && draggedData.tagId && draggedData.tagId !== tag.id) {
-        // Shift+Drop → Create IS_TYPE_OF (parent-child) relation
-        // Regular Drop → Create IS_RELATED_TO relation
-        if (e.shiftKey) {
-          // Dragged tag becomes child of current tag (IS_TYPE_OF relation)
-          // Make draggedTag's parent = tag.id
-          addParent(draggedData.tagId, tag.id);
-        } else {
-          // Create relation: dragged tag → current tag (IS_RELATED_TO by default)
-          createRelation(draggedData.tagId, tag.id, RelationType.IS_RELATED_TO);
-        }
+        // FR: Drop normal → Le tag devient fils (IS_TYPE_OF par défaut)
+        // EN: Regular drop → Tag becomes child (IS_TYPE_OF by default)
+        addParent(draggedData.tagId, tag.id);
       }
     } catch (error) {
       console.error('Error handling drop:', error);
