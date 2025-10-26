@@ -176,20 +176,45 @@
 /* FR: Zone de drop centrale pour diviser un tabset */
 /* EN: Center drop zone for splitting a tabset */
 .flexlayout__outline_rect {
-  border: 4px solid var(--accent-color) !important;
-  background: var(--accent-light, rgba(59, 130, 246, 0.4)) !important;
-  box-shadow: 0 0 30px rgba(59, 130, 246, 0.6) !important;
-  z-index: 1000 !important;
+  border: 6px dashed var(--accent-color) !important;
+  background: var(--accent-light, rgba(59, 130, 246, 0.15)) !important;
+  box-shadow:
+    inset 0 0 0 3px white,
+    inset 0 0 0 6px var(--accent-color),
+    0 0 40px rgba(59, 130, 246, 0.8) !important;
+  z-index: 10000 !important;
   pointer-events: none;
+  border-radius: 8px;
+  animation: pulse-border 1s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 3px white,
+      inset 0 0 0 6px var(--accent-color),
+      0 0 40px rgba(59, 130, 246, 0.8);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 3px white,
+      inset 0 0 0 6px var(--accent-color),
+      0 0 60px rgba(59, 130, 246, 1);
+  }
 }
 
 /* FR: Indicateur de drop en cours */
 /* EN: Drop in progress indicator */
 .flexlayout__outline_rect_edge {
-  border: 4px solid var(--accent-color) !important;
-  background: var(--accent-light, rgba(59, 130, 246, 0.5)) !important;
-  box-shadow: 0 0 30px rgba(59, 130, 246, 0.6) !important;
-  z-index: 1000 !important;
+  border: 6px dashed var(--accent-color) !important;
+  background: var(--accent-light, rgba(59, 130, 246, 0.2)) !important;
+  box-shadow:
+    inset 0 0 0 3px white,
+    inset 0 0 0 6px var(--accent-color),
+    0 0 40px rgba(59, 130, 246, 0.8) !important;
+  z-index: 10000 !important;
+  border-radius: 8px;
+  animation: pulse-border 1s ease-in-out infinite;
 }
 
 /* FR: Zone de drop au survol */
