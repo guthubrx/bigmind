@@ -114,24 +114,34 @@ function TagLayersPanelRCT() {
     // FR: Ajouter tous les tags
     // EN: Add all tags
     tags.forEach((tag: DagTag) => {
+      const hasChildren = tag.children && tag.children.length > 0;
       items[tag.id] = {
         index: tag.id,
         children: tag.children || [],
         data: tag,
-        isFolder: tag.children && tag.children.length > 0,
+        isFolder: hasChildren,
         canMove: true,
         canRename: true,
       };
     });
 
-    // FR: Construire la hiérarchie - TOUS les tags à la racine pour debug
-    // EN: Build hierarchy - ALL tags at root for debugging
-    items.root.children = tags.map((tag: DagTag) => tag.id);
+    // FR: Construire la hiérarchie - Seuls les tags SANS parent à la racine
+    // EN: Build hierarchy - Only tags WITHOUT parent at root
+    const rootTags = tags.filter((tag: DagTag) => !tag.parentIds || tag.parentIds.length === 0);
+    items.root.children = rootTags.map((tag: DagTag) => tag.id);
 
     // eslint-disable-next-line no-console
-    console.log('[TagLayersPanelRCT] Root children:', items.root.children);
+    console.log(
+      '[TagLayersPanelRCT] Root tags (no parent):',
+      rootTags.map(t => t.label)
+    );
     // eslint-disable-next-line no-console
-    console.log('[TagLayersPanelRCT] Tree items:', items);
+    console.log(
+      '[TagLayersPanelRCT] All tags with parents:',
+      tags
+        .filter(t => t.parentIds && t.parentIds.length > 0)
+        .map(t => `${t.label} (parents: ${t.parentIds.join(', ')})`)
+    );
 
     return items;
   }, [tags]);
@@ -151,21 +161,39 @@ function TagLayersPanelRCT() {
   // EN: Get item title
   const getItemTitle = useCallback((item: TreeItem<DagTag>) => item.data.label, []);
 
-  // FR: Gérer le drag-drop
-  // EN: Handle drag-drop
+  // FR: Gérer le drag-drop pour créer des filiations
+  // EN: Handle drag-drop to create parent-child relationships
   const onDrop = useCallback(
     (items: TreeItem<DagTag>[], target: any) => {
       // eslint-disable-next-line no-console
       console.log('[RCT] Drop:', items, 'onto', target);
+
       if (items.length > 0 && target && target.targetItem !== 'root') {
         const draggedId = items[0].index as string;
         const targetId = target.targetItem as string;
+
         if (draggedId !== targetId) {
-          addParent(draggedId, targetId);
+          const draggedTag = tags.find(t => t.id === draggedId);
+          const targetTag = tags.find(t => t.id === targetId);
+
+          if (draggedTag && targetTag) {
+            // eslint-disable-next-line no-console
+            console.log(
+              `[RCT] Creating parent-child: "${draggedTag.label}" → "${targetTag.label}"`
+            );
+            addParent(draggedId, targetId);
+
+            // Message de confirmation
+            setTimeout(() => {
+              const msg = `✓ "${draggedTag.label}" → enfant de "${targetTag.label}"`;
+              // eslint-disable-next-line no-alert
+              alert(msg);
+            }, 100);
+          }
         }
       }
     },
-    [addParent]
+    [addParent, tags]
   );
 
   // FR: Rendu personnalisé des nœuds
