@@ -182,6 +182,13 @@ function TagLayersPanelRCT() {
     return items;
   }, [tags]);
 
+  // FR: Clé stable pour forcer le refresh seulement quand les IDs changent
+  // EN: Stable key to force refresh only when IDs change
+  const treeKey = useMemo(() => {
+    const sortedIds = tags.map(t => t.id).sort();
+    return sortedIds.join(',');
+  }, [tags]);
+
   // FR: Data provider pour react-complex-tree
   // EN: Data provider for react-complex-tree
   const dataProvider = useMemo(
@@ -196,6 +203,16 @@ function TagLayersPanelRCT() {
   // FR: Obtenir le titre d'un item
   // EN: Get item title
   const getItemTitle = useCallback((item: TreeItem<DagTag>) => item.data.label, []);
+
+  // FR: Contrôler si un item peut être déposé sur une cible
+  // EN: Control if an item can be dropped on a target
+  const canDropAt = useCallback((items: TreeItem<DagTag>[], target: any) => {
+    // Ne pas permettre de déposer sur la racine
+    if (target.targetType === 'root') return false;
+    // Ne pas permettre de déposer un tag sur lui-même
+    if (items.length > 0 && items[0].index === target.targetItem) return false;
+    return true;
+  }, []);
 
   // FR: Gérer le drag-drop pour créer des filiations
   // EN: Handle drag-drop to create parent-child relationships
@@ -389,13 +406,14 @@ function TagLayersPanelRCT() {
 
       <div className="tag-layers-tree-rct">
         <UncontrolledTreeEnvironment
-          key={tags.map(t => t.id).join(',')}
+          key={treeKey}
           dataProvider={dataProvider}
           getItemTitle={getItemTitle}
           viewState={{}}
           canDragAndDrop
           canDropOnFolder
           canReorderItems
+          canDropAt={canDropAt}
           onDrop={onDrop}
           renderItem={renderItem}
         >

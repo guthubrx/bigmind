@@ -63,8 +63,12 @@
   align-items: center;
   gap: 6px;
   padding: 6px 8px;
-  cursor: default;
+  cursor: grab;
   transition: background-color 0.2s;
+}
+
+.rct-tag-item:active {
+  cursor: grabbing;
 }
 
 .rct-tag-item:hover {
