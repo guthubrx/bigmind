@@ -119,7 +119,64 @@ const STORAGE_KEY = 'bigmind_layout_config_v2'; // v2 pour forcer le nouveau lay
 
 function DockableLayout() {
   const layoutRef = useRef<Layout>(null);
+  const mainRef = useRef<HTMLDivElement>(null);
   const tagsCount = useTagStore(state => Object.keys(state.tags).length);
+  const [isDragging, setIsDragging] = React.useState(false);
+
+  // FR: Détecter la position de la souris pendant le drag pour illuminer la bonne zone
+  // EN: Detect mouse position during drag to illuminate the right zone
+  React.useEffect(() => {
+    const mainEl = mainRef.current;
+    if (!mainEl) return undefined;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+
+      // FR: Trouver tous les tabsets sous la souris
+      // EN: Find all tabsets under mouse
+      const tabsets = mainEl.querySelectorAll('.flexlayout__tabset_content');
+      tabsets.forEach(tabset => {
+        const rect = tabset.getBoundingClientRect();
+        const mouseY = e.clientY;
+        const midY = rect.top + rect.height / 2;
+
+        // FR: Ajouter classe selon si souris est en haut ou en bas
+        // EN: Add class based on whether mouse is on top or bottom
+        if (mouseY >= rect.top && mouseY <= rect.bottom) {
+          if (mouseY < midY) {
+            tabset.classList.add('drop-zone-top-active');
+            tabset.classList.remove('drop-zone-bottom-active');
+          } else {
+            tabset.classList.add('drop-zone-bottom-active');
+            tabset.classList.remove('drop-zone-top-active');
+          }
+        } else {
+          tabset.classList.remove('drop-zone-top-active', 'drop-zone-bottom-active');
+        }
+      });
+    };
+
+    const handleDragStart = () => setIsDragging(true);
+    const handleDragEnd = () => {
+      setIsDragging(false);
+      // FR: Nettoyer toutes les classes
+      // EN: Clean up all classes
+      const tabsets = mainEl.querySelectorAll('.flexlayout__tabset_content');
+      tabsets.forEach(tabset => {
+        tabset.classList.remove('drop-zone-top-active', 'drop-zone-bottom-active');
+      });
+    };
+
+    mainEl.addEventListener('mousemove', handleMouseMove);
+    mainEl.addEventListener('dragstart', handleDragStart, true);
+    mainEl.addEventListener('dragend', handleDragEnd, true);
+
+    return () => {
+      mainEl.removeEventListener('mousemove', handleMouseMove);
+      mainEl.removeEventListener('dragstart', handleDragStart, true);
+      mainEl.removeEventListener('dragend', handleDragEnd, true);
+    };
+  }, [isDragging]);
 
   // FR: Charger la configuration sauvegardée ou utiliser la configuration par défaut
   // EN: Load saved configuration or use default configuration
@@ -227,14 +284,23 @@ function DockableLayout() {
     [tagsCount]
   );
 
-  // FR: Action personnalisée pour permettre le drop sur les tabsets
-  // EN: Custom action to allow drop on tabsets
-  const onAction = useCallback(
-    (action: any) =>
-      // Laisser flexlayout gérer toutes les actions par défaut
-      action,
-    []
-  );
+  // FR: Action personnalisée pour gérer le split 50/50
+  // EN: Custom action to handle 50/50 split
+  const onAction = useCallback((action: any) => {
+    // FR: Si on ajoute un noeud avec BOTTOM ou TOP, ajuster le weight pour 50/50
+    // EN: If adding a node with BOTTOM or TOP, adjust weight for 50/50
+    if (action.type === 'FlexLayout_AddNode') {
+      const location = action.data?.location;
+      if (location === 'bottom' || location === 'top') {
+        // FR: Forcer le weight à 50 pour un split équilibré
+        // EN: Force weight to 50 for balanced split
+        if (action.data && !action.data.weight) {
+          action.data.weight = 50;
+        }
+      }
+    }
+    return action;
+  }, []);
 
   // FR: Rendu personnalisé du header du tabset pour ajouter boutons de split
   // EN: Custom tabset header rendering to add split buttons
@@ -326,7 +392,7 @@ function DockableLayout() {
 
       {/* FR: Zone principale avec panneaux flexibles */}
       {/* EN: Main area with flexible panels */}
-      <div className="dockable-main">
+      <div ref={mainRef} className="dockable-main">
         <Layout
           ref={layoutRef}
           model={model}

@@ -138,32 +138,81 @@
   position: relative;
 }
 
-/* FR: Augmenter la sensibilité des zones de drop verticales */
-/* EN: Increase sensitivity of vertical drop zones */
-.flexlayout__layout:not(:has(.flexlayout__drag_rect)) .flexlayout__tabset_content::before {
+/* FR: Zones de drop personnalisées pour split haut/bas - Toujours visibles pendant drag */
+/* EN: Custom drop zones for top/bottom split - Always visible during drag */
+
+/* FR: Style de base pour les zones (léger) */
+/* EN: Base style for zones (subtle) */
+.flexlayout__layout:has(.flexlayout__tab_button--dragging) .flexlayout__tabset_content::before,
+.flexlayout__layout:has(.flexlayout__tab_button--dragging) .flexlayout__tabset_content::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 35%;
+  left: 8px;
+  right: 8px;
   pointer-events: none;
-  border: 2px dashed transparent;
-  transition: all 0.15s;
-  z-index: 1;
+  border: 3px dashed var(--accent-color);
+  background: var(--accent-light, rgba(59, 130, 246, 0.08));
+  border-radius: 8px;
+  transition: all 0.15s ease-in-out;
+  z-index: 5;
+  opacity: 0.5;
 }
 
-.flexlayout__layout:not(:has(.flexlayout__drag_rect)) .flexlayout__tabset_content::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 35%;
-  pointer-events: none;
-  border: 2px dashed transparent;
-  transition: all 0.15s;
-  z-index: 1;
+/* FR: Zone haute (50% du haut) */
+/* EN: Top zone (top 50%) */
+.flexlayout__layout:has(.flexlayout__tab_button--dragging) .flexlayout__tabset_content::before {
+  top: 8px;
+  height: calc(50% - 12px);
+}
+
+/* FR: Zone basse (50% du bas) */
+/* EN: Bottom zone (bottom 50%) */
+.flexlayout__layout:has(.flexlayout__tab_button--dragging) .flexlayout__tabset_content::after {
+  bottom: 8px;
+  height: calc(50% - 12px);
+}
+
+/* FR: Illuminer SEULEMENT la zone survolée (haut OU bas, pas les deux) */
+/* EN: Illuminate ONLY the hovered zone (top OR bottom, not both) */
+
+/* FR: Zone haute active (souris dans la moitié haute) */
+/* EN: Active top zone (mouse in top half) */
+.drop-zone-top-active::before {
+  border-width: 5px !important;
+  border-color: var(--accent-color) !important;
+  background: var(--accent-light, rgba(59, 130, 246, 0.3)) !important;
+  opacity: 1 !important;
+  box-shadow:
+    inset 0 0 0 2px white,
+    inset 0 0 20px rgba(59, 130, 246, 0.3),
+    0 0 30px rgba(59, 130, 246, 0.8) !important;
+  animation: pulse-split 1.2s ease-in-out infinite;
+}
+
+/* FR: Zone basse active (souris dans la moitié basse) */
+/* EN: Active bottom zone (mouse in bottom half) */
+.drop-zone-bottom-active::after {
+  border-width: 5px !important;
+  border-color: var(--accent-color) !important;
+  background: var(--accent-light, rgba(59, 130, 246, 0.3)) !important;
+  opacity: 1 !important;
+  box-shadow:
+    inset 0 0 0 2px white,
+    inset 0 0 20px rgba(59, 130, 246, 0.3),
+    0 0 30px rgba(59, 130, 246, 0.8) !important;
+  animation: pulse-split 1.2s ease-in-out infinite;
+}
+
+/* FR: Désactiver l'autre zone quand une est active */
+/* EN: Disable the other zone when one is active */
+.drop-zone-top-active::after {
+  opacity: 0.2 !important;
+  border-width: 2px !important;
+}
+
+.drop-zone-bottom-active::before {
+  opacity: 0.2 !important;
+  border-width: 2px !important;
 }
 
 .flexlayout__drag_rect {
@@ -176,45 +225,28 @@
 /* FR: Zone de drop centrale pour diviser un tabset */
 /* EN: Center drop zone for splitting a tabset */
 .flexlayout__outline_rect {
-  border: 6px dashed var(--accent-color) !important;
-  background: var(--accent-light, rgba(59, 130, 246, 0.15)) !important;
-  box-shadow:
-    inset 0 0 0 3px white,
-    inset 0 0 0 6px var(--accent-color),
-    0 0 40px rgba(59, 130, 246, 0.8) !important;
-  z-index: 10000 !important;
-  pointer-events: none;
-  border-radius: 8px;
-  animation: pulse-border 1s ease-in-out infinite;
+  /* FR: Masquer le rectangle par défaut, nos zones personnalisées suffisent */
+  /* EN: Hide default rectangle, our custom zones are enough */
+  display: none !important;
 }
 
-@keyframes pulse-border {
+@keyframes pulse-split {
   0%, 100% {
-    box-shadow:
-      inset 0 0 0 3px white,
-      inset 0 0 0 6px var(--accent-color),
-      0 0 40px rgba(59, 130, 246, 0.8);
+    border-width: 4px;
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
   }
   50% {
-    box-shadow:
-      inset 0 0 0 3px white,
-      inset 0 0 0 6px var(--accent-color),
-      0 0 60px rgba(59, 130, 246, 1);
+    border-width: 5px;
+    box-shadow: 0 0 40px rgba(59, 130, 246, 1);
   }
 }
 
 /* FR: Indicateur de drop en cours */
 /* EN: Drop in progress indicator */
 .flexlayout__outline_rect_edge {
-  border: 6px dashed var(--accent-color) !important;
-  background: var(--accent-light, rgba(59, 130, 246, 0.2)) !important;
-  box-shadow:
-    inset 0 0 0 3px white,
-    inset 0 0 0 6px var(--accent-color),
-    0 0 40px rgba(59, 130, 246, 0.8) !important;
-  z-index: 10000 !important;
-  border-radius: 8px;
-  animation: pulse-border 1s ease-in-out infinite;
+  /* FR: Masquer aussi le rectangle edge */
+  /* EN: Hide edge rectangle too */
+  display: none !important;
 }
 
 /* FR: Zone de drop au survol */
