@@ -151,7 +151,6 @@ function DockableLayout() {
           mouseX <= rect.right;
 
         if (isInTabset) {
-          foundTarget = true;
           if (mouseY < midY) {
             tabset.classList.add('drop-zone-top-active');
             tabset.classList.remove('drop-zone-bottom-active');

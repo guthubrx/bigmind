@@ -157,18 +157,18 @@
   opacity: 0.7;
 }
 
-/* FR: Zone haute (50% du haut) - Toujours visible sur TOUS les panneaux */
-/* EN: Top zone (top 50%) - Always visible on ALL panels */
+/* FR: Zone haute (40% du haut) avec gap au milieu */
+/* EN: Top zone (40% of top) with gap in middle */
 .tab-is-dragging .flexlayout__tabset_content::before {
   top: 8px;
-  height: calc(50% - 12px);
+  height: calc(40% - 8px);
 }
 
-/* FR: Zone basse (50% du bas) - Toujours visible sur TOUS les panneaux */
-/* EN: Bottom zone (bottom 50%) - Always visible on ALL panels */
+/* FR: Zone basse (40% du bas) avec gap au milieu */
+/* EN: Bottom zone (40% of bottom) with gap in middle */
 .tab-is-dragging .flexlayout__tabset_content::after {
   bottom: 8px;
-  height: calc(50% - 12px);
+  height: calc(40% - 8px);
 }
 
 /* FR: Illuminer FORTEMENT la zone survolée */
