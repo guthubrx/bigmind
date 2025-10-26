@@ -23,8 +23,8 @@ const DEFAULT_LAYOUT: IJsonModel = {
     tabEnableClose: false,
     tabEnableRename: false,
     tabSetEnableMaximize: true,
-    tabSetEnableDivide: true,
-    tabSetEnableDrop: false, // FR: Désactiver drop au centre pour forcer split sur bords / EN: Disable center drop to force edge split
+    tabSetEnableDivide: true, // FR: Permet de diviser le tabset en draguant sur les bords / EN: Allow splitting tabset by dragging to edges
+    tabSetEnableDrop: true, // FR: Nécessaire pour que divide fonctionne / EN: Required for divide to work
     tabSetEnableDrag: true,
     tabEnableDrag: true,
     borderEnableDrop: true,
@@ -115,7 +115,7 @@ const DEFAULT_LAYOUT: IJsonModel = {
   },
 };
 
-const STORAGE_KEY = 'bigmind_layout_config_v6'; // v6 pour désactiver tabSetEnableDrop
+const STORAGE_KEY = 'bigmind_layout_config_v7'; // v7 réactive tabSetEnableDrop pour split
 
 function DockableLayout() {
   const layoutRef = useRef<Layout>(null);

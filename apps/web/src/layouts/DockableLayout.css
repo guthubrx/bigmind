@@ -123,12 +123,10 @@
   z-index: 1000;
 }
 
-/* FR: Rendre les zones edge VISIBLES pour debug (vert) */
-/* EN: Make edge zones VISIBLE for debug (green) */
+/* FR: Masquer les zones edge par défaut */
+/* EN: Hide default edge zones */
 .flexlayout__edge_rect {
-  border: 4px solid green !important;
-  background: rgba(0, 255, 0, 0.2) !important;
-  z-index: 10000 !important;
+  opacity: 0 !important;
   pointer-events: auto !important;
 }
 
@@ -138,14 +136,22 @@
   position: relative;
 }
 
-/* FR: Zones de drop personnalisées pour split haut/bas - MASQUÉES temporairement pour debug */
-/* EN: Custom drop zones for top/bottom split - HIDDEN temporarily for debug */
+/* FR: Zones de drop personnalisées pour split haut/bas - Réactivées */
+/* EN: Custom drop zones for top/bottom split - Reactivated */
 
-/* FR: Style de base pour les zones - MASQUÉES */
-/* EN: Base style for zones - HIDDEN */
+/* FR: Style de base pour les zones */
+/* EN: Base style for zones */
 .tab-is-dragging .flexlayout__tabset_content::before,
 .tab-is-dragging .flexlayout__tabset_content::after {
-  display: none !important;
+  content: '';
+  position: absolute;
+  pointer-events: none !important;
+  border: 3px dashed var(--accent-color);
+  background: var(--accent-light, rgba(59, 130, 246, 0.12));
+  border-radius: 8px;
+  transition: all 0.15s ease-in-out;
+  z-index: 1;
+  opacity: 0.7;
 }
 
 /* FR: Zone haute (45% du haut) avec gap clair au milieu */
@@ -216,12 +222,10 @@
   z-index: 1000;
 }
 
-/* FR: Zone de drop centrale pour diviser un tabset - VISIBLE pour debug */
-/* EN: Center drop zone for splitting a tabset - VISIBLE for debug */
+/* FR: Zone de drop centrale - Masquée */
+/* EN: Center drop zone - Hidden */
 .flexlayout__outline_rect {
-  border: 4px solid red !important;
-  background: rgba(255, 0, 0, 0.2) !important;
-  z-index: 10000 !important;
+  opacity: 0 !important;
   pointer-events: auto !important;
 }
 
@@ -236,12 +240,10 @@
   }
 }
 
-/* FR: Indicateur de drop en cours - VISIBLE pour debug (jaune) */
-/* EN: Drop in progress indicator - VISIBLE for debug (yellow) */
+/* FR: Indicateur de drop sur les bords - Masqué */
+/* EN: Edge drop indicator - Hidden */
 .flexlayout__outline_rect_edge {
-  border: 4px solid yellow !important;
-  background: rgba(255, 255, 0, 0.2) !important;
-  z-index: 10000 !important;
+  opacity: 0 !important;
   pointer-events: auto !important;
 }
 
