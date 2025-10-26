@@ -19,6 +19,7 @@ import {
 import { useMindmap } from '../hooks/useMindmap';
 import { useOpenFiles } from '../hooks/useOpenFiles';
 import { useSelection } from '../hooks/useSelection';
+import { useTagStore } from '../hooks/useTagStore';
 import NodeTagPanel from './NodeTagPanel';
 import './NodeProperties.css';
 
@@ -27,6 +28,7 @@ function NodeProperties() {
   const activeFile = useOpenFiles(state => state.openFiles.find(f => f.isActive) || null);
   const selectedNodeId = useSelection(s => s.selectedNodeId) || selection.primaryNode;
   const updateActiveFileNode = useOpenFiles(s => s.updateActiveFileNode);
+  const tagsCount = useTagStore(state => Object.keys(state.tags).length);
   const [activeTab, setActiveTab] = useState<'content' | 'style' | 'tags' | 'advanced'>('content');
 
   const selectedNode = selectedNodeId ? activeFile?.content?.nodes?.[selectedNodeId] : null;
@@ -74,6 +76,24 @@ function NodeProperties() {
           >
             <Tag className="icon-small" />
             Tags
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minWidth: '20px',
+                height: '16px',
+                padding: '0 4px',
+                background: 'var(--accent-color)',
+                borderRadius: '8px',
+                fontSize: '10px',
+                fontWeight: '600',
+                color: 'white',
+                marginLeft: '6px',
+              }}
+            >
+              {tagsCount}
+            </span>
           </button>
           <button
             type="button"
