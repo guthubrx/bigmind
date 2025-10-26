@@ -7,7 +7,16 @@ import React, { useState, useRef, useMemo } from 'react';
 import { useTagGraph } from '../hooks/useTagGraph';
 import { useNodeTags } from '../hooks/useNodeTags';
 import { DagTag, RelationType } from '../types/dag';
-import { ChevronDown, ChevronRight, Trash2, Eye, EyeOff, ArrowRight, Link2, Package } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronRight,
+  Trash2,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  Link2,
+  Package,
+} from 'lucide-react';
 import TagContextMenu from './TagContextMenu';
 import './TagLayersPanel.css';
 
@@ -274,7 +283,7 @@ function TagTreeNode({
           style={{ backgroundColor: tag.color || '#3b82f6' }}
           onClick={handleColorClick}
           onContextMenu={handleContextMenu}
-          draggable={true}
+          draggable
           onDragStart={e => {
             e.stopPropagation();
             // eslint-disable-next-line no-console
@@ -361,7 +370,11 @@ function TagTreeNode({
       {expanded && children.length > 0 && (
         <div>
           {children.map((child: DagTag) => (
-            <div key={child.id} className={`tag-tree-children ${getRelationClass(child.id)}`}>
+            <div
+              key={child.id}
+              className={`tag-tree-children ${getRelationClass(child.id)}`}
+              style={{ paddingLeft: `${24}px` }}
+            >
               <TagTreeNode
                 tag={child}
                 expanded={expandedState[child.id] ?? true}
@@ -405,7 +418,14 @@ function TagLayersPanel() {
 
   // FR: Mémoriser la clé des tags pour éviter les boucles infinies
   // EN: Memoize tag key to avoid infinite loops
-  const tagIdsKey = React.useMemo(() => tags.map(t => t.id).sort().join(','), [tags]);
+  const tagIdsKey = React.useMemo(
+    () =>
+      tags
+        .map(t => t.id)
+        .sort()
+        .join(','),
+    [tags]
+  );
 
   // FR: Initialiser l'état d'expansion pour les nouveaux tags
   // EN: Initialize expansion state for new tags

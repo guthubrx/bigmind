@@ -52,7 +52,7 @@
 .tag-tree-children {
   position: relative;
   margin-left: 0;
-  padding-left: 24px;
+  /* padding-left géré dynamiquement via style inline selon la profondeur */
   border-left: 2px solid #e5e7eb;
 }
 
