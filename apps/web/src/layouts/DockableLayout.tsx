@@ -30,7 +30,7 @@ const DEFAULT_LAYOUT: IJsonModel = {
     borderEnableDrop: true,
     tabSetMinWidth: 100,
     tabSetMinHeight: 100,
-    splitterSize: 8,
+    splitterSize: 2,
     enableEdgeDock: false, // FR: Désactivé - on utilise les boutons / EN: Disabled - we use buttons
     enableRotateBorderIcons: false,
   },
@@ -115,7 +115,7 @@ const DEFAULT_LAYOUT: IJsonModel = {
   },
 };
 
-const STORAGE_KEY = 'bigmind_layout_config_v8'; // v8 version finale avec boutons split
+const STORAGE_KEY = 'bigmind_layout_config_v9'; // v9 bordures et splitters réduits
 
 function DockableLayout() {
   const layoutRef = useRef<Layout>(null);
