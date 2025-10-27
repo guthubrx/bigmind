@@ -23,39 +23,49 @@ const manifestSchema = {
           type: 'object',
           properties: {
             name: { type: 'string' },
-            email: { type: 'string', nullable: true },
-            url: { type: 'string', nullable: true },
+            email: { type: ['string', 'null'] },
+            url: { type: ['string', 'null'] },
           },
           required: ['name'],
         },
       ],
     },
-    bigmindVersion: { type: 'string', nullable: true },
+    bigmindVersion: { type: ['string', 'null'] },
     main: { type: 'string' },
     permissions: {
-      type: 'array',
-      items: { type: 'string' },
-      nullable: true,
+      anyOf: [{ type: 'array', items: { type: 'string' } }, { type: 'null' }],
     },
-    icon: { type: 'string', nullable: true },
-    homepage: { type: 'string', nullable: true },
-    repository: { type: 'string', nullable: true },
-    license: { type: 'string', nullable: true },
+    icon: { type: ['string', 'null'] },
+    homepage: { type: ['string', 'null'] },
+    repository: { type: ['string', 'null'] },
+    license: { type: ['string', 'null'] },
     keywords: {
-      type: 'array',
-      items: { type: 'string' },
-      nullable: true,
+      anyOf: [{ type: 'array', items: { type: 'string' } }, { type: 'null' }],
     },
     contributes: {
-      type: 'object',
-      nullable: true,
-      properties: {
-        commands: { type: 'array', items: { type: 'object' }, nullable: true },
-        menus: { type: 'array', items: { type: 'object' }, nullable: true },
-        themes: { type: 'array', items: { type: 'object' }, nullable: true },
-        templates: { type: 'array', items: { type: 'object' }, nullable: true },
-        fileFormats: { type: 'array', items: { type: 'object' }, nullable: true },
-      },
+      anyOf: [
+        {
+          type: 'object',
+          properties: {
+            commands: {
+              anyOf: [{ type: 'array', items: { type: 'object' } }, { type: 'null' }],
+            },
+            menus: {
+              anyOf: [{ type: 'array', items: { type: 'object' } }, { type: 'null' }],
+            },
+            themes: {
+              anyOf: [{ type: 'array', items: { type: 'object' } }, { type: 'null' }],
+            },
+            templates: {
+              anyOf: [{ type: 'array', items: { type: 'object' } }, { type: 'null' }],
+            },
+            fileFormats: {
+              anyOf: [{ type: 'array', items: { type: 'object' } }, { type: 'null' }],
+            },
+          },
+        },
+        { type: 'null' },
+      ],
     },
   },
   required: ['id', 'name', 'version', 'description', 'author', 'main'],
