@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+/* eslint-disable no-alert */
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import MenuBar from '../components/MenuBar';
 import StatusBar from '../components/StatusBar';
 import '../layouts/MainLayout.css';
@@ -11,6 +13,22 @@ import { useAppSettings } from '../hooks/useAppSettings';
 import { getAllInterfaceThemes } from '../themes/colorThemes';
 import { getAllPalettes } from '../themes/colorPalettes';
 import PaletteSelector from '../components/PaletteSelector';
+import {
+  PluginManager,
+  PermissionDialog,
+  AuditDashboard,
+  PolicyEditor,
+} from '../components/plugins';
+import { pluginSystem, saveActivatedPlugins } from '../utils/pluginManager';
+import type {
+  PluginInfo,
+  Permission,
+  AuditEvent,
+  AuditQueryFilters,
+  Policy,
+} from '@bigmind/plugin-system';
+
+const { registry, permissionManager, auditLogger, policyEngine } = pluginSystem;
 
 function SettingsPage() {
   const navigate = useNavigate();
@@ -39,8 +57,117 @@ function SettingsPage() {
   const shortcuts = useShortcuts(s => s.map);
   const setShortcut = useShortcuts(s => s.setShortcut);
   const resetShortcuts = useShortcuts(s => s.resetDefaults);
-  const [section, setSection] = useState<'appearance' | 'shortcuts'>('appearance');
+  const [searchParams] = useSearchParams();
+  const [section, setSection] = useState<'appearance' | 'shortcuts' | 'plugins'>('appearance');
   const platform = usePlatform();
+
+  // Plugin management state
+  const [pluginView, setPluginView] = useState<'manager' | 'audit' | 'policy'>('manager');
+  const [plugins, setPlugins] = useState<Map<string, PluginInfo>>(new Map());
+  const [permissionRequest, setPermissionRequest] = useState<{
+    pluginId: string;
+    pluginName: string;
+    permissions: Permission[];
+    resolve: (approved: boolean) => void;
+  } | null>(null);
+  const [policyEditing, setPolicyEditing] = useState<string | null>(null);
+
+  // Check URL params for section (e.g., /settings?section=plugins)
+  useEffect(() => {
+    const sectionParam = searchParams.get('section');
+    if (
+      sectionParam === 'plugins' ||
+      sectionParam === 'appearance' ||
+      sectionParam === 'shortcuts'
+    ) {
+      setSection(sectionParam);
+    }
+  }, [searchParams]);
+
+  // Load plugins
+  useEffect(() => {
+    const updatePlugins = () => {
+      setPlugins(registry.getAllPlugins());
+    };
+
+    updatePlugins();
+
+    // Listen to plugin events
+    registry.on('plugin:registered', updatePlugins);
+    registry.on('plugin:activated', updatePlugins);
+    registry.on('plugin:deactivated', updatePlugins);
+    registry.on('plugin:unregistered', updatePlugins);
+
+    return () => {
+      registry.off('plugin:registered', updatePlugins);
+      registry.off('plugin:activated', updatePlugins);
+      registry.off('plugin:deactivated', updatePlugins);
+      registry.off('plugin:unregistered', updatePlugins);
+    };
+  }, []);
+
+  // Plugin handlers
+  const saveActivationState = () => {
+    const activePluginIds: string[] = [];
+    registry.getAllPlugins().forEach((info, pluginId) => {
+      if (info.state === 'active') {
+        activePluginIds.push(pluginId);
+      }
+    });
+    saveActivatedPlugins(activePluginIds);
+  };
+
+  const handlePermissionApprove = () => {
+    if (permissionRequest) {
+      permissionRequest.resolve(true);
+      setPermissionRequest(null);
+    }
+  };
+
+  const handlePermissionDeny = () => {
+    if (permissionRequest) {
+      permissionRequest.resolve(false);
+      setPermissionRequest(null);
+    }
+  };
+
+  const handleActivate = async (pluginId: string) => {
+    try {
+      await registry.activate(pluginId);
+      await auditLogger.logPluginActivated(pluginId);
+      saveActivationState();
+    } catch (error) {
+      console.error('Failed to activate plugin:', error);
+      await auditLogger.logSecurityAlert(
+        pluginId,
+        `Failed to activate: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  };
+
+  const handleDeactivate = async (pluginId: string) => {
+    await registry.deactivate(pluginId);
+    saveActivationState();
+  };
+
+  const handleUninstall = async (pluginId: string) => {
+    await registry.unregister(pluginId);
+    saveActivationState();
+  };
+
+  const handleViewPermissions = (pluginId: string) => {
+    const summary = permissionManager.getSecuritySummary(pluginId);
+    alert(`Permissions pour ${pluginId}:\n\n${JSON.stringify(summary, null, 2)}`);
+  };
+
+  const handleQueryAudit = async (filters: AuditQueryFilters): Promise<AuditEvent[]> =>
+    auditLogger.query(filters);
+
+  const handleSavePolicy = async (pluginId: string, policy: Policy) => {
+    policyEngine.registerPolicy(pluginId, policy);
+    setPolicyEditing(null);
+    alert('Politique sauvegardée avec succès!');
+  };
 
   const toAccelerator = (e: React.KeyboardEvent<HTMLInputElement>): string => {
     const parts: string[] = [];
@@ -92,6 +219,13 @@ function SettingsPage() {
                   onClick={() => setSection('shortcuts')}
                 >
                   Raccourcis clavier
+                </button>
+                <button
+                  type="button"
+                  className={`btn settings-nav-btn ${section === 'plugins' ? 'active' : ''}`}
+                  onClick={() => setSection('plugins')}
+                >
+                  🔌 Plugins
                 </button>
               </nav>
             </aside>
@@ -336,6 +470,119 @@ function SettingsPage() {
                       Réinitialiser par défaut
                     </button>
                   </div>
+                </div>
+              )}
+
+              {section === 'plugins' && (
+                <div>
+                  <h2 className="settings-section-title">Gestion des Plugins</h2>
+
+                  {/* Plugin sub-navigation */}
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+                    {[
+                      { id: 'manager' as const, label: 'Gestionnaire', icon: '🔌' },
+                      { id: 'audit' as const, label: 'Audit', icon: '📊' },
+                      { id: 'policy' as const, label: 'Politiques', icon: '🔐' },
+                    ].map(({ id, label, icon }) => (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => setPluginView(id)}
+                        style={{
+                          padding: '8px 16px',
+                          border:
+                            pluginView === id
+                              ? '2px solid var(--accent-color)'
+                              : '1px solid #d1d5db',
+                          borderRadius: '6px',
+                          backgroundColor:
+                            pluginView === id ? 'var(--accent-color-10)' : 'transparent',
+                          color: pluginView === id ? 'var(--accent-color)' : 'var(--fg-primary)',
+                          fontWeight: pluginView === id ? 600 : 400,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        {icon} {label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Plugin content */}
+                  {pluginView === 'manager' && (
+                    <PluginManager
+                      plugins={plugins}
+                      onActivate={handleActivate}
+                      onDeactivate={handleDeactivate}
+                      onUninstall={handleUninstall}
+                      onViewPermissions={handleViewPermissions}
+                    />
+                  )}
+
+                  {pluginView === 'audit' && <AuditDashboard onQuery={handleQueryAudit} />}
+
+                  {pluginView === 'policy' && (
+                    <div>
+                      <div style={{ marginBottom: '16px' }}>
+                        <h3>Politiques ABAC</h3>
+                        <p style={{ color: 'var(--fg-secondary)', fontSize: '14px' }}>
+                          Définissez des règles d&apos;accès basées sur les attributs pour chaque
+                          plugin.
+                        </p>
+                      </div>
+
+                      {policyEditing ? (
+                        <PolicyEditor
+                          pluginId={policyEditing}
+                          onSave={handleSavePolicy}
+                          onCancel={() => setPolicyEditing(null)}
+                        />
+                      ) : (
+                        <div>
+                          {Array.from(plugins.keys()).map(pluginId => (
+                            <div
+                              key={pluginId}
+                              style={{
+                                padding: '12px',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: '6px',
+                                marginBottom: '8px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                              }}
+                            >
+                              <span>{pluginId}</span>
+                              <button
+                                type="button"
+                                onClick={() => setPolicyEditing(pluginId)}
+                                style={{
+                                  padding: '6px 12px',
+                                  border: '1px solid var(--accent-color)',
+                                  borderRadius: '4px',
+                                  backgroundColor: 'transparent',
+                                  color: 'var(--accent-color)',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                Éditer la politique
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Permission Dialog */}
+                  {permissionRequest && (
+                    <PermissionDialog
+                      pluginName={permissionRequest.pluginName}
+                      permissions={permissionRequest.permissions}
+                      onApprove={handlePermissionApprove}
+                      onDeny={handlePermissionDeny}
+                    />
+                  )}
                 </div>
               )}
             </section>

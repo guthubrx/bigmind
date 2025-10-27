@@ -181,7 +181,7 @@ function MenuBar() {
                       navigate('/settings');
                       setActiveMenu(null);
                     } else if (menu.id === 'tools' && item.label.startsWith('Plugins')) {
-                      navigate('/plugins');
+                      navigate('/settings?section=plugins');
                       setActiveMenu(null);
                     } else {
                       handleMenuAction(item.label);
