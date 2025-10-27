@@ -51,7 +51,9 @@ interface OpenFilesState {
   applyAutomaticColorsToAll: (theme: any) => void;
   updateActiveFileNodePalette: (paletteId: string) => void;
   updateActiveFileTagPalette: (paletteId: string) => void;
-  updateActiveFileDefaultNodeStyle: (style: Partial<{fontSize: number; width: number; fontFamily: string}>) => void;
+  updateActiveFileDefaultNodeStyle: (
+    style: Partial<{ fontSize: number; width: number; fontFamily: string }>
+  ) => void;
   saveOpenFilesToStorage: () => void;
   restoreOpenFilesFromStorage: () => void;
 }
@@ -502,7 +504,9 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
 
   // FR: Mettre à jour le style par défaut des nœuds du fichier actif
   // EN: Update default node style of the active file
-  updateActiveFileDefaultNodeStyle: (style: Partial<{fontSize: number; width: number; fontFamily: string}>) => {
+  updateActiveFileDefaultNodeStyle: (
+    style: Partial<{ fontSize: number; width: number; fontFamily: string }>
+  ) => {
     const state = get();
     const active = state.openFiles.find(f => f.isActive);
     if (!active || !active.content) return;
@@ -551,10 +555,13 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
           lastModified: f.lastModified,
         }));
 
-      localStorage.setItem('bigmind_open_files', JSON.stringify({
-        files: filesToSave,
-        activeFileId: state.activeFileId,
-      }));
+      localStorage.setItem(
+        'bigmind_open_files',
+        JSON.stringify({
+          files: filesToSave,
+          activeFileId: state.activeFileId,
+        })
+      );
     } catch (e) {
       // Ignore localStorage errors
       console.warn('[useOpenFiles] Erreur lors de la sauvegarde des fichiers:', e);

@@ -72,6 +72,10 @@ function MindMapCanvas() {
   const getCurrentTheme = useAppSettings(s => s.getCurrentTheme);
   const showMinimap = useAppSettings(s => s.showMinimap);
 
+  // FR: Récupérer les paramètres par défaut des nœuds
+  // EN: Get default node settings
+  const defaultNodeWidth = useAppSettings(s => s.defaultNodeWidth);
+
   // FR: Hook pour gérer le drag & drop des nœuds
   // EN: Hook to manage node drag & drop
   const {
@@ -120,10 +124,20 @@ function MindMapCanvas() {
     // FR: Layout horizontal avec calcul dynamique de la hauteur pour éviter les chevauchements
     // EN: Horizontal layout with dynamic height calculation to avoid overlaps
     const LEVEL_WIDTH = 320; // Distance entre niveaux
-    const NODE_WIDTH = 200; // Largeur fixe des nœuds
     const LINE_HEIGHT = 20; // Hauteur de ligne approx
     const NODE_VPAD = 16; // Padding vertical
     const SIBLING_GAP = 16; // Espace entre sous-arbres
+
+    // FR: Calculer la largeur effective avec hiérarchie : fichier > global
+    // EN: Calculate effective width with hierarchy: file > global
+    const getEffectiveNodeWidth = (): number => {
+      if (activeFile?.content?.defaultNodeStyle?.width) {
+        return activeFile.content.defaultNodeStyle.width;
+      }
+      return defaultNodeWidth || 200;
+    };
+
+    const NODE_WIDTH = getEffectiveNodeWidth();
 
     const estimateTextHeight = (text: string): number => {
       if (!text) return LINE_HEIGHT + NODE_VPAD;
@@ -323,7 +337,8 @@ function MindMapCanvas() {
 
     // console.warn('ReactFlow nodes created:', nodes.length);
     return nodes;
-  }, [activeFile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFile, defaultNodeWidth]);
 
   // FR: Convertir les connexions en arêtes ReactFlow
   // EN: Convert connections to ReactFlow edges

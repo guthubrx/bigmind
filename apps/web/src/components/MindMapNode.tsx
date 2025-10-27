@@ -10,6 +10,7 @@ import { useSelection } from '../hooks/useSelection';
 import { useAppSettings } from '../hooks/useAppSettings';
 import { useEditMode } from '../hooks/useEditMode';
 import { useMindMapDAGSync } from '../hooks/useMindMapDAGSync';
+import { useOpenFiles } from '../hooks/useOpenFiles';
 import MindMapNodeTags from './MindMapNodeTags';
 
 interface DragTagData {
@@ -34,6 +35,7 @@ export interface MindNode {
     borderRadius?: number;
     fontSize?: number;
     fontWeight?: 'normal' | 'medium' | 'semibold' | 'bold';
+    fontFamily?: string;
   };
   children: string[];
   x?: number;
@@ -67,6 +69,43 @@ function MindMapNode({ data, selected }: Props) {
   const [editValue, setEditValue] = useState(data.title);
   const [isDragOverNode, setIsDragOverNode] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // FR: Récupérer les paramètres par défaut globaux et du fichier actif
+  // EN: Get global default settings and active file settings
+  const defaultNodeFontSize = useAppSettings(s => s.defaultNodeFontSize);
+  const defaultNodeWidth = useAppSettings(s => s.defaultNodeWidth);
+  const defaultNodeFontFamily = useAppSettings(s => s.defaultNodeFontFamily);
+  const getActiveFile = useOpenFiles(s => s.getActiveFile);
+  const activeFile = getActiveFile();
+
+  // FR: Calculer les valeurs avec hiérarchie : nœud > fichier > global
+  // EN: Calculate values with hierarchy: node > file > global
+  const getEffectiveFontSize = useCallback(
+    (isPrimary: boolean): number => {
+      if (data.style?.fontSize) return data.style.fontSize;
+      if (activeFile?.content?.defaultNodeStyle?.fontSize) {
+        return activeFile.content.defaultNodeStyle.fontSize;
+      }
+      return isPrimary ? 24 : defaultNodeFontSize || 14;
+    },
+    [data.style?.fontSize, activeFile, defaultNodeFontSize]
+  );
+
+  const getEffectiveWidth = useCallback((): number => {
+    if (data.width) return data.width;
+    if (activeFile?.content?.defaultNodeStyle?.width) {
+      return activeFile.content.defaultNodeStyle.width;
+    }
+    return defaultNodeWidth || 200;
+  }, [data.width, activeFile, defaultNodeWidth]);
+
+  const getEffectiveFontFamily = useCallback((): string => {
+    if (data.style?.fontFamily) return data.style.fontFamily;
+    if (activeFile?.content?.defaultNodeStyle?.fontFamily) {
+      return activeFile.content.defaultNodeStyle.fontFamily;
+    }
+    return defaultNodeFontFamily || 'inherit';
+  }, [data.style, activeFile, defaultNodeFontFamily]);
 
   // FR: Gérer le drag over (afficher feedback visuel)
   // EN: Handle drag over (show visual feedback)
@@ -391,7 +430,8 @@ function MindMapNode({ data, selected }: Props) {
         backgroundColor: bgColor,
         opacity: nodeOpacity,
         color: textColor,
-        fontSize: data.isPrimary ? data.style?.fontSize || 24 : data.style?.fontSize || 14,
+        fontSize: getEffectiveFontSize(data.isPrimary),
+        fontFamily: getEffectiveFontFamily(),
         fontWeight: data.isPrimary
           ? data.style?.fontWeight || 'bold'
           : data.style?.fontWeight || 'normal',
@@ -400,7 +440,7 @@ function MindMapNode({ data, selected }: Props) {
         borderWidth: isDragOverNode ? 2 : 1,
         borderRadius: data.style?.borderRadius || 8,
         boxSizing: 'border-box',
-        width: 200,
+        width: getEffectiveWidth(),
         padding: '8px 12px',
         outline,
         outlineOffset,
@@ -433,7 +473,8 @@ function MindMapNode({ data, selected }: Props) {
             className="w-full bg-transparent border-none outline-none text-center"
             style={{
               color: data.isPrimary ? '#ffffff' : data.style?.textColor || 'black',
-              fontSize: data.isPrimary ? data.style?.fontSize || 24 : data.style?.fontSize || 14,
+              fontSize: getEffectiveFontSize(data.isPrimary),
+              fontFamily: getEffectiveFontFamily(),
               fontWeight: data.isPrimary
                 ? data.style?.fontWeight || 'bold'
                 : data.style?.fontWeight || 'normal',

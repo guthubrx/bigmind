@@ -20,9 +20,32 @@ function StatusBar() {
 
   const [zoomDraft, setZoomDraft] = useState<string>('100');
 
+  // FR: Initialiser le zoom
+  // EN: Initialize zoom
   useEffect(() => {
     const z = typeof inst?.getZoom === 'function' ? inst.getZoom() : 1;
     if (!Number.isNaN(z)) setZoomDraft(String(Math.round(z * 100)));
+  }, [inst]);
+
+  // FR: Écouter les changements de zoom (molette, pinch, etc.)
+  // EN: Listen to zoom changes (wheel, pinch, etc.)
+  useEffect(() => {
+    if (!inst) return undefined;
+
+    const handleMove = () => {
+      const z = inst.getZoom?.() || 1;
+      if (!Number.isNaN(z)) {
+        setZoomDraft(String(Math.round(z * 100)));
+      }
+    };
+
+    // FR: S'abonner aux événements de déplacement de la vue
+    // EN: Subscribe to viewport movement events
+    inst.on('move', handleMove);
+
+    return () => {
+      inst.off('move', handleMove);
+    };
   }, [inst]);
 
   const applyZoomDraft = () => {
