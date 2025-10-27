@@ -3,11 +3,11 @@
  * EN: Styles for node properties
  */
 
-.node-properties {
+.node-properties-container {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: theme('colors.background.secondary');
+  overflow: hidden;
 }
 
 .no-selection {
@@ -73,11 +73,11 @@
 
 .properties-content {
   flex: 1;
-  overflow-y: auto;
   padding: 16px;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
 }
 
 .form-group {
@@ -255,11 +255,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-}
-
-.form-group-flex .bytemd-editor-wrapper {
-  flex: 1;
-  height: auto !important;
+  margin-bottom: 0;
 }
 
 /* FR: Groupe positionné en bas */

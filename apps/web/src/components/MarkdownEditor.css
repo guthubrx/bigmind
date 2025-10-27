@@ -11,6 +11,8 @@
   overflow: hidden;
   background-color: var(--bg);
   transition: all 0.15s ease;
+  flex: 1;
+  min-height: 0;
 }
 
 .bytemd-editor-wrapper:hover {
@@ -66,6 +68,9 @@
 .bytemd-content {
   flex: 1;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 /* FR: Personnalisation de ByteMD */
@@ -88,6 +93,8 @@
   font-size: 13px !important;
   line-height: 1.6 !important;
   padding: 12px !important;
+  height: 100% !important;
+  overflow: hidden !important;
 }
 
 .bytemd-editor .CodeMirror {
@@ -95,6 +102,7 @@
   color: var(--fg) !important;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace !important;
   font-size: 13px !important;
+  height: 100% !important;
 }
 
 .bytemd-editor .CodeMirror-cursor {

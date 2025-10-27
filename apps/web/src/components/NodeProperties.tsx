@@ -43,21 +43,18 @@ function NodeProperties() {
 
   if (!selectedNode) {
     return (
-      <div className="node-properties">
-        <div className="panel-content">
-          <div className="no-selection">
-            <Settings className="icon" />
-            <p>Aucun nœud sélectionné</p>
-            <span>Sélectionnez un nœud pour voir ses propriétés</span>
-          </div>
+      <div className="node-properties-container">
+        <div className="no-selection">
+          <Settings className="icon" />
+          <p>Aucun nœud sélectionné</p>
+          <span>Sélectionnez un nœud pour voir ses propriétés</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="node-properties">
-      <div className="panel-content">
+    <div className="node-properties-container">
         {/* FR: Onglets */}
         {/* EN: Tabs */}
         <div className="properties-tabs">
@@ -332,7 +329,6 @@ function NodeProperties() {
           )}
         </div>
       </div>
-    </div>
   );
 }
 
