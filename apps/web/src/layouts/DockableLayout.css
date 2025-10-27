@@ -110,34 +110,67 @@
 }
 
 .flexlayout__splitter {
-  background: #000000;
+  background: transparent;
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .flexlayout__splitter_horz {
   height: 1px !important;
-  background: #000000;
+  background: transparent;
 }
 
 .flexlayout__splitter_vert {
   width: 1px !important;
-  background: #000000;
+  background: transparent;
+}
+
+.flexlayout__splitter_horz::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 4px;
+  background: var(--accent-color);
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.flexlayout__splitter_vert::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 60px;
+  background: var(--accent-color);
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
 .flexlayout__splitter_horz:hover {
-  height: 4px !important;
-  background: var(--accent-color);
   cursor: row-resize;
 }
 
 .flexlayout__splitter_vert:hover {
-  width: 4px !important;
-  background: var(--accent-color);
   cursor: col-resize;
 }
 
+.flexlayout__splitter_horz:hover::after {
+  opacity: 1;
+}
+
+.flexlayout__splitter_vert:hover::after {
+  opacity: 1;
+}
+
 .flexlayout__splitter:hover {
-  background: var(--accent-color);
+  background: transparent;
 }
 
 .flexlayout__splitter_drag {
