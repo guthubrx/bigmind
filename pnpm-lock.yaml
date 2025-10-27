@@ -122,6 +122,9 @@ importers:
       flexlayout-react:
         specifier: ^0.8.17
         version: 0.8.17(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      highlight.js:
+        specifier: ^11.11.1
+        version: 11.11.1
       html-to-image:
         specifier: ^1.11.11
         version: 1.11.13
@@ -203,7 +206,7 @@ importers:
         version: 4.3.2(typescript@5.9.2)(vite@5.4.20(@types/node@20.19.17))
       vitest:
         specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.19.17)(jsdom@27.0.1(postcss@8.5.6))
+        version: 1.6.1(@types/node@20.19.17)(jsdom@27.0.1)
 
   packages/core:
     dependencies:
@@ -9271,41 +9274,6 @@ snapshots:
     optionalDependencies:
       '@types/node': 20.19.17
       fsevents: 2.3.3
-
-  vitest@1.6.1(@types/node@20.19.17)(jsdom@27.0.1(postcss@8.5.6)):
-    dependencies:
-      '@vitest/expect': 1.6.1
-      '@vitest/runner': 1.6.1
-      '@vitest/snapshot': 1.6.1
-      '@vitest/spy': 1.6.1
-      '@vitest/utils': 1.6.1
-      acorn-walk: 8.3.4
-      chai: 4.5.0
-      debug: 4.4.3
-      execa: 8.0.1
-      local-pkg: 0.5.1
-      magic-string: 0.30.19
-      pathe: 1.1.2
-      picocolors: 1.1.1
-      std-env: 3.9.0
-      strip-literal: 2.1.1
-      tinybench: 2.9.0
-      tinypool: 0.8.4
-      vite: 5.4.20(@types/node@20.19.17)
-      vite-node: 1.6.1(@types/node@20.19.17)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/node': 20.19.17
-      jsdom: 27.0.1(postcss@8.5.6)
-    transitivePeerDependencies:
-      - less
-      - lightningcss
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
 
   vitest@1.6.1(@types/node@20.19.17)(jsdom@27.0.1):
     dependencies:
