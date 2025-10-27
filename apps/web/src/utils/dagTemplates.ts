@@ -10,12 +10,14 @@ export interface DagTemplate {
   description: string;
   tags: DagTag[];
   links: DagLink[];
+  isFavorite?: boolean;
 }
 
 // Modèle: Taxonomie biologique
 export const biologicalTaxonomyTemplate: DagTemplate = {
   name: 'Biological Taxonomy',
   description: 'Hierarchical biological classification',
+  isFavorite: true,
   tags: [
     {
       id: 'kingdom-1',
@@ -73,6 +75,7 @@ export const biologicalTaxonomyTemplate: DagTemplate = {
 export const softwareArchitectureTemplate: DagTemplate = {
   name: 'Software Architecture',
   description: 'Layered software architecture',
+  isFavorite: true,
   tags: [
     {
       id: 'arch-1',
@@ -183,6 +186,17 @@ export const templates: DagTemplate[] = [
 
 export const getTemplate = (name: string): DagTemplate | undefined =>
   templates.find(t => t.name === name);
+
+/**
+ * FR: Obtenir la liste des templates avec filtre optionnel sur les favoris
+ * EN: Get templates list with optional favorites filter
+ */
+export const getTemplates = (favoritesOnly?: boolean): DagTemplate[] => {
+  if (favoritesOnly) {
+    return templates.filter(t => t.isFavorite === true);
+  }
+  return templates;
+};
 
 /**
  * FR: Cloner profondément un tag pour éviter les mutations du template original
