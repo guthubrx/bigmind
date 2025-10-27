@@ -3,7 +3,7 @@
  * EN: Main BigMind application component
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useMindmap } from './hooks/useMindmap';
 import DockableLayout from './layouts/DockableLayout';
@@ -11,6 +11,8 @@ import SettingsPage from './pages/Settings';
 import { useAppSettings } from './hooks/useAppSettings';
 import { useOpenFiles } from './hooks/useOpenFiles';
 import { useTagGraphFileSync } from './hooks/useTagGraphFileSync';
+import { useColumnCollapse } from './hooks/useColumnCollapse';
+import { useCanvasOptions } from './hooks/useCanvasOptions';
 import { clearTagsLocalStorage } from './utils/clearTagsLocalStorage';
 import './App.css';
 
@@ -19,6 +21,10 @@ function App() {
   const loadAppSettings = useAppSettings(s => s.load);
   const reopenFilesOnStartup = useAppSettings(s => s.reopenFilesOnStartup);
   const restoreOpenFilesFromStorage = useOpenFiles(s => s.restoreOpenFilesFromStorage);
+  const openFiles = useOpenFiles(s => s.openFiles);
+  const loadColumnCollapse = useColumnCollapse(s => s.load);
+  const loadCanvasOptions = useCanvasOptions(s => s.load);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   // FR: Nettoyer le localStorage des anciens tags (une seule fois au démarrage)
   // EN: Clean localStorage of old tags (once on startup)
@@ -30,27 +36,30 @@ function App() {
   // EN: Sync tags with active file
   useTagGraphFileSync();
 
-  // FR: Initialiser une nouvelle carte au chargement
-  // EN: Initialize a new map on load
-  useEffect(() => {
-    if (!mindMap) {
-      actions.createNewMap('Ma première carte');
-    }
-  }, [mindMap, actions]);
-
   // FR: Charger les paramètres (accent color, etc.) très tôt au démarrage
   // EN: Load persisted settings (accent color, etc.) early on startup
   useEffect(() => {
     loadAppSettings();
-  }, [loadAppSettings]);
+    loadColumnCollapse();
+    loadCanvasOptions();
+    setSettingsLoaded(true);
+  }, [loadAppSettings, loadColumnCollapse, loadCanvasOptions]);
 
-  // FR: Restaurer les fichiers ouverts si le paramètre est activé
-  // EN: Restore open files if setting is enabled
+  // FR: Restaurer les fichiers ouverts si le paramètre est activé (attendre que les settings soient chargés)
+  // EN: Restore open files if setting is enabled (wait for settings to load)
   useEffect(() => {
-    if (reopenFilesOnStartup) {
+    if (settingsLoaded && reopenFilesOnStartup) {
       restoreOpenFilesFromStorage();
     }
-  }, [reopenFilesOnStartup, restoreOpenFilesFromStorage]);
+  }, [settingsLoaded, reopenFilesOnStartup, restoreOpenFilesFromStorage]);
+
+  // FR: Initialiser une nouvelle carte au chargement SEULEMENT si aucun fichier n'a été restauré
+  // EN: Initialize a new map on load ONLY if no files were restored
+  useEffect(() => {
+    if (settingsLoaded && !mindMap && openFiles.length === 0) {
+      actions.createNewMap('Ma première carte');
+    }
+  }, [settingsLoaded, mindMap, actions, openFiles.length]);
 
   return (
     <div className="app">

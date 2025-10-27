@@ -23,6 +23,15 @@ export interface OpenFile {
   sheets?: Array<{ id: string; title: string }>;
   activeSheetId?: string | null;
   sheetsData?: any[]; // JSON brut des feuilles pour re-swapper
+  // FR: Viewport (position et zoom) pour la carte
+  // EN: Viewport (position and zoom) for the map
+  viewport?: { x: number; y: number; zoom: number };
+  // FR: Nœud sélectionné
+  // EN: Selected node
+  selectedNodeId?: string | null;
+  // FR: Tags cachés pour cette carte
+  // EN: Hidden tags for this map
+  hiddenTags?: string[];
 }
 
 export interface MindMapData {
@@ -55,6 +64,9 @@ interface OpenFilesState {
   updateActiveFileDefaultNodeStyle: (
     style: Partial<{ fontSize: number; width: number; fontFamily: string }>
   ) => void;
+  updateActiveFileViewport: (viewport: { x: number; y: number; zoom: number }) => void;
+  updateActiveFileSelection: (selectedNodeId: string | null) => void;
+  updateActiveFileHiddenTags: (hiddenTags: string[]) => void;
   saveOpenFilesToStorage: () => void;
   restoreOpenFilesFromStorage: () => void;
 }
@@ -531,23 +543,78 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     }));
   },
 
+  // FR: Mettre à jour le viewport du fichier actif
+  // EN: Update viewport of active file
+  updateActiveFileViewport: (viewport: { x: number; y: number; zoom: number }) => {
+    const state = get();
+    const active = state.openFiles.find(f => f.isActive);
+    if (!active) return;
+
+    set(prev => ({
+      ...prev,
+      openFiles: prev.openFiles.map(f => (f.id === active.id ? { ...f, viewport } : f)),
+    }));
+
+    // FR: Sauvegarder immédiatement dans localStorage (synchrone)
+    // EN: Save immediately to localStorage (synchronous)
+    get().saveOpenFilesToStorage();
+  },
+
+  // FR: Mettre à jour la sélection du fichier actif
+  // EN: Update selection of active file
+  updateActiveFileSelection: (selectedNodeId: string | null) => {
+    const state = get();
+    const active = state.openFiles.find(f => f.isActive);
+    if (!active) return;
+
+    set(prev => ({
+      ...prev,
+      openFiles: prev.openFiles.map(f => (f.id === active.id ? { ...f, selectedNodeId } : f)),
+    }));
+
+    // FR: Sauvegarder immédiatement dans localStorage (synchrone)
+    // EN: Save immediately to localStorage (synchronous)
+    get().saveOpenFilesToStorage();
+  },
+
+  // FR: Mettre à jour les tags cachés du fichier actif
+  // EN: Update hidden tags of active file
+  updateActiveFileHiddenTags: (hiddenTags: string[]) => {
+    const state = get();
+    const active = state.openFiles.find(f => f.isActive);
+    if (!active) return;
+
+    set(prev => ({
+      ...prev,
+      openFiles: prev.openFiles.map(f => (f.id === active.id ? { ...f, hiddenTags } : f)),
+    }));
+
+    // FR: Sauvegarder immédiatement dans localStorage (synchrone)
+    // EN: Save immediately to localStorage (synchronous)
+    get().saveOpenFilesToStorage();
+  },
+
   // FR: Sauvegarder les fichiers ouverts dans localStorage
   // EN: Save open files to localStorage
   saveOpenFilesToStorage: () => {
     const state = get();
     try {
-      // FR: Ne sauvegarder que les fichiers "new" (créés dans l'app)
-      // EN: Only save "new" files (created in app)
-      const filesToSave = state.openFiles
-        .filter(f => f.type === 'new')
-        .map(f => ({
-          id: f.id,
-          name: f.name,
-          type: f.type,
-          content: f.content,
-          isActive: f.isActive,
-          lastModified: f.lastModified,
-        }));
+      // FR: Sauvegarder TOUS les fichiers avec leur contenu actuel
+      // EN: Save ALL files with their current content
+      const filesToSave = state.openFiles.map(f => ({
+        id: f.id,
+        name: f.name,
+        type: f.type,
+        path: f.path,
+        content: f.content,
+        isActive: f.isActive,
+        lastModified: f.lastModified,
+        viewport: f.viewport,
+        selectedNodeId: f.selectedNodeId,
+        hiddenTags: f.hiddenTags,
+        sheets: f.sheets,
+        activeSheetId: f.activeSheetId,
+      }));
 
       localStorage.setItem(
         'bigmind_open_files',

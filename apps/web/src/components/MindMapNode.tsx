@@ -3,7 +3,7 @@
  * EN: Custom mind map node component
  */
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { useMindmap } from '../hooks/useMindmap';
 import { useSelection } from '../hooks/useSelection';
@@ -74,6 +74,7 @@ function MindMapNode({ data, selected }: Props) {
   // EN: Get global default settings and active file settings
   const defaultNodeFontSize = useAppSettings(s => s.defaultNodeFontSize);
   const defaultNodeWidth = useAppSettings(s => s.defaultNodeWidth);
+  const defaultNodeHeight = useAppSettings(s => s.defaultNodeHeight);
   const defaultNodeFontFamily = useAppSettings(s => s.defaultNodeFontFamily);
   const getActiveFile = useOpenFiles(s => s.getActiveFile);
   const activeFile = getActiveFile();
@@ -98,6 +99,16 @@ function MindMapNode({ data, selected }: Props) {
     }
     return defaultNodeWidth || 200;
   }, [data.width, activeFile, defaultNodeWidth]);
+
+  const getEffectiveHeight = useCallback((): number | undefined => {
+    if (data.height) return data.height;
+    if (activeFile?.content?.defaultNodeStyle?.height) {
+      return activeFile.content.defaultNodeStyle.height;
+    }
+    // FR: Si defaultNodeHeight est 0, retourner undefined pour hauteur automatique
+    // EN: If defaultNodeHeight is 0, return undefined for automatic height
+    return defaultNodeHeight > 0 ? defaultNodeHeight : undefined;
+  }, [data.height, activeFile, defaultNodeHeight]);
 
   const getEffectiveFontFamily = useCallback((): string => {
     if (data.style?.fontFamily) return data.style.fontFamily;
@@ -436,6 +447,7 @@ function MindMapNode({ data, selected }: Props) {
         borderRadius: data.style?.borderRadius || 8,
         boxSizing: 'border-box',
         width: getEffectiveWidth(),
+        height: getEffectiveHeight(),
         padding: '8px 12px',
         outline,
         outlineOffset,

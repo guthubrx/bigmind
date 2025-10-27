@@ -72,11 +72,12 @@
 }
 
 .properties-content {
-  flex: 1;
+  flex: 1 1 auto;
   padding: 16px;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  max-height: 100%;
   overflow: hidden;
 }
 
@@ -244,17 +245,20 @@
 .content-tab {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
+  max-height: 100%;
+  height: 100%;
 }
 
 /* FR: Groupe flex qui prend l'espace disponible */
 /* EN: Flex group that takes available space */
 .form-group-flex {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  max-height: 100%;
   margin-bottom: 0;
 }
 

@@ -14,6 +14,7 @@
 
 import { create } from 'zustand';
 import { DagTag, DagLink, RelationType } from '../types/dag';
+import { useOpenFiles } from './useOpenFiles';
 
 interface TagStoreState {
   // FR: Catalogue des tags
@@ -462,10 +463,16 @@ export const useTagStore = create<TagStoreState>((set, get) => ({
   toggleTagVisibility: (tagId: string) => {
     set(state => {
       const isHidden = state.hiddenTags.includes(tagId);
+      const newHiddenTags = isHidden
+        ? state.hiddenTags.filter(id => id !== tagId)
+        : [...state.hiddenTags, tagId];
+
+      // FR: Sauvegarder dans le fichier actif
+      // EN: Save in active file
+      useOpenFiles.getState().updateActiveFileHiddenTags(newHiddenTags);
+
       return {
-        hiddenTags: isHidden
-          ? state.hiddenTags.filter(id => id !== tagId)
-          : [...state.hiddenTags, tagId],
+        hiddenTags: newHiddenTags,
       };
     });
   },
@@ -475,10 +482,16 @@ export const useTagStore = create<TagStoreState>((set, get) => ({
       const isHidden = state.hiddenTags.includes(tagId);
       if (hidden === isHidden) return state;
 
+      const newHiddenTags = hidden
+        ? [...state.hiddenTags, tagId]
+        : state.hiddenTags.filter(id => id !== tagId);
+
+      // FR: Sauvegarder dans le fichier actif
+      // EN: Save in active file
+      useOpenFiles.getState().updateActiveFileHiddenTags(newHiddenTags);
+
       return {
-        hiddenTags: hidden
-          ? [...state.hiddenTags, tagId]
-          : state.hiddenTags.filter(id => id !== tagId),
+        hiddenTags: newHiddenTags,
       };
     });
   },

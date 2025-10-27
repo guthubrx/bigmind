@@ -30,6 +30,8 @@ function SettingsPage() {
   const setDefaultNodeFontSize = useAppSettings(s => s.setDefaultNodeFontSize);
   const defaultNodeWidth = useAppSettings(s => s.defaultNodeWidth);
   const setDefaultNodeWidth = useAppSettings(s => s.setDefaultNodeWidth);
+  const defaultNodeHeight = useAppSettings(s => s.defaultNodeHeight);
+  const setDefaultNodeHeight = useAppSettings(s => s.setDefaultNodeHeight);
   const defaultNodeFontFamily = useAppSettings(s => s.defaultNodeFontFamily);
   const setDefaultNodeFontFamily = useAppSettings(s => s.setDefaultNodeFontFamily);
   const allInterfaceThemes = getAllInterfaceThemes();
@@ -236,6 +238,28 @@ function SettingsPage() {
                         style={{ width: '100px' }}
                       />
                       <span style={{ fontSize: '12px', color: 'var(--fg-secondary)' }}>px</span>
+                    </div>
+                  </div>
+
+                  {/* FR: Hauteur par défaut */}
+                  {/* EN: Default height */}
+                  <div className="settings-field">
+                    <span className="settings-label">Hauteur par défaut des nœuds</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input
+                        id="defaultNodeHeight"
+                        type="number"
+                        min="0"
+                        max="400"
+                        step="10"
+                        value={defaultNodeHeight}
+                        onChange={e => setDefaultNodeHeight(Number(e.target.value))}
+                        aria-label="Hauteur par défaut des nœuds"
+                        style={{ width: '100px' }}
+                      />
+                      <span style={{ fontSize: '12px', color: 'var(--fg-secondary)' }}>
+                        px (0 = automatique)
+                      </span>
                     </div>
                   </div>
 

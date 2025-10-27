@@ -1,10 +1,11 @@
 # 🧠 BigMind
 
-**BigMind** est un clone moderne de XMind, un logiciel de cartographie mentale (mind mapping) open source, cross-platform et performant.
+**BigMind** est un logiciel de cartographie mentale (mind mapping) open source, cross-platform et performant, avec support des formats standards incluant XMind et FreeMind.
 
 ## ✨ Fonctionnalités
 
 ### 🎯 MVP (Version actuelle)
+
 - **Canvas interactif** : Zoom, pan, drag & drop, sélection multiple
 - **Nœuds intelligents** : Création, édition inline, suppression, re-hiérarchisation
 - **Styles flat design** : Thème clair/sombre avec accent color unique
@@ -16,6 +17,7 @@
 - **i18n** : Support français/anglais
 
 ### 🚀 Roadmap
+
 - **Phase 2** : Thèmes avancés, images, stickers, modèles
 - **Phase 3** : Support .xmind complet, export PDF, impression
 - **Phase 4** : Collaboration temps réel (CRDT), cloud sync
@@ -23,6 +25,7 @@
 ## 🏗️ Architecture
 
 ### Monorepo
+
 - **pnpm** workspaces + **Turbo** pour la performance
 - **Packages** :
   - `@bigmind/core` : Logique métier, modèles, parsers
@@ -32,6 +35,7 @@
   - `apps/desktop` : Application desktop (Tauri)
 
 ### Stack Technique
+
 - **Frontend** : React 18 + TypeScript + Vite
 - **UI** : TailwindCSS + Radix UI + shadcn
 - **State** : Zustand + Immer
@@ -42,11 +46,13 @@
 ## 🚀 Installation
 
 ### Prérequis
+
 - **Node.js** ≥ 18.0.0
 - **pnpm** ≥ 8.0.0
 - **Rust** (pour l'app desktop)
 
 ### Installation
+
 ```bash
 # Cloner le repository
 git clone https://github.com/guthubrx/bigmind.git
@@ -65,6 +71,7 @@ pnpm dev:desktop
 ## 📱 Utilisation
 
 ### Application Web
+
 ```bash
 # Développement
 pnpm dev
@@ -77,6 +84,7 @@ pnpm preview
 ```
 
 ### Application Desktop
+
 ```bash
 # Développement
 pnpm dev:desktop
@@ -87,22 +95,23 @@ pnpm build:desktop
 
 ## ⌨️ Raccourcis Clavier
 
-| Raccourci | Action |
-|-----------|--------|
-| `Enter` | Nouveau nœud sibling |
-| `Tab` | Nouveau nœud enfant |
-| `Shift+Tab` | Remonter dans la hiérarchie |
-| `Delete` / `Backspace` | Supprimer la sélection |
-| `F2` | Édition inline |
-| `Ctrl/Cmd+Z` | Annuler |
-| `Ctrl/Cmd+Y` | Refaire |
-| `Ctrl/Cmd+S` | Sauvegarder |
-| `Ctrl/Cmd+O` | Ouvrir fichier |
-| `Ctrl/Cmd+N` | Nouvelle carte |
+| Raccourci              | Action                      |
+| ---------------------- | --------------------------- |
+| `Enter`                | Nouveau nœud sibling        |
+| `Tab`                  | Nouveau nœud enfant         |
+| `Shift+Tab`            | Remonter dans la hiérarchie |
+| `Delete` / `Backspace` | Supprimer la sélection      |
+| `F2`                   | Édition inline              |
+| `Ctrl/Cmd+Z`           | Annuler                     |
+| `Ctrl/Cmd+Y`           | Refaire                     |
+| `Ctrl/Cmd+S`           | Sauvegarder                 |
+| `Ctrl/Cmd+O`           | Ouvrir fichier              |
+| `Ctrl/Cmd+N`           | Nouvelle carte              |
 
 ## 🎨 Design System
 
 BigMind utilise un design system flat moderne avec :
+
 - **Palette neutre** : Gris sobres et contrastes optimisés
 - **Accent color unique** : Bleu moderne (#3b82f6)
 - **Typographie** : Système harmonieux
@@ -125,12 +134,14 @@ pnpm test:coverage
 ## 📦 Builds
 
 ### Web
+
 ```bash
 pnpm build
 # Génère dans apps/web/dist/
 ```
 
 ### Desktop
+
 ```bash
 pnpm build:desktop
 # Génère dans apps/desktop/src-tauri/target/release/
@@ -144,6 +155,7 @@ pnpm build:desktop
 4. Push et créer une Pull Request
 
 ### Standards
+
 - **Code** : TypeScript strict, ESLint, Prettier
 - **Commits** : Conventional Commits
 - **Tests** : Coverage ≥ 80% sur le core

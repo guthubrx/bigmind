@@ -45,6 +45,8 @@ type AppSettingsState = {
   setDefaultNodeFontSize: (size: number) => void;
   defaultNodeWidth: number;
   setDefaultNodeWidth: (width: number) => void;
+  defaultNodeHeight: number;
+  setDefaultNodeHeight: (height: number) => void;
   defaultNodeFontFamily: string;
   setDefaultNodeFontFamily: (fontFamily: string) => void;
 
@@ -64,6 +66,7 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
   reopenFilesOnStartup: true,
   defaultNodeFontSize: 14,
   defaultNodeWidth: 200,
+  defaultNodeHeight: 0,
   defaultNodeFontFamily: 'inherit',
 
   setAccentColor: (color: string) => {
@@ -233,6 +236,19 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
     }
   },
 
+  setDefaultNodeHeight: (height: number) => {
+    set({ defaultNodeHeight: height });
+
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      obj.defaultNodeHeight = height;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+  },
+
   setDefaultNodeFontFamily: (fontFamily: string) => {
     set({ defaultNodeFontFamily: fontFamily });
 
@@ -297,6 +313,9 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
         }
         if (obj.defaultNodeWidth !== undefined) {
           set({ defaultNodeWidth: obj.defaultNodeWidth });
+        }
+        if (obj.defaultNodeHeight !== undefined) {
+          set({ defaultNodeHeight: obj.defaultNodeHeight });
         }
         if (obj.defaultNodeFontFamily !== undefined) {
           set({ defaultNodeFontFamily: obj.defaultNodeFontFamily });

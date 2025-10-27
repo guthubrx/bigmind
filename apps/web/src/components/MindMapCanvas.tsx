@@ -16,6 +16,7 @@ import {
   MiniMap,
   NodeTypes,
   EdgeTypes,
+  Viewport,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import '../styles/drag-drop-animations.css';
@@ -48,6 +49,9 @@ function MindMapCanvas() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<any>(null);
   const setFlowInstance = useFlowInstance(s => s.setInstance);
+  const viewportRestoredRef = useRef<boolean>(false);
+  const lastFileIdRef = useRef<string | null>(null);
+  const restoringRef = useRef<boolean>(false);
   // const zoom = useViewport((s) => s.zoom);
   // const setZoom = useViewport((s) => s.setZoom);
   const nodesDraggable = useCanvasOptions(s => s.nodesDraggable);
@@ -59,6 +63,7 @@ function MindMapCanvas() {
   const addSiblingToActive = useOpenFiles(s => s.addSiblingToActive);
   const removeNodeFromActive = useOpenFiles(s => s.removeNodeFromActive);
   const applyAutomaticColorsToAll = useOpenFiles(s => s.applyAutomaticColorsToAll);
+  const updateActiveFileViewport = useOpenFiles(s => s.updateActiveFileViewport);
   const getShortcut = useShortcuts(s => s.getShortcut);
 
   // FR: Hooks pour filtrer les nœuds par tags cachés
@@ -75,6 +80,7 @@ function MindMapCanvas() {
   // FR: Récupérer les paramètres par défaut des nœuds
   // EN: Get default node settings
   const defaultNodeWidth = useAppSettings(s => s.defaultNodeWidth);
+  const defaultNodeHeight = useAppSettings(s => s.defaultNodeHeight);
 
   // FR: Hook pour gérer le drag & drop des nœuds
   // EN: Hook to manage node drag & drop
@@ -123,10 +129,10 @@ function MindMapCanvas() {
 
     // FR: Layout horizontal avec calcul dynamique de la hauteur pour éviter les chevauchements
     // EN: Horizontal layout with dynamic height calculation to avoid overlaps
-    const LEVEL_WIDTH = 320; // Distance entre niveaux
     const LINE_HEIGHT = 20; // Hauteur de ligne approx
     const NODE_VPAD = 16; // Padding vertical
     const SIBLING_GAP = 16; // Espace entre sous-arbres
+    const HORIZONTAL_GAP = 80; // Espace horizontal entre les niveaux
 
     // FR: Calculer la largeur effective avec hiérarchie : fichier > global
     // EN: Calculate effective width with hierarchy: file > global
@@ -138,8 +144,19 @@ function MindMapCanvas() {
     };
 
     const NODE_WIDTH = getEffectiveNodeWidth();
+    // FR: Distance entre niveaux adaptée à la largeur des nœuds
+    // EN: Distance between levels adapted to node width
+    const LEVEL_WIDTH = NODE_WIDTH + HORIZONTAL_GAP;
 
     const estimateTextHeight = (text: string): number => {
+      // FR: Si une hauteur fixe est définie, l'utiliser
+      // EN: If a fixed height is defined, use it
+      if (defaultNodeHeight > 0) {
+        return defaultNodeHeight;
+      }
+
+      // FR: Sinon, calcul automatique basé sur le texte
+      // EN: Otherwise, automatic calculation based on text
       if (!text) return LINE_HEIGHT + NODE_VPAD;
       const words = text.split(/\s+/);
       const avgCharWidth = 7;
@@ -338,7 +355,7 @@ function MindMapCanvas() {
     // console.warn('ReactFlow nodes created:', nodes.length);
     return nodes;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeFile, defaultNodeWidth]);
+  }, [activeFile, defaultNodeWidth, defaultNodeHeight]);
 
   // FR: Convertir les connexions en arêtes ReactFlow
   // EN: Convert connections to ReactFlow edges
@@ -547,6 +564,81 @@ function MindMapCanvas() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [themeId]); // Seulement quand le thème change
 
+  // FR: Callback pour sauvegarder le viewport quand il change
+  // EN: Callback to save viewport when it changes
+  const onMoveEnd = useCallback(
+    (_event: any, viewport: Viewport) => {
+      if (!activeFile || !viewportRestoredRef.current) return;
+      updateActiveFileViewport(viewport);
+    },
+    [activeFile, updateActiveFileViewport]
+  );
+
+  // FR: Restaurer le viewport et la sélection quand le fichier change
+  // EN: Restore viewport and selection when file changes
+  useEffect(() => {
+    if (!activeFile) return;
+
+    // FR: Si le fichier a changé, restaurer son viewport et sa sélection
+    // EN: If file changed, restore its viewport and selection
+    if (activeFile.id !== lastFileIdRef.current) {
+      lastFileIdRef.current = activeFile.id;
+      viewportRestoredRef.current = false;
+      restoringRef.current = true;
+
+      // FR: Restaurer la sélection immédiatement
+      // EN: Restore selection immediately
+      if (activeFile.selectedNodeId) {
+        // FR: Utiliser setState directement pour éviter de déclencher la sauvegarde
+        // EN: Use setState directly to avoid triggering save
+        useSelection.setState({
+          selectedNodeId: activeFile.selectedNodeId,
+          selectedNodeIds: [activeFile.selectedNodeId],
+        });
+      } else {
+        useSelection.setState({
+          selectedNodeId: null,
+          selectedNodeIds: [],
+        });
+      }
+
+      // FR: Restaurer les tags cachés
+      // EN: Restore hidden tags
+      if (activeFile.hiddenTags && activeFile.hiddenTags.length > 0) {
+        useTagStore.setState({ hiddenTags: activeFile.hiddenTags });
+      } else {
+        useTagStore.setState({ hiddenTags: [] });
+      }
+
+      // FR: Attendre que l'instance soit prête et que les nœuds soient rendus
+      // EN: Wait for instance to be ready and nodes to be rendered
+      const attemptRestore = (attempts = 0) => {
+        if (attempts > 20) return;
+
+        if (!instanceRef.current) {
+          setTimeout(() => attemptRestore(attempts + 1), 100);
+          return;
+        }
+
+        if (activeFile.viewport) {
+          // FR: Restaurer le viewport sauvegardé
+          // EN: Restore saved viewport
+          instanceRef.current.setViewport(activeFile.viewport, { duration: 300 });
+        } else {
+          // FR: Pas de viewport sauvegardé, faire un fitView
+          // EN: No saved viewport, do fitView
+          instanceRef.current.fitView({ duration: 300 });
+        }
+        viewportRestoredRef.current = true;
+        restoringRef.current = false;
+      };
+
+      // FR: Commencer les tentatives de restauration
+      // EN: Start restoration attempts
+      setTimeout(() => attemptRestore(), 100);
+    }
+  }, [activeFile]);
+
   const onConnect = useCallback(
     (params: Connection) => setEdges(eds => addEdge(params, eds)),
     [setEdges]
@@ -661,9 +753,9 @@ function MindMapCanvas() {
             (curNode?.position?.y || 0) + ((curNode?.data as any)?.height || 40) / 2;
           let bestId: string | undefined;
           let bestD = Number.POSITIVE_INFINITY;
-          for (const cid of candidates) {
+          candidates.forEach(cid => {
             const c = positioned.find(n => n.id === cid);
-            if (!c) continue;
+            if (!c) return;
             const cx = (c.position?.x || 0) + ((c.data as any)?.width || 200) / 2;
             const cy = (c.position?.y || 0) + ((c.data as any)?.height || 40) / 2;
             const dx = cx - curCenterX;
@@ -673,7 +765,7 @@ function MindMapCanvas() {
               bestD = d2;
               bestId = cid;
             }
-          }
+          });
           select(bestId || candidates[0]);
           return;
         }
@@ -682,9 +774,9 @@ function MindMapCanvas() {
         const curCenterY = (curNode?.position?.y || 0) + ((curNode?.data as any)?.height || 40) / 2;
         let bestId: string | undefined;
         let bestD = Number.POSITIVE_INFINITY;
-        for (const cid of childIds) {
+        childIds.forEach(cid => {
           const c = positioned.find(n => n.id === cid);
-          if (!c) continue;
+          if (!c) return;
           const cx = (c.position?.x || 0) + ((c.data as any)?.width || 200) / 2;
           const cy = (c.position?.y || 0) + ((c.data as any)?.height || 40) / 2;
           const dx = cx - curCenterX;
@@ -694,7 +786,7 @@ function MindMapCanvas() {
             bestD = d2;
             bestId = cid;
           }
-        }
+        });
         select(bestId || childIds[0]);
       };
 
@@ -817,7 +909,14 @@ function MindMapCanvas() {
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [activeFile, selectedNodeId, setSelectedNodeId, getShortcut, addSiblingToActive]);
+  }, [
+    activeFile,
+    selectedNodeId,
+    setSelectedNodeId,
+    getShortcut,
+    addSiblingToActive,
+    updateActiveFileNode,
+  ]);
 
   // FR: Raccourci Tab pour créer un enfant du nœud sélectionné
   // EN: Tab shortcut to create child of selected node
@@ -914,14 +1013,14 @@ function MindMapCanvas() {
         onNodeDragStart={onNodeDragStart}
         onNodeDrag={onNodeDrag}
         onNodeDragStop={onNodeDragStop}
-        fitView
+        onMoveEnd={onMoveEnd}
         attributionPosition="bottom-left"
         style={{ width: '100%', height: '100%', minHeight: '400px' }}
         onInit={inst => {
           instanceRef.current = inst;
           setFlowInstance(inst);
         }}
-        panOnScroll={true}
+        panOnScroll
         zoomOnScroll={false}
         zoomActivationKeyCode="Meta"
         minZoom={0.05}

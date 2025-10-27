@@ -13,6 +13,7 @@
   transition: all 0.15s ease;
   flex: 1;
   min-height: 0;
+  max-height: 100%;
 }
 
 .bytemd-editor-wrapper:hover {
@@ -32,6 +33,7 @@
   padding: 6px;
   background-color: var(--bg-secondary);
   border-bottom: 0.5px solid var(--border-color, rgba(0, 0, 0, 0.1));
+  flex-shrink: 0;
 }
 
 .bytemd-mode-btn {
@@ -71,21 +73,34 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  max-height: 100%;
+}
+
+/* FR: Forcer l'enfant direct à prendre toute la hauteur */
+/* EN: Force direct child to take full height */
+.bytemd-content > * {
+  flex: 1 !important;
+  min-height: 0 !important;
+  height: 100% !important;
 }
 
 /* FR: Personnalisation de ByteMD */
 /* EN: ByteMD customization */
 .bytemd {
+  flex: 1 !important;
   height: 100% !important;
+  max-height: 100% !important;
   border: none !important;
   font-family: inherit !important;
   display: flex !important;
   flex-direction: column !important;
+  overflow: hidden !important;
 }
 
 .bytemd-split {
   flex: 1 !important;
   min-height: 0 !important;
+  max-height: 100% !important;
   display: flex !important;
   overflow: hidden !important;
 }
@@ -99,6 +114,7 @@
 .bytemd-body {
   flex: 1 !important;
   min-height: 0 !important;
+  max-height: 100% !important;
   overflow: hidden !important;
   display: flex !important;
   flex-direction: column !important;
@@ -123,10 +139,12 @@
   color: var(--fg) !important;
   font-size: 13px !important;
   line-height: 1.6 !important;
-  padding: 12px !important;
+  padding: 4px !important;
   flex: 1 !important;
+  width: 100% !important;
   min-height: 0 !important;
-  overflow: auto !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
 }
 
 .bytemd-editor .CodeMirror {
@@ -135,17 +153,38 @@
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace !important;
   font-size: 13px !important;
   height: 100% !important;
+  max-height: 100% !important;
   display: flex !important;
   flex-direction: column !important;
+  overflow: hidden !important;
 }
 
 .bytemd-editor .CodeMirror-scroll {
   flex: 1 !important;
   min-height: 0 !important;
+  overflow-y: scroll !important;
+  overflow-x: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 .bytemd-editor .CodeMirror-sizer {
-  min-height: 100% !important;
+  min-height: auto !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.bytemd-editor .CodeMirror-lines {
+  padding: 4px 0 !important;
+  width: 100% !important;
+}
+
+.bytemd-editor .CodeMirror-lines > div {
+  padding: 0 !important;
+  width: 100% !important;
 }
 
 .bytemd-editor .CodeMirror-cursor {
@@ -157,7 +196,16 @@
 }
 
 .bytemd-editor .CodeMirror-line {
-  padding-left: 8px !important;
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+}
+
+.bytemd-editor .CodeMirror-code {
+  width: 100% !important;
+}
+
+.bytemd-editor .CodeMirror-gutters {
+  display: none !important;
 }
 
 /* FR: Coloration syntaxique Markdown */
@@ -196,12 +244,7 @@
 /* FR: Zone de preview */
 /* EN: Preview area */
 .bytemd-preview {
-  background-color: var(--bg) !important;
-  color: var(--fg) !important;
-  padding: 12px !important;
-  flex: 1 !important;
-  min-height: 0 !important;
-  overflow: auto !important;
+  display: none !important;
 }
 
 /* FR: Viewer container en mode lecture seule */
@@ -209,8 +252,10 @@
 .bytemd-viewer-container {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  padding: 16px;
+  max-height: 100%;
+  overflow-y: scroll !important;
+  overflow-x: hidden;
+  padding: 8px;
   background-color: var(--bg);
 }
 

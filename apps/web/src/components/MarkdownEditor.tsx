@@ -40,10 +40,7 @@ function MarkdownEditor({
   const [mode, setMode] = useState<'edit' | 'preview'>('edit');
 
   return (
-    <div
-      className="bytemd-editor-wrapper"
-      style={height ? { height: `${height}px` } : undefined}
-    >
+    <div className="bytemd-editor-wrapper" style={height ? { height: `${height}px` } : undefined}>
       {/* FR: Bouton toggle mode */}
       {/* EN: Mode toggle button */}
       <div className="bytemd-mode-toggle">
@@ -76,6 +73,7 @@ function MarkdownEditor({
             plugins={plugins}
             onChange={v => onChange(v)}
             placeholder={placeholder}
+            mode="tab"
             locale={{
               write: 'Éditer',
               preview: 'Aperçu',
