@@ -51,6 +51,8 @@ interface OpenFilesState {
   applyAutomaticColorsToAll: (theme: any) => void;
   updateActiveFileNodePalette: (paletteId: string) => void;
   updateActiveFileTagPalette: (paletteId: string) => void;
+  saveOpenFilesToStorage: () => void;
+  restoreOpenFilesFromStorage: () => void;
 }
 
 /**
@@ -88,6 +90,10 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       };
     });
 
+    // FR: Sauvegarder dans localStorage
+    // EN: Save to localStorage
+    get().saveOpenFilesToStorage();
+
     console.warn('✅ Fichier ouvert avec ID:', newFile.id);
     return newFile.id;
   },
@@ -117,6 +123,10 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
         activeFileId: newActiveFileId,
       };
     });
+
+    // FR: Sauvegarder dans localStorage
+    // EN: Save to localStorage
+    get().saveOpenFilesToStorage();
   },
 
   // FR: Activer un fichier
@@ -127,6 +137,10 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       openFiles: state.openFiles.map(f => ({ ...f, isActive: f.id === fileId })),
       activeFileId: fileId,
     }));
+
+    // FR: Sauvegarder dans localStorage
+    // EN: Save to localStorage
+    get().saveOpenFilesToStorage();
   },
 
   // FR: Définir la feuille active pour un fichier
@@ -385,8 +399,23 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     // EN: Get palette and create temporary theme
     const palette = getPalette(paletteId);
     const tempTheme = {
+      id: 'temp',
+      name: 'Temporary Theme',
       colors: {
+        background: '#f8fafc',
+        backgroundSecondary: '#ffffff',
+        backgroundTertiary: '#f1f5f9',
+        foreground: '#0f172a',
+        foregroundSecondary: '#475569',
+        foregroundMuted: '#94a3b8',
         nodeBackground: '#ffffff',
+        nodeText: '#0f172a',
+        nodeBorder: '#e2e8f0',
+        accent: '#3b82f6',
+        success: '#10b981',
+        warning: '#f59e0b',
+        error: '#ef4444',
+        info: '#3b82f6',
       },
       palette: palette.colors,
     };
@@ -468,5 +497,63 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
         f.id === active.id ? { ...f, content: updatedContent } : f
       ),
     }));
+  },
+
+  // FR: Sauvegarder les fichiers ouverts dans localStorage
+  // EN: Save open files to localStorage
+  saveOpenFilesToStorage: () => {
+    const state = get();
+    try {
+      // FR: Ne sauvegarder que les fichiers "new" (créés dans l'app)
+      // EN: Only save "new" files (created in app)
+      const filesToSave = state.openFiles
+        .filter(f => f.type === 'new')
+        .map(f => ({
+          id: f.id,
+          name: f.name,
+          type: f.type,
+          content: f.content,
+          isActive: f.isActive,
+          lastModified: f.lastModified,
+        }));
+
+      localStorage.setItem('bigmind_open_files', JSON.stringify({
+        files: filesToSave,
+        activeFileId: state.activeFileId,
+      }));
+    } catch (e) {
+      // Ignore localStorage errors
+      console.warn('[useOpenFiles] Erreur lors de la sauvegarde des fichiers:', e);
+    }
+  },
+
+  // FR: Restaurer les fichiers ouverts depuis localStorage
+  // EN: Restore open files from localStorage
+  restoreOpenFilesFromStorage: () => {
+    try {
+      const raw = localStorage.getItem('bigmind_open_files');
+      if (!raw) return;
+
+      const data = JSON.parse(raw);
+      const { files, activeFileId } = data;
+
+      if (!files || !Array.isArray(files) || files.length === 0) return;
+
+      // FR: Convertir lastModified en Date
+      // EN: Convert lastModified to Date
+      const restoredFiles = files.map((f: any) => ({
+        ...f,
+        lastModified: new Date(f.lastModified),
+      }));
+
+      set({
+        openFiles: restoredFiles,
+        activeFileId: activeFileId || (restoredFiles.length > 0 ? restoredFiles[0].id : null),
+      });
+
+      console.warn(`[useOpenFiles] ${restoredFiles.length} fichier(s) restauré(s)`);
+    } catch (e) {
+      console.warn('[useOpenFiles] Erreur lors de la restauration des fichiers:', e);
+    }
   },
 }));

@@ -908,7 +908,6 @@ function MindMapCanvas() {
         }}
         panOnScroll={true}
         zoomOnScroll={false}
-        panOnScrollMode="free"
         zoomActivationKeyCode="Meta"
         minZoom={0.05}
         maxZoom={2}

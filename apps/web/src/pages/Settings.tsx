@@ -24,6 +24,8 @@ function SettingsPage() {
   const setDefaultTagPalette = useAppSettings(s => s.setDefaultTagPalette);
   const showMinimap = useAppSettings(s => s.showMinimap);
   const setShowMinimap = useAppSettings(s => s.setShowMinimap);
+  const reopenFilesOnStartup = useAppSettings(s => s.reopenFilesOnStartup);
+  const setReopenFilesOnStartup = useAppSettings(s => s.setReopenFilesOnStartup);
   const allInterfaceThemes = getAllInterfaceThemes();
   const allPalettes = getAllPalettes();
   const shortcuts = useShortcuts(s => s.map);
@@ -136,6 +138,20 @@ function SettingsPage() {
                       checked={showMinimap}
                       onChange={e => setShowMinimap(e.target.checked)}
                       aria-label="Afficher la minimap"
+                      className="settings-checkbox"
+                    />
+                  </div>
+
+                  {/* FR: Réouverture des fichiers au démarrage */}
+                  {/* EN: Reopen files on startup */}
+                  <div className="settings-field">
+                    <span className="settings-label">Réouvrir les cartes au démarrage</span>
+                    <input
+                      id="reopenFilesOnStartup"
+                      type="checkbox"
+                      checked={reopenFilesOnStartup}
+                      onChange={e => setReopenFilesOnStartup(e.target.checked)}
+                      aria-label="Réouvrir les cartes au démarrage"
                       className="settings-checkbox"
                     />
                   </div>
