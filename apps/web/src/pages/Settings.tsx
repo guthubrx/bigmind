@@ -6,10 +6,11 @@ import '../layouts/MainLayout.css';
 import './Settings.css';
 import { useShortcuts, ShortcutAction } from '../hooks/useShortcuts';
 import { usePlatform } from '../hooks/usePlatform';
-import { X, Palette } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useAppSettings } from '../hooks/useAppSettings';
-import { getAllThemes } from '../themes/colorThemes';
-import { useOpenFiles } from '../hooks/useOpenFiles';
+import { getAllInterfaceThemes } from '../themes/colorThemes';
+import { getAllPalettes } from '../themes/colorPalettes';
+import PaletteSelector from '../components/PaletteSelector';
 
 function SettingsPage() {
   const navigate = useNavigate();
@@ -17,14 +18,19 @@ function SettingsPage() {
   const setAccentColor = useAppSettings(s => s.setAccentColor);
   const themeId = useAppSettings(s => s.themeId);
   const setTheme = useAppSettings(s => s.setTheme);
-  const getCurrentTheme = useAppSettings(s => s.getCurrentTheme);
-  const allThemes = getAllThemes();
+  const defaultNodePaletteId = useAppSettings(s => s.defaultNodePaletteId);
+  const setDefaultNodePalette = useAppSettings(s => s.setDefaultNodePalette);
+  const defaultTagPaletteId = useAppSettings(s => s.defaultTagPaletteId);
+  const setDefaultTagPalette = useAppSettings(s => s.setDefaultTagPalette);
+  const showMinimap = useAppSettings(s => s.showMinimap);
+  const setShowMinimap = useAppSettings(s => s.setShowMinimap);
+  const allInterfaceThemes = getAllInterfaceThemes();
+  const allPalettes = getAllPalettes();
   const shortcuts = useShortcuts(s => s.map);
   const setShortcut = useShortcuts(s => s.setShortcut);
   const resetShortcuts = useShortcuts(s => s.resetDefaults);
   const [section, setSection] = useState<'appearance' | 'shortcuts'>('appearance');
   const platform = usePlatform();
-  const applyAutomaticColorsToAll = useOpenFiles(s => s.applyAutomaticColorsToAll);
 
   const toAccelerator = (e: React.KeyboardEvent<HTMLInputElement>): string => {
     const parts: string[] = [];
@@ -86,61 +92,23 @@ function SettingsPage() {
                 <div className="settings-section">
                   <h2 className="settings-section-title">Apparence</h2>
 
-                  {/* FR: Sélecteur de thème */}
-                  {/* EN: Theme selector */}
+                  {/* FR: Sélecteur de thème d'interface */}
+                  {/* EN: Interface theme selector */}
                   <div className="settings-field">
-                    <span className="settings-label">Thème</span>
+                    <span className="settings-label">Thème d&apos;interface</span>
                     <select
                       id="theme"
                       value={themeId}
                       onChange={e => setTheme(e.target.value)}
                       className="settings-select"
-                      aria-label="Sélectionner un thème"
+                      aria-label="Sélectionner un thème d'interface"
                     >
-                      {allThemes.map(theme => (
+                      {allInterfaceThemes.map(theme => (
                         <option key={theme.id} value={theme.id}>
                           {theme.name}
                         </option>
                       ))}
                     </select>
-                  </div>
-
-                  {/* FR: Palette de 10 couleurs */}
-                  {/* EN: 10-color palette */}
-                  <div>
-                    <div className="settings-palette-label">
-                      Palette de couleurs (10 couleurs pour les nœuds)
-                    </div>
-                    <div className="settings-palette-container">
-                      {(() => {
-                        const currentTheme = allThemes.find(t => t.id === themeId);
-                        if (!currentTheme || !currentTheme.palette) return null;
-                        return currentTheme.palette.map(color => (
-                          <div
-                            key={color}
-                            className="settings-palette-swatch"
-                            style={{ backgroundColor: color }}
-                            title={color}
-                          />
-                        ));
-                      })()}
-                    </div>
-                    <button
-                      type="button"
-                      className="btn"
-                      onClick={() => {
-                        const theme = getCurrentTheme();
-                        applyAutomaticColorsToAll(theme);
-                      }}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                      }}
-                    >
-                      <Palette size={16} />
-                      Appliquer les couleurs de la palette aux nœuds
-                    </button>
                   </div>
 
                   {/* FR: Couleur d'accent personnalisée */}
@@ -156,6 +124,52 @@ function SettingsPage() {
                       className="settings-color-input"
                     />
                     <span className="settings-color-value">{accentColor}</span>
+                  </div>
+
+                  {/* FR: Affichage de la minimap */}
+                  {/* EN: Minimap display */}
+                  <div className="settings-field">
+                    <span className="settings-label">Afficher la minimap</span>
+                    <input
+                      id="showMinimap"
+                      type="checkbox"
+                      checked={showMinimap}
+                      onChange={e => setShowMinimap(e.target.checked)}
+                      aria-label="Afficher la minimap"
+                      className="settings-checkbox"
+                    />
+                  </div>
+
+                  {/* FR: Séparateur */}
+                  {/* EN: Separator */}
+                  <hr className="settings-separator" />
+
+                  {/* FR: Palette par défaut pour les nœuds */}
+                  {/* EN: Default palette for nodes */}
+                  <div className="settings-field">
+                    <span className="settings-label">Palette par défaut des nœuds</span>
+                    <div style={{ flex: 1 }}>
+                      <PaletteSelector
+                        palettes={allPalettes}
+                        value={defaultNodePaletteId}
+                        onChange={setDefaultNodePalette}
+                        aria-label="Sélectionner une palette pour les nœuds"
+                      />
+                    </div>
+                  </div>
+
+                  {/* FR: Palette par défaut pour les tags */}
+                  {/* EN: Default palette for tags */}
+                  <div className="settings-field">
+                    <span className="settings-label">Palette par défaut des tags</span>
+                    <div style={{ flex: 1 }}>
+                      <PaletteSelector
+                        palettes={allPalettes}
+                        value={defaultTagPaletteId}
+                        onChange={setDefaultTagPalette}
+                        aria-label="Sélectionner une palette pour les tags"
+                      />
+                    </div>
                   </div>
                 </div>
               )}

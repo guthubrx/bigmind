@@ -70,6 +70,7 @@ function MindMapCanvas() {
   // EN: Hook for theme
   const themeId = useAppSettings(s => s.themeId);
   const getCurrentTheme = useAppSettings(s => s.getCurrentTheme);
+  const showMinimap = useAppSettings(s => s.showMinimap);
 
   // FR: Hook pour gérer le drag & drop des nœuds
   // EN: Hook to manage node drag & drop
@@ -908,7 +909,7 @@ function MindMapCanvas() {
       >
         <Background />
         {/* Controls retirés: le zoom est géré dans la StatusBar */}
-        <MiniMap position="top-right" />
+        {showMinimap && <MiniMap position="top-right" />}
 
         {/* FR: Contrôles du mode de drag */}
         {/* EN: Drag mode controls */}

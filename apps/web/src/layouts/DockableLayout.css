@@ -93,13 +93,17 @@
   border-bottom: 0.5px solid var(--border-color, #e2e8f0);
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start; /* FR: Alignement à gauche / EN: Left alignment */
 }
 
 .flexlayout__tabset_header_sizer {
   display: flex;
   align-items: center;
   gap: 2px;
+}
+
+.flexlayout__tabset_header_content {
+  flex: 0 0 auto; /* FR: Ne prend que l'espace nécessaire / EN: Takes only needed space */
 }
 
 .flexlayout__tabset_tabbar_outer {
@@ -296,4 +300,36 @@
 
 .flexlayout__tabset--maximized {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* FR: Boutons de toolbar (split, close, etc.) plus discrets */
+/* EN: More discrete toolbar buttons (split, close, etc.) */
+.flexlayout__tab_toolbar {
+  margin-left: auto; /* FR: Pousse à droite / EN: Push to the right */
+  order: 2; /* FR: S'assure qu'ils sont après les onglets / EN: Ensure they are after tabs */
+}
+
+.flexlayout__tab_toolbar_button,
+.flexlayout__tab_toolbar_icon {
+  opacity: 0.4;
+  font-size: 11px !important;
+  padding: 2px !important;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s ease;
+}
+
+.flexlayout__tab_toolbar_button:hover,
+.flexlayout__tab_toolbar_icon:hover {
+  opacity: 1;
+  background-color: var(--bg-tertiary) !important;
+}
+
+.flexlayout__tab_toolbar_sticky_buttons_container {
+  gap: 2px !important;
+  padding-left: 8px !important;
+  margin-left: auto !important; /* FR: Pousse complètement à droite / EN: Push completely to the right */
 }

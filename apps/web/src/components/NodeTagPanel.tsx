@@ -6,6 +6,8 @@
 import React, { useState, useMemo } from 'react';
 import { useTagStore } from '../hooks/useTagStore';
 import { useMindMapDAGSync } from '../hooks/useMindMapDAGSync';
+import { useAppSettings } from '../hooks/useAppSettings';
+import { getNextColorFromPalette } from '../themes/colorPalettes';
 import { X, Plus, Sparkles } from 'lucide-react';
 import { DagTag } from '../types/dag';
 import './NodeTagPanel.css';
@@ -20,6 +22,7 @@ function NodeTagPanel({ nodeId }: NodeTagPanelProps) {
   const addTag = useTagStore(state => state.addTag);
   const getNodeTags = useTagStore(state => state.getNodeTags);
   const { tagNodeSync, untagNodeSync } = useMindMapDAGSync();
+  const defaultTagPaletteId = useAppSettings(state => state.defaultTagPaletteId);
 
   // FR: allTags est nécessaire pour déclencher le recalcul quand les tags changent
   // EN: allTags is necessary to trigger recalculation when tags change
@@ -49,18 +52,19 @@ function NodeTagPanel({ nodeId }: NodeTagPanelProps) {
     untagNodeSync(nodeId, tagId);
   };
 
-  const generateRandomColor = (): string => {
-    const colors = [
-      '#3b82f6',
-      '#ef4444',
-      '#10b981',
-      '#f59e0b',
-      '#8b5cf6',
-      '#ec4899',
-      '#14b8a6',
-      '#f97316',
-    ];
-    return colors[Math.floor(Math.random() * colors.length)];
+  const getTagColor = (): string => {
+    // FR: Utiliser la palette par défaut des tags
+    // EN: Use the default tags palette
+    // TODO: Récupérer la palette spécifique de la carte si elle est définie
+    const paletteId = defaultTagPaletteId;
+
+    // FR: Récupérer toutes les couleurs déjà utilisées (filtrer les undefined)
+    // EN: Get all colors already in use (filter out undefined)
+    const usedColors = allTags.map(tag => tag.color).filter((color): color is string => Boolean(color));
+
+    // FR: Obtenir la prochaine couleur la moins utilisée
+    // EN: Get the next least-used color
+    return getNextColorFromPalette(paletteId, usedColors);
   };
 
   const getNoTagsMessage = (): string => {
@@ -83,7 +87,7 @@ function NodeTagPanel({ nodeId }: NodeTagPanelProps) {
     const newTag: DagTag = {
       id: newTagId,
       label: searchQuery.trim(),
-      color: generateRandomColor(),
+      color: getTagColor(),
       parentIds: [],
       children: [],
       relations: [],

@@ -48,6 +48,8 @@ interface OpenFilesState {
   removeNodeFromActive: (nodeId: string) => string | null; // returns parentId if removed
   addSiblingToActive: (siblingOfId: string, title?: string) => string | null;
   applyAutomaticColorsToAll: (theme: any) => void;
+  updateActiveFileNodePalette: (paletteId: string) => void;
+  updateActiveFileTagPalette: (paletteId: string) => void;
 }
 
 /**
@@ -360,6 +362,66 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     });
 
     const updatedContent = { ...active.content, nodes: updatedNodes };
+    set(prev => ({
+      ...prev,
+      openFiles: prev.openFiles.map(f =>
+        f.id === active.id ? { ...f, content: updatedContent } : f
+      ),
+    }));
+  },
+
+  // FR: Mettre à jour la palette de nœuds du fichier actif
+  // EN: Update node palette of the active file
+  updateActiveFileNodePalette: (paletteId: string) => {
+    const state = get();
+    const active = state.openFiles.find(f => f.isActive);
+    if (!active || !active.content) return;
+
+    const updatedContent = {
+      ...active.content,
+      nodePaletteId: paletteId,
+    };
+
+    // Persister dans localStorage
+    try {
+      const key = `bigmind_overlay_${active.name}`;
+      const overlay = JSON.parse(localStorage.getItem(key) || '{}');
+      overlay.nodePaletteId = paletteId;
+      localStorage.setItem(key, JSON.stringify(overlay));
+    } catch (e) {
+      // Ignore errors
+    }
+
+    set(prev => ({
+      ...prev,
+      openFiles: prev.openFiles.map(f =>
+        f.id === active.id ? { ...f, content: updatedContent } : f
+      ),
+    }));
+  },
+
+  // FR: Mettre à jour la palette de tags du fichier actif
+  // EN: Update tag palette of the active file
+  updateActiveFileTagPalette: (paletteId: string) => {
+    const state = get();
+    const active = state.openFiles.find(f => f.isActive);
+    if (!active || !active.content) return;
+
+    const updatedContent = {
+      ...active.content,
+      tagPaletteId: paletteId,
+    };
+
+    // Persister dans localStorage
+    try {
+      const key = `bigmind_overlay_${active.name}`;
+      const overlay = JSON.parse(localStorage.getItem(key) || '{}');
+      overlay.tagPaletteId = paletteId;
+      localStorage.setItem(key, JSON.stringify(overlay));
+    } catch (e) {
+      // Ignore errors
+    }
+
     set(prev => ({
       ...prev,
       openFiles: prev.openFiles.map(f =>

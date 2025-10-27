@@ -387,41 +387,58 @@ export const useTagStore = create<TagStoreState>((set, get) => ({
 
   tagNode: (nodeId: string, tagId: string) => {
     set(state => {
-      const newNodeTagMap = { ...state.nodeTagMap };
-      const newTagNodeMap = { ...state.tagNodeMap };
+      // FR: Créer de nouveaux Sets pour déclencher les réactions
+      // EN: Create new Sets to trigger reactions
+      const existingNodeTags = state.nodeTagMap[nodeId] || new Set();
+      const existingTagNodes = state.tagNodeMap[tagId] || new Set();
 
-      if (!newNodeTagMap[nodeId]) {
-        newNodeTagMap[nodeId] = new Set();
-      }
-      if (!newTagNodeMap[tagId]) {
-        newTagNodeMap[tagId] = new Set();
-      }
+      // FR: Créer de nouveaux Sets avec les valeurs existantes + la nouvelle valeur
+      // EN: Create new Sets with existing values + new value
+      const newNodeTags = new Set(existingNodeTags);
+      newNodeTags.add(tagId);
 
-      newNodeTagMap[nodeId].add(tagId);
-      newTagNodeMap[tagId].add(nodeId);
+      const newTagNodes = new Set(existingTagNodes);
+      newTagNodes.add(nodeId);
 
       return {
-        nodeTagMap: newNodeTagMap,
-        tagNodeMap: newTagNodeMap,
+        nodeTagMap: {
+          ...state.nodeTagMap,
+          [nodeId]: newNodeTags,
+        },
+        tagNodeMap: {
+          ...state.tagNodeMap,
+          [tagId]: newTagNodes,
+        },
       };
     });
   },
 
   untagNode: (nodeId: string, tagId: string) => {
     set(state => {
-      const newNodeTagMap = { ...state.nodeTagMap };
-      const newTagNodeMap = { ...state.tagNodeMap };
+      // FR: Créer de nouveaux Sets pour déclencher les réactions
+      // EN: Create new Sets to trigger reactions
+      const existingNodeTags = state.nodeTagMap[nodeId];
+      const existingTagNodes = state.tagNodeMap[tagId];
 
-      if (newNodeTagMap[nodeId]) {
-        newNodeTagMap[nodeId].delete(tagId);
-      }
-      if (newTagNodeMap[tagId]) {
-        newTagNodeMap[tagId].delete(nodeId);
-      }
+      if (!existingNodeTags || !existingTagNodes) return state;
+
+      // FR: Créer de nouveaux Sets sans la valeur supprimée
+      // EN: Create new Sets without the deleted value
+      const newNodeTags = new Set(existingNodeTags);
+      newNodeTags.delete(tagId);
+
+      const newTagNodes = new Set(existingTagNodes);
+      newTagNodes.delete(nodeId);
 
       return {
-        nodeTagMap: newNodeTagMap,
-        tagNodeMap: newTagNodeMap,
+        nodeTagMap: {
+          ...state.nodeTagMap,
+          [nodeId]: newNodeTags,
+        },
+        tagNodeMap: {
+          ...state.tagNodeMap,
+          [tagId]: newTagNodes,
+        },
       };
     });
   },

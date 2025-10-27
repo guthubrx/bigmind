@@ -5,6 +5,7 @@ import {
   COLOR_THEMES,
   type ColorTheme,
 } from '../themes/colorThemes';
+import { COLOR_PALETTES } from '../themes/colorPalettes';
 
 type AppSettingsState = {
   // FR: Couleur d'accent personnalisée
@@ -18,6 +19,21 @@ type AppSettingsState = {
   setTheme: (themeId: string) => void;
   getCurrentTheme: () => ColorTheme;
 
+  // FR: Palette par défaut pour les nœuds
+  // EN: Default palette for nodes
+  defaultNodePaletteId: string;
+  setDefaultNodePalette: (paletteId: string) => void;
+
+  // FR: Palette par défaut pour les tags
+  // EN: Default palette for tags
+  defaultTagPaletteId: string;
+  setDefaultTagPalette: (paletteId: string) => void;
+
+  // FR: Affichage de la minimap
+  // EN: Show minimap
+  showMinimap: boolean;
+  setShowMinimap: (show: boolean) => void;
+
   // FR: Chargement des paramètres
   // EN: Load settings
   load: () => void;
@@ -28,6 +44,9 @@ const STORAGE_KEY = 'bigmind_app_settings';
 export const useAppSettings = create<AppSettingsState>((set, get) => ({
   accentColor: '#3b82f6',
   themeId: 'light',
+  defaultNodePaletteId: 'vibrant',
+  defaultTagPaletteId: 'vibrant',
+  showMinimap: false,
 
   setAccentColor: (color: string) => {
     set({ accentColor: color });
@@ -92,6 +111,69 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
     return getTheme(themeId);
   },
 
+  setDefaultNodePalette: (paletteId: string) => {
+    // FR: Vérifier que la palette existe
+    // EN: Check that palette exists
+    if (!COLOR_PALETTES[paletteId]) {
+      // eslint-disable-next-line no-console
+      console.warn(`Palette "${paletteId}" not found, falling back to vibrant`);
+      // eslint-disable-next-line no-param-reassign
+      paletteId = 'vibrant';
+    }
+
+    set({ defaultNodePaletteId: paletteId });
+
+    // FR: Sauvegarder dans localStorage
+    // EN: Save to localStorage
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      obj.defaultNodePaletteId = paletteId;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+  },
+
+  setDefaultTagPalette: (paletteId: string) => {
+    // FR: Vérifier que la palette existe
+    // EN: Check that palette exists
+    if (!COLOR_PALETTES[paletteId]) {
+      // eslint-disable-next-line no-console
+      console.warn(`Palette "${paletteId}" not found, falling back to vibrant`);
+      // eslint-disable-next-line no-param-reassign
+      paletteId = 'vibrant';
+    }
+
+    set({ defaultTagPaletteId: paletteId });
+
+    // FR: Sauvegarder dans localStorage
+    // EN: Save to localStorage
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      obj.defaultTagPaletteId = paletteId;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+  },
+
+  setShowMinimap: (show: boolean) => {
+    set({ showMinimap: show });
+
+    // FR: Sauvegarder dans localStorage
+    // EN: Save to localStorage
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      obj.showMinimap = show;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+  },
+
   load: () => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -113,6 +195,21 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
         // EN: Then load custom accent color (if exists)
         if (obj.accentColor) {
           get().setAccentColor(obj.accentColor);
+        }
+
+        // FR: Charger les palettes par défaut
+        // EN: Load default palettes
+        if (obj.defaultNodePaletteId) {
+          set({ defaultNodePaletteId: obj.defaultNodePaletteId });
+        }
+        if (obj.defaultTagPaletteId) {
+          set({ defaultTagPaletteId: obj.defaultTagPaletteId });
+        }
+
+        // FR: Charger l'option d'affichage de la minimap
+        // EN: Load minimap display option
+        if (obj.showMinimap !== undefined) {
+          set({ showMinimap: obj.showMinimap });
         }
       } else {
         // FR: Initialiser avec le thème par défaut

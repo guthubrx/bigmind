@@ -22,13 +22,13 @@ function StatusBar() {
 
   useEffect(() => {
     const z = typeof inst?.getZoom === 'function' ? inst.getZoom() : 1;
-    if (!isNaN(z)) setZoomDraft(String(Math.round(z * 100)));
+    if (!Number.isNaN(z)) setZoomDraft(String(Math.round(z * 100)));
   }, [inst]);
 
   const applyZoomDraft = () => {
     const num = parseFloat(zoomDraft);
-    if (isNaN(num)) return;
-    const z = Math.min(400, Math.max(10, num)) / 100;
+    if (Number.isNaN(num)) return;
+    const z = Math.min(400, Math.max(5, num)) / 100;
     if (inst?.setViewport) inst.setViewport({ zoom: z });
     setZoomDraft(String(Math.round(z * 100)));
   };
@@ -61,7 +61,7 @@ function StatusBar() {
             className="btn"
             onClick={() => {
               const cur = inst?.getZoom?.() || 1;
-              const nz = Math.max(0.1, cur / 1.2);
+              const nz = Math.max(0.05, cur / 1.2);
               inst?.setViewport?.({ zoom: nz });
               setZoomDraft(String(Math.round(nz * 100)));
             }}
@@ -71,7 +71,7 @@ function StatusBar() {
           </button>
           <input
             type="number"
-            min={10}
+            min={5}
             max={400}
             step={5}
             value={zoomDraft}

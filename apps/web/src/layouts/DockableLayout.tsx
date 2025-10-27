@@ -12,6 +12,7 @@ import NodeExplorer from '../components/NodeExplorer';
 import MindMapCanvas from '../components/MindMapCanvas';
 import NodeProperties from '../components/NodeProperties';
 import TagLayersPanelRCT from '../components/TagLayersPanelRCT';
+import MapSettings from '../components/MapSettings';
 import StatusBar from '../components/StatusBar';
 import { useTagStore } from '../hooks/useTagStore';
 import './DockableLayout.css';
@@ -105,6 +106,12 @@ const DEFAULT_LAYOUT: IJsonModel = {
                 type: 'tab',
                 name: 'Tags & Layers',
                 component: 'tags',
+                enableClose: false,
+              },
+              {
+                type: 'tab',
+                name: 'Carte',
+                component: 'mapsettings',
                 enableClose: false,
               },
             ],
@@ -267,6 +274,13 @@ function DockableLayout() {
         return (
           <div className="panel-content">
             <TagLayersPanelRCT />
+          </div>
+        );
+
+      case 'mapsettings':
+        return (
+          <div className="panel-content">
+            <MapSettings />
           </div>
         );
 

@@ -1,0 +1,110 @@
+/**
+ * FR: Styles pour l'éditeur markdown
+ * EN: Styles for markdown editor
+ */
+
+.markdown-editor-wrapper {
+  width: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 0.5px solid var(--border-color, rgba(0, 0, 0, 0.1));
+  transition: all 0.15s ease;
+}
+
+.markdown-editor-wrapper:hover {
+  border-color: var(--border-color-hover, rgba(0, 0, 0, 0.2));
+}
+
+.markdown-editor-wrapper:focus-within {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-color-alpha, rgba(59, 130, 246, 0.1));
+}
+
+/* FR: Personnalisation de l'éditeur MDEditor */
+/* EN: Customize MDEditor */
+.markdown-editor-wrapper .w-md-editor {
+  background-color: var(--bg);
+  color: var(--fg);
+  box-shadow: none;
+  border: none;
+}
+
+.markdown-editor-wrapper .w-md-editor-toolbar {
+  background-color: var(--bg-secondary);
+  border-bottom: 0.5px solid var(--border-color, rgba(0, 0, 0, 0.1));
+  padding: 4px;
+}
+
+.markdown-editor-wrapper .w-md-editor-toolbar button {
+  color: var(--fg-secondary);
+  transition: all 0.15s ease;
+}
+
+.markdown-editor-wrapper .w-md-editor-toolbar button:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--fg);
+}
+
+.markdown-editor-wrapper .w-md-editor-content {
+  background-color: var(--bg);
+}
+
+.markdown-editor-wrapper .w-md-editor-text,
+.markdown-editor-wrapper .w-md-editor-preview {
+  background-color: var(--bg);
+  color: var(--fg);
+}
+
+.markdown-editor-wrapper .w-md-editor-text-pre > code,
+.markdown-editor-wrapper .w-md-editor-text-input {
+  color: var(--fg) !important;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.markdown-editor-wrapper .wmde-markdown {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.markdown-editor-wrapper .wmde-markdown h1,
+.markdown-editor-wrapper .wmde-markdown h2,
+.markdown-editor-wrapper .wmde-markdown h3,
+.markdown-editor-wrapper .wmde-markdown h4,
+.markdown-editor-wrapper .wmde-markdown h5,
+.markdown-editor-wrapper .wmde-markdown h6 {
+  color: var(--fg);
+  border-bottom-color: var(--border-color);
+}
+
+.markdown-editor-wrapper .wmde-markdown a {
+  color: var(--accent-color);
+}
+
+.markdown-editor-wrapper .wmde-markdown code {
+  background-color: var(--bg-secondary);
+  color: var(--fg);
+  border-radius: 3px;
+  padding: 2px 4px;
+}
+
+.markdown-editor-wrapper .wmde-markdown pre {
+  background-color: var(--bg-secondary);
+  border-radius: 6px;
+}
+
+.markdown-editor-wrapper .wmde-markdown blockquote {
+  border-left-color: var(--border-color);
+  color: var(--fg-secondary);
+}
+
+.markdown-editor-wrapper .wmde-markdown table {
+  border-color: var(--border-color);
+}
+
+.markdown-editor-wrapper .wmde-markdown th,
+.markdown-editor-wrapper .wmde-markdown td {
+  border-color: var(--border-color);
+}

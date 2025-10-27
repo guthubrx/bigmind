@@ -41,6 +41,10 @@ export interface MindMap {
     updatedAt: string;
     locale: string;
   };
+  // FR: Palettes de couleurs personnalisées (optionnelles)
+  // EN: Custom color palettes (optional)
+  nodePaletteId?: string;
+  tagPaletteId?: string;
 }
 
 export interface SelectionState {

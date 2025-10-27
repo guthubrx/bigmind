@@ -30,7 +30,9 @@ function TagLayersPanelRCT() {
   const removeParent = useTagStore(state => state.removeParent);
   const reorderChildren = useTagStore(state => state.reorderChildren);
   const getLinksBetween = useTagStore(state => state.getLinksBetween);
-  const getTagNodes = useTagStore(state => state.getTagNodes);
+  // FR: Sélecteur réactif pour le mapping tag→noeuds
+  // EN: Reactive selector for tag→nodes mapping
+  const tagNodeMap = useTagStore(state => state.tagNodeMap);
 
   const treeRef = useRef<TreeApi<TagTreeNode>>(null);
 
@@ -78,7 +80,7 @@ function TagLayersPanelRCT() {
     ({ node, style, dragHandle }: NodeRendererProps<TagTreeNode>) => {
       const tag = node.data.data;
       const hidden = isTagHidden(tag.id);
-      const nodeCount = getTagNodes(tag.id)?.length || 0;
+      const nodeCount = tagNodeMap[tag.id]?.size || 0;
       const childCount = tag.children?.length || 0;
 
       // FR: Obtenir les noms des enfants pour le tooltip
@@ -210,7 +212,7 @@ function TagLayersPanelRCT() {
         </div>
       );
     },
-    [isTagHidden, getTagNodes, getLinksBetween, toggleTagVisibility, removeTag, tags]
+    [isTagHidden, tagNodeMap, getLinksBetween, toggleTagVisibility, removeTag, tags]
   );
 
   // FR: Gérer le drop

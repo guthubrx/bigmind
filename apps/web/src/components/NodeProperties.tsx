@@ -21,6 +21,7 @@ import { useOpenFiles } from '../hooks/useOpenFiles';
 import { useSelection } from '../hooks/useSelection';
 import { useTagStore } from '../hooks/useTagStore';
 import NodeTagPanel from './NodeTagPanel';
+import MarkdownEditor from './MarkdownEditor';
 import './NodeProperties.css';
 
 function NodeProperties() {
@@ -28,8 +29,15 @@ function NodeProperties() {
   const activeFile = useOpenFiles(state => state.openFiles.find(f => f.isActive) || null);
   const selectedNodeId = useSelection(s => s.selectedNodeId) || selection.primaryNode;
   const updateActiveFileNode = useOpenFiles(s => s.updateActiveFileNode);
-  const tagsCount = useTagStore(state => Object.keys(state.tags).length);
   const [activeTab, setActiveTab] = useState<'content' | 'style' | 'tags' | 'advanced'>('content');
+
+  // FR: Sélecteur réactif pour le nombre de tags du nœud
+  // EN: Reactive selector for node tags count
+  const nodeTagsCount = useTagStore(state =>
+    selectedNodeId && state.nodeTagMap[selectedNodeId]
+      ? state.nodeTagMap[selectedNodeId].size
+      : 0
+  );
 
   const selectedNode = selectedNodeId ? activeFile?.content?.nodes?.[selectedNodeId] : null;
 
@@ -76,24 +84,26 @@ function NodeProperties() {
           >
             <Tag className="icon-small" />
             Tags
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minWidth: '20px',
-                height: '16px',
-                padding: '0 4px',
-                background: 'var(--accent-color)',
-                borderRadius: '8px',
-                fontSize: '10px',
-                fontWeight: '600',
-                color: 'white',
-                marginLeft: '6px',
-              }}
-            >
-              {tagsCount}
-            </span>
+            {nodeTagsCount > 0 && (
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: '20px',
+                  height: '16px',
+                  padding: '0 4px',
+                  background: 'var(--accent-color)',
+                  borderRadius: '8px',
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  color: 'white',
+                  marginLeft: '6px',
+                }}
+              >
+                {nodeTagsCount}
+              </span>
+            )}
           </button>
           <button
             type="button"
@@ -111,12 +121,11 @@ function NodeProperties() {
           {activeTab === 'content' && (
             <div className="content-tab">
               <div className="form-group">
-                <div className="form-label">Titre</div>
                 <input
                   type="text"
                   value={selectedNode.title}
-                  className="input"
-                  placeholder="Titre du nœud"
+                  className="input input-inline"
+                  placeholder="Titre du nœud..."
                   aria-label="Titre du nœud"
                   onChange={e =>
                     selectedNodeId &&
@@ -126,17 +135,14 @@ function NodeProperties() {
               </div>
 
               <div className="form-group">
-                <div className="form-label">Notes</div>
-                <textarea
+                <MarkdownEditor
                   value={selectedNode.notes || ''}
-                  className="input textarea"
-                  placeholder="Notes additionnelles..."
-                  aria-label="Notes additionnelles"
-                  rows={4}
-                  onChange={e =>
+                  onChange={(value) =>
                     selectedNodeId &&
-                    updateActiveFileNode(selectedNodeId, { notes: e.target.value })
+                    updateActiveFileNode(selectedNodeId, { notes: value })
                   }
+                  placeholder="Ajouter des notes (format Markdown)..."
+                  height={250}
                 />
               </div>
 
