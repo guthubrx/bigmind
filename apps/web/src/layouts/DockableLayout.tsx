@@ -142,13 +142,25 @@ function DockableLayout() {
   // EN: Update CSS variables to center handles
   React.useEffect(() => {
     const updateHandlePositions = () => {
-      const splitters = document.querySelectorAll('.flexlayout__splitter_vert');
-      splitters.forEach(splitter => {
+      // Splitters verticaux (séparent gauche/droite)
+      const vertSplitters = document.querySelectorAll('.flexlayout__splitter_vert');
+      vertSplitters.forEach(splitter => {
         const nextElement = splitter.nextElementSibling as HTMLElement;
         if (nextElement) {
           const nextRect = nextElement.getBoundingClientRect();
           const offset = nextRect.width / 2;
           (splitter as HTMLElement).style.setProperty('--handle-offset', `${offset}px`);
+        }
+      });
+
+      // Splitters horizontaux (séparent haut/bas)
+      const horzSplitters = document.querySelectorAll('.flexlayout__splitter_horz');
+      horzSplitters.forEach(splitter => {
+        const nextElement = splitter.nextElementSibling as HTMLElement;
+        if (nextElement) {
+          const nextRect = nextElement.getBoundingClientRect();
+          const offset = nextRect.height / 2;
+          (splitter as HTMLElement).style.setProperty('--handle-offset-vert', `${offset}px`);
         }
       });
     };
@@ -182,13 +194,25 @@ function DockableLayout() {
 
       // Mettre à jour les positions des poignées après le changement de modèle
       setTimeout(() => {
-        const splitters = document.querySelectorAll('.flexlayout__splitter_vert');
-        splitters.forEach(splitter => {
+        // Splitters verticaux
+        const vertSplitters = document.querySelectorAll('.flexlayout__splitter_vert');
+        vertSplitters.forEach(splitter => {
           const nextElement = splitter.nextElementSibling as HTMLElement;
           if (nextElement) {
             const nextRect = nextElement.getBoundingClientRect();
             const offset = nextRect.width / 2;
             (splitter as HTMLElement).style.setProperty('--handle-offset', `${offset}px`);
+          }
+        });
+
+        // Splitters horizontaux
+        const horzSplitters = document.querySelectorAll('.flexlayout__splitter_horz');
+        horzSplitters.forEach(splitter => {
+          const nextElement = splitter.nextElementSibling as HTMLElement;
+          if (nextElement) {
+            const nextRect = nextElement.getBoundingClientRect();
+            const offset = nextRect.height / 2;
+            (splitter as HTMLElement).style.setProperty('--handle-offset-vert', `${offset}px`);
           }
         });
       }, 50);

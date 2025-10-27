@@ -130,7 +130,7 @@
   content: '';
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: calc(50% + var(--handle-offset-vert, 150px));
   transform: translate(-50%, -50%);
   width: 4px;
   height: 60px;
@@ -203,7 +203,7 @@
   content: '';
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: calc(50% + var(--handle-offset-vert, 150px));
   transform: translate(-50%, -50%);
   width: 4px;
   height: 60px;
