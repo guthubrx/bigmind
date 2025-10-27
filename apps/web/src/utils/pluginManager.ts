@@ -29,10 +29,19 @@ const system = createEnhancedPluginSystem({
 
 const { registry, permissionManager, auditLogger, policyEngine, roleManager, cspManager } = system;
 
+let initialized = false;
+
 /**
  * Initialize the plugin system and register example plugins
  */
 export async function initializePlugins(): Promise<void> {
+  // Prevent double initialization (React strict mode)
+  if (initialized) {
+    console.log('🔌 Plugin system already initialized, skipping');
+    return;
+  }
+
+  initialized = true;
   console.log('🔌 Initializing plugin system...');
 
   try {
@@ -46,6 +55,7 @@ export async function initializePlugins(): Promise<void> {
     console.log('🎉 Plugin system initialized successfully!');
   } catch (error) {
     console.error('❌ Failed to initialize plugin system:', error);
+    initialized = false; // Reset on error to allow retry
   }
 }
 

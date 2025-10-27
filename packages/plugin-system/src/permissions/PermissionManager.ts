@@ -138,15 +138,24 @@ export class PermissionManager {
         // Convert Arrays to Sets (from JSON deserialization)
         this.granted = new Map();
         data.forEach((permissions, pluginId) => {
-          this.granted.set(
-            pluginId,
-            permissions instanceof Set ? permissions : new Set(permissions)
-          );
+          // Handle various formats (Set, Array, or invalid)
+          let permSet: Set<Permission>;
+          if (permissions instanceof Set) {
+            permSet = permissions;
+          } else if (Array.isArray(permissions)) {
+            permSet = new Set(permissions);
+          } else {
+            console.warn(`[PermissionManager] Invalid permission format for ${pluginId}, skipping`);
+            return;
+          }
+          this.granted.set(pluginId, permSet);
         });
         console.log(`[PermissionManager] Loaded permissions for ${this.granted.size} plugins`);
       }
     } catch (error) {
       console.error('[PermissionManager] Failed to load permissions:', error);
+      // Reset to clean state on error
+      this.granted = new Map();
     }
   }
 }
