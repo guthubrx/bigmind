@@ -125,6 +125,7 @@ export function getNodeColor(
     if (index === -1) return theme.colors.nodeBackground;
 
     // Utiliser la couleur de la palette (cyclique si plus de 10 enfants)
+    if (!theme.palette || theme.palette.length === 0) return theme.colors.nodeBackground;
     const paletteIndex = index % theme.palette.length;
     return theme.palette[paletteIndex];
   }

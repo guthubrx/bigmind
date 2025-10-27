@@ -1,9 +1,9 @@
 /**
- * FR: Définitions des thèmes de couleurs pour BigMind
- * EN: Color theme definitions for BigMind
+ * FR: Définitions des thèmes d'interface (Light/Dark) pour BigMind
+ * EN: Interface theme definitions (Light/Dark) for BigMind
  */
 
-export interface ColorTheme {
+export interface InterfaceTheme {
   id: string;
   name: string;
   colors: {
@@ -36,12 +36,19 @@ export interface ColorTheme {
     error: string;
     info: string;
   };
-  // FR: Palette de 10 couleurs pour les nœuds
-  // EN: 10-color palette for nodes
-  palette: string[];
 }
 
-export const COLOR_THEMES: Record<string, ColorTheme> = {
+// FR: Type pour rétro-compatibilité
+// EN: Type for backward compatibility
+export interface ColorTheme extends InterfaceTheme {
+  palette?: string[];
+}
+
+/**
+ * FR: Thèmes d'interface Light et Dark uniquement
+ * EN: Light and Dark interface themes only
+ */
+export const INTERFACE_THEMES: Record<string, InterfaceTheme> = {
   light: {
     id: 'light',
     name: 'Light',
@@ -61,18 +68,6 @@ export const COLOR_THEMES: Record<string, ColorTheme> = {
       error: '#ef4444',
       info: '#3b82f6',
     },
-    palette: [
-      '#3b82f6', // Blue
-      '#8b5cf6', // Purple
-      '#ec4899', // Pink
-      '#ef4444', // Red
-      '#f59e0b', // Orange
-      '#eab308', // Yellow
-      '#84cc16', // Lime
-      '#10b981', // Green
-      '#14b8a6', // Teal
-      '#06b6d4', // Cyan
-    ],
   },
 
   dark: {
@@ -94,273 +89,65 @@ export const COLOR_THEMES: Record<string, ColorTheme> = {
       error: '#f87171',
       info: '#60a5fa',
     },
+  },
+};
+
+// FR: Alias pour rétro-compatibilité
+// EN: Alias for backward compatibility
+export const COLOR_THEMES: Record<string, ColorTheme> = {
+  light: {
+    ...INTERFACE_THEMES.light,
     palette: [
-      '#60a5fa', // Blue
-      '#a78bfa', // Purple
-      '#f472b6', // Pink
-      '#f87171', // Red
-      '#fb923c', // Orange
-      '#fbbf24', // Yellow
-      '#a3e635', // Lime
-      '#34d399', // Green
-      '#2dd4bf', // Teal
-      '#22d3ee', // Cyan
+      '#3b82f6',
+      '#8b5cf6',
+      '#ec4899',
+      '#ef4444',
+      '#f59e0b',
+      '#eab308',
+      '#84cc16',
+      '#10b981',
+      '#14b8a6',
+      '#06b6d4',
     ],
   },
-
-  nord: {
-    id: 'nord',
-    name: 'Nord',
-    colors: {
-      background: '#2e3440',
-      backgroundSecondary: '#3b4252',
-      backgroundTertiary: '#434c5e',
-      foreground: '#eceff4',
-      foregroundSecondary: '#d8dee9',
-      foregroundMuted: '#81a1c1',
-      nodeBackground: '#3b4252',
-      nodeText: '#eceff4',
-      nodeBorder: '#4c566a',
-      accent: '#88c0d0',
-      success: '#a3be8c',
-      warning: '#ebcb8b',
-      error: '#bf616a',
-      info: '#81a1c1',
-    },
+  dark: {
+    ...INTERFACE_THEMES.dark,
     palette: [
-      '#88c0d0', // Frost Cyan
-      '#81a1c1', // Frost Blue
-      '#5e81ac', // Frost Dark Blue
-      '#8fbcbb', // Frost Teal
-      '#a3be8c', // Aurora Green
-      '#ebcb8b', // Aurora Yellow
-      '#d08770', // Aurora Orange
-      '#bf616a', // Aurora Red
-      '#b48ead', // Aurora Purple
-      '#d8dee9', // Snow Storm
-    ],
-  },
-
-  gruvbox: {
-    id: 'gruvbox',
-    name: 'Gruvbox',
-    colors: {
-      background: '#282828',
-      backgroundSecondary: '#3c3836',
-      backgroundTertiary: '#504945',
-      foreground: '#ebdbb2',
-      foregroundSecondary: '#d5c4a1',
-      foregroundMuted: '#928374',
-      nodeBackground: '#3c3836',
-      nodeText: '#ebdbb2',
-      nodeBorder: '#504945',
-      accent: '#83a598',
-      success: '#b8bb26',
-      warning: '#fabd2f',
-      error: '#fb4934',
-      info: '#83a598',
-    },
-    palette: [
-      '#fb4934', // Red
-      '#fe8019', // Orange
-      '#fabd2f', // Yellow
-      '#b8bb26', // Green
-      '#8ec07c', // Aqua
-      '#83a598', // Blue
-      '#d3869b', // Purple
-      '#d65d0e', // Dark Orange
-      '#458588', // Dark Blue
-      '#98971a', // Dark Green
-    ],
-  },
-
-  'gruvbox-light': {
-    id: 'gruvbox-light',
-    name: 'Gruvbox Light',
-    colors: {
-      background: '#fbf1c7',
-      backgroundSecondary: '#f2e5bc',
-      backgroundTertiary: '#ebdbb2',
-      foreground: '#3c3836',
-      foregroundSecondary: '#504945',
-      foregroundMuted: '#7c6f64',
-      nodeBackground: '#f2e5bc',
-      nodeText: '#3c3836',
-      nodeBorder: '#d5c4a1',
-      accent: '#076678',
-      success: '#79740e',
-      warning: '#b57614',
-      error: '#9d0006',
-      info: '#076678',
-    },
-    palette: [
-      '#9d0006', // Red
-      '#af3a03', // Orange
-      '#b57614', // Yellow
-      '#79740e', // Green
-      '#427b58', // Aqua
-      '#076678', // Blue
-      '#8f3f71', // Purple
-      '#d65d0e', // Bright Orange
-      '#cc241d', // Bright Red
-      '#98971a', // Bright Green
-    ],
-  },
-
-  solarized: {
-    id: 'solarized',
-    name: 'Solarized Dark',
-    colors: {
-      background: '#002b36',
-      backgroundSecondary: '#073642',
-      backgroundTertiary: '#586e75',
-      foreground: '#fdf6e3',
-      foregroundSecondary: '#eee8d5',
-      foregroundMuted: '#93a1a1',
-      nodeBackground: '#073642',
-      nodeText: '#fdf6e3',
-      nodeBorder: '#586e75',
-      accent: '#268bd2',
-      success: '#859900',
-      warning: '#b58900',
-      error: '#dc322f',
-      info: '#268bd2',
-    },
-    palette: [
-      '#268bd2', // Blue
-      '#2aa198', // Cyan
-      '#859900', // Green
-      '#b58900', // Yellow
-      '#cb4b16', // Orange
-      '#dc322f', // Red
-      '#d33682', // Magenta
-      '#6c71c4', // Violet
-      '#93a1a1', // Base1
-      '#839496', // Base0
-    ],
-  },
-
-  'solarized-light': {
-    id: 'solarized-light',
-    name: 'Solarized Light',
-    colors: {
-      background: '#fdf6e3',
-      backgroundSecondary: '#eee8d5',
-      backgroundTertiary: '#93a1a1',
-      foreground: '#002b36',
-      foregroundSecondary: '#073642',
-      foregroundMuted: '#586e75',
-      nodeBackground: '#eee8d5',
-      nodeText: '#002b36',
-      nodeBorder: '#93a1a1',
-      accent: '#268bd2',
-      success: '#859900',
-      warning: '#b58900',
-      error: '#dc322f',
-      info: '#268bd2',
-    },
-    palette: [
-      '#268bd2', // Blue
-      '#2aa198', // Cyan
-      '#859900', // Green
-      '#b58900', // Yellow
-      '#cb4b16', // Orange
-      '#dc322f', // Red
-      '#d33682', // Magenta
-      '#6c71c4', // Violet
-      '#586e75', // Base01
-      '#657b83', // Base00
-    ],
-  },
-
-  dracula: {
-    id: 'dracula',
-    name: 'Dracula',
-    colors: {
-      background: '#282a36',
-      backgroundSecondary: '#44475a',
-      backgroundTertiary: '#6272a4',
-      foreground: '#f8f8f2',
-      foregroundSecondary: '#e9e9e4',
-      foregroundMuted: '#6272a4',
-      nodeBackground: '#44475a',
-      nodeText: '#f8f8f2',
-      nodeBorder: '#6272a4',
-      accent: '#bd93f9',
-      success: '#50fa7b',
-      warning: '#f1fa8c',
-      error: '#ff5555',
-      info: '#8be9fd',
-    },
-    palette: [
-      '#bd93f9', // Purple
-      '#ff79c6', // Pink
-      '#ff5555', // Red
-      '#ffb86c', // Orange
-      '#f1fa8c', // Yellow
-      '#50fa7b', // Green
-      '#8be9fd', // Cyan
-      '#6272a4', // Blue
-      '#ff6e67', // Light Red
-      '#9580ff', // Light Purple
-    ],
-  },
-
-  monokai: {
-    id: 'monokai',
-    name: 'Monokai',
-    colors: {
-      background: '#272822',
-      backgroundSecondary: '#3e3d32',
-      backgroundTertiary: '#49483e',
-      foreground: '#f8f8f2',
-      foregroundSecondary: '#e6e6e1',
-      foregroundMuted: '#75715e',
-      nodeBackground: '#3e3d32',
-      nodeText: '#f8f8f2',
-      nodeBorder: '#49483e',
-      accent: '#66d9ef',
-      success: '#a6e22e',
-      warning: '#e6db74',
-      error: '#f92672',
-      info: '#66d9ef',
-    },
-    palette: [
-      '#f92672', // Magenta
-      '#fd971f', // Orange
-      '#e6db74', // Yellow
-      '#a6e22e', // Green
-      '#66d9ef', // Cyan
-      '#ae81ff', // Purple
-      '#fd5ff0', // Pink
-      '#cc6633', // Brown
-      '#49483e', // Dark Gray
-      '#75715e', // Comment Gray
+      '#60a5fa',
+      '#a78bfa',
+      '#f472b6',
+      '#f87171',
+      '#fb923c',
+      '#fbbf24',
+      '#a3e635',
+      '#34d399',
+      '#2dd4bf',
+      '#22d3ee',
     ],
   },
 };
 
 /**
- * FR: Obtenir un thème par son ID
- * EN: Get a theme by its ID
+ * FR: Obtenir un thème d'interface par son ID
+ * EN: Get an interface theme by its ID
  */
-export function getTheme(themeId: string): ColorTheme {
-  return COLOR_THEMES[themeId] || COLOR_THEMES.light;
+export function getInterfaceTheme(themeId: string): InterfaceTheme {
+  return INTERFACE_THEMES[themeId] || INTERFACE_THEMES.light;
 }
 
 /**
- * FR: Obtenir la liste de tous les thèmes
- * EN: Get list of all themes
+ * FR: Obtenir la liste de tous les thèmes d'interface
+ * EN: Get list of all interface themes
  */
-export function getAllThemes(): ColorTheme[] {
-  return Object.values(COLOR_THEMES);
+export function getAllInterfaceThemes(): InterfaceTheme[] {
+  return Object.values(INTERFACE_THEMES);
 }
 
 /**
- * FR: Appliquer un thème au document HTML
- * EN: Apply a theme to the HTML document
+ * FR: Appliquer un thème d'interface au document HTML
+ * EN: Apply an interface theme to the HTML document
  */
-export function applyThemeToDocument(theme: ColorTheme): void {
+export function applyInterfaceThemeToDocument(theme: InterfaceTheme): void {
   const root = document.documentElement;
 
   // FR: Appliquer les variables CSS
@@ -368,6 +155,7 @@ export function applyThemeToDocument(theme: ColorTheme): void {
   root.style.setProperty('--bg', theme.colors.background);
   root.style.setProperty('--bg-secondary', theme.colors.backgroundSecondary);
   root.style.setProperty('--bg-tertiary', theme.colors.backgroundTertiary);
+  root.style.setProperty('--border-color', theme.colors.backgroundTertiary);
 
   root.style.setProperty('--fg', theme.colors.foreground);
   root.style.setProperty('--fg-secondary', theme.colors.foregroundSecondary);
@@ -387,4 +175,31 @@ export function applyThemeToDocument(theme: ColorTheme): void {
   // EN: Add opacity variations for accent
   root.style.setProperty('--accent-light', `${theme.colors.accent}20`);
   root.style.setProperty('--accent-hover', `${theme.colors.accent}dd`);
+}
+
+// FR: Fonctions pour rétro-compatibilité
+// EN: Functions for backward compatibility
+
+/**
+ * FR: Obtenir un thème par son ID (rétro-compatibilité)
+ * EN: Get a theme by its ID (backward compatibility)
+ */
+export function getTheme(themeId: string): ColorTheme {
+  return COLOR_THEMES[themeId] || COLOR_THEMES.light;
+}
+
+/**
+ * FR: Obtenir la liste de tous les thèmes (rétro-compatibilité)
+ * EN: Get list of all themes (backward compatibility)
+ */
+export function getAllThemes(): ColorTheme[] {
+  return Object.values(COLOR_THEMES);
+}
+
+/**
+ * FR: Appliquer un thème au document HTML (rétro-compatibilité)
+ * EN: Apply a theme to the HTML document (backward compatibility)
+ */
+export function applyThemeToDocument(theme: ColorTheme): void {
+  applyInterfaceThemeToDocument(theme);
 }
