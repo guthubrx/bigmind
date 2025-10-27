@@ -13,6 +13,64 @@ import { useCanvasOptions } from './useCanvasOptions';
 import { useTagStore } from './useTagStore';
 
 /**
+ * FR: Limites de sécurité pour les archives ZIP
+ * EN: Security limits for ZIP archives
+ *
+ * Note: La vérification de taille du fichier compressé (MAX_FILE_SIZE)
+ * offre une protection de base contre les ZIP bombs. Une limite plus stricte
+ * sur la taille décompressée nécessiterait de décompresser l'archive entière,
+ * ce qui peut être coûteux en performance.
+ */
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
+
+/**
+ * FR: Valider un overlay JSON avant fusion
+ * EN: Validate JSON overlay before merging
+ */
+const validateOverlay = (data: any): boolean => {
+  if (!data || typeof data !== 'object') return false;
+
+  // FR: Vérifier que nodes est un objet avec des IDs valides
+  // EN: Check that nodes is an object with valid IDs
+  if (data.nodes) {
+    if (typeof data.nodes !== 'object') return false;
+
+    // FR: Limiter le nombre de nodes pour éviter les attaques
+    // EN: Limit number of nodes to prevent attacks
+    const nodeKeys = Object.keys(data.nodes);
+    if (nodeKeys.length > 10000) return false;
+
+    // FR: Vérifier que chaque node a une structure valide
+    // EN: Check that each node has valid structure
+    const allNodesValid = nodeKeys.every(key => {
+      const node = data.nodes[key];
+      if (typeof node !== 'object') return false;
+
+      // FR: Vérifier les types des propriétés si présentes
+      // EN: Check property types if present
+      if (node.title !== undefined && typeof node.title !== 'string') return false;
+      if (node.notes !== undefined && typeof node.notes !== 'string') return false;
+      if (node.collapsed !== undefined && typeof node.collapsed !== 'boolean') return false;
+      return true;
+    });
+    if (!allNodesValid) return false;
+  }
+
+  // FR: Valider les tags si présents
+  // EN: Validate tags if present
+  if (data.tags) {
+    if (typeof data.tags !== 'object') return false;
+    if (data.tags.tags && typeof data.tags.tags !== 'object') return false;
+    if (data.tags.links && !Array.isArray(data.tags.links)) return false;
+    if (data.tags.nodeTags && typeof data.tags.nodeTags !== 'object') return false;
+    if (data.tags.tagNodes && typeof data.tags.tagNodes !== 'object') return false;
+    if (data.tags.hiddenTags && !Array.isArray(data.tags.hiddenTags)) return false;
+  }
+
+  return true;
+};
+
+/**
  * FR: Hook pour gérer l'ouverture de fichiers
  * EN: Hook to handle file opening
  */
@@ -63,6 +121,16 @@ export const useFileOperations = () => {
   const openXMindFile = useCallback(
     async (file: File) => {
       try {
+        // FR: Vérifier la taille du fichier avant lecture
+        // EN: Check file size before reading
+        if (file.size > MAX_FILE_SIZE) {
+          const fileSizeMB = Math.round(file.size / 1024 / 1024);
+          const maxSizeMB = MAX_FILE_SIZE / 1024 / 1024;
+          throw new Error(
+            `Fichier trop volumineux (${fileSizeMB}MB). Maximum autorisé: ${maxSizeMB}MB`
+          );
+        }
+
         const arrayBuffer = await file.arrayBuffer();
 
         // FR: Essayer d'abord le parser standard
@@ -90,7 +158,9 @@ export const useFileOperations = () => {
             const raw = localStorage.getItem(key);
             if (raw) {
               const overlay = JSON.parse(raw);
-              if (overlay?.nodes) {
+              // FR: Valider l'overlay avant fusion
+              // EN: Validate overlay before merging
+              if (validateOverlay(overlay) && overlay?.nodes) {
                 Object.entries(overlay.nodes).forEach(([id, patch]: any) => {
                   if (adaptedContent.nodes?.[id]) {
                     adaptedContent.nodes[id] = { ...adaptedContent.nodes[id], ...patch };
@@ -111,21 +181,27 @@ export const useFileOperations = () => {
           let loadedTags: any = null;
           try {
             const zip = await JSZip.loadAsync(arrayBuffer);
+
             const sidecar = zip.file('bigmind.json');
             if (sidecar) {
               const text = await sidecar.async('text');
               const data = JSON.parse(text);
-              if (data?.nodes) {
-                Object.entries(data.nodes).forEach(([id, patch]: any) => {
-                  if (adaptedContent.nodes?.[id]) {
-                    adaptedContent.nodes[id] = { ...adaptedContent.nodes[id], ...patch };
-                  }
-                });
-              }
-              // FR: Sauvegarder les tags pour les charger après
-              // EN: Save tags to load them later
-              if (data?.tags) {
-                loadedTags = data.tags;
+
+              // FR: Valider les données avant fusion
+              // EN: Validate data before merging
+              if (validateOverlay(data)) {
+                if (data?.nodes) {
+                  Object.entries(data.nodes).forEach(([id, patch]: any) => {
+                    if (adaptedContent.nodes?.[id]) {
+                      adaptedContent.nodes[id] = { ...adaptedContent.nodes[id], ...patch };
+                    }
+                  });
+                }
+                // FR: Sauvegarder les tags pour les charger après
+                // EN: Save tags to load them later
+                if (data?.tags) {
+                  loadedTags = data.tags;
+                }
               }
             }
           } catch (e) {
@@ -192,7 +268,9 @@ export const useFileOperations = () => {
             const raw = localStorage.getItem(key);
             if (raw) {
               const overlay = JSON.parse(raw);
-              if (overlay?.nodes) {
+              // FR: Valider l'overlay avant fusion
+              // EN: Validate overlay before merging
+              if (validateOverlay(overlay) && overlay?.nodes) {
                 Object.entries(overlay.nodes).forEach(([id, patch]: any) => {
                   if (adaptedContent.nodes?.[id]) {
                     adaptedContent.nodes[id] = { ...adaptedContent.nodes[id], ...patch };
@@ -211,19 +289,25 @@ export const useFileOperations = () => {
           let loadedTagsFallback: any = null;
           try {
             const zip = await JSZip.loadAsync(arrayBuffer);
+
             const sidecar = zip.file('bigmind.json');
             if (sidecar) {
               const text = await sidecar.async('text');
               const data = JSON.parse(text);
-              if (data?.nodes) {
-                Object.entries(data.nodes).forEach(([id, patch]: any) => {
-                  if (adaptedContent.nodes?.[id]) {
-                    adaptedContent.nodes[id] = { ...adaptedContent.nodes[id], ...patch };
-                  }
-                });
-              }
-              if (data?.tags) {
-                loadedTagsFallback = data.tags;
+
+              // FR: Valider les données avant fusion
+              // EN: Validate data before merging
+              if (validateOverlay(data)) {
+                if (data?.nodes) {
+                  Object.entries(data.nodes).forEach(([id, patch]: any) => {
+                    if (adaptedContent.nodes?.[id]) {
+                      adaptedContent.nodes[id] = { ...adaptedContent.nodes[id], ...patch };
+                    }
+                  });
+                }
+                if (data?.tags) {
+                  loadedTagsFallback = data.tags;
+                }
               }
             }
           } catch (e) {
