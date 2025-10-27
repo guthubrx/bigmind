@@ -277,19 +277,15 @@ function MindMapNode({ data, selected }: Props) {
 
   const isCurrentlySelected = !!(selected || data.isSelected || selectedNodeId === data.id);
 
-  // FR: Calculer le shadow selon l'état
-  // EN: Calculate shadow based on state
-  const getBoxShadow = (): string => {
+  // FR: Calculer le shadow selon l'état (memoïzé)
+  // EN: Calculate shadow based on state (memoized)
+  const boxShadow = useMemo(() => {
     if (isDragOverNode) {
       return `inset 0 0 10px ${accentColor}40, 0 0 20px ${accentColor}40`;
     }
-    // FR: Si c'est un réordonnancement de siblings, pas de glow (ligne affichée à la place)
-    // EN: If sibling reorder, no glow (line displayed instead)
     if ((data as any).isSiblingReorder) {
       return 'none';
     }
-    // FR: Si c'est un reparenting (zone centrale), utiliser du BLEU
-    // EN: If reparenting (center zone), use BLUE
     if ((data as any).isValidDragTarget && (data as any).dropPosition === 'center') {
       return '0 0 20px rgba(59, 130, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.3)';
     }
@@ -303,7 +299,7 @@ function MindMapNode({ data, selected }: Props) {
       return `0 0 20px ${accentColor}, 0 0 40px ${accentColor}80, 0 0 60px ${accentColor}40`;
     }
     return 'none';
-  };
+  }, [isDragOverNode, data, accentColor]);
 
   // FR: Calculer outline selon l'état
   // EN: Calculate outline based on state
@@ -346,60 +342,59 @@ function MindMapNode({ data, selected }: Props) {
     }
   };
 
-  // FR: Déterminer la couleur de fond
-  // EN: Determine background color
-  let bgColor: string;
-  if ((data as any).isSiblingReorder) {
-    // FR: Réordonnancement de siblings - fond VERT léger
-    // EN: Sibling reorder - light GREEN background
-    bgColor = 'rgba(34, 197, 94, 0.05)';
-  } else if ((data as any).isValidDragTarget && (data as any).dropPosition === 'center') {
-    // FR: Reparenting (zone centrale) - fond BLEU
-    // EN: Reparenting (center zone) - BLUE background
-    bgColor = 'rgba(59, 130, 246, 0.1)';
-  } else if ((data as any).isValidDragTarget) {
-    bgColor = 'rgba(34, 197, 94, 0.1)';
-  } else if ((data as any).isInvalidDragTarget) {
-    bgColor = 'rgba(239, 68, 68, 0.05)';
-  } else if ((data as any).isDragTarget) {
-    bgColor = `${accentColor}20`;
-  } else if (data.isPrimary) {
-    bgColor = accentColor;
-  } else {
-    bgColor =
+  // FR: Déterminer la couleur de fond (memoïzée)
+  // EN: Determine background color (memoized)
+  const bgColor = useMemo(() => {
+    if ((data as any).isSiblingReorder) {
+      return 'rgba(34, 197, 94, 0.05)';
+    }
+    if ((data as any).isValidDragTarget && (data as any).dropPosition === 'center') {
+      return 'rgba(59, 130, 246, 0.1)';
+    }
+    if ((data as any).isValidDragTarget) {
+      return 'rgba(34, 197, 94, 0.1)';
+    }
+    if ((data as any).isInvalidDragTarget) {
+      return 'rgba(239, 68, 68, 0.05)';
+    }
+    if ((data as any).isDragTarget) {
+      return `${accentColor}20`;
+    }
+    if (data.isPrimary) {
+      return accentColor;
+    }
+    return (
       data.computedStyle?.backgroundColor ||
       data.style?.backgroundColor ||
       (data.style as any)?.fill ||
       (data.style as any)?.background ||
       (data.style as any)?.bgColor ||
-      currentTheme.colors.nodeBackground;
-  }
+      currentTheme.colors.nodeBackground
+    );
+  }, [data, accentColor, currentTheme.colors.nodeBackground]);
 
-  // FR: Déterminer l'opacité
-  // EN: Determine opacity
-  let nodeOpacity: number;
-  if ((data as any).isHiddenByTag) {
-    // FR: Nœud caché par un tag masqué
-    // EN: Node hidden by a masked tag
-    nodeOpacity = 0.15;
-  } else if ((data as any).isGhost) {
-    nodeOpacity = 0.4;
-  } else if ((data as any).isBeingDragged) {
-    nodeOpacity = 0.6;
-  } else if ((data as any).isDescendantOfDragged) {
-    nodeOpacity = 0.3;
-  } else {
-    nodeOpacity = 1;
-  }
+  // FR: Déterminer l'opacité (memoïzée)
+  // EN: Determine opacity (memoized)
+  const nodeOpacity = useMemo(() => {
+    if ((data as any).isHiddenByTag) return 0.15;
+    if ((data as any).isGhost) return 0.4;
+    if ((data as any).isBeingDragged) return 0.6;
+    if ((data as any).isDescendantOfDragged) return 0.3;
+    return 1;
+  }, [data]);
 
-  // FR: Déterminer la couleur du texte
-  // EN: Determine text color
-  const textColor = data.isPrimary
-    ? getOptimalTextColor(accentColor)
-    : data.computedStyle?.textColor ||
-      data.style?.textColor ||
-      (data.style as any)?.color ||
-      currentTheme.colors.nodeText;
+  // FR: Déterminer la couleur du texte (memoïzée)
+  // EN: Determine text color (memoized)
+  const textColor = useMemo(
+    () =>
+      data.isPrimary
+        ? getOptimalTextColor(accentColor)
+        : data.computedStyle?.textColor ||
+          data.style?.textColor ||
+          (data.style as any)?.color ||
+          currentTheme.colors.nodeText,
+    [data, accentColor, getOptimalTextColor, currentTheme.colors.nodeText]
+  );
 
   return (
     <div
@@ -444,7 +439,7 @@ function MindMapNode({ data, selected }: Props) {
         padding: '8px 12px',
         outline,
         outlineOffset,
-        boxShadow: getBoxShadow(),
+        boxShadow,
         transition: 'all 0.2s ease',
       }}
     >
@@ -624,4 +619,12 @@ function MindMapNode({ data, selected }: Props) {
   );
 }
 
-export default MindMapNode;
+// FR: Wrapper avec React.memo pour éviter les re-renders inutiles
+// EN: Wrap with React.memo to avoid unnecessary re-renders
+export default React.memo(
+  MindMapNode,
+  (prevProps, nextProps) =>
+    // FR: Comparer uniquement les props qui affectent le rendu
+    // EN: Compare only props that affect rendering
+    prevProps.data === nextProps.data && prevProps.selected === nextProps.selected
+);
