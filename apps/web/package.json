@@ -13,6 +13,7 @@
   "dependencies": {
     "@bigmind/core": "workspace:*",
     "@bigmind/design": "workspace:*",
+    "@bigmind/plugin-system": "workspace:*",
     "@bigmind/ui": "workspace:*",
     "@bytemd/plugin-breaks": "^1.22.0",
     "@bytemd/plugin-gfm": "^1.22.0",

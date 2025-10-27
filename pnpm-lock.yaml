@@ -92,6 +92,9 @@ importers:
       '@bigmind/design':
         specifier: workspace:*
         version: link:../../packages/design
+      '@bigmind/plugin-system':
+        specifier: workspace:*
+        version: link:../../packages/plugin-system
       '@bigmind/ui':
         specifier: workspace:*
         version: link:../../packages/ui
