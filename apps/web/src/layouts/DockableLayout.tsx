@@ -138,8 +138,8 @@ function DockableLayout() {
 
   const [model] = React.useState(getInitialModel);
 
-  // FR: Mettre à jour les variables CSS pour centrer les poignées
-  // EN: Update CSS variables to center handles
+  // FR: Mettre à jour les variables CSS pour centrer les poignées et calculer leur taille
+  // EN: Update CSS variables to center handles and calculate their size
   React.useEffect(() => {
     const updateHandlePositions = () => {
       // Splitters verticaux (séparent gauche/droite)
@@ -149,7 +149,9 @@ function DockableLayout() {
         if (nextElement) {
           const nextRect = nextElement.getBoundingClientRect();
           const offset = nextRect.width / 2;
+          const handleWidth = nextRect.width / 2;
           (splitter as HTMLElement).style.setProperty('--handle-offset', `${offset}px`);
+          (splitter as HTMLElement).style.setProperty('--handle-width', `${handleWidth}px`);
         }
       });
 
@@ -160,7 +162,9 @@ function DockableLayout() {
         if (nextElement) {
           const nextRect = nextElement.getBoundingClientRect();
           const offset = nextRect.height / 2;
+          const handleHeight = nextRect.height / 2;
           (splitter as HTMLElement).style.setProperty('--handle-offset-vert', `${offset}px`);
+          (splitter as HTMLElement).style.setProperty('--handle-height', `${handleHeight}px`);
         }
       });
     };
@@ -192,7 +196,7 @@ function DockableLayout() {
       const json = newModel.toJson();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(json));
 
-      // Mettre à jour les positions des poignées après le changement de modèle
+      // Mettre à jour les positions et dimensions des poignées après le changement de modèle
       setTimeout(() => {
         // Splitters verticaux
         const vertSplitters = document.querySelectorAll('.flexlayout__splitter_vert');
@@ -201,7 +205,9 @@ function DockableLayout() {
           if (nextElement) {
             const nextRect = nextElement.getBoundingClientRect();
             const offset = nextRect.width / 2;
+            const handleWidth = nextRect.width / 2;
             (splitter as HTMLElement).style.setProperty('--handle-offset', `${offset}px`);
+            (splitter as HTMLElement).style.setProperty('--handle-width', `${handleWidth}px`);
           }
         });
 
@@ -212,7 +218,9 @@ function DockableLayout() {
           if (nextElement) {
             const nextRect = nextElement.getBoundingClientRect();
             const offset = nextRect.height / 2;
+            const handleHeight = nextRect.height / 2;
             (splitter as HTMLElement).style.setProperty('--handle-offset-vert', `${offset}px`);
+            (splitter as HTMLElement).style.setProperty('--handle-height', `${handleHeight}px`);
           }
         });
       }, 50);
