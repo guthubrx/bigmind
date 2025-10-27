@@ -131,12 +131,11 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 60px;
-  height: 4px;
+  width: 4px;
+  height: 60px;
   background: var(--accent-color);
   border-radius: 2px;
-  opacity: 0;
-  transition: opacity 0.2s ease;
+  opacity: 1;
 }
 
 .flexlayout__splitter_vert::after {
@@ -145,12 +144,11 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 4px;
-  height: 60px;
+  width: 60px;
+  height: 4px;
   background: var(--accent-color);
   border-radius: 2px;
-  opacity: 0;
-  transition: opacity 0.2s ease;
+  opacity: 1;
 }
 
 .flexlayout__splitter_horz:hover {
@@ -159,14 +157,6 @@
 
 .flexlayout__splitter_vert:hover {
   cursor: col-resize;
-}
-
-.flexlayout__splitter_horz:hover::after {
-  opacity: 1;
-}
-
-.flexlayout__splitter_vert:hover::after {
-  opacity: 1;
 }
 
 .flexlayout__splitter:hover {
