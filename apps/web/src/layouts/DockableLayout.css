@@ -110,18 +110,18 @@
 }
 
 .flexlayout__splitter {
-  background: var(--border-color, #e2e8f0);
+  background: #000000;
   transition: all 0.2s ease;
 }
 
 .flexlayout__splitter_horz {
   height: 1px !important;
-  background: var(--border-color, #e2e8f0);
+  background: #000000;
 }
 
 .flexlayout__splitter_vert {
   width: 1px !important;
-  background: var(--border-color, #e2e8f0);
+  background: #000000;
 }
 
 .flexlayout__splitter_horz:hover {
