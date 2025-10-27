@@ -142,7 +142,7 @@
 .flexlayout__splitter_vert::after {
   content: '';
   position: absolute !important;
-  left: calc(50% + 150px) !important;
+  left: calc(50% + var(--handle-offset, 150px)) !important;
   top: 50% !important;
   transform: translate(-50%, -50%) !important;
   width: 60px !important;
@@ -215,7 +215,7 @@
 .flexlayout__splitter_drag.flexlayout__splitter_vert::after {
   content: '';
   position: absolute !important;
-  left: calc(50% + 150px) !important;
+  left: calc(50% + var(--handle-offset, 150px)) !important;
   top: 50% !important;
   transform: translate(-50%, -50%) !important;
   width: 60px !important;

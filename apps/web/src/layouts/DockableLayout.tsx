@@ -138,6 +138,29 @@ function DockableLayout() {
 
   const [model] = React.useState(getInitialModel);
 
+  // FR: Mettre à jour les variables CSS pour centrer les poignées
+  // EN: Update CSS variables to center handles
+  React.useEffect(() => {
+    const updateHandlePositions = () => {
+      const splitters = document.querySelectorAll('.flexlayout__splitter_vert');
+      splitters.forEach(splitter => {
+        const nextElement = splitter.nextElementSibling as HTMLElement;
+        if (nextElement) {
+          const nextRect = nextElement.getBoundingClientRect();
+          const offset = nextRect.width / 2;
+          (splitter as HTMLElement).style.setProperty('--handle-offset', `${offset}px`);
+        }
+      });
+    };
+
+    updateHandlePositions();
+    const observer = new ResizeObserver(updateHandlePositions);
+    const main = document.querySelector('.dockable-main');
+    if (main) observer.observe(main);
+
+    return () => observer.disconnect();
+  }, [model]);
+
   // FR: Sauvegarder la configuration dans localStorage
   // EN: Save configuration to localStorage
   const onModelChange = useCallback((newModel: Model) => {
