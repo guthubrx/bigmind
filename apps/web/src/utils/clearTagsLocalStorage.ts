@@ -24,17 +24,7 @@ export function clearTagsLocalStorage() {
   // Supprimer toutes les clés identifiées
   keysToRemove.forEach(key => {
     localStorage.removeItem(key);
-    // eslint-disable-next-line no-console
-    console.log(`[Storage] Supprimé: ${key}`);
   });
-
-  if (keysToRemove.length > 0) {
-    // eslint-disable-next-line no-console
-    console.log(`[Storage] Nettoyage terminé: ${keysToRemove.length} clé(s) de tags supprimée(s)`);
-  } else {
-    // eslint-disable-next-line no-console
-    console.log('[Storage] Aucune clé de tags à nettoyer');
-  }
 
   return keysToRemove.length;
 }

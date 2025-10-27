@@ -70,7 +70,6 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
   // FR: Ouvrir un nouveau fichier
   // EN: Open a new file
   openFile: (file: Omit<OpenFile, 'id' | 'lastModified' | 'isActive'>) => {
-    console.warn("📂 Ouverture d'un fichier:", file.name, file.type);
     const newFile: OpenFile = {
       ...file,
       id: uuidv4(),
@@ -84,9 +83,6 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       const updatedFiles = state.openFiles.map(f => ({ ...f, isActive: false }));
       const result = [...updatedFiles, newFile];
 
-      console.warn('📁 Fichiers ouverts:', result.length);
-      console.warn('📁 Nouveau fichier actif:', newFile.id, newFile.isActive);
-
       return {
         ...state,
         openFiles: result,
@@ -98,7 +94,6 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     // EN: Save to localStorage
     get().saveOpenFilesToStorage();
 
-    console.warn('✅ Fichier ouvert avec ID:', newFile.id);
     return newFile.id;
   },
 
@@ -188,9 +183,6 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
   getActiveFile: () => {
     const state = get();
     const activeFile = state.openFiles.find(f => f.isActive) || null;
-    console.warn('🔍 getActiveFile - openFiles:', state.openFiles.length);
-    console.warn('🔍 getActiveFile - activeFileId:', state.activeFileId);
-    console.warn('🔍 getActiveFile - activeFile:', activeFile);
     return activeFile;
   },
 
@@ -593,8 +585,6 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
         openFiles: restoredFiles,
         activeFileId: activeFileId || (restoredFiles.length > 0 ? restoredFiles[0].id : null),
       });
-
-      console.warn(`[useOpenFiles] ${restoredFiles.length} fichier(s) restauré(s)`);
     } catch (e) {
       console.warn('[useOpenFiles] Erreur lors de la restauration des fichiers:', e);
     }

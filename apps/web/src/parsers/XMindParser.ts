@@ -42,17 +42,9 @@ export class XMindParser {
    */
   static async parse(arrayBuffer: ArrayBuffer): Promise<XMindMap> {
     try {
-      console.warn('🔍 XMindParser.parse - Début du parsing, taille:', arrayBuffer.byteLength);
-
       // FR: Les fichiers .xmind sont des archives ZIP
       // EN: .xmind files are ZIP archives
       const zip = await JSZip.loadAsync(arrayBuffer);
-      console.warn('📦 Archive ZIP chargée');
-
-      // FR: Lister tous les fichiers pour diagnostic
-      // EN: List all files for diagnosis
-      const allFiles = Object.keys(zip.files);
-      console.warn("📁 Tous les fichiers dans l'archive:", allFiles);
 
       // FR: Chercher le fichier content.xml dans l'archive
       // EN: Look for content.xml file in the archive
@@ -73,7 +65,6 @@ export class XMindParser {
         // FR: Lister tous les fichiers pour debug
         // EN: List all files for debug
         const fileNames = Object.keys(zip.files);
-        console.warn("Fichiers trouvés dans l'archive:", fileNames);
         throw new Error(
           `Fichier .xmind invalide : content.xml manquant. Fichiers trouvés: ${fileNames.join(
             ', '
@@ -81,7 +72,6 @@ export class XMindParser {
         );
       }
 
-      console.warn('Fichier trouvé:', contentFile.name);
       const fileContent = await contentFile.async('text');
       // console.warn('Contenu lu, longueur:', fileContent.length);
 
@@ -238,7 +228,6 @@ export class XMindParser {
    * EN: Parse XML content in .xmind file
    */
   private static parseXML(xmlText: string): XMindMap {
-    console.warn('🔍 XMindParser.parseXML - Début du parsing XML');
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
 
@@ -249,8 +238,6 @@ export class XMindParser {
       console.error('❌ Erreur de parsing XML:', parseError.textContent);
       throw new Error(`Erreur de parsing XML : ${parseError.textContent}`);
     }
-
-    console.warn('📄 Document XML parsé, élément racine:', xmlDoc.documentElement.tagName);
 
     // FR: Essayer différentes structures possibles
     // EN: Try different possible structures
@@ -265,13 +252,6 @@ export class XMindParser {
     }
 
     if (!workbook) {
-      // FR: Debug : afficher la structure XML pour diagnostic
-      // EN: Debug: display XML structure for diagnosis
-      console.warn('📄 Structure XML trouvée:', xmlDoc.documentElement.tagName);
-      console.warn(
-        '📄 Éléments racine:',
-        Array.from(xmlDoc.documentElement.children).map(el => el.tagName)
-      );
       throw new Error(
         `Fichier .xmind invalide : structure XML non reconnue. Éléments trouvés: ${Array.from(
           xmlDoc.documentElement.children
@@ -281,7 +261,6 @@ export class XMindParser {
       );
     }
 
-    console.warn('📄 Workbook trouvé:', workbook.tagName);
     const sheet =
       workbook.querySelector('sheet') ||
       workbook.querySelector('topic') ||
@@ -292,14 +271,12 @@ export class XMindParser {
       throw new Error('Fichier .xmind invalide : élément sheet/topic manquant');
     }
 
-    console.warn('📄 Sheet trouvé:', sheet.tagName);
     const topic = sheet.querySelector('topic') || sheet;
     if (!topic) {
       console.error('❌ Aucun topic trouvé');
       throw new Error('Fichier .xmind invalide : élément topic manquant');
     }
 
-    console.warn('📄 Topic racine trouvé:', topic.getAttribute('title'));
     const result = {
       root: this.parseTopic(topic),
       metadata: {
@@ -309,7 +286,6 @@ export class XMindParser {
       },
     };
 
-    console.warn('✅ Parsing XML terminé avec succès');
     return result;
   }
 
@@ -318,13 +294,6 @@ export class XMindParser {
    * EN: Parse an XMind topic recursively
    */
   private static parseTopic(topicElement: Element): XMindNode {
-    console.warn(
-      '🔍 parseTopic - Élément:',
-      topicElement.tagName,
-      'attributs:',
-      Array.from(topicElement.attributes).map(a => `${a.name}="${a.value}"`)
-    );
-
     // FR: Essayer différentes façons de récupérer le titre
     // EN: Try different ways to get the title
     let title = topicElement.getAttribute('title') || '';
@@ -335,7 +304,6 @@ export class XMindParser {
       const titleElement = topicElement.querySelector('title');
       if (titleElement) {
         title = titleElement.textContent || titleElement.getAttribute('text') || '';
-        console.warn('📄 Titre trouvé dans élément title:', title);
       }
     }
 
@@ -347,10 +315,7 @@ export class XMindParser {
         topicElement.getAttribute('label') ||
         topicElement.textContent?.trim() ||
         '';
-      console.warn('📄 Titre trouvé dans autres attributs:', title);
     }
-
-    console.warn('📄 Titre final:', title);
 
     const id =
       topicElement.getAttribute('id') ||

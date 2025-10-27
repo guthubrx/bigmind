@@ -24,8 +24,6 @@ function App() {
   // EN: Clean localStorage of old tags (once on startup)
   useEffect(() => {
     clearTagsLocalStorage();
-    // eslint-disable-next-line no-console
-    console.log('[App] LocalStorage nettoyé - les tags sont maintenant dans bigmind.json');
   }, []);
 
   // FR: Synchroniser les tags avec le fichier actif
