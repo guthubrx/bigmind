@@ -6,6 +6,7 @@
 import { useState, useCallback } from 'react';
 import { useAppSettings } from './useAppSettings';
 import { getNodeColor } from '../utils/nodeColors';
+import { pluginSystem } from '../utils/pluginManager';
 
 // FR: Types simplifiés pour le développement
 // EN: Simplified types for development
@@ -159,6 +160,19 @@ export const useMindmap = () => {
             backgroundColor: autoColor,
           };
 
+          // FR: Déclencher l'événement pour les plugins
+          // EN: Trigger event for plugins
+          pluginSystem.hookSystem
+            .applyFilters('mindmap.nodeCreated', {
+              nodeId: newNode.id,
+              parentId,
+              title,
+              node: newNode,
+            })
+            .catch(error => {
+              console.error('[useMindmap] Error triggering nodeCreated hook:', error);
+            });
+
           return {
             ...prev,
             nodes: newNodes,
@@ -187,6 +201,17 @@ export const useMindmap = () => {
             }
           }
 
+          // FR: Déclencher l'événement pour les plugins
+          // EN: Trigger event for plugins
+          pluginSystem.hookSystem
+            .applyFilters('mindmap.nodeDeleted', {
+              nodeId,
+              node,
+            })
+            .catch(error => {
+              console.error('[useMindmap] Error triggering nodeDeleted hook:', error);
+            });
+
           return {
             ...prev,
             nodes: newNodes,
@@ -210,6 +235,18 @@ export const useMindmap = () => {
 
           const node = prev.nodes[nodeId];
           if (!node) return prev;
+
+          // FR: Déclencher l'événement pour les plugins
+          // EN: Trigger event for plugins
+          pluginSystem.hookSystem
+            .applyFilters('mindmap.nodeUpdated', {
+              nodeId,
+              title,
+              node: { ...node, title },
+            })
+            .catch(error => {
+              console.error('[useMindmap] Error triggering nodeUpdated hook:', error);
+            });
 
           return {
             ...prev,

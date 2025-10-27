@@ -27,7 +27,15 @@ const system = createEnhancedPluginSystem({
   eventBus,
 });
 
-const { registry, permissionManager, auditLogger, policyEngine, roleManager, cspManager } = system;
+const {
+  registry,
+  hookSystem,
+  permissionManager,
+  auditLogger,
+  policyEngine,
+  roleManager,
+  cspManager,
+} = system;
 
 let initialized = false;
 
@@ -64,6 +72,7 @@ export async function initializePlugins(): Promise<void> {
  */
 export const pluginSystem = {
   registry,
+  hookSystem,
   permissionManager,
   auditLogger,
   policyEngine,
