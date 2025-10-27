@@ -12,7 +12,7 @@ import {
   AuditDashboard,
   PolicyEditor,
 } from '../components/plugins';
-import { pluginSystem } from '../utils/pluginManager';
+import { pluginSystem, saveActivatedPlugins } from '../utils/pluginManager';
 import type {
   PluginInfo,
   Permission,
@@ -88,10 +88,22 @@ export function PluginsPage() {
     }
   };
 
+  // Helper to save current activation state
+  const saveActivationState = () => {
+    const activePluginIds: string[] = [];
+    registry.getAllPlugins().forEach((info, pluginId) => {
+      if (info.state === 'active') {
+        activePluginIds.push(pluginId);
+      }
+    });
+    saveActivatedPlugins(activePluginIds);
+  };
+
   const handleActivate = async (pluginId: string) => {
     try {
       await registry.activate(pluginId);
       await auditLogger.logPluginActivated(pluginId);
+      saveActivationState(); // Save to localStorage
     } catch (error) {
       console.error('Failed to activate plugin:', error);
       await auditLogger.logSecurityAlert(
@@ -103,10 +115,12 @@ export function PluginsPage() {
 
   const handleDeactivate = async (pluginId: string) => {
     await registry.deactivate(pluginId);
+    saveActivationState(); // Save to localStorage
   };
 
   const handleUninstall = async (pluginId: string) => {
     await registry.unregister(pluginId);
+    saveActivationState(); // Save to localStorage
   };
 
   const handleViewPermissions = (pluginId: string) => {

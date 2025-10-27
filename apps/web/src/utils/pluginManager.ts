@@ -3,6 +3,8 @@
  * Initializes and manages the plugin system
  */
 
+/* eslint-disable no-console */
+
 import { createEnhancedPluginSystem } from '@bigmind/plugin-system';
 import { eventBus } from './eventBus';
 import examplePlugin from '../plugins/example-plugin';
@@ -40,6 +42,32 @@ const {
 let initialized = false;
 
 /**
+ * Get list of previously activated plugins from localStorage
+ */
+function getActivatedPlugins(): Set<string> {
+  try {
+    const data = localStorage.getItem('bigmind-activated-plugins');
+    if (data) {
+      return new Set(JSON.parse(data));
+    }
+  } catch (error) {
+    console.error('[PluginManager] Failed to load activated plugins:', error);
+  }
+  return new Set();
+}
+
+/**
+ * Save list of activated plugins to localStorage
+ */
+export function saveActivatedPlugins(pluginIds: string[]): void {
+  try {
+    localStorage.setItem('bigmind-activated-plugins', JSON.stringify(pluginIds));
+  } catch (error) {
+    console.error('[PluginManager] Failed to save activated plugins:', error);
+  }
+}
+
+/**
  * Initialize the plugin system and register example plugins
  */
 export async function initializePlugins(): Promise<void> {
@@ -59,6 +87,22 @@ export async function initializePlugins(): Promise<void> {
 
     await registry.register(analyticsPlugin);
     console.log('✅ Registered: Analytics Plugin');
+
+    // Auto-activate previously activated plugins
+    const activatedPlugins = getActivatedPlugins();
+    if (activatedPlugins.size > 0) {
+      console.log('🔄 Restoring previously activated plugins...');
+      await Promise.all(
+        Array.from(activatedPlugins).map(async pluginId => {
+          try {
+            await registry.activate(pluginId);
+            console.log(`✅ Auto-activated: ${pluginId}`);
+          } catch (error) {
+            console.error(`❌ Failed to auto-activate ${pluginId}:`, error);
+          }
+        })
+      );
+    }
 
     console.log('🎉 Plugin system initialized successfully!');
   } catch (error) {
