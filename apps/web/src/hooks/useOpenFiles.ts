@@ -7,6 +7,7 @@ import { create } from 'zustand';
 import { XMindParser } from '../parsers/XMindParser';
 import { v4 as uuidv4 } from 'uuid';
 import { getNodeColor } from '../utils/nodeColors';
+import { getPalette } from '../themes/colorPalettes';
 
 export interface OpenFile {
   id: string;
@@ -375,11 +376,43 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
   updateActiveFileNodePalette: (paletteId: string) => {
     const state = get();
     const active = state.openFiles.find(f => f.isActive);
-    if (!active || !active.content) return;
+    if (!active || !active.content || !active.content.nodes) return;
+
+    const rootId = active.content.rootNode?.id || active.content.nodes?.root?.id;
+    if (!rootId) return;
+
+    // FR: Obtenir la palette et créer un thème temporaire
+    // EN: Get palette and create temporary theme
+    const palette = getPalette(paletteId);
+    const tempTheme = {
+      colors: {
+        nodeBackground: '#ffffff',
+      },
+      palette: palette.colors,
+    };
+
+    // FR: Recalculer les couleurs de tous les nœuds avec la nouvelle palette
+    // EN: Recalculate all node colors with the new palette
+    const nodes = { ...active.content.nodes } as Record<string, any>;
+    const updatedNodes: Record<string, any> = {};
+
+    Object.keys(nodes).forEach(nodeId => {
+      const node = nodes[nodeId];
+      const autoColor = getNodeColor(nodeId, nodes, rootId, tempTheme);
+
+      updatedNodes[nodeId] = {
+        ...node,
+        style: {
+          ...node.style,
+          backgroundColor: autoColor,
+        },
+      };
+    });
 
     const updatedContent = {
       ...active.content,
       nodePaletteId: paletteId,
+      nodes: updatedNodes,
     };
 
     // Persister dans localStorage
@@ -387,6 +420,13 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       const key = `bigmind_overlay_${active.name}`;
       const overlay = JSON.parse(localStorage.getItem(key) || '{}');
       overlay.nodePaletteId = paletteId;
+      // FR: Sauvegarder aussi les couleurs mises à jour
+      // EN: Also save updated colors
+      overlay.nodes = overlay.nodes || {};
+      Object.keys(updatedNodes).forEach(nodeId => {
+        overlay.nodes[nodeId] = overlay.nodes[nodeId] || {};
+        overlay.nodes[nodeId].style = updatedNodes[nodeId].style;
+      });
       localStorage.setItem(key, JSON.stringify(overlay));
     } catch (e) {
       // Ignore errors
