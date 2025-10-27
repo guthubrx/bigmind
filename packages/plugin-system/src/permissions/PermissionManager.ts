@@ -135,8 +135,15 @@ export class PermissionManager {
     try {
       const data = await this.storage.load();
       if (data) {
-        this.granted = data;
-        console.log(`[PermissionManager] Loaded permissions for ${data.size} plugins`);
+        // Convert Arrays to Sets (from JSON deserialization)
+        this.granted = new Map();
+        data.forEach((permissions, pluginId) => {
+          this.granted.set(
+            pluginId,
+            permissions instanceof Set ? permissions : new Set(permissions)
+          );
+        });
+        console.log(`[PermissionManager] Loaded permissions for ${this.granted.size} plugins`);
       }
     } catch (error) {
       console.error('[PermissionManager] Failed to load permissions:', error);
