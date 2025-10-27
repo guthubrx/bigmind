@@ -21,7 +21,10 @@ function NodeTagPanel({ nodeId }: NodeTagPanelProps) {
   const getNodeTags = useTagStore(state => state.getNodeTags);
   const { tagNodeSync, untagNodeSync } = useMindMapDAGSync();
 
-  const nodeTagIds = useMemo(() => getNodeTags(nodeId), [nodeId, getNodeTags]);
+  // FR: allTags est nécessaire pour déclencher le recalcul quand les tags changent
+  // EN: allTags is necessary to trigger recalculation when tags change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const nodeTagIds = useMemo(() => getNodeTags(nodeId), [nodeId, getNodeTags, allTags]);
 
   const filteredAvailableTags = useMemo(
     () =>
