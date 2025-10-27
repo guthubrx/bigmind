@@ -22,12 +22,6 @@ const NodeExplorer: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root'])); // Étendre le nœud racine par défaut
 
-  // FR: Ajouter des logs de debug
-  // EN: Add debug logs
-  console.log('🔍 NodeExplorer - activeFile:', activeFile);
-  console.log('🔍 NodeExplorer - content:', activeFile?.content);
-  console.log('🔍 NodeExplorer - rootNode:', activeFile?.content?.rootNode);
-
   const toggleNodeExpansion = (nodeId: string) => {
     const newExpanded = new Set(expandedNodes);
     if (newExpanded.has(nodeId)) {
@@ -47,25 +41,18 @@ const NodeExplorer: React.FC = () => {
   };
 
   const renderNode = (nodeId: string, level: number = 0) => {
-    console.log('🌳 renderNode appelé avec:', nodeId, 'level:', level);
     if (!activeFile?.content?.nodes) {
-      console.log('❌ Pas de nodes dans activeFile.content');
       return null;
     }
 
     const node = activeFile.content.nodes[nodeId];
     if (!node) {
-      console.log('❌ Nœud non trouvé:', nodeId);
       return null;
     }
-
-    console.log('✅ Nœud trouvé:', node.title, 'children:', node.children);
 
     const isExpanded = expandedNodes.has(nodeId);
     const hasChildren = node.children && node.children.length > 0;
     const IconComponent = getNodeIcon(nodeId);
-
-    console.log("🔍 État d'expansion:", isExpanded, 'hasChildren:', hasChildren);
 
     return (
       <div key={nodeId} className="node-item">
@@ -73,9 +60,8 @@ const NodeExplorer: React.FC = () => {
           className="node-row"
           style={{ paddingLeft: `${level * 16 + 8}px` }}
           onClick={() => {
-            // FR: Sélectionner le nœud
-            // EN: Select the node
-            console.log('Sélectionner nœud:', node.title);
+            // FR: Sélectionner le nœud (à implémenter)
+            // EN: Select the node (to implement)
           }}
         >
           {/* FR: Icône d'expansion */}
@@ -111,21 +97,12 @@ const NodeExplorer: React.FC = () => {
         {/* EN: Node children */}
         {hasChildren && isExpanded && (
           <div className="node-children">
-            {node.children.map((childId: string) => {
-              console.log('🌳 Rendu enfant:', childId);
-              return renderNode(childId, level + 1);
-            })}
+            {node.children.map((childId: string) => renderNode(childId, level + 1))}
           </div>
         )}
       </div>
     );
   };
-
-  // FR: Ajouter des logs de debug
-  // EN: Add debug logs
-  console.log('🔍 NodeExplorer - activeFile:', activeFile);
-  console.log('🔍 NodeExplorer - content:', activeFile?.content);
-  console.log('🔍 NodeExplorer - rootNode:', activeFile?.content?.rootNode);
 
   if (!activeFile) {
     return (
