@@ -39,6 +39,15 @@ type AppSettingsState = {
   reopenFilesOnStartup: boolean;
   setReopenFilesOnStartup: (reopen: boolean) => void;
 
+  // FR: Style par défaut des nœuds
+  // EN: Default node style
+  defaultNodeFontSize: number;
+  setDefaultNodeFontSize: (size: number) => void;
+  defaultNodeWidth: number;
+  setDefaultNodeWidth: (width: number) => void;
+  defaultNodeFontFamily: string;
+  setDefaultNodeFontFamily: (fontFamily: string) => void;
+
   // FR: Chargement des paramètres
   // EN: Load settings
   load: () => void;
@@ -53,6 +62,9 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
   defaultTagPaletteId: 'vibrant',
   showMinimap: false,
   reopenFilesOnStartup: true,
+  defaultNodeFontSize: 14,
+  defaultNodeWidth: 200,
+  defaultNodeFontFamily: 'inherit',
 
   setAccentColor: (color: string) => {
     set({ accentColor: color });
@@ -195,6 +207,45 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
     }
   },
 
+  setDefaultNodeFontSize: (size: number) => {
+    set({ defaultNodeFontSize: size });
+
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      obj.defaultNodeFontSize = size;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+  },
+
+  setDefaultNodeWidth: (width: number) => {
+    set({ defaultNodeWidth: width });
+
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      obj.defaultNodeWidth = width;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+  },
+
+  setDefaultNodeFontFamily: (fontFamily: string) => {
+    set({ defaultNodeFontFamily: fontFamily });
+
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      obj.defaultNodeFontFamily = fontFamily;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+  },
+
   load: () => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -237,6 +288,18 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
         // EN: Load reopen files option
         if (obj.reopenFilesOnStartup !== undefined) {
           set({ reopenFilesOnStartup: obj.reopenFilesOnStartup });
+        }
+
+        // FR: Charger le style par défaut des nœuds
+        // EN: Load default node style
+        if (obj.defaultNodeFontSize !== undefined) {
+          set({ defaultNodeFontSize: obj.defaultNodeFontSize });
+        }
+        if (obj.defaultNodeWidth !== undefined) {
+          set({ defaultNodeWidth: obj.defaultNodeWidth });
+        }
+        if (obj.defaultNodeFontFamily !== undefined) {
+          set({ defaultNodeFontFamily: obj.defaultNodeFontFamily });
         }
       } else {
         // FR: Initialiser avec le thème par défaut

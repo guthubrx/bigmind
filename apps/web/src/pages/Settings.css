@@ -186,3 +186,14 @@
   display: flex;
   justify-content: flex-end;
 }
+
+/* FR: Sous-titre de section */
+/* EN: Section subtitle */
+.settings-subsection-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg-secondary);
+  margin: 8px 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

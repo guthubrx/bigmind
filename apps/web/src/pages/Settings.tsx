@@ -26,6 +26,12 @@ function SettingsPage() {
   const setShowMinimap = useAppSettings(s => s.setShowMinimap);
   const reopenFilesOnStartup = useAppSettings(s => s.reopenFilesOnStartup);
   const setReopenFilesOnStartup = useAppSettings(s => s.setReopenFilesOnStartup);
+  const defaultNodeFontSize = useAppSettings(s => s.defaultNodeFontSize);
+  const setDefaultNodeFontSize = useAppSettings(s => s.setDefaultNodeFontSize);
+  const defaultNodeWidth = useAppSettings(s => s.defaultNodeWidth);
+  const setDefaultNodeWidth = useAppSettings(s => s.setDefaultNodeWidth);
+  const defaultNodeFontFamily = useAppSettings(s => s.defaultNodeFontFamily);
+  const setDefaultNodeFontFamily = useAppSettings(s => s.setDefaultNodeFontFamily);
   const allInterfaceThemes = getAllInterfaceThemes();
   const allPalettes = getAllPalettes();
   const shortcuts = useShortcuts(s => s.map);
@@ -186,6 +192,72 @@ function SettingsPage() {
                         aria-label="Sélectionner une palette pour les tags"
                       />
                     </div>
+                  </div>
+
+                  {/* FR: Séparateur */}
+                  {/* EN: Separator */}
+                  <hr className="settings-separator" />
+
+                  <h3 className="settings-subsection-title">Style par défaut des nœuds</h3>
+
+                  {/* FR: Taille de police par défaut */}
+                  {/* EN: Default font size */}
+                  <div className="settings-field">
+                    <span className="settings-label">Taille de police par défaut</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input
+                        id="defaultNodeFontSize"
+                        type="number"
+                        min="8"
+                        max="72"
+                        value={defaultNodeFontSize}
+                        onChange={e => setDefaultNodeFontSize(Number(e.target.value))}
+                        aria-label="Taille de police par défaut des nœuds"
+                        style={{ width: '100px' }}
+                      />
+                      <span style={{ fontSize: '12px', color: 'var(--fg-secondary)' }}>px</span>
+                    </div>
+                  </div>
+
+                  {/* FR: Largeur par défaut */}
+                  {/* EN: Default width */}
+                  <div className="settings-field">
+                    <span className="settings-label">Largeur par défaut des nœuds</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input
+                        id="defaultNodeWidth"
+                        type="number"
+                        min="100"
+                        max="800"
+                        step="10"
+                        value={defaultNodeWidth}
+                        onChange={e => setDefaultNodeWidth(Number(e.target.value))}
+                        aria-label="Largeur par défaut des nœuds"
+                        style={{ width: '100px' }}
+                      />
+                      <span style={{ fontSize: '12px', color: 'var(--fg-secondary)' }}>px</span>
+                    </div>
+                  </div>
+
+                  {/* FR: Police par défaut */}
+                  {/* EN: Default font family */}
+                  <div className="settings-field">
+                    <span className="settings-label">Police par défaut des nœuds</span>
+                    <select
+                      id="defaultNodeFontFamily"
+                      value={defaultNodeFontFamily}
+                      onChange={e => setDefaultNodeFontFamily(e.target.value)}
+                      className="settings-select"
+                      aria-label="Police par défaut des nœuds"
+                    >
+                      <option value="inherit">Par défaut (Système)</option>
+                      <option value="Arial, sans-serif">Arial</option>
+                      <option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica</option>
+                      <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                      <option value="Georgia, serif">Georgia</option>
+                      <option value="'Courier New', Courier, monospace">Courier New</option>
+                      <option value="'Monaco', 'Menlo', monospace">Monaco</option>
+                    </select>
                   </div>
                 </div>
               )}
