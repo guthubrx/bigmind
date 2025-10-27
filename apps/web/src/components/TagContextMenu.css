@@ -1,7 +1,7 @@
 .tag-context-menu {
   position: fixed;
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   min-width: 200px;
@@ -24,7 +24,7 @@
 .tag-context-header {
   padding: 8px 12px;
   font-weight: 600;
-  color: #111827;
+  color: var(--fg);
   font-size: 13px;
   display: flex;
   align-items: center;
@@ -41,20 +41,22 @@
 .rename-input {
   flex: 1;
   padding: 4px 6px;
-  border: 1px solid #3b82f6;
+  border: 1px solid var(--accent-color);
   border-radius: 3px;
   font-size: 12px;
   font-family: inherit;
+  background: var(--bg-primary);
+  color: var(--fg);
 }
 
 .rename-input:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent);
 }
 
 .tag-context-divider {
   height: 1px;
-  background: #e5e7eb;
+  background: var(--border-color);
   margin: 4px 0;
 }
 
@@ -66,7 +68,7 @@
   gap: 10px;
   background: transparent;
   border: none;
-  color: #374151;
+  color: var(--fg);
   font-size: 13px;
   cursor: pointer;
   transition: all 0.15s;
@@ -74,17 +76,17 @@
 }
 
 .context-menu-item:hover {
-  background: #f3f4f6;
-  color: #1f2937;
+  background: var(--bg-tertiary);
+  color: var(--fg);
 }
 
 .context-menu-item svg {
   flex-shrink: 0;
-  color: #6b7280;
+  color: var(--fg-secondary);
 }
 
 .context-menu-item:hover svg {
-  color: #374151;
+  color: var(--fg);
 }
 
 .context-menu-item.delete-item {
@@ -107,12 +109,12 @@
 .color-picker-input {
   width: 24px;
   height: 24px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-color);
   border-radius: 3px;
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .color-picker-input:hover {
-  border-color: #9ca3af;
+  border-color: var(--fg-secondary);
 }
