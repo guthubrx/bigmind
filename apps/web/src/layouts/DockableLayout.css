@@ -93,6 +93,7 @@
   border-bottom: 0.5px solid var(--border-color, #e2e8f0);
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .flexlayout__tabset_header_sizer {
