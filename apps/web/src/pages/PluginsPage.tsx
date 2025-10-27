@@ -12,8 +12,7 @@ import {
   AuditDashboard,
   PolicyEditor,
 } from '../components/plugins';
-import { createEnhancedPluginSystem } from '@bigmind/plugin-system';
-import { eventBus } from '../utils/eventBus';
+import { pluginSystem } from '../utils/pluginManager';
 import type {
   PluginInfo,
   Permission,
@@ -22,23 +21,7 @@ import type {
   Policy,
 } from '@bigmind/plugin-system';
 
-// Create enhanced plugin system with Phase 2 security
-const system = createEnhancedPluginSystem({
-  bigmindVersion: '1.0.0',
-  permissionStorage: {
-    async save(permissions) {
-      localStorage.setItem('plugin-permissions', JSON.stringify(Array.from(permissions.entries())));
-    },
-    async load() {
-      const data = localStorage.getItem('plugin-permissions');
-      if (!data) return null;
-      return new Map(JSON.parse(data));
-    },
-  },
-  eventBus,
-});
-
-const { registry, permissionManager, auditLogger, policyEngine } = system;
+const { registry, permissionManager, auditLogger, policyEngine } = pluginSystem;
 
 type View = 'manager' | 'audit' | 'policy';
 

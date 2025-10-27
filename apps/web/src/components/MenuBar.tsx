@@ -171,7 +171,7 @@ function MenuBar() {
 
           {activeMenu === menu.id && (
             <div className="menu-dropdown">
-              {menu.items.map((item) => (
+              {menu.items.map(item => (
                 <button
                   type="button"
                   key={`${menu.id}-${item.label}`}
@@ -179,6 +179,9 @@ function MenuBar() {
                   onClick={() => {
                     if (menu.id === 'tools' && item.label.startsWith('Préférences')) {
                       navigate('/settings');
+                      setActiveMenu(null);
+                    } else if (menu.id === 'tools' && item.label.startsWith('Plugins')) {
+                      navigate('/plugins');
                       setActiveMenu(null);
                     } else {
                       handleMenuAction(item.label);

@@ -8,12 +8,14 @@ import { Routes, Route } from 'react-router-dom';
 import { useMindmap } from './hooks/useMindmap';
 import DockableLayout from './layouts/DockableLayout';
 import SettingsPage from './pages/Settings';
+import { PluginsPage } from './pages/PluginsPage';
 import { useAppSettings } from './hooks/useAppSettings';
 import { useOpenFiles } from './hooks/useOpenFiles';
 import { useTagGraphFileSync } from './hooks/useTagGraphFileSync';
 import { useColumnCollapse } from './hooks/useColumnCollapse';
 import { useCanvasOptions } from './hooks/useCanvasOptions';
 import { clearTagsLocalStorage } from './utils/clearTagsLocalStorage';
+import { initializePlugins } from './utils/pluginManager';
 import './App.css';
 
 function App() {
@@ -30,6 +32,10 @@ function App() {
   // EN: Clean localStorage of old tags (once on startup)
   useEffect(() => {
     clearTagsLocalStorage();
+
+    // FR: Initialiser le système de plugins
+    // EN: Initialize the plugin system
+    initializePlugins();
   }, []);
 
   // FR: Synchroniser les tags avec le fichier actif
@@ -67,6 +73,7 @@ function App() {
         <Route path="/" element={<DockableLayout />} />
         <Route path="/map/:id" element={<DockableLayout />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/plugins" element={<PluginsPage />} />
       </Routes>
     </div>
   );
