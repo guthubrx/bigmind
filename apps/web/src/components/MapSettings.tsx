@@ -15,6 +15,7 @@ function MapSettings() {
   const activeFile = useOpenFiles(state => state.openFiles.find(f => f.isActive) || null);
   const updateNodePalette = useOpenFiles(state => state.updateActiveFileNodePalette);
   const updateTagPalette = useOpenFiles(state => state.updateActiveFileTagPalette);
+  const updateDefaultNodeStyle = useOpenFiles(state => state.updateActiveFileDefaultNodeStyle);
   const defaultNodePaletteId = useAppSettings(s => s.defaultNodePaletteId);
   const defaultTagPaletteId = useAppSettings(s => s.defaultTagPaletteId);
   const allPalettes = getAllPalettes();
@@ -81,6 +82,63 @@ function MapSettings() {
             {!activeFile.content?.tagPaletteId && (
               <span className="map-settings-hint">Par défaut</span>
             )}
+          </div>
+        </div>
+
+        <div className="map-settings-section">
+          <h4 className="map-settings-section-title">Style des nœuds</h4>
+
+          <div className="map-settings-field">
+            <div className="map-settings-label">Taille de police</div>
+            <input
+              type="number"
+              min="8"
+              max="72"
+              value={activeFile.content?.defaultNodeStyle?.fontSize || 14}
+              onChange={(e) => {
+                updateDefaultNodeStyle({ fontSize: Number(e.target.value) });
+              }}
+              className="map-settings-input"
+              aria-label="Taille de police des nœuds"
+            />
+            <span className="map-settings-unit">px</span>
+          </div>
+
+          <div className="map-settings-field">
+            <div className="map-settings-label">Largeur des nœuds</div>
+            <input
+              type="number"
+              min="100"
+              max="800"
+              step="10"
+              value={activeFile.content?.defaultNodeStyle?.width || 200}
+              onChange={(e) => {
+                updateDefaultNodeStyle({ width: Number(e.target.value) });
+              }}
+              className="map-settings-input"
+              aria-label="Largeur des nœuds"
+            />
+            <span className="map-settings-unit">px</span>
+          </div>
+
+          <div className="map-settings-field">
+            <div className="map-settings-label">Police de caractères</div>
+            <select
+              value={activeFile.content?.defaultNodeStyle?.fontFamily || 'inherit'}
+              onChange={(e) => {
+                updateDefaultNodeStyle({ fontFamily: e.target.value });
+              }}
+              className="map-settings-select"
+              aria-label="Police des nœuds"
+            >
+              <option value="inherit">Par défaut (Système)</option>
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica</option>
+              <option value="'Times New Roman', Times, serif">Times New Roman</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="'Courier New', Courier, monospace">Courier New</option>
+              <option value="'Monaco', 'Menlo', monospace">Monaco</option>
+            </select>
           </div>
         </div>
 

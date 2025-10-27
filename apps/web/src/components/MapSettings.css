@@ -119,3 +119,53 @@
   font-size: 13px;
   color: var(--fg-muted);
 }
+
+/* FR: Styles pour les inputs de style des nœuds */
+/* EN: Styles for node style inputs */
+.map-settings-input,
+.map-settings-select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 0.5px solid var(--border-color, rgba(0, 0, 0, 0.1));
+  border-radius: 6px;
+  background-color: var(--bg);
+  color: var(--fg);
+  font-size: 13px;
+  transition: all 0.15s ease;
+}
+
+.map-settings-input:hover,
+.map-settings-select:hover {
+  border-color: var(--border-color-hover, rgba(0, 0, 0, 0.2));
+  background-color: var(--bg-secondary);
+}
+
+.map-settings-input:focus,
+.map-settings-select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  background-color: var(--bg);
+  box-shadow: 0 0 0 3px var(--accent-color-alpha, rgba(59, 130, 246, 0.1));
+}
+
+.map-settings-unit {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--fg-secondary);
+  font-weight: 500;
+}
+
+/* FR: Layout pour input + unité */
+/* EN: Layout for input + unit */
+.map-settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.map-settings-field input[type="number"],
+.map-settings-field select {
+  max-width: 200px;
+}

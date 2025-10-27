@@ -51,6 +51,7 @@ interface OpenFilesState {
   applyAutomaticColorsToAll: (theme: any) => void;
   updateActiveFileNodePalette: (paletteId: string) => void;
   updateActiveFileTagPalette: (paletteId: string) => void;
+  updateActiveFileDefaultNodeStyle: (style: Partial<{fontSize: number; width: number; fontFamily: string}>) => void;
   saveOpenFilesToStorage: () => void;
   restoreOpenFilesFromStorage: () => void;
 }
@@ -486,6 +487,39 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       const key = `bigmind_overlay_${active.name}`;
       const overlay = JSON.parse(localStorage.getItem(key) || '{}');
       overlay.tagPaletteId = paletteId;
+      localStorage.setItem(key, JSON.stringify(overlay));
+    } catch (e) {
+      // Ignore errors
+    }
+
+    set(prev => ({
+      ...prev,
+      openFiles: prev.openFiles.map(f =>
+        f.id === active.id ? { ...f, content: updatedContent } : f
+      ),
+    }));
+  },
+
+  // FR: Mettre à jour le style par défaut des nœuds du fichier actif
+  // EN: Update default node style of the active file
+  updateActiveFileDefaultNodeStyle: (style: Partial<{fontSize: number; width: number; fontFamily: string}>) => {
+    const state = get();
+    const active = state.openFiles.find(f => f.isActive);
+    if (!active || !active.content) return;
+
+    const updatedContent = {
+      ...active.content,
+      defaultNodeStyle: {
+        ...active.content.defaultNodeStyle,
+        ...style,
+      },
+    };
+
+    // Persister dans localStorage
+    try {
+      const key = `bigmind_overlay_${active.name}`;
+      const overlay = JSON.parse(localStorage.getItem(key) || '{}');
+      overlay.defaultNodeStyle = updatedContent.defaultNodeStyle;
       localStorage.setItem(key, JSON.stringify(overlay));
     } catch (e) {
       // Ignore errors
