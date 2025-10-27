@@ -94,7 +94,6 @@
   line-height: 1.6 !important;
   padding: 12px !important;
   height: 100% !important;
-  overflow: hidden !important;
 }
 
 .bytemd-editor .CodeMirror {
