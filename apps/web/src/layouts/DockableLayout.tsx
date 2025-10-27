@@ -149,7 +149,7 @@ function DockableLayout() {
         if (nextElement) {
           const nextRect = nextElement.getBoundingClientRect();
           const offset = nextRect.width / 2;
-          const handleWidth = nextRect.width / 2;
+          const handleWidth = nextRect.width;
           (splitter as HTMLElement).style.setProperty('--handle-offset', `${offset}px`);
           (splitter as HTMLElement).style.setProperty('--handle-width', `${handleWidth}px`);
         }
@@ -162,7 +162,7 @@ function DockableLayout() {
         if (nextElement) {
           const nextRect = nextElement.getBoundingClientRect();
           const offset = nextRect.height / 2;
-          const handleHeight = nextRect.height / 2;
+          const handleHeight = nextRect.height;
           (splitter as HTMLElement).style.setProperty('--handle-offset-vert', `${offset}px`);
           (splitter as HTMLElement).style.setProperty('--handle-height', `${handleHeight}px`);
         }
@@ -205,7 +205,7 @@ function DockableLayout() {
           if (nextElement) {
             const nextRect = nextElement.getBoundingClientRect();
             const offset = nextRect.width / 2;
-            const handleWidth = nextRect.width / 2;
+            const handleWidth = nextRect.width;
             (splitter as HTMLElement).style.setProperty('--handle-offset', `${offset}px`);
             (splitter as HTMLElement).style.setProperty('--handle-width', `${handleWidth}px`);
           }
@@ -218,7 +218,7 @@ function DockableLayout() {
           if (nextElement) {
             const nextRect = nextElement.getBoundingClientRect();
             const offset = nextRect.height / 2;
-            const handleHeight = nextRect.height / 2;
+            const handleHeight = nextRect.height;
             (splitter as HTMLElement).style.setProperty('--handle-offset-vert', `${offset}px`);
             (splitter as HTMLElement).style.setProperty('--handle-height', `${handleHeight}px`);
           }
