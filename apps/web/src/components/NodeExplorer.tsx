@@ -3,7 +3,7 @@
  * EN: Map node explorer
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Search,
   ChevronDown,
@@ -17,92 +17,141 @@ import {
 import { useOpenFiles } from '../hooks/useOpenFiles';
 import './NodeExplorer.css';
 
-const NodeExplorer: React.FC = () => {
+// FR: Composant NodeItem memoïzé pour optimiser le rendu récursif
+// EN: Memoized NodeItem component to optimize recursive rendering
+interface NodeItemProps {
+  nodeId: string;
+  level: number;
+  node: any;
+  hasChildren: boolean;
+  isExpanded: boolean;
+  IconComponent: React.ComponentType<any>;
+  onToggleExpansion: (nodeId: string) => void;
+  renderChildren: () => React.ReactNode;
+}
+
+const NodeItem = React.memo<NodeItemProps>(
+  ({
+    nodeId,
+    level,
+    node,
+    hasChildren,
+    isExpanded,
+    IconComponent,
+    onToggleExpansion,
+    renderChildren,
+  }) => (
+    <div key={nodeId} className="node-item">
+      <div
+        className="node-row"
+        style={{ paddingLeft: `${level * 16 + 8}px` }}
+        onClick={() => {
+          // FR: Sélectionner le nœud (à implémenter)
+          // EN: Select the node (to implement)
+        }}
+        onKeyPress={() => {
+          // FR: Sélectionner le nœud avec clavier
+          // EN: Select the node with keyboard
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        {hasChildren ? (
+          <button
+            type="button"
+            className="expand-button"
+            onClick={e => {
+              e.stopPropagation();
+              onToggleExpansion(nodeId);
+            }}
+          >
+            {isExpanded ? (
+              <ChevronDown className="icon-small" />
+            ) : (
+              <ChevronRight className="icon-small" />
+            )}
+          </button>
+        ) : (
+          <div className="expand-spacer" />
+        )}
+
+        <IconComponent className="icon-small node-icon" />
+        <span className="node-title">{node.title}</span>
+      </div>
+
+      {hasChildren && isExpanded && <div className="node-children">{renderChildren()}</div>}
+    </div>
+  ),
+  (prevProps, nextProps) =>
+    prevProps.nodeId === nextProps.nodeId &&
+    prevProps.level === nextProps.level &&
+    prevProps.isExpanded === nextProps.isExpanded &&
+    prevProps.node.title === nextProps.node.title &&
+    prevProps.hasChildren === nextProps.hasChildren
+);
+
+function NodeExplorer() {
   const activeFile = useOpenFiles(state => state.openFiles.find(f => f.isActive) || null);
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root'])); // Étendre le nœud racine par défaut
 
-  const toggleNodeExpansion = (nodeId: string) => {
-    const newExpanded = new Set(expandedNodes);
-    if (newExpanded.has(nodeId)) {
-      newExpanded.delete(nodeId);
-    } else {
-      newExpanded.add(nodeId);
-    }
-    setExpandedNodes(newExpanded);
-  };
+  // FR: Memoïzer toggleNodeExpansion pour éviter de recréer renderNode
+  // EN: Memoize toggleNodeExpansion to avoid recreating renderNode
+  const toggleNodeExpansion = useCallback((nodeId: string) => {
+    setExpandedNodes(prev => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(nodeId)) {
+        newExpanded.delete(nodeId);
+      } else {
+        newExpanded.add(nodeId);
+      }
+      return newExpanded;
+    });
+  }, []);
 
-  const getNodeIcon = (nodeId: string) => {
-    // FR: Logique simple pour assigner des icônes
-    // EN: Simple logic to assign icons
+  // FR: Memoïzer getNodeIcon pour éviter les recalculs
+  // EN: Memoize getNodeIcon to avoid recalculations
+  const getNodeIcon = useCallback((nodeId: string) => {
     const icons = [Circle, Square, Triangle, Star, Heart];
     const index = nodeId.length % icons.length;
     return icons[index];
-  };
+  }, []);
 
-  const renderNode = (nodeId: string, level: number = 0) => {
-    if (!activeFile?.content?.nodes) {
-      return null;
-    }
+  // FR: Fonction de rendu optimisée avec composant memoïzé
+  // EN: Optimized render function with memoized component
+  const renderNode = useCallback(
+    (nodeId: string, level: number = 0): React.ReactNode => {
+      if (!activeFile?.content?.nodes) {
+        return null;
+      }
 
-    const node = activeFile.content.nodes[nodeId];
-    if (!node) {
-      return null;
-    }
+      const node = activeFile.content.nodes[nodeId];
+      if (!node) {
+        return null;
+      }
 
-    const isExpanded = expandedNodes.has(nodeId);
-    const hasChildren = node.children && node.children.length > 0;
-    const IconComponent = getNodeIcon(nodeId);
+      const isExpanded = expandedNodes.has(nodeId);
+      const hasChildren = node.children && node.children.length > 0;
+      const IconComponent = getNodeIcon(nodeId);
 
-    return (
-      <div key={nodeId} className="node-item">
-        <div
-          className="node-row"
-          style={{ paddingLeft: `${level * 16 + 8}px` }}
-          onClick={() => {
-            // FR: Sélectionner le nœud (à implémenter)
-            // EN: Select the node (to implement)
-          }}
-        >
-          {/* FR: Icône d'expansion */}
-          {/* EN: Expansion icon */}
-          {hasChildren ? (
-            <button
-              className="expand-button"
-              onClick={e => {
-                e.stopPropagation();
-                toggleNodeExpansion(nodeId);
-              }}
-            >
-              {isExpanded ? (
-                <ChevronDown className="icon-small" />
-              ) : (
-                <ChevronRight className="icon-small" />
-              )}
-            </button>
-          ) : (
-            <div className="expand-spacer" />
-          )}
-
-          {/* FR: Icône du nœud */}
-          {/* EN: Node icon */}
-          <IconComponent className="icon-small node-icon" />
-
-          {/* FR: Titre du nœud */}
-          {/* EN: Node title */}
-          <span className="node-title">{node.title}</span>
-        </div>
-
-        {/* FR: Enfants du nœud */}
-        {/* EN: Node children */}
-        {hasChildren && isExpanded && (
-          <div className="node-children">
-            {node.children.map((childId: string) => renderNode(childId, level + 1))}
-          </div>
-        )}
-      </div>
-    );
-  };
+      return (
+        <NodeItem
+          key={nodeId}
+          nodeId={nodeId}
+          level={level}
+          node={node}
+          hasChildren={hasChildren}
+          isExpanded={isExpanded}
+          IconComponent={IconComponent}
+          onToggleExpansion={toggleNodeExpansion}
+          renderChildren={() =>
+            node.children?.map((childId: string) => renderNode(childId, level + 1)) || []
+          }
+        />
+      );
+    },
+    [activeFile, expandedNodes, getNodeIcon, toggleNodeExpansion]
+  );
 
   if (!activeFile) {
     return (
@@ -113,7 +162,7 @@ const NodeExplorer: React.FC = () => {
         <div className="panel-content">
           <div className="no-file-message">
             <p>Aucun fichier ouvert</p>
-            <p>Ouvrez un fichier .mm ou .xmind pour voir l'arborescence</p>
+            <p>Ouvrez un fichier .mm ou .xmind pour voir l&apos;arborescence</p>
           </div>
         </div>
       </div>
@@ -149,6 +198,6 @@ const NodeExplorer: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
 export default NodeExplorer;
