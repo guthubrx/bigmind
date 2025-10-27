@@ -154,11 +154,23 @@ function DockableLayout() {
     };
 
     updateHandlePositions();
+
+    // Observer pour détecter les changements de taille
     const observer = new ResizeObserver(updateHandlePositions);
     const main = document.querySelector('.dockable-main');
     if (main) observer.observe(main);
 
-    return () => observer.disconnect();
+    // Observer aussi tous les tabsets pour détecter les redimensionnements des panneaux
+    const tabsets = document.querySelectorAll('.flexlayout__tabset');
+    tabsets.forEach(tabset => observer.observe(tabset));
+
+    // Mettre à jour après un court délai pour s'assurer que le layout est rendu
+    const timeout = setTimeout(updateHandlePositions, 100);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(timeout);
+    };
   }, [model]);
 
   // FR: Sauvegarder la configuration dans localStorage
@@ -167,6 +179,19 @@ function DockableLayout() {
     try {
       const json = newModel.toJson();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(json));
+
+      // Mettre à jour les positions des poignées après le changement de modèle
+      setTimeout(() => {
+        const splitters = document.querySelectorAll('.flexlayout__splitter_vert');
+        splitters.forEach(splitter => {
+          const nextElement = splitter.nextElementSibling as HTMLElement;
+          if (nextElement) {
+            const nextRect = nextElement.getBoundingClientRect();
+            const offset = nextRect.width / 2;
+            (splitter as HTMLElement).style.setProperty('--handle-offset', `${offset}px`);
+          }
+        });
+      }, 50);
     } catch (e) {
       console.warn('Failed to save layout config:', e);
     }
