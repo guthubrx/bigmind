@@ -7,8 +7,8 @@
   display: flex;
   align-items: center;
   height: 100%;
-  background-color: theme('colors.background.DEFAULT');
-  border-bottom: 1px solid theme('colors.border.DEFAULT');
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .menu-logo {
@@ -34,19 +34,19 @@
   height: 100%;
   background: transparent;
   border: none;
-  color: theme('colors.foreground.DEFAULT');
+  color: var(--fg);
   cursor: pointer;
   font-size: 13px;
   transition: background-color 0.2s ease;
 }
 
 .menu-button:hover {
-  background-color: theme('colors.state.hover');
+  background-color: var(--bg-tertiary);
 }
 
 .menu-item.active .menu-button {
-  background-color: theme('colors.accent.100');
-  color: theme('colors.accent.900');
+  background-color: var(--bg-tertiary);
+  color: var(--fg);
 }
 
 .menu-dropdown {
@@ -54,8 +54,8 @@
   top: 100%;
   left: 0;
   min-width: 200px;
-  background-color: rgba(255, 255, 255, 0.95);
-  border: 1px solid theme('colors.border.DEFAULT');
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), 0 4px 8px rgba(0, 0, 0, 0.15);
   z-index: 1000;
@@ -82,23 +82,24 @@
   transition: all 0.2s ease;
   border-radius: 4px;
   margin: 2px 4px;
+  color: var(--fg);
 }
 
 .menu-item-option:hover {
-  background-color: theme('colors.accent.100');
-  color: theme('colors.accent.900');
+  background-color: var(--bg-tertiary);
+  color: var(--fg);
   transform: translateX(2px);
 }
 
 .menu-item-label {
   font-size: 13px;
-  color: theme('colors.foreground.DEFAULT');
+  color: var(--fg);
   font-weight: 500;
 }
 
 .menu-item-shortcut {
   font-size: 11px;
-  color: theme('colors.foreground.tertiary');
+  color: var(--fg-secondary);
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
   font-weight: 400;
   opacity: 0.8;
