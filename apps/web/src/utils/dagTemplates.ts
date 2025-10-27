@@ -184,7 +184,40 @@ export const templates: DagTemplate[] = [
 export const getTemplate = (name: string): DagTemplate | undefined =>
   templates.find(t => t.name === name);
 
+/**
+ * FR: Cloner profondément un tag pour éviter les mutations du template original
+ * EN: Deep clone a tag to avoid mutations of the original template
+ */
+function deepCloneTag(tag: DagTag): DagTag {
+  return {
+    id: tag.id,
+    label: tag.label,
+    parentIds: [...tag.parentIds],
+    children: [...tag.children],
+    relations: tag.relations.map(rel => ({ ...rel })),
+    color: tag.color,
+  };
+}
+
+/**
+ * FR: Cloner profondément un lien pour éviter les mutations du template original
+ * EN: Deep clone a link to avoid mutations of the original template
+ */
+function deepCloneLink(link: DagLink): DagLink {
+  return {
+    id: link.id,
+    sourceId: link.sourceId,
+    targetId: link.targetId,
+    type: link.type,
+    metadata: link.metadata ? { ...link.metadata } : undefined,
+  };
+}
+
+/**
+ * FR: Appliquer un template en clonant profondément tous les objets
+ * EN: Apply a template by deeply cloning all objects
+ */
 export const applyTemplate = (template: DagTemplate): { tags: DagTag[]; links: DagLink[] } => ({
-  tags: template.tags,
-  links: template.links,
+  tags: template.tags.map(deepCloneTag),
+  links: template.links.map(deepCloneLink),
 });
