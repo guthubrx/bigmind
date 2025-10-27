@@ -136,7 +136,12 @@ const AVAILABLE_TABS = [
 
 function DockableLayout() {
   const layoutRef = useRef<Layout>(null);
-  const tagsCount = useTagStore(state => Object.keys(state.tags).length);
+  // FR: Optimiser le sélecteur pour éviter Object.keys à chaque render
+  // EN: Optimize selector to avoid Object.keys on every render
+  const tagsCount = useTagStore(
+    state => Object.keys(state.tags).length,
+    (a, b) => a === b // FR: Comparaison par valeur / EN: Compare by value
+  );
   const [addTabMenuState, setAddTabMenuState] = React.useState<{
     tabSetId: string | null;
     anchorEl: HTMLElement | null;
@@ -391,7 +396,7 @@ function DockableLayout() {
             type="button"
             className="flexlayout__tab_toolbar_button"
             title="Ajouter un onglet"
-            onClick={(e) => {
+            onClick={e => {
               setAddTabMenuState({
                 tabSetId: tabSetNode.getId(),
                 anchorEl: e.currentTarget,
@@ -613,10 +618,10 @@ function DockableLayout() {
                 color: 'var(--fg)',
                 transition: 'background 0.15s ease',
               }}
-              onMouseEnter={(e) => {
+              onMouseEnter={e => {
                 e.currentTarget.style.background = 'var(--bg-secondary)';
               }}
-              onMouseLeave={(e) => {
+              onMouseLeave={e => {
                 e.currentTarget.style.background = 'transparent';
               }}
             >

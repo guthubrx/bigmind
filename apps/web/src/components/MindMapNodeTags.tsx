@@ -3,7 +3,7 @@
  * EN: Component to display tags on a node
  */
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useTagStore } from '../hooks/useTagStore';
 import { X } from 'lucide-react';
 import './MindMapNodeTags.css';
@@ -14,10 +14,20 @@ interface MindMapNodeTagsProps {
 }
 
 function MindMapNodeTags({ nodeId, onRemoveTag }: MindMapNodeTagsProps) {
-  const allTags = useTagStore(state => Object.values(state.tags));
-  const tagIds = useTagStore(state => state.getNodeTags(nodeId));
-
-  const tags = useMemo(() => allTags.filter(tag => tagIds.includes(tag.id)), [allTags, tagIds]);
+  // FR: Sélecteur optimisé qui évite Object.values et filtre directement
+  // EN: Optimized selector that avoids Object.values and filters directly
+  const tags = useTagStore(
+    state => {
+      const nodeTagIds = state.getNodeTags(nodeId);
+      return nodeTagIds.map(tagId => state.tags[tagId]).filter(Boolean);
+    },
+    (a, b) => {
+      // FR: Comparaison structurelle pour éviter re-renders inutiles
+      // EN: Structural comparison to avoid unnecessary re-renders
+      if (a.length !== b.length) return false;
+      return a.every((tag, i) => tag.id === b[i]?.id);
+    }
+  );
 
   const handleTagDragStart = (e: React.DragEvent, tagId: string) => {
     e.dataTransfer.effectAllowed = 'copy';
