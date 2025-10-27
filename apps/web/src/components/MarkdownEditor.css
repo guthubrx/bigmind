@@ -79,6 +79,15 @@
   height: 100% !important;
   border: none !important;
   font-family: inherit !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.bytemd-split {
+  flex: 1 !important;
+  min-height: 0 !important;
+  display: flex !important;
+  overflow: hidden !important;
 }
 
 .bytemd-toolbar {
@@ -93,7 +102,9 @@
   font-size: 13px !important;
   line-height: 1.6 !important;
   padding: 12px !important;
-  height: 100% !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow: auto !important;
 }
 
 .bytemd-editor .CodeMirror {
@@ -155,12 +166,16 @@
   background-color: var(--bg) !important;
   color: var(--fg) !important;
   padding: 12px !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow: auto !important;
 }
 
 /* FR: Viewer container en mode lecture seule */
 /* EN: Viewer container in read-only mode */
 .bytemd-viewer-container {
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 16px;
   background-color: var(--bg);
