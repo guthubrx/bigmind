@@ -27,24 +27,20 @@ function StatusBar() {
     if (!Number.isNaN(z)) setZoomDraft(String(Math.round(z * 100)));
   }, [inst]);
 
-  // FR: Écouter les changements de zoom (molette, pinch, etc.)
-  // EN: Listen to zoom changes (wheel, pinch, etc.)
+  // FR: Écouter les changements de zoom (molette, pinch, etc.) avec polling
+  // EN: Listen to zoom changes (wheel, pinch, etc.) with polling
   useEffect(() => {
     if (!inst) return undefined;
 
-    const handleMove = () => {
+    const interval = setInterval(() => {
       const z = inst.getZoom?.() || 1;
       if (!Number.isNaN(z)) {
         setZoomDraft(String(Math.round(z * 100)));
       }
-    };
-
-    // FR: S'abonner aux événements de déplacement de la vue
-    // EN: Subscribe to viewport movement events
-    inst.on('move', handleMove);
+    }, 100); // FR: Vérifier toutes les 100ms / EN: Check every 100ms
 
     return () => {
-      inst.off('move', handleMove);
+      clearInterval(interval);
     };
   }, [inst]);
 
