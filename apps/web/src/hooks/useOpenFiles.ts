@@ -8,6 +8,7 @@ import { XMindParser } from '../parsers/XMindParser';
 import { v4 as uuidv4 } from 'uuid';
 import { getNodeColor } from '../utils/nodeColors';
 import { getPalette } from '../themes/colorPalettes';
+import { loadOverlayFromStorage, saveOverlayToStorage } from '../utils/overlayValidation';
 
 export interface OpenFile {
   id: string;
@@ -238,14 +239,14 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     // Persister overlay minimal (titre, notes, style)
     try {
       const key = `bigmind_overlay_${active.name}`;
-      const overlay = JSON.parse(localStorage.getItem(key) || '{}');
+      const overlay = loadOverlayFromStorage(key);
       overlay.nodes = overlay.nodes || {};
       overlay.nodes[nodeId] = {
         title: updatedNode.title,
         notes: updatedNode.notes,
         style: updatedNode.style,
       };
-      localStorage.setItem(key, JSON.stringify(overlay));
+      saveOverlayToStorage(key, overlay);
     } catch (e) {
       // Ignore errors
     }
@@ -450,16 +451,17 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     // Persister dans localStorage
     try {
       const key = `bigmind_overlay_${active.name}`;
-      const overlay = JSON.parse(localStorage.getItem(key) || '{}');
+      const overlay = loadOverlayFromStorage(key);
       overlay.nodePaletteId = paletteId;
       // FR: Sauvegarder aussi les couleurs mises à jour
       // EN: Also save updated colors
-      overlay.nodes = overlay.nodes || {};
+      if (!overlay.nodes) overlay.nodes = {};
       Object.keys(updatedNodes).forEach(nodeId => {
+        if (!overlay.nodes) overlay.nodes = {};
         overlay.nodes[nodeId] = overlay.nodes[nodeId] || {};
         overlay.nodes[nodeId].style = updatedNodes[nodeId].style;
       });
-      localStorage.setItem(key, JSON.stringify(overlay));
+      saveOverlayToStorage(key, overlay);
     } catch (e) {
       // Ignore errors
     }
@@ -487,9 +489,9 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     // Persister dans localStorage
     try {
       const key = `bigmind_overlay_${active.name}`;
-      const overlay = JSON.parse(localStorage.getItem(key) || '{}');
+      const overlay = loadOverlayFromStorage(key);
       overlay.tagPaletteId = paletteId;
-      localStorage.setItem(key, JSON.stringify(overlay));
+      saveOverlayToStorage(key, overlay);
     } catch (e) {
       // Ignore errors
     }
@@ -522,9 +524,9 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     // Persister dans localStorage
     try {
       const key = `bigmind_overlay_${active.name}`;
-      const overlay = JSON.parse(localStorage.getItem(key) || '{}');
+      const overlay = loadOverlayFromStorage(key);
       overlay.defaultNodeStyle = updatedContent.defaultNodeStyle;
-      localStorage.setItem(key, JSON.stringify(overlay));
+      saveOverlayToStorage(key, overlay);
     } catch (e) {
       // Ignore errors
     }
