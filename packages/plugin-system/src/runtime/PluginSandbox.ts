@@ -25,10 +25,15 @@ export class PluginSandbox {
   createSandboxedContext(fullContext: IPluginContext): IPluginContext {
     return new Proxy(fullContext, {
       get: (target, prop) => {
-        const value = target[prop as keyof IPluginContext];
+        const value = (target as any)[prop];
 
         // Check permission for restricted APIs
         this.checkPermission(prop as string);
+
+        // Bind functions to maintain correct 'this' context
+        if (typeof value === 'function') {
+          return value.bind(target);
+        }
 
         // Wrap objects to add logging
         if (typeof value === 'object' && value !== null) {
@@ -53,9 +58,14 @@ export class PluginSandbox {
             // Log API call
             console.log(`[Plugin ${this.pluginId}] ${namespace}.${String(prop)}()`);
 
-            // Call original
+            // Call original with correct 'this' context
             return value.apply(target, args);
           };
+        }
+
+        // Recursively wrap nested objects
+        if (typeof value === 'object' && value !== null) {
+          return this.wrapAPIObject(value, `${namespace}.${String(prop)}`);
         }
 
         return value;
