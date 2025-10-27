@@ -28,6 +28,31 @@ export class PluginContext implements IPluginContext {
     this.version = version;
   }
 
+  // ===== Convenience Hook Registration =====
+
+  registerHook<T>(
+    hookName: string,
+    callback: (value: T, ...args: any[]) => T | Promise<T>,
+    priority: number = 10
+  ): () => void {
+    return this.hookSystem.registerFilter(hookName, this.pluginId, callback, priority);
+  }
+
+  // ===== API Namespace (convenience accessor) =====
+
+  get api() {
+    return {
+      mindmap: this.mindmap,
+      storage: this.storage,
+      commands: this.commands,
+      ui: this.ui,
+      events: this.events,
+      http: this.http,
+      fs: this.fs,
+      clipboard: this.clipboard,
+    };
+  }
+
   // ===== Mind Map API =====
 
   mindmap = {

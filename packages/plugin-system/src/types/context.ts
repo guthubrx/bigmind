@@ -10,6 +10,18 @@ export interface IPluginContext {
   readonly pluginId: string;
   readonly version: string;
 
+  // ===== API Namespace (convenience accessor) =====
+  readonly api: {
+    mindmap: IPluginContext['mindmap'];
+    storage: IPluginContext['storage'];
+    commands: IPluginContext['commands'];
+    ui: IPluginContext['ui'];
+    events: IPluginContext['events'];
+    http?: IPluginContext['http'];
+    fs?: IPluginContext['fs'];
+    clipboard?: IPluginContext['clipboard'];
+  };
+
   // ===== Mind Map API =====
   mindmap: {
     /**
@@ -47,6 +59,17 @@ export interface IPluginContext {
      */
     findNodes(predicate: (node: any) => boolean): any[];
   };
+
+  // ===== Convenience Hook Registration =====
+  /**
+   * Register a hook (convenience method that maps to hooks.registerFilter)
+   * This is a simplified API for common plugin use cases
+   */
+  registerHook<T>(
+    hookName: string,
+    callback: (value: T, ...args: any[]) => T | Promise<T>,
+    priority?: number
+  ): () => void;
 
   // ===== Hooks API =====
   hooks: {
