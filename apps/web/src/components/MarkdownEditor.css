@@ -94,6 +94,28 @@
   display: none !important;
 }
 
+/* FR: Body du ByteMD - prend toute la hauteur sauf le status */
+/* EN: ByteMD body - takes all height except status */
+.bytemd-body {
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* FR: Barre de statut en bas */
+/* EN: Status bar at bottom */
+.bytemd-status {
+  flex-shrink: 0 !important;
+  background-color: var(--bg-secondary) !important;
+  color: var(--fg-secondary) !important;
+  border-top: 0.5px solid var(--border-color, rgba(0, 0, 0, 0.1)) !important;
+  font-size: 11px !important;
+  line-height: 20px !important;
+  padding: 2px 0 !important;
+}
+
 /* FR: Zone d'édition */
 /* EN: Editor area */
 .bytemd-editor {
@@ -113,6 +135,17 @@
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace !important;
   font-size: 13px !important;
   height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.bytemd-editor .CodeMirror-scroll {
+  flex: 1 !important;
+  min-height: 0 !important;
+}
+
+.bytemd-editor .CodeMirror-sizer {
+  min-height: 100% !important;
 }
 
 .bytemd-editor .CodeMirror-cursor {
