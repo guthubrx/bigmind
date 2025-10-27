@@ -11,6 +11,7 @@ const manifest: PluginManifest = {
   version: '1.0.0',
   description: 'Analyse et collecte des statistiques sur vos mindmaps (exemple)',
   author: 'BigMind Team',
+  main: 'analytics-plugin.js',
   permissions: ['mindmap:read', 'storage:read', 'storage:write'],
   hooks: ['mindmap.nodeCreated', 'mindmap.nodeUpdated', 'mindmap.nodeDeleted'],
 };
