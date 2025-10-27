@@ -34,6 +34,11 @@ type AppSettingsState = {
   showMinimap: boolean;
   setShowMinimap: (show: boolean) => void;
 
+  // FR: Réouvrir les cartes au démarrage
+  // EN: Reopen files on startup
+  reopenFilesOnStartup: boolean;
+  setReopenFilesOnStartup: (reopen: boolean) => void;
+
   // FR: Chargement des paramètres
   // EN: Load settings
   load: () => void;
@@ -47,6 +52,7 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
   defaultNodePaletteId: 'vibrant',
   defaultTagPaletteId: 'vibrant',
   showMinimap: false,
+  reopenFilesOnStartup: true,
 
   setAccentColor: (color: string) => {
     set({ accentColor: color });
@@ -174,6 +180,21 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
     }
   },
 
+  setReopenFilesOnStartup: (reopen: boolean) => {
+    set({ reopenFilesOnStartup: reopen });
+
+    // FR: Sauvegarder dans localStorage
+    // EN: Save to localStorage
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      obj.reopenFilesOnStartup = reopen;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+  },
+
   load: () => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -210,6 +231,12 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
         // EN: Load minimap display option
         if (obj.showMinimap !== undefined) {
           set({ showMinimap: obj.showMinimap });
+        }
+
+        // FR: Charger l'option de réouverture des fichiers
+        // EN: Load reopen files option
+        if (obj.reopenFilesOnStartup !== undefined) {
+          set({ reopenFilesOnStartup: obj.reopenFilesOnStartup });
         }
       } else {
         // FR: Initialiser avec le thème par défaut

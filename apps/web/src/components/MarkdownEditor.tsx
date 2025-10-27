@@ -35,12 +35,15 @@ function MarkdownEditor({
   value,
   onChange,
   placeholder = 'Ajouter des notes...',
-  height = 250,
+  height,
 }: MarkdownEditorProps) {
   const [mode, setMode] = useState<'edit' | 'preview'>('edit');
 
   return (
-    <div className="bytemd-editor-wrapper" style={{ height: `${height}px` }}>
+    <div
+      className="bytemd-editor-wrapper"
+      style={height ? { height: `${height}px` } : undefined}
+    >
       {/* FR: Bouton toggle mode */}
       {/* EN: Mode toggle button */}
       <div className="bytemd-mode-toggle">

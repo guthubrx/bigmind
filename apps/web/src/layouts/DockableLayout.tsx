@@ -104,13 +104,13 @@ const DEFAULT_LAYOUT: IJsonModel = {
             children: [
               {
                 type: 'tab',
-                name: 'Tags & Layers',
+                name: 'Organisation',
                 component: 'tags',
                 enableClose: false,
               },
               {
                 type: 'tab',
-                name: 'Carte',
+                name: 'Paramètres de la carte',
                 component: 'mapsettings',
                 enableClose: false,
               },
@@ -122,11 +122,25 @@ const DEFAULT_LAYOUT: IJsonModel = {
   },
 };
 
-const STORAGE_KEY = 'bigmind_layout_config_v10'; // v10 splitterSize 1px
+const STORAGE_KEY = 'bigmind_layout_config_v11'; // v11 with MapSettings tab
+
+// FR: Liste de tous les onglets disponibles
+// EN: List of all available tabs
+const AVAILABLE_TABS = [
+  { id: 'files', name: 'Fichiers', component: 'files' },
+  { id: 'explorer', name: 'Explorateur', component: 'explorer' },
+  { id: 'properties', name: 'Propriétés', component: 'properties' },
+  { id: 'tags', name: 'Organisation', component: 'tags' },
+  { id: 'mapsettings', name: 'Paramètres de la carte', component: 'mapsettings' },
+];
 
 function DockableLayout() {
   const layoutRef = useRef<Layout>(null);
   const tagsCount = useTagStore(state => Object.keys(state.tags).length);
+  const [addTabMenuState, setAddTabMenuState] = React.useState<{
+    tabSetId: string | null;
+    anchorEl: HTMLElement | null;
+  }>({ tabSetId: null, anchorEl: null });
 
   // FR: Charger la configuration sauvegardée ou utiliser la configuration par défaut
   // EN: Load saved configuration or use default configuration
@@ -296,7 +310,7 @@ function DockableLayout() {
       if (node.getComponent() === 'tags') {
         renderValues.content = (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>Tags & Layers</span>
+            <span>Organisation</span>
             <span
               style={{
                 display: 'inline-flex',
@@ -356,7 +370,51 @@ function DockableLayout() {
 
       if (!selectedTab) return;
 
-      renderValues.stickyButtons = [
+      // FR: Obtenir la liste des composants déjà présents dans ce tabset
+      // EN: Get list of components already present in this tabset
+      const existingComponents = tabs.map((tab: any) => tab.getComponent());
+
+      // FR: Filtrer les onglets disponibles pour n'afficher que ceux qui ne sont pas déjà présents
+      // EN: Filter available tabs to show only those not already present
+      const availableTabs = AVAILABLE_TABS.filter(
+        tab => !existingComponents.includes(tab.component) && tab.component !== 'canvas'
+      );
+
+      const buttons = [];
+
+      // FR: Bouton "+" pour ajouter un onglet
+      // EN: "+" button to add a tab
+      if (availableTabs.length > 0) {
+        buttons.push(
+          <button
+            key="add-tab"
+            type="button"
+            className="flexlayout__tab_toolbar_button"
+            title="Ajouter un onglet"
+            onClick={(e) => {
+              setAddTabMenuState({
+                tabSetId: tabSetNode.getId(),
+                anchorEl: e.currentTarget,
+              });
+            }}
+            style={{
+              padding: '4px 8px',
+              fontSize: '16px',
+              background: 'transparent',
+              border: '0.5px solid var(--border-color, #e2e8f0)',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              color: 'var(--fg-secondary)',
+              marginLeft: '2px',
+              fontWeight: 'bold',
+            }}
+          >
+            +
+          </button>
+        );
+      }
+
+      buttons.push(
         <button
           key="close-tab"
           type="button"
@@ -379,7 +437,10 @@ function DockableLayout() {
           }}
         >
           ✕
-        </button>,
+        </button>
+      );
+
+      renderValues.stickyButtons = buttons.concat([
         <button
           key="split-horizontal"
           type="button"
@@ -430,10 +491,51 @@ function DockableLayout() {
         >
           ⬍
         </button>,
-      ];
+      ]);
+    },
+    [model, setAddTabMenuState]
+  );
+
+  // FR: Gérer l'ajout d'un onglet
+  // EN: Handle adding a tab
+  const handleAddTab = useCallback(
+    (tabSetId: string, tabComponent: string, tabName: string) => {
+      model.doAction(
+        Actions.addNode(
+          {
+            type: 'tab',
+            name: tabName,
+            component: tabComponent,
+            enableClose: false,
+          },
+          tabSetId,
+          DockLocation.CENTER,
+          -1
+        )
+      );
+      setAddTabMenuState({ tabSetId: null, anchorEl: null });
     },
     [model]
   );
+
+  // FR: Fermer le menu
+  // EN: Close the menu
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (addTabMenuState.anchorEl && !addTabMenuState.anchorEl.contains(e.target as Node)) {
+        const menu = document.getElementById('add-tab-menu');
+        if (menu && !menu.contains(e.target as Node)) {
+          setAddTabMenuState({ tabSetId: null, anchorEl: null });
+        }
+      }
+    };
+
+    if (addTabMenuState.anchorEl) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return undefined;
+  }, [addTabMenuState.anchorEl]);
 
   return (
     <div className="dockable-layout">
@@ -468,6 +570,61 @@ function DockableLayout() {
       <div className="dockable-status-bar">
         <StatusBar />
       </div>
+
+      {/* FR: Menu pour ajouter un onglet */}
+      {/* EN: Menu to add a tab */}
+      {addTabMenuState.anchorEl && addTabMenuState.tabSetId && (
+        <div
+          id="add-tab-menu"
+          style={{
+            position: 'fixed',
+            top: `${addTabMenuState.anchorEl.getBoundingClientRect().bottom + 4}px`,
+            left: `${addTabMenuState.anchorEl.getBoundingClientRect().left}px`,
+            background: 'var(--bg)',
+            border: '0.5px solid var(--border-color, #e2e8f0)',
+            borderRadius: '6px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            zIndex: 10000,
+            minWidth: '180px',
+            overflow: 'hidden',
+          }}
+        >
+          {AVAILABLE_TABS.filter(tab => {
+            // FR: Filtrer les onglets qui ne sont pas déjà dans le tabset
+            // EN: Filter tabs that are not already in the tabset
+            const tabSetNode = model.getNodeById(addTabMenuState.tabSetId!);
+            if (!tabSetNode) return false;
+            const tabs = tabSetNode.getChildren();
+            const existingComponents = tabs.map((t: any) => t.getComponent());
+            return !existingComponents.includes(tab.component) && tab.component !== 'canvas';
+          }).map(tab => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => handleAddTab(addTabMenuState.tabSetId!, tab.component, tab.name)}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: 'none',
+                background: 'transparent',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: '13px',
+                color: 'var(--fg)',
+                transition: 'background 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--bg-secondary)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              {tab.name}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -906,6 +906,12 @@ function MindMapCanvas() {
           instanceRef.current = inst;
           setFlowInstance(inst);
         }}
+        panOnScroll={true}
+        zoomOnScroll={false}
+        panOnScrollMode="free"
+        zoomActivationKeyCode="Meta"
+        minZoom={0.05}
+        maxZoom={2}
       >
         <Background />
         {/* Controls retirés: le zoom est géré dans la StatusBar */}

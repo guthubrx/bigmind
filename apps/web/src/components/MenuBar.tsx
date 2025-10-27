@@ -24,7 +24,7 @@ function MenuBar() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   // const accentColor = useAppSettings((s) => s.accentColor);
   const platformInfo = usePlatform();
-  const { openFileDialog, openFile, createNew } = useFileOperations();
+  const { openFileDialog, openFile, createNew, exportActiveXMind } = useFileOperations();
   const navigate = useNavigate();
 
   // FR: Raccourcis adaptés selon la plateforme
@@ -41,7 +41,7 @@ function MenuBar() {
           // console.warn('Create new file');
           createNew();
           break;
-        case 'Ouvrir...':
+        case 'Ouvrir...': {
           // console.warn('Open file...');
           const file = await openFileDialog();
           if (file) {
@@ -52,13 +52,17 @@ function MenuBar() {
             // console.warn('No file selected');
           }
           break;
+        }
+        case 'Sauvegarder':
+        case 'Sauvegarder sous...':
+          // console.warn('Save file...');
+          await exportActiveXMind();
+          break;
         default:
         // console.warn(`Action: ${action}`);
       }
     } catch (error) {
-      console.error(`❌ Erreur lors de l'action ${action}:`, error);
-      const message = error instanceof Error ? error.message : String(error);
-      alert(`Erreur: ${message}`);
+      console.warn(`❌ Erreur lors de l'action ${action}:`, error);
     }
     setActiveMenu(null);
   };
@@ -167,13 +171,15 @@ function MenuBar() {
 
           {activeMenu === menu.id && (
             <div className="menu-dropdown">
-              {menu.items.map((item, index) => (
-                <div
-                  key={index}
+              {menu.items.map((item) => (
+                <button
+                  type="button"
+                  key={`${menu.id}-${item.label}`}
                   className="menu-item-option"
                   onClick={() => {
                     if (menu.id === 'tools' && item.label.startsWith('Préférences')) {
                       navigate('/settings');
+                      setActiveMenu(null);
                     } else {
                       handleMenuAction(item.label);
                     }
@@ -181,7 +187,7 @@ function MenuBar() {
                 >
                   <span className="menu-item-label">{item.label}</span>
                   <span className="menu-item-shortcut">{item.shortcut}</span>
-                </div>
+                </button>
               ))}
             </div>
           )}

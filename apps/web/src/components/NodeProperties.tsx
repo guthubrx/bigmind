@@ -135,18 +135,6 @@ function NodeProperties() {
               </div>
 
               <div className="form-group">
-                <MarkdownEditor
-                  value={selectedNode.notes || ''}
-                  onChange={(value) =>
-                    selectedNodeId &&
-                    updateActiveFileNode(selectedNodeId, { notes: value })
-                  }
-                  placeholder="Ajouter des notes (format Markdown)..."
-                  height={250}
-                />
-              </div>
-
-              <div className="form-group">
                 <div className="form-label">Alignement</div>
                 <div className="alignment-buttons">
                   <button type="button" className="btn" title="Gauche">
@@ -159,6 +147,17 @@ function NodeProperties() {
                     <AlignRight className="icon-small" />
                   </button>
                 </div>
+              </div>
+
+              <div className="form-group form-group-flex">
+                <MarkdownEditor
+                  value={selectedNode.notes || ''}
+                  onChange={(value) =>
+                    selectedNodeId &&
+                    updateActiveFileNode(selectedNodeId, { notes: value })
+                  }
+                  placeholder="Ajouter des notes (format Markdown)..."
+                />
               </div>
             </div>
           )}

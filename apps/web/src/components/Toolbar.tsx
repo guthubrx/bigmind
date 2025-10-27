@@ -16,9 +16,51 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { useMindmap } from '../hooks/useMindmap';
+import { useFileOperations } from '../hooks/useFileOperations';
 
-const Toolbar: React.FC = () => {
+function Toolbar() {
   const { mindMap, canUndo, canRedo, actions } = useMindmap();
+  const { exportActiveXMind, openFileDialog, openFile } = useFileOperations();
+
+  // FR: Sauvegarder la carte
+  // EN: Save the map
+  const handleSave = React.useCallback(async () => {
+    try {
+      await exportActiveXMind();
+    } catch (error) {
+      console.warn('Erreur lors de la sauvegarde:', error);
+    }
+  }, [exportActiveXMind]);
+
+  // FR: Ouvrir un fichier
+  // EN: Open a file
+  const handleOpen = React.useCallback(async () => {
+    try {
+      const file = await openFileDialog();
+      if (file) {
+        await openFile(file);
+      }
+    } catch (error) {
+      console.warn('Erreur lors de l\'ouverture:', error);
+    }
+  }, [openFileDialog, openFile]);
+
+  // FR: Exporter la carte
+  // EN: Export the map
+  const handleExport = React.useCallback(async () => {
+    try {
+      await exportActiveXMind();
+    } catch (error) {
+      console.warn('Erreur lors de l\'export:', error);
+    }
+  }, [exportActiveXMind]);
+
+  // FR: Supprimer les nœuds sélectionnés
+  // EN: Delete selected nodes
+  const handleDeleteSelected = React.useCallback(() => {
+    // FR: TODO: Implémenter la suppression des nœuds sélectionnés
+    // EN: TODO: Implement deletion of selected nodes
+  }, []);
 
   // FR: Gérer les raccourcis clavier
   // EN: Handle keyboard shortcuts
@@ -55,43 +97,7 @@ const Toolbar: React.FC = () => {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [canUndo, canRedo, actions]);
-
-  // FR: Sauvegarder la carte
-  // EN: Save the map
-  const handleSave = () => {
-    if (!mindMap) return;
-
-    // FR: TODO: Implémenter la sauvegarde
-    // EN: TODO: Implement saving
-    console.log('Sauvegarde de la carte:', mindMap);
-  };
-
-  // FR: Ouvrir un fichier
-  // EN: Open a file
-  const handleOpen = () => {
-    // FR: TODO: Implémenter l'ouverture de fichier
-    // EN: TODO: Implement file opening
-    console.log('Ouverture de fichier');
-  };
-
-  // FR: Exporter la carte
-  // EN: Export the map
-  const handleExport = () => {
-    if (!mindMap) return;
-
-    // FR: TODO: Implémenter l'export
-    // EN: TODO: Implement export
-    console.log('Export de la carte:', mindMap);
-  };
-
-  // FR: Supprimer les nœuds sélectionnés
-  // EN: Delete selected nodes
-  const handleDeleteSelected = () => {
-    // FR: TODO: Implémenter la suppression des nœuds sélectionnés
-    // EN: TODO: Implement deletion of selected nodes
-    console.log('Suppression des nœuds sélectionnés');
-  };
+  }, [canUndo, canRedo, actions, handleSave, handleDeleteSelected]);
 
   // FR: Ajouter un nouveau nœud
   // EN: Add a new node
@@ -109,6 +115,7 @@ const Toolbar: React.FC = () => {
         {/* FR: Bouton Nouveau */}
         {/* EN: New button */}
         <button
+          type="button"
           onClick={handleAddNode}
           className="action-button primary"
           title="Ajouter un nœud (Ctrl+N)"
@@ -120,6 +127,7 @@ const Toolbar: React.FC = () => {
         {/* FR: Bouton Supprimer */}
         {/* EN: Delete button */}
         <button
+          type="button"
           onClick={handleDeleteSelected}
           className="action-button secondary"
           title="Supprimer la sélection (Suppr)"
@@ -134,6 +142,7 @@ const Toolbar: React.FC = () => {
         {/* FR: Boutons Undo/Redo */}
         {/* EN: Undo/Redo buttons */}
         <button
+          type="button"
           onClick={actions.undo}
           disabled={!canUndo}
           className="action-button secondary"
@@ -143,6 +152,7 @@ const Toolbar: React.FC = () => {
         </button>
 
         <button
+          type="button"
           onClick={actions.redo}
           disabled={!canRedo}
           className="action-button secondary"
@@ -164,6 +174,7 @@ const Toolbar: React.FC = () => {
         {/* FR: Bouton Ouvrir */}
         {/* EN: Open button */}
         <button
+          type="button"
           onClick={handleOpen}
           className="action-button secondary"
           title="Ouvrir un fichier (Ctrl+O)"
@@ -174,6 +185,7 @@ const Toolbar: React.FC = () => {
         {/* FR: Bouton Sauvegarder */}
         {/* EN: Save button */}
         <button
+          type="button"
           onClick={handleSave}
           className="action-button secondary"
           title="Sauvegarder (Ctrl+S)"
@@ -184,6 +196,7 @@ const Toolbar: React.FC = () => {
         {/* FR: Bouton Exporter */}
         {/* EN: Export button */}
         <button
+          type="button"
           onClick={handleExport}
           className="action-button secondary"
           title="Exporter la carte"
@@ -197,13 +210,13 @@ const Toolbar: React.FC = () => {
 
         {/* FR: Bouton Paramètres */}
         {/* EN: Settings button */}
-        <button className="action-button secondary" title="Paramètres">
+        <button type="button" className="action-button secondary" title="Paramètres">
           <Settings className="w-4 h-4" />
         </button>
 
         {/* FR: Bouton Aide */}
         {/* EN: Help button */}
-        <button className="action-button secondary" title="Aide">
+        <button type="button" className="action-button secondary" title="Aide">
           <HelpCircle className="w-4 h-4" />
         </button>
       </div>
