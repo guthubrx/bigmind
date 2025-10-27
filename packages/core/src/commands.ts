@@ -4,7 +4,7 @@
  */
 /* eslint-disable max-classes-per-file, @typescript-eslint/no-unused-vars, class-methods-use-this */
 
-import { produce } from 'immer';
+import { produce, current } from 'immer';
 import { MindMap, MindNode, NodeID, Command, NodeFactory } from './model';
 
 // FR: Commande pour ajouter un nœud
@@ -78,22 +78,47 @@ export class AddNodeCommand implements Command {
 // EN: Command to delete a node
 export class DeleteNodeCommand implements Command {
   private deletedNode: MindNode | null = null;
-  private deletedChildren: MindNode[] = [];
+
+  private deletedDescendants: MindNode[] = [];
 
   constructor(private nodeId: NodeID) {}
+
+  /**
+   * FR: Collecte récursivement tous les nœuds descendants
+   * EN: Recursively collect all descendant nodes
+   */
+  private collectDescendants(draft: MindMap, nodeId: NodeID, results: MindNode[]): void {
+    const node = draft.nodes[nodeId];
+    if (!node) return;
+
+    // FR: Ajouter chaque enfant et leurs descendants
+    // EN: Add each child and their descendants
+    node.children.forEach(childId => {
+      const child = draft.nodes[childId];
+      if (child) {
+        // FR: Utiliser current() pour extraire la vraie valeur du proxy Immer
+        // EN: Use current() to extract the real value from Immer proxy
+        results.push(current(child));
+        // FR: Récurser pour les descendants
+        // EN: Recurse for descendants
+        this.collectDescendants(draft, childId, results);
+      }
+    });
+  }
 
   execute(state: MindMap): MindMap {
     return produce(state, draft => {
       const node = draft.nodes[this.nodeId];
       if (!node) return;
 
-      // FR: Sauvegarder le nœud et ses enfants pour l'undo
-      // EN: Save node and its children for undo
-      this.deletedNode = { ...node };
-      this.deletedChildren = node.children.map(id => {
-        const child = draft.nodes[id];
-        return child ? { ...child } : null;
-      }).filter(Boolean) as MindNode[];
+      // FR: Utiliser current() pour extraire la vraie valeur du proxy Immer
+      // EN: Use current() to extract the real value from Immer proxy
+      this.deletedNode = current(node);
+
+      // FR: Collecter tous les descendants récursivement
+      // EN: Collect all descendants recursively
+      this.deletedDescendants = [];
+      this.collectDescendants(draft, this.nodeId, this.deletedDescendants);
 
       // FR: Supprimer tous les descendants récursivement
       // EN: Delete all descendants recursively
@@ -114,22 +139,18 @@ export class DeleteNodeCommand implements Command {
     if (!this.deletedNode) return state;
 
     return produce(state, draft => {
-      // FR: Restaurer le nœud principal
-      // EN: Restore main node
-      if (this.deletedNode) {
-        draft.nodes[this.deletedNode.id] = { ...this.deletedNode };
-      }
+      // FR: Restaurer le nœud principal avec copie profonde via JSON
+      // EN: Restore main node with deep copy via JSON
+      draft.nodes[this.deletedNode.id] = JSON.parse(JSON.stringify(this.deletedNode));
 
-      // FR: Restaurer les enfants
-      // EN: Restore children
-      this.deletedChildren.forEach(child => {
-        if (child) {
-          draft.nodes[child.id] = { ...child };
-        }
+      // FR: Restaurer tous les descendants avec copie profonde via JSON
+      // EN: Restore all descendants with deep copy via JSON
+      this.deletedDescendants.forEach(node => {
+        draft.nodes[node.id] = JSON.parse(JSON.stringify(node));
       });
 
-      // FR: Remettre l'enfant dans le parent
-      // EN: Put child back in parent
+      // FR: Remettre le nœud principal dans le parent
+      // EN: Put main node back in parent
       if (this.deletedNode && this.deletedNode.parentId) {
         const parent = draft.nodes[this.deletedNode.parentId];
         if (parent) {
@@ -259,6 +280,7 @@ export class MoveNodeCommand implements Command {
 // EN: Command to change node parent
 export class ReparentNodeCommand implements Command {
   private previousParentId: NodeID | null = null;
+
   private previousIndex: number = -1;
 
   constructor(
@@ -277,7 +299,14 @@ export class ReparentNodeCommand implements Command {
       this.previousParentId = node.parentId;
       if (node.parentId) {
         const parent = draft.nodes[node.parentId];
-        this.previousIndex = parent.children.indexOf(this.nodeId);
+        const foundIndex = parent.children.indexOf(this.nodeId);
+        // FR: S'assurer que l'index est valide, sinon utiliser la fin du tableau
+        // EN: Ensure index is valid, otherwise use end of array
+        this.previousIndex = foundIndex >= 0 ? foundIndex : parent.children.length;
+      } else {
+        // FR: Si pas de parent, réinitialiser à 0
+        // EN: If no parent, reset to 0
+        this.previousIndex = 0;
       }
 
       // FR: Retirer de l'ancien parent
@@ -456,26 +485,22 @@ export class ReorderSiblingCommand implements Command {
       const targetSibling = draft.nodes[this.targetSiblingId];
 
       if (!node || !targetSibling) {
-        console.error('Node or target sibling not found');
         return;
       }
 
       // FR: Vérifier qu'ils ont le même parent
       // EN: Check they have the same parent
       if (node.parentId !== targetSibling.parentId) {
-        console.error('Nodes do not have the same parent');
         return;
       }
 
-      const parentId = node.parentId;
+      const { parentId } = node;
       if (!parentId) {
-        console.error('Cannot reorder root node');
         return;
       }
 
       const parent = draft.nodes[parentId];
       if (!parent || !parent.children) {
-        console.error('Parent not found or has no children');
         return;
       }
 
@@ -485,7 +510,6 @@ export class ReorderSiblingCommand implements Command {
       const targetIndex = parent.children.indexOf(this.targetSiblingId);
 
       if (currentIndex === -1 || targetIndex === -1) {
-        console.error('Node or target not found in parent children');
         return;
       }
 
@@ -499,7 +523,7 @@ export class ReorderSiblingCommand implements Command {
 
       // FR: Calculer le nouvel index après retrait
       // EN: Calculate new index after removal
-      let newTargetIndex = parent.children.indexOf(this.targetSiblingId);
+      const newTargetIndex = parent.children.indexOf(this.targetSiblingId);
 
       // FR: Insérer avant ou après la cible
       // EN: Insert before or after target
@@ -508,8 +532,6 @@ export class ReorderSiblingCommand implements Command {
       } else {
         parent.children.splice(newTargetIndex + 1, 0, this.nodeId);
       }
-
-      console.log(`🔄 Reordered ${this.nodeId}: ${currentIndex} → ${this.insertBefore ? newTargetIndex : newTargetIndex + 1}`);
     });
   }
 
@@ -535,7 +557,8 @@ export class ReorderSiblingCommand implements Command {
   }
 
   get description(): string {
-    return `Réordonner ${this.nodeId} ${this.insertBefore ? 'avant' : 'après'} ${this.targetSiblingId}`;
+    const direction = this.insertBefore ? 'avant' : 'après';
+    return `Réordonner ${this.nodeId} ${direction} ${this.targetSiblingId}`;
   }
 
   get timestamp(): number {

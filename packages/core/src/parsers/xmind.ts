@@ -1,7 +1,7 @@
 /**
  * FR: Parser pour les fichiers XMind .xmind
  * EN: Parser for XMind .xmind files
- * 
+ *
  * Note: XMind utilise un format ZIP avec plusieurs fichiers XML
  * Pour le MVP, on implémente un parser basique
  */
@@ -16,6 +16,12 @@ interface XMindNode {
   parentId?: string;
   children?: XMindNode[];
   position?: { x: number; y: number };
+  collapsed?: boolean;
+  tags?: string[];
+  assets?: {
+    images?: string[];
+    attachments?: string[];
+  };
   style?: {
     backgroundColor?: string;
     textColor?: string;
@@ -26,30 +32,53 @@ interface XMindNode {
 // FR: Parser XMind .xmind vers MindMap
 // EN: XMind .xmind parser to MindMap
 export class XMindParser {
+  // FR: Limites de sécurité pour éviter les zip bombs et attaques DoS
+  // EN: Security limits to prevent zip bombs and DoS attacks
+  private static readonly MAX_NODES = 10000;
+
+  private static readonly MAX_DEPTH = 100;
+
+  private static readonly MAX_JSON_SIZE = 50 * 1024 * 1024; // 50 MB
+
+  private static nodeCount = 0;
+
   /**
    * FR: Parser un fichier .xmind depuis une chaîne JSON
    * EN: Parse a .xmind file from JSON string
-   * 
+   *
    * Note: Pour le MVP, on suppose que le fichier a été extrait et converti en JSON
    * Dans une version complète, il faudrait parser le ZIP et les XML internes
    */
   static parse(jsonContent: string): MindMap {
     try {
+      // FR: Vérifier la taille du JSON
+      // EN: Check JSON size
+      if (jsonContent.length > this.MAX_JSON_SIZE) {
+        const sizeMB = Math.round(jsonContent.length / 1024 / 1024);
+        const maxMB = this.MAX_JSON_SIZE / 1024 / 1024;
+        throw new Error(`Fichier trop volumineux (${sizeMB}MB). Maximum autorisé: ${maxMB}MB`);
+      }
+
       const xmindData = JSON.parse(jsonContent);
-      
+
+      // FR: Réinitialiser le compteur de nœuds
+      // EN: Reset node counter
+      this.nodeCount = 0;
+
       // FR: Créer la carte mentale
       // EN: Create mind map
       const mindMap = NodeFactory.createEmptyMindMap(xmindData.title || 'Carte XMind importée');
-      
-      // FR: Parser le nœud racine
-      // EN: Parse root node
+
+      // FR: Parser le nœud racine avec vérification de profondeur
+      // EN: Parse root node with depth verification
       if (xmindData.root) {
-        this.parseNodeRecursive(xmindData.root, mindMap, mindMap.rootId, 0, 0);
+        this.parseNodeRecursive(xmindData.root, mindMap, mindMap.rootId, 0, 0, 0);
       }
 
       return mindMap;
     } catch (error) {
-      throw new Error(`Erreur lors du parsing XMind: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+      const message = error instanceof Error ? error.message : 'Erreur inconnue';
+      throw new Error(`Erreur lors du parsing XMind: ${message}`);
     }
   }
 
@@ -62,8 +91,26 @@ export class XMindParser {
     mindMap: MindMap,
     parentId: NodeID,
     x: number,
-    y: number
+    y: number,
+    depth: number
   ): void {
+    // FR: Vérifier la profondeur maximale
+    // EN: Check maximum depth
+    if (depth > this.MAX_DEPTH) {
+      throw new Error(
+        `Profondeur maximale dépassée (${this.MAX_DEPTH}). Fichier potentiellement malveillant.`
+      );
+    }
+
+    // FR: Vérifier le nombre maximal de nœuds
+    // EN: Check maximum node count
+    this.nodeCount += 1;
+    if (this.nodeCount > this.MAX_NODES) {
+      throw new Error(
+        `Nombre maximal de nœuds dépassé (${this.MAX_NODES}). Fichier potentiellement malveillant.`
+      );
+    }
+
     // FR: Créer le nœud
     // EN: Create the node
     const node = NodeFactory.createNode(xmindNode.title, parentId);
@@ -80,6 +127,35 @@ export class XMindParser {
       };
     }
 
+    // FR: Appliquer l'état collapsed si spécifié
+    // EN: Apply collapsed state if specified
+    if (xmindNode.collapsed !== undefined) {
+      node.collapsed = xmindNode.collapsed;
+    }
+
+    // FR: Ajouter les tags si disponibles (stockés dans les notes pour le MVP)
+    // EN: Add tags if available (stored in notes for MVP)
+    if (xmindNode.tags && xmindNode.tags.length > 0) {
+      const tagsText = `Tags: ${xmindNode.tags.join(', ')}`;
+      node.notes = node.notes ? `${node.notes}\n\n${tagsText}` : tagsText;
+    }
+
+    // FR: Ajouter les assets si disponibles (stockés dans les notes pour le MVP)
+    // EN: Add assets if available (stored in notes for MVP)
+    if (xmindNode.assets) {
+      const assetLines: string[] = [];
+      if (xmindNode.assets.images && xmindNode.assets.images.length > 0) {
+        assetLines.push(`Images: ${xmindNode.assets.images.join(', ')}`);
+      }
+      if (xmindNode.assets.attachments && xmindNode.assets.attachments.length > 0) {
+        assetLines.push(`Attachments: ${xmindNode.assets.attachments.join(', ')}`);
+      }
+      if (assetLines.length > 0) {
+        const assetsText = assetLines.join('\n');
+        node.notes = node.notes ? `${node.notes}\n\n${assetsText}` : assetsText;
+      }
+    }
+
     // FR: Ajouter le nœud à la carte
     // EN: Add node to map
     mindMap.nodes[node.id] = node;
@@ -93,14 +169,14 @@ export class XMindParser {
       }
     }
 
-    // FR: Parser les enfants
-    // EN: Parse children
+    // FR: Parser les enfants avec incrément de profondeur
+    // EN: Parse children with depth increment
     if (xmindNode.children) {
       xmindNode.children.forEach((child, index) => {
         const childX = x + (index - xmindNode.children!.length / 2) * 200;
         const childY = y + 150;
-        
-        this.parseNodeRecursive(child, mindMap, node.id, childX, childY);
+
+        this.parseNodeRecursive(child, mindMap, node.id, childX, childY, depth + 1);
       });
     }
   }

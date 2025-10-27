@@ -5,8 +5,33 @@
 
 import { MindMap, MindNode, NodeID, NodeFactory } from '../model';
 
-// FR: Interface pour les nœuds XML FreeMind
-// EN: Interface for FreeMind XML nodes
+// FR: Obtenir le parser XML selon l'environnement (Node ou Browser)
+// EN: Get XML parser based on environment (Node or Browser)
+function getXMLParser(): {
+  parseFromString: (xmlString: string, mimeType: string) => Document;
+} {
+  // FR: Environnement navigateur
+  // EN: Browser environment
+  if (typeof DOMParser !== 'undefined') {
+    return new DOMParser();
+  }
+
+  // FR: Environnement Node.js - utiliser xmldom si disponible
+  // EN: Node.js environment - use xmldom if available
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    const { DOMParser: NodeDOMParser } = require('@xmldom/xmldom');
+    return new NodeDOMParser();
+  } catch (error) {
+    throw new Error(
+      'Parser XML non disponible. En Node.js, installez @xmldom/xmldom: npm install @xmldom/xmldom'
+    );
+  }
+}
+
+// FR: Interface pour les nœuds XML FreeMind (utilisée pour documentation)
+// EN: Interface for FreeMind XML nodes (used for documentation)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface FreeMindNode {
   TEXT: string;
   POSITION?: 'left' | 'right';
@@ -15,15 +40,6 @@ interface FreeMindNode {
   BACKGROUND_COLOR?: string;
   STYLE?: string;
   node?: FreeMindNode[];
-}
-
-// FR: Interface pour le document XML FreeMind
-// EN: Interface for FreeMind XML document
-interface FreeMindDocument {
-  map: {
-    version: string;
-    node: FreeMindNode;
-  };
 }
 
 // FR: Parser FreeMind .mm vers MindMap
@@ -35,11 +51,11 @@ export class FreeMindParser {
    */
   static parse(xmlContent: string): MindMap {
     try {
-      // FR: Parser XML simple (pour MVP, on utilise DOMParser du navigateur)
-      // EN: Simple XML parser (for MVP, using browser DOMParser)
-      const parser = new DOMParser();
+      // FR: Parser XML portable (navigateur ou Node.js)
+      // EN: Portable XML parser (browser or Node.js)
+      const parser = getXMLParser();
       const doc = parser.parseFromString(xmlContent, 'text/xml');
-      
+
       // FR: Vérifier les erreurs de parsing
       // EN: Check parsing errors
       const parseError = doc.querySelector('parsererror');
@@ -62,14 +78,15 @@ export class FreeMindParser {
       // FR: Créer la carte mentale
       // EN: Create mind map
       const mindMap = NodeFactory.createEmptyMindMap('Carte importée');
-      
+
       // FR: Parser récursivement les nœuds
       // EN: Recursively parse nodes
       this.parseNodeRecursive(rootNodeElement, mindMap, mindMap.rootId, 0, 0);
 
       return mindMap;
     } catch (error) {
-      throw new Error(`Erreur lors du parsing FreeMind: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+      const message = error instanceof Error ? error.message : 'Erreur inconnue';
+      throw new Error(`Erreur lors du parsing FreeMind: ${message}`);
     }
   }
 
@@ -129,7 +146,7 @@ export class FreeMindParser {
     childNodes.forEach((childElement, index) => {
       const childX = position === 'left' ? x - 300 : x + 300;
       const childY = y + (index - childNodes.length / 2) * 100;
-      
+
       this.parseNodeRecursive(childElement, mindMap, node.id, childX, childY);
     });
   }
@@ -161,7 +178,7 @@ export class FreeMindParser {
   private static serializeNode(node: MindNode, mindMap: MindMap, indent: number): string {
     const spaces = '  '.repeat(indent);
     let xml = `${spaces}<node TEXT="${this.escapeXml(node.title)}"`;
-    
+
     // FR: Ajouter les attributs de style
     // EN: Add style attributes
     if (node.style?.textColor) {
@@ -173,7 +190,7 @@ export class FreeMindParser {
     if (node.collapsed) {
       xml += ' FOLDED="true"';
     }
-    
+
     xml += '>\n';
 
     // FR: Sérialiser les enfants
