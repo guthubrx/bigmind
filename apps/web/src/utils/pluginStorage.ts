@@ -50,6 +50,21 @@ export interface IPluginStorage {
    * Set schema version
    */
   setSchemaVersion(version: string): void;
+
+  /**
+   * Mark plugin as required for this file
+   */
+  markAsRequired(minVersion?: string, maxVersion?: string): void;
+
+  /**
+   * Mark plugin as recommended for this file
+   */
+  markAsRecommended(minVersion?: string, maxVersion?: string): void;
+
+  /**
+   * Remove plugin dependency
+   */
+  unmarkDependency(): void;
 }
 
 /**
