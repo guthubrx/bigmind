@@ -9,14 +9,29 @@ import { v4 as uuidv4 } from 'uuid';
 import { getNodeColor } from '../utils/nodeColors';
 import { getPalette } from '../themes/colorPalettes';
 import { loadOverlayFromStorage, saveOverlayToStorage } from '../utils/overlayValidation';
-import { emitNodeCreated, emitNodeUpdated, emitNodeDeleted } from '../utils/mindmapEvents';
+import {
+  emitNodeCreated,
+  emitNodeUpdated,
+  emitNodeDeleted,
+  emitFileCreated,
+  emitFileOpened,
+  emitFileClosed,
+  emitFileActivated,
+  emitSheetChanged,
+  emitViewportChanged,
+  emitNodeSelected,
+  emitPaletteChanged,
+} from '../utils/mindmapEvents';
+import { adaptBigMindToContent, createEmptyBigMindData } from '../utils/contentAdapter';
+import { loadObject, saveObject } from '../utils/storageManager';
+import type { ExtendedMindMapData } from '../utils/fileFormat';
 
 export interface OpenFile {
   id: string;
   name: string;
   path?: string;
   type: 'xmind' | 'mm' | 'new';
-  content?: any; // Contenu parsé du fichier
+  content?: ExtendedMindMapData; // Extended format with plugin support
   lastModified: Date;
   isActive: boolean;
   // FR: Feuilles (onglets) pour XMind
@@ -107,19 +122,30 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     // EN: Save to localStorage
     get().saveOpenFilesToStorage();
 
+    // Emit file opened event
+    emitFileOpened({
+      fileId: newFile.id,
+      name: newFile.name,
+      type: newFile.type,
+      path: newFile.path,
+    });
+
     return newFile.id;
   },
 
   // FR: Fermer un fichier
   // EN: Close a file
   closeFile: (fileId: string) => {
-    set(state => {
-      const filteredFiles = state.openFiles.filter(f => f.id !== fileId);
+    const currentState = get();
+    const file = currentState.openFiles.find(f => f.id === fileId);
+
+    set(s => {
+      const filteredFiles = s.openFiles.filter(f => f.id !== fileId);
 
       // FR: Si on ferme le fichier actif, activer le précédent
       // EN: If closing active file, activate the previous one
-      let newActiveFileId = state.activeFileId;
-      if (fileId === state.activeFileId) {
+      let newActiveFileId = s.activeFileId;
+      if (fileId === s.activeFileId) {
         if (filteredFiles.length > 0) {
           const lastFile = filteredFiles[filteredFiles.length - 1];
           lastFile.isActive = true;
@@ -130,7 +156,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       }
 
       return {
-        ...state,
+        ...s,
         openFiles: filteredFiles,
         activeFileId: newActiveFileId,
       };
@@ -139,20 +165,39 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     // FR: Sauvegarder dans localStorage
     // EN: Save to localStorage
     get().saveOpenFilesToStorage();
+
+    // Emit file closed event
+    if (file) {
+      emitFileClosed({
+        fileId,
+        name: file.name,
+      });
+    }
   },
 
   // FR: Activer un fichier
   // EN: Activate a file
   activateFile: (fileId: string) => {
-    set(state => ({
-      ...state,
-      openFiles: state.openFiles.map(f => ({ ...f, isActive: f.id === fileId })),
+    const currentState = get();
+    const file = currentState.openFiles.find(f => f.id === fileId);
+
+    set(s => ({
+      ...s,
+      openFiles: s.openFiles.map(f => ({ ...f, isActive: f.id === fileId })),
       activeFileId: fileId,
     }));
 
     // FR: Sauvegarder dans localStorage
     // EN: Save to localStorage
     get().saveOpenFilesToStorage();
+
+    // Emit file activated event
+    if (file) {
+      emitFileActivated({
+        fileId,
+        name: file.name,
+      });
+    }
   },
 
   // FR: Définir la feuille active pour un fichier
@@ -169,16 +214,16 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       try {
         const sheetData = file.sheetsData[idx];
         const big = XMindParser.convertSheetJSONToBigMind(sheetData);
-        const adaptedContent = {
-          id: big.id,
-          name: big.name,
-          rootNode: {
-            id: big.rootId,
-            title: big.nodes[big.rootId]?.title || 'Racine',
-            children: big.nodes[big.rootId]?.children || [],
-          },
-          nodes: big.nodes,
-        } as any;
+        const adaptedContent = adaptBigMindToContent(big);
+
+        // Emit sheet changed event
+        const sheet = file.sheets.find(s => s.id === sheetId);
+        emitSheetChanged({
+          fileId,
+          sheetId,
+          sheetTitle: sheet?.title || '',
+        });
+
         return {
           ...state,
           openFiles: state.openFiles.map(f =>
@@ -202,30 +247,23 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
   // FR: Créer un nouveau fichier
   // EN: Create a new file
   createNewFile: (name: string = 'Nouvelle carte') => {
-    const newFileId = uuidv4();
-    const newRootId = uuidv4();
+    const bigMindData = createEmptyBigMindData(name);
+    const content = adaptBigMindToContent(bigMindData);
 
-    return get().openFile({
+    const fileId = get().openFile({
       name,
       type: 'new',
-      content: {
-        id: newFileId,
-        name,
-        rootNode: {
-          id: newRootId,
-          title: name,
-          children: [],
-        },
-        nodes: {
-          [newRootId]: {
-            id: newRootId,
-            title: name,
-            children: [],
-            parentId: null,
-          },
-        },
-      },
+      content,
     });
+
+    // Emit file created event
+    emitFileCreated({
+      fileId,
+      name,
+      type: 'new',
+    });
+
+    return fileId;
   },
 
   // FR: Mettre à jour un nœud du fichier actif et persister en localStorage
@@ -519,6 +557,12 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
         f.id === active.id ? { ...f, content: updatedContent } : f
       ),
     }));
+
+    // Emit palette changed event
+    emitPaletteChanged({
+      type: 'node',
+      paletteId,
+    });
   },
 
   // FR: Mettre à jour la palette de tags du fichier actif
@@ -549,6 +593,12 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
         f.id === active.id ? { ...f, content: updatedContent } : f
       ),
     }));
+
+    // Emit palette changed event
+    emitPaletteChanged({
+      type: 'tag',
+      paletteId,
+    });
   },
 
   // FR: Mettre à jour le style par défaut des nœuds du fichier actif
@@ -601,6 +651,9 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     // FR: Sauvegarder immédiatement dans localStorage (synchrone)
     // EN: Save immediately to localStorage (synchronous)
     get().saveOpenFilesToStorage();
+
+    // Emit viewport changed event
+    emitViewportChanged(viewport);
   },
 
   // FR: Mettre à jour la sélection du fichier actif
@@ -618,6 +671,12 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     // FR: Sauvegarder immédiatement dans localStorage (synchrone)
     // EN: Save immediately to localStorage (synchronous)
     get().saveOpenFilesToStorage();
+
+    // Emit node selected event
+    emitNodeSelected({
+      nodeId: selectedNodeId,
+      nodeIds: selectedNodeId ? [selectedNodeId] : [],
+    });
   },
 
   // FR: Mettre à jour les tags cachés du fichier actif
@@ -641,62 +700,50 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
   // EN: Save open files to localStorage
   saveOpenFilesToStorage: () => {
     const state = get();
-    try {
-      // FR: Sauvegarder TOUS les fichiers avec leur contenu actuel
-      // EN: Save ALL files with their current content
-      const filesToSave = state.openFiles.map(f => ({
-        id: f.id,
-        name: f.name,
-        type: f.type,
-        path: f.path,
-        content: f.content,
-        isActive: f.isActive,
-        lastModified: f.lastModified,
-        viewport: f.viewport,
-        selectedNodeId: f.selectedNodeId,
-        hiddenTags: f.hiddenTags,
-        sheets: f.sheets,
-        activeSheetId: f.activeSheetId,
-      }));
 
-      localStorage.setItem(
-        'bigmind_open_files',
-        JSON.stringify({
-          files: filesToSave,
-          activeFileId: state.activeFileId,
-        })
-      );
-    } catch (e) {
-      // Ignore localStorage errors
-      console.warn('[useOpenFiles] Erreur lors de la sauvegarde des fichiers:', e);
-    }
+    // FR: Sauvegarder TOUS les fichiers avec leur contenu actuel
+    // EN: Save ALL files with their current content
+    const filesToSave = state.openFiles.map(f => ({
+      id: f.id,
+      name: f.name,
+      type: f.type,
+      path: f.path,
+      content: f.content,
+      isActive: f.isActive,
+      lastModified: f.lastModified,
+      viewport: f.viewport,
+      selectedNodeId: f.selectedNodeId,
+      hiddenTags: f.hiddenTags,
+      sheets: f.sheets,
+      activeSheetId: f.activeSheetId,
+    }));
+
+    saveObject('bigmind_open_files', {
+      files: filesToSave,
+      activeFileId: state.activeFileId,
+    });
   },
 
   // FR: Restaurer les fichiers ouverts depuis localStorage
   // EN: Restore open files from localStorage
   restoreOpenFilesFromStorage: () => {
-    try {
-      const raw = localStorage.getItem('bigmind_open_files');
-      if (!raw) return;
+    const data = loadObject<any>('bigmind_open_files', null);
+    if (!data) return;
 
-      const data = JSON.parse(raw);
-      const { files, activeFileId } = data;
+    const { files, activeFileId } = data;
 
-      if (!files || !Array.isArray(files) || files.length === 0) return;
+    if (!files || !Array.isArray(files) || files.length === 0) return;
 
-      // FR: Convertir lastModified en Date
-      // EN: Convert lastModified to Date
-      const restoredFiles = files.map((f: any) => ({
-        ...f,
-        lastModified: new Date(f.lastModified),
-      }));
+    // FR: Convertir lastModified en Date
+    // EN: Convert lastModified to Date
+    const restoredFiles = files.map((f: any) => ({
+      ...f,
+      lastModified: new Date(f.lastModified),
+    }));
 
-      set({
-        openFiles: restoredFiles,
-        activeFileId: activeFileId || (restoredFiles.length > 0 ? restoredFiles[0].id : null),
-      });
-    } catch (e) {
-      console.warn('[useOpenFiles] Erreur lors de la restauration des fichiers:', e);
-    }
+    set({
+      openFiles: restoredFiles,
+      activeFileId: activeFileId || (restoredFiles.length > 0 ? restoredFiles[0].id : null),
+    });
   },
 }));

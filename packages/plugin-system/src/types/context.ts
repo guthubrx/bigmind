@@ -121,12 +121,12 @@ export interface IPluginContext {
     /**
      * Register a command
      */
-    registerCommand(id: string, handler: (...args: any[]) => void | Promise<void>): () => void;
+    registerCommand(id: string, handler: (...args: any[]) => any | Promise<any>): () => void;
 
     /**
      * Execute a command
      */
-    executeCommand(id: string, ...args: any[]): Promise<void>;
+    executeCommand(id: string, ...args: any[]): Promise<any>;
 
     /**
      * Get all available commands
@@ -158,9 +158,13 @@ export interface IPluginContext {
   };
 
   // ===== Storage API =====
+  /**
+   * Plugin storage (file-based, map-specific)
+   * Data is stored within the BigMind file itself
+   */
   storage: {
     /**
-     * Get a value from plugin storage
+     * Get a value from plugin storage (with automatic migration)
      */
     get<T>(key: string): Promise<T | undefined>;
 
@@ -175,10 +179,39 @@ export interface IPluginContext {
     remove(key: string): Promise<void>;
 
     /**
-     * Clear all plugin storage
+     * Get all keys stored by this plugin
      */
-    clear(): Promise<void>;
+    keys(): Promise<string[]>;
+
+    /**
+     * Register a migration function for data schema evolution
+     */
+    registerMigration(
+      fromVersion: string,
+      toVersion: string,
+      migrator: (oldData: any) => any | Promise<any>
+    ): void;
+
+    /**
+     * Get current schema version
+     */
+    getSchemaVersion(): string;
+
+    /**
+     * Set schema version
+     */
+    setSchemaVersion(version: string): void;
   };
+
+  /**
+   * Mark this plugin as required for the current map
+   */
+  markAsRequired(minVersion?: string, maxVersion?: string): void;
+
+  /**
+   * Mark this plugin as recommended for the current map
+   */
+  markAsRecommended(minVersion?: string, maxVersion?: string): void;
 
   // ===== Events API =====
   events: {
