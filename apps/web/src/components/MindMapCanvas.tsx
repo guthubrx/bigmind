@@ -31,6 +31,7 @@ import { useShortcuts } from '../hooks/useShortcuts';
 import { useDragAndDrop } from '../hooks/useDragAndDrop';
 import { useTagStore } from '../hooks/useTagStore';
 import { useAppSettings } from '../hooks/useAppSettings';
+import { nodeStyleRegistry } from '../utils/nodeStyleRegistry';
 
 // FR: Types de nœuds personnalisés
 // EN: Custom node types
@@ -212,21 +213,41 @@ function MindMapCanvas() {
       const x = level === 0 ? 0 : direction * level * LEVEL_WIDTH;
       const nodeCenterY = baseY + totalHeight / 2 - nodeOwnHeightById[node.id] / 2;
 
+      // FR: Créer les données de base du nœud
+      // EN: Create base node data
+      const nodeData: any = {
+        id: node.id,
+        title: node.title,
+        parentId: level === 0 ? null : 'parent', // fixé plus tard
+        children: node.children || [],
+        style: node.style,
+        isSelected: false,
+        isPrimary: level === 0,
+        direction,
+        childCounts: { total: node.children?.length || 0 },
+      };
+
+      // FR: Calculer les styles via les plugins (synchrone)
+      // EN: Compute styles via plugins (synchronous)
+      const computedStyle = nodeStyleRegistry.compute(nodeData, {
+        nodeId: node.id,
+        nodes: activeFile.content?.nodes || {},
+        rootId: rootNode.id,
+        level,
+        isPrimary: level === 0,
+      });
+
+      // FR: Ajouter computedStyle aux données
+      // EN: Add computedStyle to data
+      if (Object.keys(computedStyle).length > 0) {
+        nodeData.computedStyle = computedStyle;
+      }
+
       nodes.push({
         id: node.id,
         type: 'mindmap',
         position: { x, y: nodeCenterY },
-        data: {
-          id: node.id,
-          title: node.title,
-          parentId: level === 0 ? null : 'parent', // fixé plus tard
-          children: node.children || [],
-          style: node.style,
-          isSelected: false,
-          isPrimary: level === 0,
-          direction,
-          childCounts: { total: node.children?.length || 0 },
-        },
+        data: nodeData,
       });
 
       // Si replié, ne pas positionner les enfants

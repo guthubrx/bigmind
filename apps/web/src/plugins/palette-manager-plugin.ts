@@ -5,6 +5,8 @@
 
 import type { IPluginContext, PluginManifest } from '@bigmind/plugin-system';
 import { getAllPalettes, getPalette } from '../themes/colorPalettes';
+import { nodeStyleRegistry } from '../utils/nodeStyleRegistry';
+import { getNodeColor } from '../utils/nodeColors';
 
 export const manifest: PluginManifest = {
   id: 'com.bigmind.palette-manager',
@@ -100,13 +102,87 @@ export const manifest: PluginManifest = {
   permissions: [],
 };
 
+let unregisterStyleComputer: (() => void) | null = null;
+
 export async function activate(context: IPluginContext): Promise<void> {
+  // eslint-disable-next-line no-console
   console.log('🎨 [Palette Manager] Plugin activé');
 
+  // FR: Enregistrer le calculateur de styles pour les nœuds
+  // EN: Register style computer for nodes
+  unregisterStyleComputer = nodeStyleRegistry.register(
+    'com.bigmind.palette-manager',
+    (nodeData, styleContext) => {
+      // FR: Si le nœud a déjà une couleur manuelle, ne pas la remplacer
+      // EN: If node already has manual color, don't replace it
+      if (nodeData.style?.backgroundColor) {
+        return {
+          backgroundColor: nodeData.style.backgroundColor,
+          textColor: nodeData.style.textColor,
+        };
+      }
+
+      // FR: Calculer la couleur automatique basée sur la position dans la hiérarchie
+      // EN: Calculate automatic color based on position in hierarchy
+      try {
+        // Get current theme - we'll use a default palette for now
+        // TODO: Get the active palette from plugin storage
+        const defaultTheme = {
+          colors: {
+            nodeBackground: '#ffffff',
+            nodeText: '#000000',
+          },
+          palette: [
+            '#FF6B6B',
+            '#4ECDC4',
+            '#45B7D1',
+            '#FFA07A',
+            '#98D8C8',
+            '#F7DC6F',
+            '#BB8FCE',
+            '#85C1E2',
+            '#F8B88B',
+            '#AED6F1',
+          ],
+        };
+
+        const autoColor = getNodeColor(
+          styleContext.nodeId,
+          styleContext.nodes,
+          styleContext.rootId,
+          defaultTheme as any
+        );
+
+        // FR: Calculer la couleur de texte optimale
+        // EN: Calculate optimal text color
+        const getOptimalTextColor = (bgColor: string): string => {
+          // Simple luminance calculation
+          try {
+            const hex = bgColor.replace('#', '');
+            const r = parseInt(hex.substring(0, 2), 16) / 255;
+            const g = parseInt(hex.substring(2, 4), 16) / 255;
+            const b = parseInt(hex.substring(4, 6), 16) / 255;
+            const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            return luminance > 0.5 ? '#000000' : '#ffffff';
+          } catch {
+            return '#000000';
+          }
+        };
+
+        return {
+          backgroundColor: autoColor,
+          textColor: getOptimalTextColor(autoColor),
+        };
+      } catch (error) {
+        console.error('[Palette Manager] Error computing node color:', error);
+        return undefined;
+      }
+    },
+    5 // Priority 5 = runs early, can be overridden by other plugins
+  );
+
   // Register command to list all palettes
-  context.commands.registerCommand('palettes.list', async () => {
-    return getAllPalettes();
-  });
+  context.commands.registerCommand('palettes.list', async () => getAllPalettes());
 
   // Register command to get a specific palette
   context.commands.registerCommand('palettes.get', async (paletteId: string) => {
@@ -123,19 +199,34 @@ export async function activate(context: IPluginContext): Promise<void> {
     if (!palette) {
       throw new Error(`Palette "${paletteId}" not found`);
     }
+    // eslint-disable-next-line no-console
     console.log(`🎨 [Palette Manager] Palette "${palette.name}" selected`);
+    // TODO: Save palette selection to plugin storage
     return palette;
   });
 
   // Listen to palette changes
   context.hooks.registerAction('palette.changed', async (data: any) => {
+    // eslint-disable-next-line no-console
     console.log(`🎨 [Palette Manager] Palette changed:`, data);
+    // TODO: Update colors when palette changes
   });
 
   const paletteCount = getAllPalettes().length;
+  // eslint-disable-next-line no-console
   console.log(`🎨 [Palette Manager] ${paletteCount} palettes disponibles`);
+  // eslint-disable-next-line no-console
+  console.log('🎨 [Palette Manager] Style computer registered');
 }
 
 export async function deactivate(): Promise<void> {
+  // eslint-disable-next-line no-console
   console.log('🎨 [Palette Manager] Plugin désactivé');
+
+  // FR: Désenregistrer le calculateur de styles
+  // EN: Unregister style computer
+  if (unregisterStyleComputer) {
+    unregisterStyleComputer();
+    unregisterStyleComputer = null;
+  }
 }

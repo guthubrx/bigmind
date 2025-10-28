@@ -52,6 +52,11 @@ export interface MindMapNodeData extends MindNode {
     backgroundColor?: string;
     textColor?: string;
   };
+  childCounts?: {
+    left?: number;
+    right?: number;
+    total: number;
+  };
 }
 
 type Props = { data: MindMapNodeData; selected?: boolean };
@@ -374,14 +379,10 @@ function MindMapNode({ data, selected }: Props) {
     if (data.isPrimary) {
       return accentColor;
     }
-    return (
-      data.computedStyle?.backgroundColor ||
-      data.style?.backgroundColor ||
-      (data.style as any)?.fill ||
-      (data.style as any)?.background ||
-      (data.style as any)?.bgColor ||
-      currentTheme.colors.nodeBackground
-    );
+    // FR: IMPORTANT - N'utiliser QUE computedStyle (fourni par les plugins)
+    // EN: IMPORTANT - Only use computedStyle (provided by plugins)
+    // Sans plugin actif, on retombe sur la couleur du thème
+    return data.computedStyle?.backgroundColor || currentTheme.colors.nodeBackground;
   }, [data, accentColor, currentTheme.colors.nodeBackground]);
 
   // FR: Déterminer l'opacité (memoïzée)
@@ -400,10 +401,9 @@ function MindMapNode({ data, selected }: Props) {
     () =>
       data.isPrimary
         ? getOptimalTextColor(accentColor)
-        : data.computedStyle?.textColor ||
-          data.style?.textColor ||
-          (data.style as any)?.color ||
-          currentTheme.colors.nodeText,
+        : // FR: IMPORTANT - N'utiliser QUE computedStyle (fourni par les plugins)
+          // EN: IMPORTANT - Only use computedStyle (provided by plugins)
+          data.computedStyle?.textColor || currentTheme.colors.nodeText,
     [data, accentColor, getOptimalTextColor, currentTheme.colors.nodeText]
   );
 
