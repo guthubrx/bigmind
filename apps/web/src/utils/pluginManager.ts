@@ -10,6 +10,7 @@ import { eventBus } from './eventBus';
 import examplePlugin from '../plugins/example-plugin';
 import analyticsPlugin from '../plugins/analytics-plugin';
 import * as eventMonitorPlugin from '../plugins/event-monitor-plugin';
+import * as xmindCompatibilityPlugin from '../plugins/xmind-compatibility-plugin';
 import * as dagTemplatesPlugin from '../plugins/dag-templates-plugin';
 import * as dagTemplatesCollectionPlugin from '../plugins/dag-templates-collection-plugin';
 import * as exportManagerPlugin from '../plugins/export-manager-plugin';
@@ -89,6 +90,10 @@ export async function initializePlugins(): Promise<void> {
   console.log('🔌 Initializing plugin system...');
 
   try {
+    // Register XMind compatibility plugin first (highest priority)
+    await registry.register(xmindCompatibilityPlugin);
+    console.log('✅ Registered: XMind Compatibility');
+
     // Register core plugins (migrated from core)
     await registry.register(dagTemplatesPlugin);
     console.log('✅ Registered: DAG Templates Manager');
