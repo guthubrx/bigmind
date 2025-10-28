@@ -253,22 +253,22 @@ export const manifest: PluginManifest = {
   permissions: [],
 };
 
-export async function activate(context: IPluginContext): Promise<void> {
-  console.log('📋 [DAG Templates Collection] Plugin activé');
+export async function activate(_context: IPluginContext): Promise<void> {
+  // console.log('📋 [DAG Templates Collection] Plugin activé');
 
   // Register all DAG templates
   registerTemplates(DAG_TEMPLATES);
 
-  console.log(`📋 [DAG Templates Collection] ${DAG_TEMPLATES.length} templates enregistrés`);
+  // console.log(`📋 [DAG Templates Collection] ${DAG_TEMPLATES.length} templates enregistrés`);
 }
 
 export async function deactivate(): Promise<void> {
-  console.log('📋 [DAG Templates Collection] Plugin désactivé');
+  // console.log('📋 [DAG Templates Collection] Plugin désactivé');
 
   // Unregister all templates
   DAG_TEMPLATES.forEach(template => {
     unregisterTemplate(template.id);
   });
 
-  console.log('📋 [DAG Templates Collection] Templates désenregistrés');
+  // console.log('📋 [DAG Templates Collection] Templates désenregistrés');
 }

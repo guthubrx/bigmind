@@ -32,24 +32,24 @@ export class AnalyticsPlugin implements Plugin {
 
   async activate(context: PluginContext): Promise<void> {
     this.context = context;
-    console.log('📊 Analytics Plugin activated!');
+    // console.log('📊 Analytics Plugin activated!');
 
     // Load previous stats from storage
     try {
       const saved = await context.api.storage.get<string>('analytics-stats');
       if (saved) {
         this.stats = JSON.parse(saved);
-        console.log('📈 Loaded stats:', this.stats);
+        // console.log('📈 Loaded stats:', this.stats);
       }
     } catch (error) {
-      console.log('ℹ️ No previous stats found');
+      // console.log('ℹ️ No previous stats found');
     }
 
     // Track node creation
     context.hooks.registerAction('mindmap.nodeCreated', async () => {
       this.stats.nodesCreated += 1;
       await this.saveStats();
-      console.log('📊 Stats updated:', this.stats);
+      // console.log('📊 Stats updated:', this.stats);
     });
 
     // Track node updates
@@ -75,8 +75,8 @@ export class AnalyticsPlugin implements Plugin {
   }
 
   async deactivate(): Promise<void> {
-    console.log('🛑 Analytics Plugin deactivated');
-    console.log('📊 Final stats:', this.stats);
+    // console.log('🛑 Analytics Plugin deactivated');
+    // console.log('📊 Final stats:', this.stats);
     this.context = null;
   }
 }

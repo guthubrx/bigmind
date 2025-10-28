@@ -4,7 +4,12 @@
  */
 
 import type { IPluginContext, PluginManifest } from '@bigmind/plugin-system';
-import { getAllTemplates, getFavoriteTemplates, getTemplate, applyTemplate } from '../utils/dagTemplates';
+import {
+  getAllTemplates,
+  getFavoriteTemplates,
+  getTemplate,
+  applyTemplate,
+} from '../utils/dagTemplates';
 
 export const manifest: PluginManifest = {
   id: 'com.bigmind.dag-templates',
@@ -26,7 +31,9 @@ export const manifest: PluginManifest = {
   features: [
     {
       label: 'Templates DAG prédéfinis',
-      description: '3 structures prêtes à l\'emploi : Taxonomie biologique, Architecture logicielle, Processus de projet',
+      description:
+        "3 structures prêtes à l'emploi : Taxonomie biologique, " +
+        'Architecture logicielle, Processus de projet',
       icon: '📋',
     },
     {
@@ -85,17 +92,13 @@ export const manifest: PluginManifest = {
 };
 
 export async function activate(context: IPluginContext): Promise<void> {
-  console.log('📋 [DAG Templates] Plugin activé');
+  // console.log('📋 [DAG Templates] Plugin activé');
 
   // Register command to list all templates
-  context.commands.registerCommand('templates.list', async () => {
-    return getAllTemplates();
-  });
+  context.commands.registerCommand('templates.list', async () => getAllTemplates());
 
   // Register command to get favorite templates
-  context.commands.registerCommand('templates.getFavorites', async () => {
-    return getFavoriteTemplates();
-  });
+  context.commands.registerCommand('templates.getFavorites', async () => getFavoriteTemplates());
 
   // Register command to apply a template
   context.commands.registerCommand('templates.apply', async (templateId: string) => {
@@ -105,7 +108,7 @@ export async function activate(context: IPluginContext): Promise<void> {
     }
 
     const result = applyTemplate(template);
-    console.log(`📋 [DAG Templates] Applied template: ${template.name}`);
+    // console.log(`📋 [DAG Templates] Applied template: ${template.name}`);
 
     // Emit event
     await context.hooks.doAction('template.applied', {
@@ -117,10 +120,10 @@ export async function activate(context: IPluginContext): Promise<void> {
     return result;
   });
 
-  const templateCount = getAllTemplates().length;
-  console.log(`📋 [DAG Templates] ${templateCount} templates disponibles`);
+  // const templateCount = getAllTemplates().length;
+  // console.log(`📋 [DAG Templates] ${templateCount} templates disponibles`);
 }
 
 export async function deactivate(): Promise<void> {
-  console.log('📋 [DAG Templates] Plugin désactivé');
+  // console.log('📋 [DAG Templates] Plugin désactivé');
 }

@@ -14,7 +14,7 @@ export const manifest: PluginManifest = {
   id: 'com.bigmind.export-manager',
   name: 'Export Manager',
   version: '1.0.0',
-  description: 'Gère l\'export des cartes mentales dans différents formats (XMind, etc.)',
+  description: "Gère l'export des cartes mentales dans différents formats (XMind, etc.)",
   author: {
     name: 'BigMind Team',
     email: 'team@bigmind.com',
@@ -35,7 +35,7 @@ export const manifest: PluginManifest = {
     },
     {
       label: 'Préservation des données',
-      description: 'Tous les overlays (notes, styles, tags) sont préservés lors de l\'export',
+      description: "Tous les overlays (notes, styles, tags) sont préservés lors de l'export",
       icon: '💾',
     },
     {
@@ -57,7 +57,7 @@ export const manifest: PluginManifest = {
         },
         {
           type: 'added',
-          description: 'Intégration du sidecar bigmind.json dans l\'archive',
+          description: "Intégration du sidecar bigmind.json dans l'archive",
         },
         {
           type: 'added',
@@ -85,7 +85,7 @@ export const manifest: PluginManifest = {
 };
 
 export async function activate(context: IPluginContext): Promise<void> {
-  console.log('📤 [Export Manager] Plugin activé');
+  // console.log('📤 [Export Manager] Plugin activé');
 
   // Register XMind export command
   context.commands.registerCommand('export.xmind', async () => {
@@ -151,7 +151,7 @@ export async function activate(context: IPluginContext): Promise<void> {
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 0);
 
-      console.log('📤 [Export Manager] Export XMind réussi');
+      // console.log('📤 [Export Manager] Export XMind réussi');
 
       // Emit success event
       await context.hooks.doAction('export.completed', {
@@ -171,9 +171,9 @@ export async function activate(context: IPluginContext): Promise<void> {
     }
   });
 
-  console.log('📤 [Export Manager] Commande export.xmind enregistrée');
+  // console.log('📤 [Export Manager] Commande export.xmind enregistrée');
 }
 
 export async function deactivate(): Promise<void> {
-  console.log('📤 [Export Manager] Plugin désactivé');
+  // console.log('📤 [Export Manager] Plugin désactivé');
 }

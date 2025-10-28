@@ -30,14 +30,18 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
  * EN: Apply XMind colors to nodes based on theme
  */
 function applyXMindColors(content: any, xmindTheme: any) {
-  if (!xmindTheme?.map?.properties?.['color-list']) {
+  // FR: Essayer d'abord "multi-line-colors" (couleurs vives), sinon "color-list"
+  // EN: Try "multi-line-colors" first (vivid colors), otherwise "color-list"
+  const colorPalette =
+    xmindTheme?.map?.properties?.['multi-line-colors'] ||
+    xmindTheme?.map?.properties?.['color-list'];
+
+  if (!colorPalette) {
     return;
   }
 
   // Extraire la palette de couleurs
-  const palette = xmindTheme.map.properties['color-list']
-    .split(/\s+/)
-    .filter((c: string) => c.startsWith('#'));
+  const palette = colorPalette.split(/\s+/).filter((c: string) => c.startsWith('#'));
 
   if (palette.length === 0) {
     return;
@@ -60,19 +64,49 @@ function applyXMindColors(content: any, xmindTheme: any) {
     }
   }
 
-  // Fonction récursive pour appliquer la couleur à toute une branche
-  function applyColorToBranch(nodes: Record<string, any>, nodeId: string, color: string) {
+  // FR: Fonction pour éclaircir une couleur hex
+  // EN: Function to lighten a hex color
+  function lightenColor(hex: string, percent: number): string {
+    try {
+      const num = parseInt(hex.replace('#', ''), 16);
+      /* eslint-disable no-bitwise */
+      const r = (num >> 16) + Math.round(((255 - (num >> 16)) * percent) / 100);
+      const g = ((num >> 8) & 0x00ff) + Math.round(((255 - ((num >> 8) & 0x00ff)) * percent) / 100);
+      const b = (num & 0x0000ff) + Math.round(((255 - (num & 0x0000ff)) * percent) / 100);
+      return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+      /* eslint-enable no-bitwise */
+    } catch {
+      return hex;
+    }
+  }
+
+  // Fonction récursive pour appliquer la couleur à toute une branche avec variation
+  function applyColorToBranch(
+    nodes: Record<string, any>,
+    nodeId: string,
+    baseColor: string,
+    level: number = 0
+  ) {
     const node = nodes[nodeId];
     if (!node) return;
+
+    // FR: Calculer la couleur en fonction du niveau
+    // EN: Calculate color based on level
+    // Niveau 0 (enfant direct de racine) : couleur de base
+    // Niveau 1 : éclaircir de 35%
+    // Niveau 2+ : éclaircir de 50% (fixe)
+    // eslint-disable-next-line no-nested-ternary
+    const lightenPercent = level === 0 ? 0 : level === 1 ? 35 : 50;
+    const color = level === 0 ? baseColor : lightenColor(baseColor, lightenPercent);
 
     node.style = node.style || {};
     node.style.backgroundColor = color;
     node.style.textColor = getOptimalTextColor(color);
 
-    // Appliquer récursivement à tous les descendants
+    // Appliquer récursivement à tous les descendants avec niveau incrémenté
     if (node.children) {
       node.children.forEach((childId: string) => {
-        applyColorToBranch(nodes, childId, color);
+        applyColorToBranch(nodes, childId, baseColor, level + 1);
       });
     }
   }
@@ -86,7 +120,8 @@ function applyXMindColors(content: any, xmindTheme: any) {
   }
 
   // Appliquer les couleurs aux enfants directs de la racine (main topics)
-  // Chaque branche principale obtient une couleur de la palette
+  // FR: XMind applique les couleurs dans l'ordre du tableau JSON
+  // EN: XMind applies colors in JSON array order
   if (rootNode?.children) {
     rootNode.children.forEach((childId: string, index: number) => {
       const branchColor = palette[index % palette.length];
@@ -188,7 +223,7 @@ export const useFileOperations = () => {
             xmindOriginalData.metadata = JSON.parse(metadataText);
           }
         } catch (e) {
-          console.warn("[XMind] Erreur lors de l'extraction des métadonnées:", e);
+          // console.warn("[XMind] Erreur lors de l'extraction des métadonnées:", e);
         }
 
         // FR: Essayer d'abord le parser standard
@@ -204,6 +239,14 @@ export const useFileOperations = () => {
           // FR: Appliquer les couleurs XMind si disponibles
           // EN: Apply XMind colors if available
           if (xmindOriginalData.theme) {
+            // Debug: afficher l'ordre des enfants
+            // const rootNode = adaptedContent.nodes[adaptedContent.rootNode.id];
+            // console.log('[XMind] Ordre des branches principales:');
+            // rootNode?.children?.forEach((childId: string, index: number) => {
+            //   const child = adaptedContent.nodes[childId];
+            //   console.log(`  ${index}: ${child?.title}`);
+            // });
+
             applyXMindColors(adaptedContent, xmindOriginalData.theme);
           }
 
@@ -250,10 +293,10 @@ export const useFileOperations = () => {
                 tagNodes: loadedTags.tagNodes || {},
                 hiddenTags: loadedTags.hiddenTags || [],
               });
-              const tagCount = Object.keys(loadedTags.tags || {}).length;
-              const assocCount = Object.keys(loadedTags.nodeTags || {}).length;
+              // const tagCount = Object.keys(loadedTags.tags || {}).length;
+              // const assocCount = Object.keys(loadedTags.nodeTags || {}).length;
               // eslint-disable-next-line no-console
-              console.log(`[FileOps] Chargé ${tagCount} tags et ${assocCount} associations`);
+              // console.log(`[FileOps] Chargé ${tagCount} tags et ${assocCount} associations`);
             } catch (err) {
               console.error('[FileOps] Erreur lors du chargement des tags:', err);
             }
@@ -261,9 +304,9 @@ export const useFileOperations = () => {
 
           return fileId;
         } catch (standardError) {
-          const stdMsg =
-            standardError instanceof Error ? standardError.message : String(standardError);
-          console.warn('Parser standard échoué, tentative avec le parser simple:', stdMsg);
+          // const stdMsg =
+          //   standardError instanceof Error ? standardError.message : String(standardError);
+          // console.warn('Parser standard échoué, tentative avec le parser simple:', stdMsg);
 
           // FR: Essayer le parser de fallback
           // EN: Try fallback parser
@@ -277,6 +320,14 @@ export const useFileOperations = () => {
           // FR: Appliquer les couleurs XMind si disponibles
           // EN: Apply XMind colors if available
           if (xmindOriginalData.theme) {
+            // Debug: afficher l'ordre des enfants
+            // const rootNode = adaptedContent.nodes[adaptedContent.rootNode.id];
+            // console.log('[XMind] Ordre des branches principales:');
+            // rootNode?.children?.forEach((childId: string, index: number) => {
+            //   const child = adaptedContent.nodes[childId];
+            //   console.log(`  ${index}: ${child?.title}`);
+            // });
+
             applyXMindColors(adaptedContent, xmindOriginalData.theme);
           }
 
@@ -317,9 +368,9 @@ export const useFileOperations = () => {
                 tagNodes: loadedTagsFallback.tagNodes || {},
                 hiddenTags: loadedTagsFallback.hiddenTags || [],
               });
-              const fbTagCount = Object.keys(loadedTagsFallback.tags || {}).length;
+              // const fbTagCount = Object.keys(loadedTagsFallback.tags || {}).length;
               // eslint-disable-next-line no-console
-              console.log(`[FileOps] Chargé ${fbTagCount} tags (fallback)`);
+              // console.log(`[FileOps] Chargé ${fbTagCount} tags (fallback)`);
             } catch (err) {
               console.error('[FileOps] Erreur lors du chargement des tags (fallback):', err);
             }

@@ -26,24 +26,24 @@ export class ExamplePlugin implements Plugin {
 
   async activate(context: PluginContext): Promise<void> {
     this.context = context;
-    console.log('✅ Example Plugin activated!');
+    // console.log('✅ Example Plugin activated!');
 
     // Register an action hook listener
-    context.hooks.registerAction('mindmap.nodeCreated', async data => {
-      console.log('🎉 New node created:', data);
+    context.hooks.registerAction('mindmap.nodeCreated', async _data => {
+      // console.log('🎉 New node created:', _data);
     });
 
     // Example: Get active mindmap (requires mindmap:read permission)
-    try {
-      const mindmap = await context.api.mindmap.getActive();
-      console.log('📊 Active mindmap:', mindmap?.title || 'None');
-    } catch (error) {
-      console.error('❌ Failed to get active mindmap:', error);
-    }
+    // try {
+    //   const mindmap = await context.api.mindmap.getActive();
+    //   console.log('📊 Active mindmap:', mindmap?.title || 'None');
+    // } catch (error) {
+    //   console.error('❌ Failed to get active mindmap:', error);
+    // }
   }
 
   async deactivate(): Promise<void> {
-    console.log('🛑 Example Plugin deactivated');
+    // console.log('🛑 Example Plugin deactivated');
     this.context = null;
   }
 }

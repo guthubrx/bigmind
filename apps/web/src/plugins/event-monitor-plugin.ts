@@ -16,7 +16,9 @@ export interface EventLogEntry {
 
 class EventMonitorStore {
   private events: EventLogEntry[] = [];
+
   private maxEvents = 1000;
+
   private listeners: Set<(events: EventLogEntry[]) => void> = new Set();
 
   addEvent(type: string, category: string, data: any) {
@@ -82,11 +84,11 @@ export const manifest: PluginManifest = {
 
 // Plugin initialization
 export async function activate(context: IPluginContext): Promise<void> {
-  console.log('🔍 [Event Monitor] Plugin activé');
+  // console.log('🔍 [Event Monitor] Plugin activé');
 
   // Note: UI is directly integrated in Settings.tsx for now
   // Future: use context.ui.registerPanel() when UI registry is fully implemented
-  console.log('🔍 [Event Monitor] Interface UI disponible dans Settings > Plugins > Panels');
+  // console.log('🔍 [Event Monitor] Interface UI disponible dans Settings > Plugins > Panels');
 
   // Register actions for all event categories
   const eventCategories = [
@@ -133,12 +135,12 @@ export async function activate(context: IPluginContext): Promise<void> {
     });
   });
 
-  console.log(
-    `🔍 [Event Monitor] Surveillance de ${eventCategories.length} types d'événements`
-  );
+  // console.log(
+  //   `🔍 [Event Monitor] Surveillance de ${eventCategories.length} types d'événements`
+  // );
 }
 
 export async function deactivate(): Promise<void> {
-  console.log('🔍 [Event Monitor] Plugin désactivé');
+  // console.log('🔍 [Event Monitor] Plugin désactivé');
   eventMonitorStore.clear();
 }

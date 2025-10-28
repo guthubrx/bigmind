@@ -165,7 +165,7 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
           .writeText(file.path)
           .then(() => {
             // eslint-disable-next-line no-console
-            console.log('📋 Path copied to clipboard:', file.path);
+            // console.log('📋 Path copied to clipboard:', file.path);
             // TODO: Afficher un toast de succès
           })
           .catch(err => {

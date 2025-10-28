@@ -99,7 +99,7 @@ export function useDragAndDrop({
   // EN: Handle node drag start
   const onNodeDragStart = useCallback(
     (event: React.MouseEvent, node: Node) => {
-      console.log('🚀 onNodeDragStart triggered for node:', node.id);
+      // console.log('🚀 onNodeDragStart triggered for node:', node.id);
       setDraggedNodeId(node.id);
 
       // FR: Vérifier si le nœud draggé est dans la sélection pour drag multi-sélection
@@ -108,7 +108,7 @@ export function useDragAndDrop({
       const nodesToDrag = isNodeInSelection ? selectedNodeIds : [node.id];
       setDraggedNodeIds(nodesToDrag);
 
-      console.log('📦 Nodes being dragged:', nodesToDrag, 'Multi-select:', isNodeInSelection);
+      // console.log('📦 Nodes being dragged:', nodesToDrag, 'Multi-select:', isNodeInSelection);
 
       // FR: Sauvegarder les positions originales de tous les nœuds draggés
       // EN: Save original positions of all dragged nodes
@@ -126,7 +126,7 @@ export function useDragAndDrop({
       // EN: Calculate descendants of dragged node for transparency effect
       const descendants = getAllDescendants(node.id, activeFile.content.nodes);
       setDraggedDescendants(descendants);
-      console.log('👥 Dragged node descendants:', descendants);
+      // console.log('👥 Dragged node descendants:', descendants);
 
       // FR: Créer le nœud fantôme à la position d'origine
       // EN: Create ghost node at original position
@@ -140,7 +140,7 @@ export function useDragAndDrop({
         },
       };
       setGhostNode(ghost);
-      console.log('👻 Ghost node created:', ghost.id);
+      // console.log('👻 Ghost node created:', ghost.id);
     },
     [activeFile?.content?.nodes, selectedNodeIds]
   );
@@ -149,12 +149,12 @@ export function useDragAndDrop({
   // EN: Handle node drag to show visual indicator
   const onNodeDrag = useCallback(
     (event: React.MouseEvent, node: Node) => {
-      console.log('🖱️ onNodeDrag triggered for node:', node.id, 'mode:', dragMode);
+      // console.log('🖱️ onNodeDrag triggered for node:', node.id, 'mode:', dragMode);
 
       // FR: Utiliser React Flow pour trouver la position de la souris
       // EN: Use React Flow to find mouse position
       if (!instanceRef.current) {
-        console.log('❌ React Flow instance not available');
+        // console.log('❌ React Flow instance not available');
         setDragTarget(null);
         return;
       }
@@ -166,7 +166,7 @@ export function useDragAndDrop({
         y: event.clientY,
       });
 
-      console.log('📍 Mouse position in flow:', position);
+      // console.log('📍 Mouse position in flow:', position);
 
       if (dragMode === 'free') {
         // FR: Mode déplacement libre - pas de cible de reparenting
@@ -215,7 +215,7 @@ export function useDragAndDrop({
       });
 
       if (!closestNode) {
-        console.log('❌ No target node found under cursor');
+        // console.log('❌ No target node found under cursor');
         setDragTarget(null);
         setDropPosition(null);
         setIsSiblingReorder(false);
@@ -224,7 +224,7 @@ export function useDragAndDrop({
 
       // TypeScript assertion: closestNode is not null at this point
       const targetNode = closestNode as Node;
-      console.log('🎯 Found target node:', targetNode.id, 'current node:', node.id);
+      // console.log('🎯 Found target node:', targetNode.id, 'current node:', node.id);
 
       // FR: Valider que la cible est valide (pas de cycle)
       // EN: Validate that target is valid (no cycle)
@@ -234,7 +234,7 @@ export function useDragAndDrop({
       setIsValidTarget(isValid || false);
 
       if (!isValid) {
-        console.log('⚠️ Invalid target: would create cycle');
+        // console.log('⚠️ Invalid target: would create cycle');
         setDropPosition(null);
         setIsSiblingReorder(false);
         return;
@@ -267,26 +267,26 @@ export function useDragAndDrop({
             // EN: Top zone (top 25%) - reorder before
             setIsSiblingReorder(true);
             setDropPosition('before');
-            console.log('📍 Drop position: BEFORE (top zone - sibling reorder)');
+            // console.log('📍 Drop position: BEFORE (top zone - sibling reorder)');
           } else if (position.y > bottomZoneStart) {
             // FR: Zone basse (25% inférieur) - réordonnancement après
             // EN: Bottom zone (bottom 25%) - reorder after
             setIsSiblingReorder(true);
             setDropPosition('after');
-            console.log('📍 Drop position: AFTER (bottom zone - sibling reorder)');
+            // console.log('📍 Drop position: AFTER (bottom zone - sibling reorder)');
           } else {
             // FR: Zone centrale (50% au milieu) - reparenting (devient enfant)
             // EN: Center zone (middle 50%) - reparenting (becomes child)
             setIsSiblingReorder(false);
             setDropPosition('center');
-            console.log('📍 Drop position: CENTER (middle zone - reparenting sibling as child)');
+            // console.log('📍 Drop position: CENTER (middle zone - reparenting sibling as child)');
           }
         } else {
           // FR: Pas un sibling - reparenting normal
           // EN: Not a sibling - normal reparenting
           setIsSiblingReorder(false);
           setDropPosition('center');
-          console.log('📍 Drop position: CENTER (reparenting)');
+          // console.log('📍 Drop position: CENTER (reparenting)');
         }
       }
     },
@@ -298,11 +298,11 @@ export function useDragAndDrop({
   const onNodeDragStop = useCallback(
     (event: React.MouseEvent, node: Node) => {
       // resetStates est appelé à la fin de la fonction
-      console.log('🛑 onNodeDragStop triggered for node:', node.id);
+      // console.log('🛑 onNodeDragStop triggered for node:', node.id);
       const active = activeFile;
 
       if (!active || !active.content?.nodes) {
-        console.log('❌ No active file');
+        // console.log('❌ No active file');
         resetStates();
         return;
       }
@@ -319,7 +319,7 @@ export function useDragAndDrop({
         });
 
         if (!position) {
-          console.log('❌ Could not get new position');
+          // console.log('❌ Could not get new position');
           resetStates();
           return;
         }
@@ -328,7 +328,7 @@ export function useDragAndDrop({
         // EN: Calculate offset from original position
         const originalNode = active.content.nodes[node.id];
         if (!originalNode) {
-          console.log('❌ Original node not found');
+          // console.log('❌ Original node not found');
           resetStates();
           return;
         }
@@ -338,8 +338,8 @@ export function useDragAndDrop({
           y: position.y - (originalNode.y || 0),
         };
 
-        console.log('📍 New position:', position, 'Offset:', offset);
-        console.log('📦 Moving', draggedNodeIds.length, 'nodes');
+        // console.log('📍 New position:', position, 'Offset:', offset);
+        // console.log('📦 Moving', draggedNodeIds.length, 'nodes');
 
         // FR: Gérer le drag multi-sélection
         // EN: Handle multi-select drag
@@ -365,13 +365,13 @@ export function useDragAndDrop({
           newContent = command.execute(active.content);
         }
 
-        const allNodesToMove = [node.id, ...getAllDescendants(node.id, active.content.nodes)];
-        console.log('📝 Nodes moved', {
-          nodeId: node.id,
-          newPosition: position,
-          movedNodes: allNodesToMove.length,
-          selectedNodesMoved: draggedNodeIds.length,
-        });
+        // const allNodesToMove = [node.id, ...getAllDescendants(node.id, active.content.nodes)];
+        // console.log('📝 Nodes moved', {
+        //   nodeId: node.id,
+        //   newPosition: position,
+        //   movedNodes: allNodesToMove.length,
+        //   selectedNodesMoved: draggedNodeIds.length,
+        // });
 
         // FR: Mettre à jour l'état
         // EN: Update state
@@ -379,13 +379,13 @@ export function useDragAndDrop({
           openFiles: state.openFiles.map(f => (f.isActive ? { ...f, content: newContent } : f)),
         }));
 
-        console.log('✅ Nœud et arborescence déplacés avec succès');
+        // console.log('✅ Nœud et arborescence déplacés avec succès');
         setLastDropSuccess(true);
       } else if (dragMode === 'reparent' && dragTarget) {
         // FR: Mode reparenting - rattacher le nœud OU réordonner les siblings
         // EN: Reparenting mode - reattach node OR reorder siblings
         if (!isValidTarget) {
-          console.log('❌ Invalid reparent: would create cycle');
+          // console.log('❌ Invalid reparent: would create cycle');
           setLastDropSuccess(false);
           resetStates();
           return;
@@ -405,7 +405,7 @@ export function useDragAndDrop({
         ) {
           // FR: C'est un sibling ET on veut réordonner (zone haute/basse)
           // EN: It's a sibling AND we want to reorder (top/bottom zone)
-          console.log(`🔄 Réordonnancement de siblings: ${node.id} ↔ ${dragTarget}`);
+          // console.log(`🔄 Réordonnancement de siblings: ${node.id} ↔ ${dragTarget}`);
 
           // FR: Déterminer si on insère avant ou après basé sur la position Y
           // EN: Determine if we insert before or after based on Y position
@@ -424,11 +424,11 @@ export function useDragAndDrop({
           const currentMap = active.content as any;
           const newMap = command.execute(currentMap);
 
-          console.log('📝 Command executed: ReorderSibling', {
-            nodeId: node.id,
-            targetId: dragTarget,
-            insertBefore,
-          });
+          // console.log('📝 Command executed: ReorderSibling', {
+          //   nodeId: node.id,
+          //   targetId: dragTarget,
+          //   insertBefore,
+          // });
 
           // FR: Mettre à jour l'état
           // EN: Update state
@@ -436,20 +436,20 @@ export function useDragAndDrop({
             openFiles: state.openFiles.map(f => (f.isActive ? { ...f, content: newMap } : f)),
           }));
 
-          console.log('✅ Siblings réordonnés avec succès');
+          // console.log('✅ Siblings réordonnés avec succès');
         } else {
           // FR: Pas un sibling - reparenter normalement
           // EN: Not a sibling - reparent normally
-          console.log(`🔄 Rattachement: ${node.id} → ${dragTarget}`);
+          // console.log(`🔄 Rattachement: ${node.id} → ${dragTarget}`);
 
           const command = new ReparentNodeCommand(node.id, dragTarget);
           const currentMap = active.content as any;
           const newMap = command.execute(currentMap);
 
-          console.log('📝 Command executed: ReparentNode', {
-            nodeId: node.id,
-            newParentId: dragTarget,
-          });
+          // console.log('📝 Command executed: ReparentNode', {
+          //   nodeId: node.id,
+          //   newParentId: dragTarget,
+          // });
 
           // FR: Mettre à jour l'état
           // EN: Update state
@@ -457,12 +457,12 @@ export function useDragAndDrop({
             openFiles: state.openFiles.map(f => (f.isActive ? { ...f, content: newMap } : f)),
           }));
 
-          console.log('✅ Nœud rattaché avec succès');
+          // console.log('✅ Nœud rattaché avec succès');
         }
 
         setLastDropSuccess(true);
       } else {
-        console.log('❌ No drag target in reparent mode, resetting states');
+        // console.log('❌ No drag target in reparent mode, resetting states');
         setLastDropSuccess(false);
       }
 

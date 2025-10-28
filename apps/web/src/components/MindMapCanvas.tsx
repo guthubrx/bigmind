@@ -279,10 +279,31 @@ function MindMapCanvas() {
         }
         positionSubtree(childNode, level + 1, childDirection, base);
       } else if (level === 0) {
-        // FR: Au niveau racine: répartition alternée droite/gauche, chaque côté conserve l'ordre vertical et sa propre bande
+        // FR: Au niveau racine: utiliser les positions XMind si disponibles, sinon répartition par défaut
+        // EN: At root level: use XMind positions if available, otherwise default distribution
         const rightIds: string[] = [];
         const leftIds: string[] = [];
-        childIds.forEach((id, idx) => (idx % 2 === 0 ? rightIds : leftIds).push(id));
+
+        childIds.forEach((id, idx) => {
+          const childNode = activeFile.content.nodes[id];
+          const xmindPos = (childNode as any)?.xmindPosition;
+
+          // FR: Si position XMind disponible, utiliser x pour déterminer le côté
+          // EN: If XMind position available, use x to determine side
+          if (xmindPos && typeof xmindPos.x === 'number') {
+            if (xmindPos.x >= 0) {
+              rightIds.push(id);
+            } else {
+              leftIds.push(id);
+            }
+          } else if (idx < Math.ceil(childIds.length / 2)) {
+            // FR: Fallback: première moitié à droite, deuxième moitié à gauche
+            // EN: Fallback: first half on right, second half on left
+            rightIds.push(id);
+          } else {
+            leftIds.push(id);
+          }
+        });
 
         // FR: Injecter les compteurs gauche/droite sur la racine
         const rootIndex = nodes.findIndex(n => n.id === node.id);
@@ -310,15 +331,18 @@ function MindMapCanvas() {
         });
 
         // Gauche
+        // FR: Inverser l'ordre pour correspondre à XMind (de bas en haut dans le tableau)
+        // EN: Reverse order to match XMind (bottom to top in array)
+        const leftIdsReversed = [...leftIds].reverse();
         let offsetLeft =
           nodeCenterY -
-          (leftIds.reduce(
+          (leftIdsReversed.reduce(
             (acc, id) => acc + (subtreeHeightById[id] || LINE_HEIGHT + NODE_VPAD),
             0
           ) +
-            SIBLING_GAP * Math.max(0, leftIds.length - 1)) /
+            SIBLING_GAP * Math.max(0, leftIdsReversed.length - 1)) /
             2;
-        leftIds.forEach(childId => {
+        leftIdsReversed.forEach(childId => {
           const ch = subtreeHeightById[childId] || LINE_HEIGHT + NODE_VPAD;
           positionSubtree(activeFile.content.nodes[childId], level + 1, -1, offsetLeft);
           offsetLeft += ch + SIBLING_GAP;
@@ -397,47 +421,85 @@ function MindMapCanvas() {
 
     // FR: Fonction récursive pour créer les connexions en respectant la direction (gauche/droite)
     // EN: Recursive function to create connections respecting direction (left/right)
-    const createConnections = (node: any, level: number, direction: number): void => {
+    const createConnections = (
+      node: any,
+      level: number,
+      direction: number,
+      branchColor?: string
+    ): void => {
       if (node.collapsed || !node.children || node.children.length === 0) return;
 
       const childIds: string[] = node.children;
 
       if (level === 0) {
-        // FR: Même partition qu'au layout: alternance droite/gauche
+        // FR: Même partition qu'au layout: utiliser positions XMind ou fallback
+        // EN: Same partition as layout: use XMind positions or fallback
         const rightIds: string[] = [];
         const leftIds: string[] = [];
-        childIds.forEach((id, idx) => (idx % 2 === 0 ? rightIds : leftIds).push(id));
+
+        childIds.forEach((id, idx) => {
+          const childNode = activeFile.content.nodes[id];
+          const xmindPos = (childNode as any)?.xmindPosition;
+
+          // FR: Si position XMind disponible, utiliser x pour déterminer le côté
+          // EN: If XMind position available, use x to determine side
+          if (xmindPos && typeof xmindPos.x === 'number') {
+            if (xmindPos.x >= 0) {
+              rightIds.push(id);
+            } else {
+              leftIds.push(id);
+            }
+          } else if (idx < Math.ceil(childIds.length / 2)) {
+            // FR: Fallback: première moitié à droite, deuxième moitié à gauche
+            // EN: Fallback: first half on right, second half on left
+            rightIds.push(id);
+          } else {
+            leftIds.push(id);
+          }
+        });
 
         rightIds.forEach(childId => {
+          const childNode = activeFile.content.nodes[childId];
+          const childColor = childNode?.style?.backgroundColor || '#dc2626';
+
           edges.push({
             id: `edge-${node.id}-${childId}`,
             source: node.id,
             target: childId,
             sourceHandle: 'right',
             type: 'smoothstep',
-            style: { stroke: '#dc2626', strokeWidth: 2 },
+            style: { stroke: childColor, strokeWidth: 2 },
             data: { isSelected: false, parentId: node.id, childId },
           });
-          const childNode = activeFile.content.nodes[childId];
-          if (childNode) createConnections(childNode, level + 1, +1);
+
+          if (childNode) createConnections(childNode, level + 1, +1, childColor);
         });
 
-        leftIds.forEach(childId => {
+        // FR: Inverser l'ordre pour correspondre à XMind (de bas en haut dans le tableau)
+        // EN: Reverse order to match XMind (bottom to top in array)
+        const leftIdsReversed = [...leftIds].reverse();
+        leftIdsReversed.forEach(childId => {
+          const childNode = activeFile.content.nodes[childId];
+          const childColor = childNode?.style?.backgroundColor || '#dc2626';
+
           edges.push({
             id: `edge-${node.id}-${childId}`,
             source: node.id,
             target: childId,
             sourceHandle: 'left',
             type: 'smoothstep',
-            style: { stroke: '#dc2626', strokeWidth: 2 },
+            style: { stroke: childColor, strokeWidth: 2 },
             data: { isSelected: false, parentId: node.id, childId },
           });
-          const childNode = activeFile.content.nodes[childId];
-          if (childNode) createConnections(childNode, level + 1, -1);
+
+          if (childNode) createConnections(childNode, level + 1, -1, childColor);
         });
       } else {
-        // FR: Aux niveaux > 0, conserver la direction du parent
+        // FR: Aux niveaux > 0, conserver la direction du parent et la couleur de branche
+        // EN: At levels > 0, keep parent direction and branch color
         const handleId = direction === -1 ? 'left' : 'right';
+        const edgeColor = branchColor || '#dc2626';
+
         childIds.forEach(childId => {
           edges.push({
             id: `edge-${node.id}-${childId}`,
@@ -445,11 +507,11 @@ function MindMapCanvas() {
             target: childId,
             sourceHandle: handleId,
             type: 'smoothstep',
-            style: { stroke: '#dc2626', strokeWidth: 2 },
+            style: { stroke: edgeColor, strokeWidth: 2 },
             data: { isSelected: false, parentId: node.id, childId },
           });
           const childNode = activeFile.content.nodes[childId];
-          if (childNode) createConnections(childNode, level + 1, direction);
+          if (childNode) createConnections(childNode, level + 1, direction, branchColor);
         });
       }
     };

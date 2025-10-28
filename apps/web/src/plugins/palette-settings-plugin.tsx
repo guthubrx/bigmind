@@ -6,7 +6,10 @@
 import React from 'react';
 import type { IPluginContext, PluginManifest } from '@bigmind/plugin-system';
 import { registerSettingsSection, unregisterSettingsSection } from '../utils/settingsRegistry';
-import { registerMapSettingsSection, unregisterMapSettingsSection } from '../utils/mapSettingsRegistry';
+import {
+  registerMapSettingsSection,
+  unregisterMapSettingsSection,
+} from '../utils/mapSettingsRegistry';
 import { getAllPalettes } from '../themes/colorPalettes';
 import PaletteSelector from '../components/PaletteSelector';
 import { useAppSettings } from '../hooks/useAppSettings';
@@ -16,7 +19,7 @@ import { useOpenFiles } from '../hooks/useOpenFiles';
  * FR: Composant de section Settings pour les palettes
  * EN: Settings section component for palettes
  */
-const PaletteSettingsSection: React.FC = () => {
+function PaletteSettingsSection() {
   const allPalettes = getAllPalettes();
   const defaultNodePaletteId = useAppSettings(s => s.defaultNodePaletteId);
   const setDefaultNodePalette = useAppSettings(s => s.setDefaultNodePalette);
@@ -63,7 +66,7 @@ const PaletteSettingsSection: React.FC = () => {
       </div>
     </>
   );
-};
+}
 
 /**
  * FR: Composant de section MapSettings pour les palettes (spécifiques à la carte)
@@ -73,7 +76,7 @@ interface PaletteMapSettingsSectionProps {
   activeFile: any;
 }
 
-const PaletteMapSettingsSection: React.FC<PaletteMapSettingsSectionProps> = ({ activeFile }) => {
+function PaletteMapSettingsSection({ activeFile }: PaletteMapSettingsSectionProps) {
   const allPalettes = getAllPalettes();
   const defaultNodePaletteId = useAppSettings(s => s.defaultNodePaletteId);
   const defaultTagPaletteId = useAppSettings(s => s.defaultTagPaletteId);
@@ -123,13 +126,11 @@ const PaletteMapSettingsSection: React.FC<PaletteMapSettingsSectionProps> = ({ a
           onChange={handleTagPaletteChange}
           aria-label="Palette des tags de cette carte"
         />
-        {!activeFile.content?.tagPaletteId && (
-          <span className="map-settings-hint">Par défaut</span>
-        )}
+        {!activeFile.content?.tagPaletteId && <span className="map-settings-hint">Par défaut</span>}
       </div>
     </div>
   );
-};
+}
 
 export const manifest: PluginManifest = {
   id: 'com.bigmind.palette-settings',
@@ -151,7 +152,7 @@ export const manifest: PluginManifest = {
   features: [
     {
       label: 'Injection UI dynamique',
-      description: 'Ajoute les sélecteurs de palette dans l\'onglet Apparence des paramètres',
+      description: "Ajoute les sélecteurs de palette dans l'onglet Apparence des paramètres",
       icon: '⚙️',
     },
     {
@@ -173,7 +174,7 @@ export const manifest: PluginManifest = {
         },
         {
           type: 'added',
-          description: 'Injection dynamique dans l\'onglet Apparence',
+          description: "Injection dynamique dans l'onglet Apparence",
         },
       ],
     },
@@ -196,8 +197,8 @@ export const manifest: PluginManifest = {
   permissions: [],
 };
 
-export async function activate(context: IPluginContext): Promise<void> {
-  console.log('🎨 [Palette Settings] Plugin activé');
+export async function activate(_context: IPluginContext): Promise<void> {
+  // console.log('🎨 [Palette Settings] Plugin activé');
 
   // Register Settings section (global defaults)
   registerSettingsSection({
@@ -216,15 +217,15 @@ export async function activate(context: IPluginContext): Promise<void> {
     component: PaletteMapSettingsSection,
   });
 
-  console.log('🎨 [Palette Settings] Sections injectées dans Settings et MapSettings');
+  // console.log('🎨 [Palette Settings] Sections injectées dans Settings et MapSettings');
 }
 
 export async function deactivate(): Promise<void> {
-  console.log('🎨 [Palette Settings] Plugin désactivé');
+  // console.log('🎨 [Palette Settings] Plugin désactivé');
 
   // Unregister settings sections
   unregisterSettingsSection('palette-settings-section');
   unregisterMapSettingsSection('palette-map-settings-section');
 
-  console.log('🎨 [Palette Settings] Sections retirées de Settings et MapSettings');
+  // console.log('🎨 [Palette Settings] Sections retirées de Settings et MapSettings');
 }

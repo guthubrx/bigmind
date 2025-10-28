@@ -208,7 +208,7 @@ function TagTreeNode({
     e.stopPropagation();
     e.dataTransfer.dropEffect = 'link';
     // eslint-disable-next-line no-console
-    console.log(`[TagLayersPanel] 📍 DRAG OVER: ${tag.label}`);
+    // console.log(`[TagLayersPanel] 📍 DRAG OVER: ${tag.label}`);
     setDragOverTagId(tag.id);
   };
 
@@ -221,13 +221,13 @@ function TagTreeNode({
     e.preventDefault();
     e.stopPropagation();
     // eslint-disable-next-line no-console
-    console.log(`[TagLayersPanel] 💧 DROP sur: ${tag.label}`);
+    // console.log(`[TagLayersPanel] 💧 DROP sur: ${tag.label}`);
     setDragOverTagId(null);
 
     try {
       const data = e.dataTransfer.getData('application/json');
       // eslint-disable-next-line no-console
-      console.log('[TagLayersPanel] Données récupérées:', data);
+      // console.log('[TagLayersPanel] Données récupérées:', data);
 
       if (!data) {
         // eslint-disable-next-line no-console
@@ -237,20 +237,20 @@ function TagTreeNode({
 
       const draggedData = JSON.parse(data);
       // eslint-disable-next-line no-console
-      console.log('[TagLayersPanel] Données parsées:', draggedData);
+      // console.log('[TagLayersPanel] Données parsées:', draggedData);
 
       if (draggedData.type === 'tag' && draggedData.tagId && draggedData.tagId !== tag.id) {
         // eslint-disable-next-line no-console
-        console.log(`[TagLayersPanel] ✅ Drag-drop valide: ${draggedData.tagLabel} → ${tag.label}`);
+        // console.log(`[TagLayersPanel] ✅ Drag-drop valide: ${draggedData.tagLabel} → ${tag.label}`);
         // eslint-disable-next-line no-console
-        console.log(`[TagLayersPanel] Making ${draggedData.tagId} a child of ${tag.id}`);
+        // console.log(`[TagLayersPanel] Making ${draggedData.tagId} a child of ${tag.id}`);
 
         // FR: Drop normal → Le tag devient fils (IS_TYPE_OF par défaut)
         // EN: Regular drop → Tag becomes child (IS_TYPE_OF by default)
         addParent(draggedData.tagId, tag.id);
 
         // eslint-disable-next-line no-console
-        console.log('[TagLayersPanel] addParent called successfully');
+        // console.log('[TagLayersPanel] addParent called successfully');
       } else {
         // eslint-disable-next-line no-console
         console.warn('[TagLayersPanel] Drop ignoré:', draggedData);
@@ -295,18 +295,18 @@ function TagTreeNode({
           onDragStart={e => {
             e.stopPropagation();
             // eslint-disable-next-line no-console
-            console.log(`[TagLayersPanel] 🎯 DRAG START: ${tag.label} (${tag.id})`);
+            // console.log(`[TagLayersPanel] 🎯 DRAG START: ${tag.label} (${tag.id})`);
             e.dataTransfer.effectAllowed = 'link';
             e.dataTransfer.setData(
               'application/json',
               JSON.stringify({ type: 'tag', tagId: tag.id, tagLabel: tag.label })
             );
             // eslint-disable-next-line no-console
-            console.log('[TagLayersPanel] ✅ Données drag set');
+            // console.log('[TagLayersPanel] ✅ Données drag set');
           }}
           onDragEnd={() => {
             // eslint-disable-next-line no-console
-            console.log(`[TagLayersPanel] 🏁 DRAG END: ${tag.label}`);
+            // console.log(`[TagLayersPanel] 🏁 DRAG END: ${tag.label}`);
           }}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}

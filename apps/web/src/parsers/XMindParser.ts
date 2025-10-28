@@ -14,6 +14,7 @@ export interface XMindNode {
     backgroundColor?: string;
     fontSize?: number;
   };
+  position?: { x: number; y: number } | null;
 }
 
 export interface XMindMap {
@@ -220,6 +221,7 @@ export class XMindParser {
       title,
       children: children.length > 0 ? children : undefined,
       style: topicData.style,
+      position: topicData.position, // Préserver la position XMind
     };
   }
 
@@ -428,6 +430,9 @@ export class XMindParser {
         parentId,
         children: [] as string[],
         style: node.style,
+        // FR: Préserver la position XMind pour calculer le côté (left/right)
+        // EN: Preserve XMind position to calculate side (left/right)
+        xmindPosition: node.position,
       };
 
       nodes[node.id] = bigMindNode;

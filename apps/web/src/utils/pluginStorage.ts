@@ -115,9 +115,9 @@ export class PluginStorage implements IPluginStorage {
     // Check for migration needs
     const storedVersion = pluginData._meta.schemaVersion; // eslint-disable-line no-underscore-dangle
     if (storedVersion !== this.schemaVersion) {
-      const msg = `[PluginStorage] Schema version mismatch for ${this.pluginId}`;
+      // const msg = `[PluginStorage] Schema version mismatch for ${this.pluginId}`;
       // eslint-disable-next-line no-console
-      console.log(`${msg}: stored=${storedVersion}, current=${this.schemaVersion}`);
+      // console.log(`${msg}: stored=${storedVersion}, current=${this.schemaVersion}`);
 
       // Attempt automatic migration
       await this.performMigration(storedVersion, this.schemaVersion);
@@ -265,10 +265,10 @@ export class PluginStorage implements IPluginStorage {
 
     if (result.success) {
       // eslint-disable-next-line no-console
-      console.log(
-        `[PluginStorage] Migration successful for ${this.pluginId}:`,
-        result.migrationHistory
-      );
+      // console.log(
+      //   `[PluginStorage] Migration successful for ${this.pluginId}:`,
+      //   result.migrationHistory
+      // );
 
       // Update plugin data with migrated data
       pluginData.data = result.data;

@@ -212,12 +212,12 @@ export const useTagStore = create<TagStoreState>((set, get) => ({
         : [...(parent.children || []), tagId];
 
       // eslint-disable-next-line no-console
-      console.log(
-        `[addParent] ${tag.label} → ${parent.label}, parent.children avant:`,
-        parent.children,
-        'après:',
-        updatedChildren
-      );
+      // console.log(
+      //   `[addParent] ${tag.label} → ${parent.label}, parent.children avant:`,
+      //   parent.children,
+      //   'après:',
+      //   updatedChildren
+      // );
 
       // FR: Si le tag était root, le retirer de rootOrder
       // EN: If tag was root, remove it from rootOrder
@@ -290,7 +290,7 @@ export const useTagStore = create<TagStoreState>((set, get) => ({
         const oldIndex = state.rootOrder.indexOf(childId);
         if (oldIndex === -1) {
           // eslint-disable-next-line no-console
-          console.log('[reorderChildren] Child not found in rootOrder');
+          // console.log('[reorderChildren] Child not found in rootOrder');
           return state;
         }
 
@@ -299,12 +299,12 @@ export const useTagStore = create<TagStoreState>((set, get) => ({
         newRootOrder.splice(newIndex, 0, childId); // Insérer à la nouvelle position
 
         // eslint-disable-next-line no-console
-        console.log(
-          `[reorderChildren] Root level: moving "${
-            state.tags[childId]?.label || childId
-          }" from index ${oldIndex} to ${newIndex}`,
-          newRootOrder
-        );
+        // console.log(
+        //   `[reorderChildren] Root level: moving "${
+        //     state.tags[childId]?.label || childId
+        //   }" from index ${oldIndex} to ${newIndex}`,
+        //   newRootOrder
+        // );
 
         return { rootOrder: newRootOrder };
       }
@@ -322,11 +322,11 @@ export const useTagStore = create<TagStoreState>((set, get) => ({
       newChildren.splice(newIndex, 0, childId); // Insérer à la nouvelle position
 
       // eslint-disable-next-line no-console
-      console.log(
-        `[reorderChildren] Parent "${parent.label}": ` +
-          `moving child from index ${oldIndex} to ${newIndex}`,
-        newChildren
-      );
+      // console.log(
+      //   `[reorderChildren] Parent "${parent.label}": ` +
+      //     `moving child from index ${oldIndex} to ${newIndex}`,
+      //   newChildren
+      // );
 
       return {
         tags: {

@@ -10,7 +10,8 @@ export const manifest: PluginManifest = {
   id: 'com.bigmind.theme-manager',
   name: 'Theme Manager',
   version: '1.0.0',
-  description: 'Gère les thèmes d\'interface Light et Dark pour personnaliser l\'apparence de BigMind',
+  description:
+    "Gère les thèmes d'interface Light et Dark pour personnaliser l'apparence de BigMind",
   author: {
     name: 'BigMind Team',
     email: 'team@bigmind.com',
@@ -36,7 +37,7 @@ export const manifest: PluginManifest = {
     },
     {
       label: 'Variables CSS globales',
-      description: 'Tous les composants s\'adaptent automatiquement au thème sélectionné',
+      description: "Tous les composants s'adaptent automatiquement au thème sélectionné",
       icon: '🎨',
     },
   ],
@@ -85,12 +86,10 @@ export const manifest: PluginManifest = {
 };
 
 export async function activate(context: IPluginContext): Promise<void> {
-  console.log('🌓 [Theme Manager] Plugin activé');
+  // console.log('🌓 [Theme Manager] Plugin activé');
 
   // Register command to list all themes
-  context.commands.registerCommand('themes.list', async () => {
-    return getAllInterfaceThemes();
-  });
+  context.commands.registerCommand('themes.list', async () => getAllInterfaceThemes());
 
   // Register command to get a specific theme
   context.commands.registerCommand('themes.get', async (themeId: string) => {
@@ -109,20 +108,20 @@ export async function activate(context: IPluginContext): Promise<void> {
     }
 
     applyThemeToDocument(theme);
-    console.log(`🌓 [Theme Manager] Theme "${theme.name}" applied`);
+    // console.log(`🌓 [Theme Manager] Theme "${theme.name}" applied`);
 
     return theme;
   });
 
   // Listen to theme changes
-  context.hooks.registerAction('theme.changed', async (data: any) => {
-    console.log(`🌓 [Theme Manager] Theme changed:`, data);
+  context.hooks.registerAction('theme.changed', async (_data: any) => {
+    // console.log(`🌓 [Theme Manager] Theme changed:`, _data);
   });
 
-  const themeCount = getAllInterfaceThemes().length;
-  console.log(`🌓 [Theme Manager] ${themeCount} thèmes disponibles`);
+  // const themeCount = getAllInterfaceThemes().length;
+  // console.log(`🌓 [Theme Manager] ${themeCount} thèmes disponibles`);
 }
 
 export async function deactivate(): Promise<void> {
-  console.log('🌓 [Theme Manager] Plugin désactivé');
+  // console.log('🌓 [Theme Manager] Plugin désactivé');
 }

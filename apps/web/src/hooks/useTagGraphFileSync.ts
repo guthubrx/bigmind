@@ -24,7 +24,7 @@ export function useTagGraphFileSync() {
     // EN: Clear tags when there's no active file
     if (!activeFileId) {
       // eslint-disable-next-line no-console
-      console.log('[TagGraphFileSync] Aucun fichier actif, vidage des tags');
+      // console.log('[TagGraphFileSync] Aucun fichier actif, vidage des tags');
       clear();
     }
   }, [activeFileId, clear]);

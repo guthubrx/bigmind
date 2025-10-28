@@ -82,60 +82,60 @@ export function saveActivatedPlugins(pluginIds: string[]): void {
 export async function initializePlugins(): Promise<void> {
   // Prevent double initialization (React strict mode)
   if (initialized) {
-    console.log('🔌 Plugin system already initialized, skipping');
+    // console.log('🔌 Plugin system already initialized, skipping');
     return;
   }
 
   initialized = true;
-  console.log('🔌 Initializing plugin system...');
+  // console.log('🔌 Initializing plugin system...');
 
   try {
     // Register XMind compatibility plugin first (highest priority)
     await registry.register(xmindCompatibilityPlugin);
-    console.log('✅ Registered: XMind Compatibility');
+    // console.log('✅ Registered: XMind Compatibility');
 
     // Register core plugins (migrated from core)
     await registry.register(dagTemplatesPlugin);
-    console.log('✅ Registered: DAG Templates Manager');
+    // console.log('✅ Registered: DAG Templates Manager');
 
     await registry.register(dagTemplatesCollectionPlugin);
-    console.log('✅ Registered: DAG Templates Collection');
+    // console.log('✅ Registered: DAG Templates Collection');
 
     await registry.register(exportManagerPlugin);
-    console.log('✅ Registered: Export Manager');
+    // console.log('✅ Registered: Export Manager');
 
     await registry.register(paletteManagerPlugin);
-    console.log('✅ Registered: Palette Manager');
+    // console.log('✅ Registered: Palette Manager');
 
     await registry.register(paletteSettingsPlugin);
-    console.log('✅ Registered: Palette Settings');
+    // console.log('✅ Registered: Palette Settings');
 
     await registry.register(colorPalettesCollectionPlugin);
-    console.log('✅ Registered: Color Palettes Collection');
+    // console.log('✅ Registered: Color Palettes Collection');
 
     await registry.register(themeManagerPlugin);
-    console.log('✅ Registered: Theme Manager');
+    // console.log('✅ Registered: Theme Manager');
 
     // Register developer/utility plugins
     await registry.register(eventMonitorPlugin);
-    console.log('✅ Registered: Event Monitor');
+    // console.log('✅ Registered: Event Monitor');
 
     // Register example plugins
     await registry.register(examplePlugin);
-    console.log('✅ Registered: Example Plugin');
+    // console.log('✅ Registered: Example Plugin');
 
     await registry.register(analyticsPlugin);
-    console.log('✅ Registered: Analytics Plugin');
+    // console.log('✅ Registered: Analytics Plugin');
 
     // Auto-activate previously activated plugins
     const activatedPlugins = getActivatedPlugins();
     if (activatedPlugins.size > 0) {
-      console.log('🔄 Restoring previously activated plugins...');
+      // console.log('🔄 Restoring previously activated plugins...');
       await Promise.all(
         Array.from(activatedPlugins).map(async pluginId => {
           try {
             await registry.activate(pluginId);
-            console.log(`✅ Auto-activated: ${pluginId}`);
+            // console.log(`✅ Auto-activated: ${pluginId}`);
           } catch (error) {
             console.error(`❌ Failed to auto-activate ${pluginId}:`, error);
           }
@@ -143,7 +143,7 @@ export async function initializePlugins(): Promise<void> {
       );
     }
 
-    console.log('🎉 Plugin system initialized successfully!');
+    // console.log('🎉 Plugin system initialized successfully!');
   } catch (error) {
     console.error('❌ Failed to initialize plugin system:', error);
     initialized = false; // Reset on error to allow retry

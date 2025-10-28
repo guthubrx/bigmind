@@ -434,7 +434,7 @@ let unregisterStyleComputer: (() => void) | null = null;
 
 export async function activate(context: IPluginContext): Promise<void> {
   /* eslint-disable no-console */
-  console.log('🔄 [XMind Compatibility] Plugin activé');
+  // console.log('🔄 [XMind Compatibility] Plugin activé');
 
   // Get XMind compatibility data from plugin storage
   const compatData = (await context.storage.get('xmindData')) as XMindCompatibilityData | undefined;
@@ -452,7 +452,7 @@ export async function activate(context: IPluginContext): Promise<void> {
 
   // Register command to parse XMind data
   context.commands.registerCommand('xmind.parse', async (xmindFileData: any) => {
-    console.log('🔄 [XMind Compatibility] Parsing XMind data');
+    // console.log('🔄 [XMind Compatibility] Parsing XMind data');
 
     // Parse and extract all XMind-specific data
     const compatibilityData: XMindCompatibilityData = {
@@ -517,7 +517,7 @@ export async function activate(context: IPluginContext): Promise<void> {
     // Save to plugin storage
     await context.storage.set('xmindData', compatibilityData);
 
-    console.log('✅ [XMind Compatibility] XMind data parsed and preserved');
+    // console.log('✅ [XMind Compatibility] XMind data parsed and preserved');
 
     // TODO: Emit event when event system is available
     // context.events.emit('xmind.parsed', compatibilityData);
@@ -527,7 +527,7 @@ export async function activate(context: IPluginContext): Promise<void> {
 
   // Register command to serialize back to XMind format
   context.commands.registerCommand('xmind.serialize', async (bigmindData: any) => {
-    console.log('🔄 [XMind Compatibility] Serializing to XMind format');
+    // console.log('🔄 [XMind Compatibility] Serializing to XMind format');
 
     // Get preserved XMind data
     const storedData = (await context.storage.get('xmindData')) as
@@ -607,7 +607,7 @@ export async function activate(context: IPluginContext): Promise<void> {
     // Start from root
     xmindData.rootTopic = convertNode(bigmindData.rootId);
 
-    console.log('✅ [XMind Compatibility] Data serialized to XMind format');
+    // console.log('✅ [XMind Compatibility] Data serialized to XMind format');
 
     // TODO: Emit event when event system is available
     // context.events.emit('xmind.serialized', xmindData);
@@ -625,7 +625,7 @@ export async function activate(context: IPluginContext): Promise<void> {
 
   // Listen to file loaded event
   context.hooks.registerAction('file.loaded', async (data: any) => {
-    console.log('📂 [XMind Compatibility] File loaded, checking for XMind data');
+    // console.log('📂 [XMind Compatibility] File loaded, checking for XMind data');
 
     // Check if file has XMind data (presence of theme, extensions, etc.)
     if (data.theme || data.extensions || data.structureClass) {
@@ -636,7 +636,7 @@ export async function activate(context: IPluginContext): Promise<void> {
 
   // Listen to before save event
   context.hooks.registerAction('file.beforeSave', async (data: any) => {
-    console.log('💾 [XMind Compatibility] File about to save, checking if XMind format');
+    // console.log('💾 [XMind Compatibility] File about to save, checking if XMind format');
 
     // Check if we have preserved XMind data
     const storedBeforeSave = (await context.storage.get('xmindData')) as
@@ -650,11 +650,11 @@ export async function activate(context: IPluginContext): Promise<void> {
     }
   });
 
-  console.log('✅ [XMind Compatibility] Commands and hooks registered');
+  // console.log('✅ [XMind Compatibility] Commands and hooks registered');
 }
 
 export async function deactivate(): Promise<void> {
-  console.log('🔄 [XMind Compatibility] Plugin désactivé');
+  // console.log('🔄 [XMind Compatibility] Plugin désactivé');
 
   // Unregister style computer
   if (unregisterStyleComputer) {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention, no-underscore-dangle, @typescript-eslint/no-unused-vars */
 /**
  * Test the plugin system
  */
@@ -12,39 +13,39 @@ import { registry } from './pluginSystem';
  * Test the plugin system
  */
 export async function testPluginSystem() {
-  console.log('=== Testing BigMind Plugin System ===');
+  // console.log('=== Testing BigMind Plugin System ===');
 
   try {
     // Register plugin
-    console.log('1. Registering plugin...');
+    // console.log('1. Registering plugin...');
     // TODO: Enable when example plugin is available
     // await registry.register(helloWorldPlugin);
-    console.log('⚠️ Plugin registration skipped (example plugin not available)');
+    // console.log('⚠️ Plugin registration skipped (example plugin not available)');
 
     // Check state
-    const info1 = registry.getPlugin('com.bigmind.hello-world');
-    console.log('   State:', info1?.state);
-    console.log('   Manifest:', info1?.plugin.manifest);
+    const _info1 = registry.getPlugin('com.bigmind.hello-world');
+    // console.log('   State:', info1?.state);
+    // console.log('   Manifest:', info1?.plugin.manifest);
 
     // Activate plugin
-    console.log('\n2. Activating plugin...');
+    // console.log('\n2. Activating plugin...');
     await registry.activate('com.bigmind.hello-world');
-    console.log('✅ Plugin activated');
+    // console.log('✅ Plugin activated');
 
     // Check state
-    const info2 = registry.getPlugin('com.bigmind.hello-world');
-    console.log('   State:', info2?.state);
-    console.log('   Activated at:', new Date(info2?.activatedAt || 0).toLocaleString());
+    const _info2 = registry.getPlugin('com.bigmind.hello-world');
+    // console.log('   State:', info2?.state);
+    // console.log('   Activated at:', new Date(info2?.activatedAt || 0).toLocaleString());
 
     // Test plugin is active
-    console.log('\n3. Checking if plugin is active...');
-    const isActive = registry.isActive('com.bigmind.hello-world');
-    console.log('   Is active:', isActive);
+    // console.log('\n3. Checking if plugin is active...');
+    const _isActive = registry.isActive('com.bigmind.hello-world');
+    // console.log('   Is active:', isActive);
 
     // Get all plugins
-    console.log('\n4. Getting all plugins...');
-    const allPlugins = registry.getAllPlugins();
-    console.log('   Total plugins:', allPlugins.size);
+    // console.log('\n4. Getting all plugins...');
+    const _allPlugins = registry.getAllPlugins();
+    // console.log('   Total plugins:', allPlugins.size);
 
     // Wait a bit
     await new Promise(resolve => {
@@ -52,24 +53,24 @@ export async function testPluginSystem() {
     });
 
     // Deactivate plugin
-    console.log('\n5. Deactivating plugin...');
+    // console.log('\n5. Deactivating plugin...');
     await registry.deactivate('com.bigmind.hello-world');
-    console.log('✅ Plugin deactivated');
+    // console.log('✅ Plugin deactivated');
 
     // Check state
-    const info3 = registry.getPlugin('com.bigmind.hello-world');
-    console.log('   State:', info3?.state);
+    const _info3 = registry.getPlugin('com.bigmind.hello-world');
+    // console.log('   State:', info3?.state);
 
     // Unregister plugin
-    console.log('\n6. Unregistering plugin...');
+    // console.log('\n6. Unregistering plugin...');
     await registry.unregister('com.bigmind.hello-world');
-    console.log('✅ Plugin unregistered');
+    // console.log('✅ Plugin unregistered');
 
     // Check if plugin exists
-    const info4 = registry.getPlugin('com.bigmind.hello-world');
-    console.log('   Plugin exists:', !!info4);
+    const _info4 = registry.getPlugin('com.bigmind.hello-world');
+    // console.log('   Plugin exists:', !!info4);
 
-    console.log('\n=== ✅ All tests passed! ===');
+    // console.log('\n=== ✅ All tests passed! ===');
   } catch (error) {
     console.error('\n=== ❌ Test failed ===');
     console.error(error);
@@ -79,5 +80,5 @@ export async function testPluginSystem() {
 // Export for use in console
 if (typeof window !== 'undefined') {
   (window as any).testPluginSystem = testPluginSystem;
-  console.log('💡 Run testPluginSystem() in the console to test the plugin system');
+  // console.log('💡 Run testPluginSystem() in the console to test the plugin system');
 }
