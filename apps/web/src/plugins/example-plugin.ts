@@ -25,10 +25,9 @@ export class ExamplePlugin implements Plugin {
     this.context = context;
     console.log('✅ Example Plugin activated!');
 
-    // Register a hook listener
-    context.registerHook('mindmap.nodeCreated', async data => {
+    // Register an action hook listener
+    context.hooks.registerAction('mindmap.nodeCreated', async data => {
       console.log('🎉 New node created:', data);
-      return data;
     });
 
     // Example: Get active mindmap (requires mindmap:read permission)

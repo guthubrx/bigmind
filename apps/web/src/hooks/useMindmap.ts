@@ -163,7 +163,7 @@ export const useMindmap = () => {
           // FR: Déclencher l'événement pour les plugins
           // EN: Trigger event for plugins
           pluginSystem.hookSystem
-            .applyFilters('mindmap.nodeCreated', {
+            .doAction('mindmap.nodeCreated', {
               nodeId: newNode.id,
               parentId,
               title,
@@ -204,7 +204,7 @@ export const useMindmap = () => {
           // FR: Déclencher l'événement pour les plugins
           // EN: Trigger event for plugins
           pluginSystem.hookSystem
-            .applyFilters('mindmap.nodeDeleted', {
+            .doAction('mindmap.nodeDeleted', {
               nodeId,
               node,
             })
@@ -239,7 +239,7 @@ export const useMindmap = () => {
           // FR: Déclencher l'événement pour les plugins
           // EN: Trigger event for plugins
           pluginSystem.hookSystem
-            .applyFilters('mindmap.nodeUpdated', {
+            .doAction('mindmap.nodeUpdated', {
               nodeId,
               title,
               node: { ...node, title },

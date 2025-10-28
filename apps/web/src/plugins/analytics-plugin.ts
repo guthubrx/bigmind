@@ -43,25 +43,22 @@ export class AnalyticsPlugin implements Plugin {
     }
 
     // Track node creation
-    context.registerHook('mindmap.nodeCreated', async data => {
+    context.hooks.registerAction('mindmap.nodeCreated', async () => {
       this.stats.nodesCreated += 1;
       await this.saveStats();
       console.log('📊 Stats updated:', this.stats);
-      return data;
     });
 
     // Track node updates
-    context.registerHook('mindmap.nodeUpdated', async data => {
+    context.hooks.registerAction('mindmap.nodeUpdated', async () => {
       this.stats.nodesUpdated += 1;
       await this.saveStats();
-      return data;
     });
 
     // Track node deletion
-    context.registerHook('mindmap.nodeDeleted', async data => {
+    context.hooks.registerAction('mindmap.nodeDeleted', async () => {
       this.stats.nodesDeleted += 1;
       await this.saveStats();
-      return data;
     });
   }
 
