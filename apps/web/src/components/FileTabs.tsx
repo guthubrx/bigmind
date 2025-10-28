@@ -12,8 +12,12 @@ import {
   MoreHorizontal,
   FolderOpen,
   Plus,
+  Copy,
+  Eye,
 } from 'lucide-react';
 import { useOpenFiles } from '../hooks/useOpenFiles';
+import { usePlatform } from '../hooks/usePlatform';
+import ContextMenu, { type ContextMenuItem } from './ContextMenu';
 import './FileTabs.css';
 
 interface FileTabsProps {
@@ -35,8 +39,20 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [showOverflowMenu, setShowOverflowMenu] = useState(false);
 
+  // FR: États pour le menu contextuel
+  // EN: States for context menu
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    fileId: string;
+  } | null>(null);
+
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // FR: Détection de la plateforme
+  // EN: Platform detection
+  const platform = usePlatform();
 
   // FR: Ajouter des logs de debug
   // EN: Add debug logs
@@ -124,6 +140,63 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
   const closeOverflowMenu = useCallback(() => {
     setShowOverflowMenu(false);
   }, []);
+
+  // FR: Fonctions pour le menu contextuel
+  // EN: Functions for context menu
+  const handleContextMenu = useCallback((e: React.MouseEvent, fileId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      fileId,
+    });
+  }, []);
+
+  const closeContextMenu = useCallback(() => {
+    setContextMenu(null);
+  }, []);
+
+  const handleCopyPath = useCallback(
+    (fileId: string) => {
+      const file = openFiles.find(f => f.id === fileId);
+      if (file?.path) {
+        navigator.clipboard
+          .writeText(file.path)
+          .then(() => {
+            // eslint-disable-next-line no-console
+            console.log('📋 Path copied to clipboard:', file.path);
+            // TODO: Afficher un toast de succès
+          })
+          .catch(err => {
+            console.error('Failed to copy path:', err);
+            // TODO: Afficher un toast d'erreur
+          });
+      }
+    },
+    [openFiles]
+  );
+
+  const handleRevealInFinder = useCallback(
+    (fileId: string) => {
+      const file = openFiles.find(f => f.id === fileId);
+      if (file?.path) {
+        // FR: Dans une application web pure, on ne peut pas ouvrir le gestionnaire de fichiers
+        // EN: In a pure web app, we cannot open the file manager
+        // eslint-disable-next-line no-alert
+        alert(
+          `Cette fonctionnalité nécessite une application de bureau.\n\n` +
+            `Chemin du fichier :\n${file.path}\n\n` +
+            `Le chemin a été copié dans le presse-papiers.`
+        );
+        // Copier le chemin comme alternative
+        navigator.clipboard.writeText(file.path).catch(err => {
+          console.error('Failed to copy path:', err);
+        });
+      }
+    },
+    [openFiles]
+  );
 
   // FR: Vérifier si le scroll est nécessaire
   // EN: Check if scrolling is needed
@@ -271,6 +344,28 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
     );
   }
 
+  // FR: Préparer les éléments du menu contextuel
+  // EN: Prepare context menu items
+  const getContextMenuItems = (fileId: string): ContextMenuItem[] => {
+    const file = openFiles.find(f => f.id === fileId);
+    const fileManagerName = platform.isMac ? 'Finder' : 'Explorateur';
+
+    return [
+      {
+        label: 'Copier le chemin du fichier',
+        icon: <Copy className="icon-small" />,
+        onClick: () => handleCopyPath(fileId),
+        disabled: !file?.path,
+      },
+      {
+        label: `Afficher dans le ${fileManagerName}`,
+        icon: <Eye className="icon-small" />,
+        onClick: () => handleRevealInFinder(fileId),
+        disabled: !file?.path,
+      },
+    ];
+  };
+
   // FR: Affichage en colonne verticale
   // EN: Vertical column display
   return (
@@ -296,6 +391,7 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
             key={file.id}
             className={`file-tab ${activeFileId === file.id ? 'active' : ''}`}
             onClick={() => activateFile(file.id)}
+            onContextMenu={e => handleContextMenu(e, file.id)}
             onKeyDown={e => {
               if (e.key === 'Enter' || e.key === ' ') {
                 activateFile(file.id);
@@ -320,6 +416,17 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
           </div>
         ))}
       </div>
+
+      {/* FR: Menu contextuel */}
+      {/* EN: Context menu */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          items={getContextMenuItems(contextMenu.fileId)}
+          onClose={closeContextMenu}
+        />
+      )}
     </div>
   );
 }
