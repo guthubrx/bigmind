@@ -10,6 +10,7 @@ import {
   addPluginDependency,
   removePluginDependency,
 } from './fileFormat';
+import { migrationRegistry } from './migrationManager';
 
 /**
  * Plugin storage interface
@@ -76,8 +77,6 @@ export class PluginStorage implements IPluginStorage {
 
   private onSave: () => Promise<void>;
 
-  private migrations: Map<string, MigrationFunction> = new Map();
-
   constructor(config: PluginStorageConfig) {
     this.pluginId = config.pluginId;
     this.pluginVersion = config.pluginVersion;
@@ -98,12 +97,15 @@ export class PluginStorage implements IPluginStorage {
       return undefined;
     }
 
-    // TODO: Phase 2 - Check for migration needs here
+    // Check for migration needs
     const storedVersion = pluginData._meta.schemaVersion; // eslint-disable-line no-underscore-dangle
     if (storedVersion !== this.schemaVersion) {
       const msg = `[PluginStorage] Schema version mismatch for ${this.pluginId}`;
-      console.warn(`${msg}: stored=${storedVersion}, current=${this.schemaVersion}`);
-      // Migration will be handled in Phase 2
+      // eslint-disable-next-line no-console
+      console.log(`${msg}: stored=${storedVersion}, current=${this.schemaVersion}`);
+
+      // Attempt automatic migration
+      await this.performMigration(storedVersion, this.schemaVersion);
     }
 
     return pluginData.data[key] as T;
@@ -160,11 +162,11 @@ export class PluginStorage implements IPluginStorage {
   }
 
   /**
-   * Register migration function (Phase 2)
+   * Register migration function
    */
   registerMigration(fromVersion: string, toVersion: string, migrator: MigrationFunction): void {
-    const key = `${fromVersion}->${toVersion}`;
-    this.migrations.set(key, migrator);
+    const manager = migrationRegistry.getManager(this.pluginId);
+    manager.registerMigration(fromVersion, toVersion, migrator);
   }
 
   /**
@@ -223,6 +225,53 @@ export class PluginStorage implements IPluginStorage {
    */
   unmarkDependency(): void {
     removePluginDependency(this.fileData, this.pluginId);
+  }
+
+  /**
+   * Perform migration from one version to another
+   */
+  private async performMigration(fromVersion: string, toVersion: string): Promise<void> {
+    const manager = migrationRegistry.getManager(this.pluginId);
+    const pluginData = getPluginData(this.fileData, this.pluginId);
+
+    if (!pluginData) {
+      console.error(`[PluginStorage] Cannot migrate: no data for ${this.pluginId}`);
+      return;
+    }
+
+    // Check if migration is possible
+    if (!manager.canMigrate(fromVersion, toVersion)) {
+      console.warn(`[PluginStorage] No migration path from ${fromVersion} to ${toVersion}`);
+      return;
+    }
+
+    // Execute migration
+    const result = await manager.migrate(pluginData.data, fromVersion, toVersion);
+
+    if (result.success) {
+      // eslint-disable-next-line no-console
+      console.log(
+        `[PluginStorage] Migration successful for ${this.pluginId}:`,
+        result.migrationHistory
+      );
+
+      // Update plugin data with migrated data
+      pluginData.data = result.data;
+
+      // Update metadata
+      pluginData._meta.schemaVersion = toVersion; // eslint-disable-line no-underscore-dangle
+      pluginData._meta.pluginVersion = this.pluginVersion; // eslint-disable-line no-underscore-dangle
+
+      // eslint-disable-next-line no-underscore-dangle
+      const existingHistory = pluginData._meta.migrationHistory || [];
+      // eslint-disable-next-line no-underscore-dangle
+      pluginData._meta.migrationHistory = [...existingHistory, ...result.migrationHistory];
+
+      // Trigger save
+      await this.onSave();
+    } else {
+      console.error(`[PluginStorage] Migration failed for ${this.pluginId}:`, result.error);
+    }
   }
 }
 

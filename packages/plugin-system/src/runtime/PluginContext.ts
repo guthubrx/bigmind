@@ -194,10 +194,30 @@ export class PluginContext implements IPluginContext {
       localStorage.removeItem(storageKey);
     },
 
-    clear: async (): Promise<void> => {
+    keys: async (): Promise<string[]> => {
       const prefix = `plugin:${this.pluginId}:`;
-      const keys = Object.keys(localStorage).filter(k => k.startsWith(prefix));
-      keys.forEach(k => localStorage.removeItem(k));
+      return Object.keys(localStorage)
+        .filter(k => k.startsWith(prefix))
+        .map(k => k.slice(prefix.length));
+    },
+
+    registerMigration: (
+      _fromVersion: string,
+      _toVersion: string,
+      _migrator: (oldData: any) => any
+    ): void => {
+      // TODO: Implement migration registration for localStorage-based storage
+      console.warn(
+        '[PluginContext] Migration registration not yet supported for localStorage storage'
+      );
+    },
+
+    getSchemaVersion: (): string =>
+      // For localStorage, we don't track schema versions yet
+      '1',
+    setSchemaVersion: (_version: string): void => {
+      // For localStorage, we don't track schema versions yet
+      console.warn('[PluginContext] setSchemaVersion not yet supported for localStorage storage');
     },
   };
 
@@ -241,4 +261,16 @@ export class PluginContext implements IPluginContext {
 
     write: async (text: string): Promise<void> => navigator.clipboard.writeText(text),
   };
+
+  // ===== Plugin Dependency Methods =====
+
+  markAsRequired(_minVersion?: string, _maxVersion?: string): void {
+    // TODO: Implement dependency marking for file-based storage
+    console.warn('[PluginContext] markAsRequired not yet supported for localStorage storage');
+  }
+
+  markAsRecommended(_minVersion?: string, _maxVersion?: string): void {
+    // TODO: Implement dependency marking for file-based storage
+    console.warn('[PluginContext] markAsRecommended not yet supported for localStorage storage');
+  }
 }
