@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { getNodeColor } from '../utils/nodeColors';
 import { getPalette } from '../themes/colorPalettes';
 import { loadOverlayFromStorage, saveOverlayToStorage } from '../utils/overlayValidation';
-import { pluginSystem } from '../utils/pluginManager';
+import { emitNodeCreated, emitNodeUpdated, emitNodeDeleted } from '../utils/mindmapEvents';
 
 export interface OpenFile {
   id: string;
@@ -267,15 +267,11 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     // FR: Déclencher l'événement pour les plugins si le titre a changé
     // EN: Trigger event for plugins if title changed
     if (patch.title !== undefined && oldNode.title !== patch.title) {
-      pluginSystem.hookSystem
-        .doAction('mindmap.nodeUpdated', {
-          nodeId,
-          title: patch.title,
-          node: updatedNode,
-        })
-        .catch(error => {
-          console.error('[useOpenFiles] Error triggering nodeUpdated hook:', error);
-        });
+      emitNodeUpdated({
+        nodeId,
+        title: patch.title,
+        node: updatedNode,
+      });
     }
   },
   // FR: Ajouter un enfant au nœud parent dans le fichier actif
@@ -302,16 +298,12 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
 
     // FR: Déclencher l'événement pour les plugins
     // EN: Trigger event for plugins
-    pluginSystem.hookSystem
-      .doAction('mindmap.nodeCreated', {
-        nodeId: newId,
-        parentId,
-        title,
-        node: newNode,
-      })
-      .catch(error => {
-        console.error('[useOpenFiles] Error triggering nodeCreated hook:', error);
-      });
+    emitNodeCreated({
+      nodeId: newId,
+      parentId,
+      title,
+      node: newNode,
+    });
 
     return newId;
   },
@@ -359,14 +351,10 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
 
     // FR: Déclencher l'événement pour les plugins
     // EN: Trigger event for plugins
-    pluginSystem.hookSystem
-      .doAction('mindmap.nodeDeleted', {
-        nodeId,
-        node: nodeToDelete,
-      })
-      .catch(error => {
-        console.error('[useOpenFiles] Error triggering nodeDeleted hook:', error);
-      });
+    emitNodeDeleted({
+      nodeId,
+      node: nodeToDelete,
+    });
 
     return parentId;
   },
@@ -401,16 +389,12 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
 
     // FR: Déclencher l'événement pour les plugins
     // EN: Trigger event for plugins
-    pluginSystem.hookSystem
-      .doAction('mindmap.nodeCreated', {
-        nodeId: newId,
-        parentId,
-        title,
-        node: newNode,
-      })
-      .catch(error => {
-        console.error('[useOpenFiles] Error triggering nodeCreated hook:', error);
-      });
+    emitNodeCreated({
+      nodeId: newId,
+      parentId,
+      title,
+      node: newNode,
+    });
 
     return newId;
   },

@@ -6,7 +6,7 @@
 import { useState, useCallback } from 'react';
 import { useAppSettings } from './useAppSettings';
 import { getNodeColor } from '../utils/nodeColors';
-import { pluginSystem } from '../utils/pluginManager';
+import { emitNodeCreated, emitNodeUpdated, emitNodeDeleted } from '../utils/mindmapEvents';
 
 // FR: Types simplifiés pour le développement
 // EN: Simplified types for development
@@ -162,16 +162,12 @@ export const useMindmap = () => {
 
           // FR: Déclencher l'événement pour les plugins
           // EN: Trigger event for plugins
-          pluginSystem.hookSystem
-            .doAction('mindmap.nodeCreated', {
-              nodeId: newNode.id,
-              parentId,
-              title,
-              node: newNode,
-            })
-            .catch(error => {
-              console.error('[useMindmap] Error triggering nodeCreated hook:', error);
-            });
+          emitNodeCreated({
+            nodeId: newNode.id,
+            parentId,
+            title,
+            node: newNode,
+          });
 
           return {
             ...prev,
@@ -203,14 +199,10 @@ export const useMindmap = () => {
 
           // FR: Déclencher l'événement pour les plugins
           // EN: Trigger event for plugins
-          pluginSystem.hookSystem
-            .doAction('mindmap.nodeDeleted', {
-              nodeId,
-              node,
-            })
-            .catch(error => {
-              console.error('[useMindmap] Error triggering nodeDeleted hook:', error);
-            });
+          emitNodeDeleted({
+            nodeId,
+            node,
+          });
 
           return {
             ...prev,
@@ -238,15 +230,11 @@ export const useMindmap = () => {
 
           // FR: Déclencher l'événement pour les plugins
           // EN: Trigger event for plugins
-          pluginSystem.hookSystem
-            .doAction('mindmap.nodeUpdated', {
-              nodeId,
-              title,
-              node: { ...node, title },
-            })
-            .catch(error => {
-              console.error('[useMindmap] Error triggering nodeUpdated hook:', error);
-            });
+          emitNodeUpdated({
+            nodeId,
+            title,
+            node: { ...node, title },
+          });
 
           return {
             ...prev,
