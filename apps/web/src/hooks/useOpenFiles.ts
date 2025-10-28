@@ -25,6 +25,7 @@ import {
 import { adaptBigMindToContent, createEmptyBigMindData } from '../utils/contentAdapter';
 import { loadObject, saveObject } from '../utils/storageManager';
 import type { ExtendedMindMapData } from '../utils/fileFormat';
+import { migrateAllLegacyData, hasLegacyData } from '../utils/legacyDataMigration';
 
 export interface OpenFile {
   id: string;
@@ -129,6 +130,20 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       type: newFile.type,
       path: newFile.path,
     });
+
+    // Migrate legacy data in background if needed
+    if (newFile.content && hasLegacyData(newFile.content as ExtendedMindMapData)) {
+      migrateAllLegacyData(newFile.content as ExtendedMindMapData)
+        .then(migrated => {
+          if (migrated) {
+            // Save after migration
+            get().saveOpenFilesToStorage();
+          }
+        })
+        .catch(error => {
+          console.error('[useOpenFiles] Legacy migration failed:', error);
+        });
+    }
 
     return newFile.id;
   },
