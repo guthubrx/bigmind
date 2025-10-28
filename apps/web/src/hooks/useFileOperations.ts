@@ -26,6 +26,76 @@ import { applyOverlayFromLocalStorage, applyOverlayFromZip } from '../utils/over
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
 
 /**
+ * FR: Appliquer les couleurs XMind aux nœuds basé sur le thème
+ * EN: Apply XMind colors to nodes based on theme
+ */
+function applyXMindColors(content: any, xmindTheme: any) {
+  if (!xmindTheme?.map?.properties?.['color-list']) {
+    return;
+  }
+
+  // Extraire la palette de couleurs
+  const palette = xmindTheme.map.properties['color-list']
+    .split(/\s+/)
+    .filter((c: string) => c.startsWith('#'));
+
+  if (palette.length === 0) {
+    return;
+  }
+
+  // Obtenir la couleur du topic central
+  const centralColor = xmindTheme.centralTopic?.properties?.['svg:fill'] || palette[0] || '#000229';
+
+  // Fonction pour calculer la luminance et déterminer la couleur de texte optimale
+  function getOptimalTextColor(bgColor: string): string {
+    try {
+      const hex = bgColor.replace('#', '');
+      const r = parseInt(hex.substring(0, 2), 16) / 255;
+      const g = parseInt(hex.substring(2, 4), 16) / 255;
+      const b = parseInt(hex.substring(4, 6), 16) / 255;
+      const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      return luminance > 0.5 ? '#000000' : '#ffffff';
+    } catch {
+      return '#000000';
+    }
+  }
+
+  // Fonction récursive pour appliquer la couleur à toute une branche
+  function applyColorToBranch(nodes: Record<string, any>, nodeId: string, color: string) {
+    const node = nodes[nodeId];
+    if (!node) return;
+
+    node.style = node.style || {};
+    node.style.backgroundColor = color;
+    node.style.textColor = getOptimalTextColor(color);
+
+    // Appliquer récursivement à tous les descendants
+    if (node.children) {
+      node.children.forEach((childId: string) => {
+        applyColorToBranch(nodes, childId, color);
+      });
+    }
+  }
+
+  // Appliquer la couleur au nœud racine
+  const rootNode = content.nodes[content.rootNode.id];
+  if (rootNode) {
+    rootNode.style = rootNode.style || {};
+    rootNode.style.backgroundColor = centralColor;
+    rootNode.style.textColor = getOptimalTextColor(centralColor);
+  }
+
+  // Appliquer les couleurs aux enfants directs de la racine (main topics)
+  // Chaque branche principale obtient une couleur de la palette
+  if (rootNode?.children) {
+    rootNode.children.forEach((childId: string, index: number) => {
+      const branchColor = palette[index % palette.length];
+      applyColorToBranch(content.nodes, childId, branchColor);
+    });
+  }
+}
+
+/**
  * FR: Hook pour gérer l'ouverture de fichiers
  * EN: Hook to handle file opening
  */
@@ -131,6 +201,12 @@ export const useFileOperations = () => {
           // EN: Adapt structure for useOpenFiles
           const adaptedContent = adaptBigMindToContent(bigMindData);
 
+          // FR: Appliquer les couleurs XMind si disponibles
+          // EN: Apply XMind colors if available
+          if (xmindOriginalData.theme) {
+            applyXMindColors(adaptedContent, xmindOriginalData.theme);
+          }
+
           // FR: Appliquer overlay depuis localStorage
           // EN: Apply overlay from localStorage
           applyOverlayFromLocalStorage(adaptedContent, file.name);
@@ -197,6 +273,12 @@ export const useFileOperations = () => {
           // FR: Adapter la structure pour useOpenFiles
           // EN: Adapt structure for useOpenFiles
           const adaptedContent = adaptBigMindToContent(bigMindData);
+
+          // FR: Appliquer les couleurs XMind si disponibles
+          // EN: Apply XMind colors if available
+          if (xmindOriginalData.theme) {
+            applyXMindColors(adaptedContent, xmindOriginalData.theme);
+          }
 
           // FR: Appliquer overlay depuis localStorage
           // EN: Apply overlay from localStorage
