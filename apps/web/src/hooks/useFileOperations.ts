@@ -12,10 +12,7 @@ import { useViewport } from './useViewport';
 import { useCanvasOptions } from './useCanvasOptions';
 import { useTagStore } from './useTagStore';
 import { adaptBigMindToContent } from '../utils/contentAdapter';
-import {
-  applyOverlayFromLocalStorage,
-  applyOverlayFromZip,
-} from '../utils/overlayLoader';
+import { applyOverlayFromLocalStorage, applyOverlayFromZip } from '../utils/overlayLoader';
 
 /**
  * FR: Limites de sécurité pour les archives ZIP
@@ -27,53 +24,6 @@ import {
  * ce qui peut être coûteux en performance.
  */
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
-
-/**
- * FR: Valider un overlay JSON avant fusion
- * EN: Validate JSON overlay before merging
- */
-const validateOverlay = (data: any): boolean => {
-  if (!data || typeof data !== 'object') return false;
-
-  // FR: Vérifier que nodes est un objet avec des IDs valides
-  // EN: Check that nodes is an object with valid IDs
-  if (data.nodes) {
-    if (typeof data.nodes !== 'object') return false;
-
-    // FR: Limiter le nombre de nodes pour éviter les attaques
-    // EN: Limit number of nodes to prevent attacks
-    const nodeKeys = Object.keys(data.nodes);
-    if (nodeKeys.length > 10000) return false;
-
-    // FR: Vérifier que chaque node a une structure valide
-    // EN: Check that each node has valid structure
-    const allNodesValid = nodeKeys.every(key => {
-      const node = data.nodes[key];
-      if (typeof node !== 'object') return false;
-
-      // FR: Vérifier les types des propriétés si présentes
-      // EN: Check property types if present
-      if (node.title !== undefined && typeof node.title !== 'string') return false;
-      if (node.notes !== undefined && typeof node.notes !== 'string') return false;
-      if (node.collapsed !== undefined && typeof node.collapsed !== 'boolean') return false;
-      return true;
-    });
-    if (!allNodesValid) return false;
-  }
-
-  // FR: Valider les tags si présents
-  // EN: Validate tags if present
-  if (data.tags) {
-    if (typeof data.tags !== 'object') return false;
-    if (data.tags.tags && typeof data.tags.tags !== 'object') return false;
-    if (data.tags.links && !Array.isArray(data.tags.links)) return false;
-    if (data.tags.nodeTags && typeof data.tags.nodeTags !== 'object') return false;
-    if (data.tags.tagNodes && typeof data.tags.tagNodes !== 'object') return false;
-    if (data.tags.hiddenTags && !Array.isArray(data.tags.hiddenTags)) return false;
-  }
-
-  return true;
-};
 
 /**
  * FR: Hook pour gérer l'ouverture de fichiers
@@ -129,6 +79,48 @@ export const useFileOperations = () => {
 
         const arrayBuffer = await file.arrayBuffer();
 
+        // FR: Charger le ZIP pour extraire les métadonnées XMind
+        // EN: Load ZIP to extract XMind metadata
+        const zip = await JSZip.loadAsync(arrayBuffer);
+
+        // FR: Extraire les fichiers XMind originaux pour la compatibilité
+        // EN: Extract original XMind files for compatibility
+        const xmindOriginalData: any = {};
+        try {
+          // Extraire content.json pour le thème
+          const contentFile = zip.file('content.json');
+          if (contentFile) {
+            const contentText = await contentFile.async('text');
+            const contentJson = JSON.parse(contentText);
+            // Le contenu peut être un tableau de sheets
+            if (Array.isArray(contentJson) && contentJson.length > 0) {
+              xmindOriginalData.theme = contentJson[0].theme;
+              xmindOriginalData.extensions = contentJson[0].extensions;
+              xmindOriginalData.structureClass = contentJson[0].structureClass;
+            } else if (contentJson.theme) {
+              xmindOriginalData.theme = contentJson.theme;
+              xmindOriginalData.extensions = contentJson.extensions;
+              xmindOriginalData.structureClass = contentJson.structureClass;
+            }
+          }
+
+          // Extraire manifest.json
+          const manifestFile = zip.file('manifest.json');
+          if (manifestFile) {
+            const manifestText = await manifestFile.async('text');
+            xmindOriginalData.manifest = JSON.parse(manifestText);
+          }
+
+          // Extraire metadata.json
+          const metadataFile = zip.file('metadata.json');
+          if (metadataFile) {
+            const metadataText = await metadataFile.async('text');
+            xmindOriginalData.metadata = JSON.parse(metadataText);
+          }
+        } catch (e) {
+          console.warn("[XMind] Erreur lors de l'extraction des métadonnées:", e);
+        }
+
         // FR: Essayer d'abord le parser standard
         // EN: Try standard parser first
         try {
@@ -137,7 +129,7 @@ export const useFileOperations = () => {
 
           // FR: Adapter la structure pour useOpenFiles
           // EN: Adapt structure for useOpenFiles
-          let adaptedContent = adaptBigMindToContent(bigMindData);
+          const adaptedContent = adaptBigMindToContent(bigMindData);
 
           // FR: Appliquer overlay depuis localStorage
           // EN: Apply overlay from localStorage
@@ -147,7 +139,6 @@ export const useFileOperations = () => {
           // EN: Apply overlay from ZIP if present
           let loadedTags: any = null;
           try {
-            const zip = await JSZip.loadAsync(arrayBuffer);
             const { tags: zipTags } = await applyOverlayFromZip(adaptedContent, zip);
             // Tags can be an object with full structure or empty array
             if (zipTags && typeof zipTags === 'object' && !Array.isArray(zipTags)) {
@@ -169,6 +160,7 @@ export const useFileOperations = () => {
               xMindMap.sheetsMeta && xMindMap.sheetsMeta.length > 0
                 ? xMindMap.sheetsMeta[0].id
                 : null,
+            xmindOriginal: xmindOriginalData,
           });
 
           // FR: Charger les tags dans le store unifié
@@ -204,7 +196,7 @@ export const useFileOperations = () => {
 
           // FR: Adapter la structure pour useOpenFiles
           // EN: Adapt structure for useOpenFiles
-          let adaptedContent = adaptBigMindToContent(bigMindData);
+          const adaptedContent = adaptBigMindToContent(bigMindData);
 
           // FR: Appliquer overlay depuis localStorage
           // EN: Apply overlay from localStorage
@@ -214,7 +206,6 @@ export const useFileOperations = () => {
           // EN: Apply overlay from ZIP if present
           let loadedTagsFallback: any = null;
           try {
-            const zip = await JSZip.loadAsync(arrayBuffer);
             const { tags: zipTags } = await applyOverlayFromZip(adaptedContent, zip);
             // Tags can be an object with full structure or empty array
             if (zipTags && typeof zipTags === 'object' && !Array.isArray(zipTags)) {
@@ -230,6 +221,7 @@ export const useFileOperations = () => {
             name: file.name,
             type: 'xmind',
             content: adaptedContent,
+            xmindOriginal: xmindOriginalData,
           });
 
           // FR: Charger les tags dans le store unifié
@@ -318,24 +310,91 @@ export const useFileOperations = () => {
       throw new Error('Aucun fichier XMind actif');
 
     const zip = new JSZip();
-    // Recréer un content.json minimal pour la sauvegarde (topic tree à partir de nodes)
-    // Ici, on sérialise simple: rootTopic avec children.attached récursifs
+
+    // FR: Recréer un content.json compatible XMind avec thème
+    // EN: Recreate XMind-compatible content.json with theme
     const buildTopic = (id: string): any => {
+      if (!active.content) return null;
       const n = active.content.nodes[id];
       if (!n) return null;
-      return {
+      const topic: any = {
         id: n.id,
         title: n.title,
-        notes: n.notes ? { plain: n.notes } : undefined,
-        style: n.style,
-        children:
-          n.children && n.children.length > 0
-            ? { attached: n.children.map(buildTopic).filter(Boolean) }
-            : undefined,
       };
+
+      // Ajouter les notes si présentes
+      if (n.notes) {
+        topic.notes = { plain: { content: n.notes } };
+      }
+
+      // Ajouter le style si présent
+      if (n.style) {
+        topic.style = n.style;
+      }
+
+      // Ajouter les enfants récursivement en préservant l'ordre
+      if (n.children && n.children.length > 0) {
+        topic.children = {
+          attached: n.children.map(buildTopic).filter(Boolean),
+        };
+      }
+
+      return topic;
     };
-    const json = [{ class: 'sheet', rootTopic: buildTopic(active.content.rootNode.id) }];
+
+    const rootNode = active.content?.rootNode;
+    if (!rootNode) {
+      throw new Error('Nœud racine manquant dans le fichier actif');
+    }
+
+    const sheet: any = {
+      id: active.activeSheetId || 'sheet-1',
+      class: 'sheet',
+      title: rootNode.title || active.name,
+      rootTopic: buildTopic(rootNode.id),
+    };
+
+    // FR: Ajouter le thème XMind si disponible
+    // EN: Add XMind theme if available
+    if (active.xmindOriginal?.theme) {
+      sheet.theme = active.xmindOriginal.theme;
+    }
+
+    // FR: Ajouter extensions et structureClass si disponibles
+    // EN: Add extensions and structureClass if available
+    if (active.xmindOriginal?.extensions) {
+      sheet.extensions = active.xmindOriginal.extensions;
+    }
+    if (active.xmindOriginal?.structureClass) {
+      sheet.structureClass = active.xmindOriginal.structureClass;
+    }
+
+    const json = [sheet];
     zip.file('content.json', JSON.stringify(json, null, 2));
+
+    // FR: Sauvegarder manifest.json (requis par XMind)
+    // EN: Save manifest.json (required by XMind)
+    const manifest = active.xmindOriginal?.manifest || {
+      'file-entries': {
+        'content.json': {},
+        'metadata.json': {},
+        'Thumbnails/thumbnail.png': {},
+      },
+    };
+    zip.file('manifest.json', JSON.stringify(manifest, null, 2));
+
+    // FR: Sauvegarder metadata.json (requis par XMind)
+    // EN: Save metadata.json (required by XMind)
+    const metadata = active.xmindOriginal?.metadata || {
+      dataStructureVersion: '2',
+      creator: {
+        name: 'BigMind',
+        version: '1.0.0',
+      },
+      activeSheetId: active.activeSheetId || sheet.id,
+      layoutEngineVersion: '4',
+    };
+    zip.file('metadata.json', JSON.stringify(metadata, null, 2));
 
     // FR: Ecrire le sidecar embarqué avec tags
     try {

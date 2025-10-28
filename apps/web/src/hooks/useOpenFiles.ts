@@ -40,6 +40,15 @@ export interface OpenFile {
   sheets?: Array<{ id: string; title: string }>;
   activeSheetId?: string | null;
   sheetsData?: any[]; // JSON brut des feuilles pour re-swapper
+  // FR: Données XMind originales pour préserver la compatibilité
+  // EN: Original XMind data to preserve compatibility
+  xmindOriginal?: {
+    theme?: any;
+    manifest?: any;
+    metadata?: any;
+    extensions?: any;
+    structureClass?: string;
+  };
   // FR: Viewport (position et zoom) pour la carte
   // EN: Viewport (position and zoom) for the map
   viewport?: { x: number; y: number; zoom: number };
