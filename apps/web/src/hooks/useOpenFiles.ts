@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { getNodeColor } from '../utils/nodeColors';
 import { getPalette } from '../themes/colorPalettes';
 import { loadOverlayFromStorage, saveOverlayToStorage } from '../utils/overlayValidation';
+import { pluginSystem } from '../utils/pluginManager';
 
 export interface OpenFile {
   id: string;
@@ -234,7 +235,8 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     const active = state.openFiles.find(f => f.isActive);
     if (!active || !active.content || !active.content.nodes?.[nodeId]) return;
 
-    const updatedNode = { ...active.content.nodes[nodeId], ...patch };
+    const oldNode = active.content.nodes[nodeId];
+    const updatedNode = { ...oldNode, ...patch };
     const updatedContent = {
       ...active.content,
       nodes: { ...active.content.nodes, [nodeId]: updatedNode },
@@ -261,6 +263,20 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
         f.id === active.id ? { ...f, content: updatedContent } : f
       ),
     }));
+
+    // FR: Déclencher l'événement pour les plugins si le titre a changé
+    // EN: Trigger event for plugins if title changed
+    if (patch.title !== undefined && oldNode.title !== patch.title) {
+      pluginSystem.hookSystem
+        .doAction('mindmap.nodeUpdated', {
+          nodeId,
+          title: patch.title,
+          node: updatedNode,
+        })
+        .catch(error => {
+          console.error('[useOpenFiles] Error triggering nodeUpdated hook:', error);
+        });
+    }
   },
   // FR: Ajouter un enfant au nœud parent dans le fichier actif
   // EN: Add a child to parent in the active file
@@ -270,7 +286,8 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     if (!active || !active.content || !active.content.nodes?.[parentId]) return null;
     const newId = uuidv4();
     const nodes = { ...active.content.nodes };
-    nodes[newId] = { id: newId, title, children: [], parentId };
+    const newNode = { id: newId, title, children: [], parentId };
+    nodes[newId] = newNode;
     const parent = { ...nodes[parentId] };
     parent.children = [...(parent.children || []), newId];
     nodes[parentId] = parent;
@@ -282,6 +299,20 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
         f.id === active.id ? { ...f, content: updatedContent } : f
       ),
     }));
+
+    // FR: Déclencher l'événement pour les plugins
+    // EN: Trigger event for plugins
+    pluginSystem.hookSystem
+      .doAction('mindmap.nodeCreated', {
+        nodeId: newId,
+        parentId,
+        title,
+        node: newNode,
+      })
+      .catch(error => {
+        console.error('[useOpenFiles] Error triggering nodeCreated hook:', error);
+      });
+
     return newId;
   },
   // FR: Supprimer un nœud (et son sous-arbre) du fichier actif
@@ -295,6 +326,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     if (nodeId === rootId) return null;
 
     const nodes = { ...active.content.nodes } as Record<string, any>;
+    const nodeToDelete = nodes[nodeId];
     const toDelete: string[] = [];
     const collect = (id: string) => {
       toDelete.push(id);
@@ -324,6 +356,18 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
         f.id === active.id ? { ...f, content: updatedContent } : f
       ),
     }));
+
+    // FR: Déclencher l'événement pour les plugins
+    // EN: Trigger event for plugins
+    pluginSystem.hookSystem
+      .doAction('mindmap.nodeDeleted', {
+        nodeId,
+        node: nodeToDelete,
+      })
+      .catch(error => {
+        console.error('[useOpenFiles] Error triggering nodeDeleted hook:', error);
+      });
+
     return parentId;
   },
   // FR: Ajouter un frère au nœud sélectionné (même parent)
@@ -339,7 +383,8 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
       return get().addChildToActive(siblingOfId, title);
     }
     const newId = uuidv4();
-    nodes[newId] = { id: newId, title, children: [], parentId };
+    const newNode = { id: newId, title, children: [], parentId };
+    nodes[newId] = newNode;
     const list: string[] = [...(nodes[parentId]?.children || [])];
     const idx = list.indexOf(siblingOfId);
     if (idx >= 0) list.splice(idx + 1, 0, newId);
@@ -353,6 +398,20 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
         f.id === active.id ? { ...f, content: updatedContent } : f
       ),
     }));
+
+    // FR: Déclencher l'événement pour les plugins
+    // EN: Trigger event for plugins
+    pluginSystem.hookSystem
+      .doAction('mindmap.nodeCreated', {
+        nodeId: newId,
+        parentId,
+        title,
+        node: newNode,
+      })
+      .catch(error => {
+        console.error('[useOpenFiles] Error triggering nodeCreated hook:', error);
+      });
+
     return newId;
   },
 
