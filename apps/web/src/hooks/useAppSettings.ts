@@ -6,6 +6,8 @@ import {
   type ColorTheme,
 } from '../themes/colorThemes';
 import { COLOR_PALETTES } from '../themes/colorPalettes';
+import { loadObject, updateProperty } from '../utils/storageManager';
+import { emitSettingsChanged } from '../utils/mindmapEvents';
 
 type AppSettingsState = {
   // FR: Couleur d'accent personnalisée
@@ -71,20 +73,17 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
 
   setAccentColor: (color: string) => {
     set({ accentColor: color });
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const obj = raw ? JSON.parse(raw) : {};
-      obj.accentColor = color;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-    } catch (e) {
-      // Ignore localStorage errors
-    }
+    updateProperty(STORAGE_KEY, 'accentColor', color);
+
     // Update CSS variable globally
     try {
       document.documentElement.style.setProperty('--accent-color', color);
     } catch (e) {
       // Ignore CSS errors
     }
+
+    // Emit settings changed event
+    emitSettingsChanged({ setting: 'accentColor', value: color });
   },
 
   setTheme: (themeId: string) => {
@@ -98,17 +97,7 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
     }
 
     set({ themeId });
-
-    // FR: Sauvegarder dans localStorage
-    // EN: Save to localStorage
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const obj = raw ? JSON.parse(raw) : {};
-      obj.themeId = themeId;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-    } catch (e) {
-      // Ignore localStorage errors
-    }
+    updateProperty(STORAGE_KEY, 'themeId', themeId);
 
     // FR: Appliquer le thème au document
     // EN: Apply theme to document
@@ -125,6 +114,9 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
     if (currentAccent === COLOR_THEMES.light.colors.accent || !currentAccent) {
       get().setAccentColor(themeAccent);
     }
+
+    // Emit settings changed event
+    emitSettingsChanged({ setting: 'themeId', value: themeId });
   },
 
   getCurrentTheme: () => {
@@ -143,17 +135,10 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
     }
 
     set({ defaultNodePaletteId: paletteId });
+    updateProperty(STORAGE_KEY, 'defaultNodePaletteId', paletteId);
 
-    // FR: Sauvegarder dans localStorage
-    // EN: Save to localStorage
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const obj = raw ? JSON.parse(raw) : {};
-      obj.defaultNodePaletteId = paletteId;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-    } catch (e) {
-      // Ignore localStorage errors
-    }
+    // Emit settings changed event
+    emitSettingsChanged({ setting: 'defaultNodePaletteId', value: paletteId });
   },
 
   setDefaultTagPalette: (paletteId: string) => {
@@ -167,168 +152,119 @@ export const useAppSettings = create<AppSettingsState>((set, get) => ({
     }
 
     set({ defaultTagPaletteId: paletteId });
+    updateProperty(STORAGE_KEY, 'defaultTagPaletteId', paletteId);
 
-    // FR: Sauvegarder dans localStorage
-    // EN: Save to localStorage
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const obj = raw ? JSON.parse(raw) : {};
-      obj.defaultTagPaletteId = paletteId;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-    } catch (e) {
-      // Ignore localStorage errors
-    }
+    // Emit settings changed event
+    emitSettingsChanged({ setting: 'defaultTagPaletteId', value: paletteId });
   },
 
   setShowMinimap: (show: boolean) => {
     set({ showMinimap: show });
+    updateProperty(STORAGE_KEY, 'showMinimap', show);
 
-    // FR: Sauvegarder dans localStorage
-    // EN: Save to localStorage
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const obj = raw ? JSON.parse(raw) : {};
-      obj.showMinimap = show;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-    } catch (e) {
-      // Ignore localStorage errors
-    }
+    // Emit settings changed event
+    emitSettingsChanged({ setting: 'showMinimap', value: show });
   },
 
   setReopenFilesOnStartup: (reopen: boolean) => {
     set({ reopenFilesOnStartup: reopen });
+    updateProperty(STORAGE_KEY, 'reopenFilesOnStartup', reopen);
 
-    // FR: Sauvegarder dans localStorage
-    // EN: Save to localStorage
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const obj = raw ? JSON.parse(raw) : {};
-      obj.reopenFilesOnStartup = reopen;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-    } catch (e) {
-      // Ignore localStorage errors
-    }
+    // Emit settings changed event
+    emitSettingsChanged({ setting: 'reopenFilesOnStartup', value: reopen });
   },
 
   setDefaultNodeFontSize: (size: number) => {
     set({ defaultNodeFontSize: size });
+    updateProperty(STORAGE_KEY, 'defaultNodeFontSize', size);
 
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const obj = raw ? JSON.parse(raw) : {};
-      obj.defaultNodeFontSize = size;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-    } catch (e) {
-      // Ignore localStorage errors
-    }
+    // Emit settings changed event
+    emitSettingsChanged({ setting: 'defaultNodeFontSize', value: size });
   },
 
   setDefaultNodeWidth: (width: number) => {
     set({ defaultNodeWidth: width });
+    updateProperty(STORAGE_KEY, 'defaultNodeWidth', width);
 
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const obj = raw ? JSON.parse(raw) : {};
-      obj.defaultNodeWidth = width;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-    } catch (e) {
-      // Ignore localStorage errors
-    }
+    // Emit settings changed event
+    emitSettingsChanged({ setting: 'defaultNodeWidth', value: width });
   },
 
   setDefaultNodeHeight: (height: number) => {
     set({ defaultNodeHeight: height });
+    updateProperty(STORAGE_KEY, 'defaultNodeHeight', height);
 
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const obj = raw ? JSON.parse(raw) : {};
-      obj.defaultNodeHeight = height;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-    } catch (e) {
-      // Ignore localStorage errors
-    }
+    // Emit settings changed event
+    emitSettingsChanged({ setting: 'defaultNodeHeight', value: height });
   },
 
   setDefaultNodeFontFamily: (fontFamily: string) => {
     set({ defaultNodeFontFamily: fontFamily });
+    updateProperty(STORAGE_KEY, 'defaultNodeFontFamily', fontFamily);
 
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const obj = raw ? JSON.parse(raw) : {};
-      obj.defaultNodeFontFamily = fontFamily;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-    } catch (e) {
-      // Ignore localStorage errors
-    }
+    // Emit settings changed event
+    emitSettingsChanged({ setting: 'defaultNodeFontFamily', value: fontFamily });
   },
 
   load: () => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const obj = JSON.parse(raw);
+    const obj = loadObject<any>(STORAGE_KEY, null);
 
-        // FR: Charger le thème en premier
-        // EN: Load theme first
-        if (obj.themeId) {
-          get().setTheme(obj.themeId);
-        } else {
-          // FR: Appliquer le thème par défaut
-          // EN: Apply default theme
-          const defaultTheme = getTheme('light');
-          applyThemeToDocument(defaultTheme);
-        }
-
-        // FR: Puis charger la couleur d'accent personnalisée (si elle existe)
-        // EN: Then load custom accent color (if exists)
-        if (obj.accentColor) {
-          get().setAccentColor(obj.accentColor);
-        }
-
-        // FR: Charger les palettes par défaut
-        // EN: Load default palettes
-        if (obj.defaultNodePaletteId) {
-          set({ defaultNodePaletteId: obj.defaultNodePaletteId });
-        }
-        if (obj.defaultTagPaletteId) {
-          set({ defaultTagPaletteId: obj.defaultTagPaletteId });
-        }
-
-        // FR: Charger l'option d'affichage de la minimap
-        // EN: Load minimap display option
-        if (obj.showMinimap !== undefined) {
-          set({ showMinimap: obj.showMinimap });
-        }
-
-        // FR: Charger l'option de réouverture des fichiers
-        // EN: Load reopen files option
-        if (obj.reopenFilesOnStartup !== undefined) {
-          set({ reopenFilesOnStartup: obj.reopenFilesOnStartup });
-        }
-
-        // FR: Charger le style par défaut des nœuds
-        // EN: Load default node style
-        if (obj.defaultNodeFontSize !== undefined) {
-          set({ defaultNodeFontSize: obj.defaultNodeFontSize });
-        }
-        if (obj.defaultNodeWidth !== undefined) {
-          set({ defaultNodeWidth: obj.defaultNodeWidth });
-        }
-        if (obj.defaultNodeHeight !== undefined) {
-          set({ defaultNodeHeight: obj.defaultNodeHeight });
-        }
-        if (obj.defaultNodeFontFamily !== undefined) {
-          set({ defaultNodeFontFamily: obj.defaultNodeFontFamily });
-        }
+    if (obj) {
+      // FR: Charger le thème en premier
+      // EN: Load theme first
+      if (obj.themeId) {
+        get().setTheme(obj.themeId);
       } else {
-        // FR: Initialiser avec le thème par défaut
-        // EN: Initialize with default theme
+        // FR: Appliquer le thème par défaut
+        // EN: Apply default theme
         const defaultTheme = getTheme('light');
         applyThemeToDocument(defaultTheme);
-        document.documentElement.style.setProperty('--accent-color', get().accentColor);
       }
-    } catch (e) {
-      // Ignore errors, use defaults
+
+      // FR: Puis charger la couleur d'accent personnalisée (si elle existe)
+      // EN: Then load custom accent color (if exists)
+      if (obj.accentColor) {
+        get().setAccentColor(obj.accentColor);
+      }
+
+      // FR: Charger les palettes par défaut
+      // EN: Load default palettes
+      if (obj.defaultNodePaletteId) {
+        set({ defaultNodePaletteId: obj.defaultNodePaletteId });
+      }
+      if (obj.defaultTagPaletteId) {
+        set({ defaultTagPaletteId: obj.defaultTagPaletteId });
+      }
+
+      // FR: Charger l'option d'affichage de la minimap
+      // EN: Load minimap display option
+      if (obj.showMinimap !== undefined) {
+        set({ showMinimap: obj.showMinimap });
+      }
+
+      // FR: Charger l'option de réouverture des fichiers
+      // EN: Load reopen files option
+      if (obj.reopenFilesOnStartup !== undefined) {
+        set({ reopenFilesOnStartup: obj.reopenFilesOnStartup });
+      }
+
+      // FR: Charger le style par défaut des nœuds
+      // EN: Load default node style
+      if (obj.defaultNodeFontSize !== undefined) {
+        set({ defaultNodeFontSize: obj.defaultNodeFontSize });
+      }
+      if (obj.defaultNodeWidth !== undefined) {
+        set({ defaultNodeWidth: obj.defaultNodeWidth });
+      }
+      if (obj.defaultNodeHeight !== undefined) {
+        set({ defaultNodeHeight: obj.defaultNodeHeight });
+      }
+      if (obj.defaultNodeFontFamily !== undefined) {
+        set({ defaultNodeFontFamily: obj.defaultNodeFontFamily });
+      }
+    } else {
+      // FR: Initialiser avec le thème par défaut
+      // EN: Initialize with default theme
       const defaultTheme = getTheme('light');
       applyThemeToDocument(defaultTheme);
       document.documentElement.style.setProperty('--accent-color', get().accentColor);

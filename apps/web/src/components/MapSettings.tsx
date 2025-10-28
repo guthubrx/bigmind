@@ -6,19 +6,12 @@
 import React from 'react';
 import { Settings } from 'lucide-react';
 import { useOpenFiles } from '../hooks/useOpenFiles';
-import { useAppSettings } from '../hooks/useAppSettings';
-import { getAllPalettes } from '../themes/colorPalettes';
-import PaletteSelector from './PaletteSelector';
+import { getMapSettingsSections } from '../utils/mapSettingsRegistry';
 import './MapSettings.css';
 
 function MapSettings() {
   const activeFile = useOpenFiles(state => state.openFiles.find(f => f.isActive) || null);
-  const updateNodePalette = useOpenFiles(state => state.updateActiveFileNodePalette);
-  const updateTagPalette = useOpenFiles(state => state.updateActiveFileTagPalette);
   const updateDefaultNodeStyle = useOpenFiles(state => state.updateActiveFileDefaultNodeStyle);
-  const defaultNodePaletteId = useAppSettings(s => s.defaultNodePaletteId);
-  const defaultTagPaletteId = useAppSettings(s => s.defaultTagPaletteId);
-  const allPalettes = getAllPalettes();
 
   if (!activeFile) {
     return (
@@ -34,19 +27,6 @@ function MapSettings() {
     );
   }
 
-  // FR: Utiliser les palettes de la carte ou les palettes par défaut
-  // EN: Use map palettes or default palettes
-  const currentNodePaletteId = activeFile.content?.nodePaletteId || defaultNodePaletteId;
-  const currentTagPaletteId = activeFile.content?.tagPaletteId || defaultTagPaletteId;
-
-  const handleNodePaletteChange = (paletteId: string) => {
-    updateNodePalette(paletteId);
-  };
-
-  const handleTagPaletteChange = (paletteId: string) => {
-    updateTagPalette(paletteId);
-  };
-
   return (
     <div className="map-settings">
       <div className="panel-content">
@@ -55,35 +35,12 @@ function MapSettings() {
           <h3>Paramètres de la carte</h3>
         </div>
 
-        <div className="map-settings-section">
-          <h4 className="map-settings-section-title">Palettes de couleurs</h4>
-
-          <div className="map-settings-field">
-            <div className="map-settings-label">Palette des nœuds</div>
-            <PaletteSelector
-              palettes={allPalettes}
-              value={currentNodePaletteId}
-              onChange={handleNodePaletteChange}
-              aria-label="Palette des nœuds de cette carte"
-            />
-            {!activeFile.content?.nodePaletteId && (
-              <span className="map-settings-hint">Par défaut</span>
-            )}
-          </div>
-
-          <div className="map-settings-field">
-            <div className="map-settings-label">Palette des tags</div>
-            <PaletteSelector
-              palettes={allPalettes}
-              value={currentTagPaletteId}
-              onChange={handleTagPaletteChange}
-              aria-label="Palette des tags de cette carte"
-            />
-            {!activeFile.content?.tagPaletteId && (
-              <span className="map-settings-hint">Par défaut</span>
-            )}
-          </div>
-        </div>
+        {/* FR: Sections dynamiques injectées par les plugins */}
+        {/* EN: Dynamic sections injected by plugins */}
+        {getMapSettingsSections().map(section => {
+          const Component = section.component;
+          return <Component key={section.id} activeFile={activeFile} />;
+        })}
 
         <div className="map-settings-section">
           <h4 className="map-settings-section-title">Style des nœuds</h4>

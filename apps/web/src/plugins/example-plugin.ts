@@ -12,8 +12,11 @@ const manifest: PluginManifest = {
   description: "Un plugin d'exemple pour démontrer les fonctionnalités du système",
   author: 'BigMind Team',
   main: 'example-plugin.js',
-  permissions: ['mindmap:read'],
-  hooks: ['mindmap.nodeCreated'],
+  permissions: [],
+  hooks: {
+    listens: ['mindmap.nodeCreated'],
+    emits: [],
+  },
 };
 
 export class ExamplePlugin implements Plugin {

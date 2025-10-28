@@ -22,6 +22,7 @@ import './MenuBar.css';
 
 function MenuBar() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [closeTimeout, setCloseTimeout] = useState<NodeJS.Timeout | null>(null);
   // const accentColor = useAppSettings((s) => s.accentColor);
   const platformInfo = usePlatform();
   const { openFileDialog, openFile, createNew, exportActiveXMind } = useFileOperations();
@@ -30,6 +31,26 @@ function MenuBar() {
   // FR: Raccourcis adaptés selon la plateforme
   // EN: Shortcuts adapted according to platform
   const getShortcut = (shortcut: string) => formatShortcut(shortcut, platformInfo);
+
+  // FR: Ouvrir un menu (instantané si on change de menu, sinon annule la fermeture)
+  // EN: Open a menu (instant if changing menus, otherwise cancel closing)
+  const handleMenuEnter = (menuId: string) => {
+    if (closeTimeout) {
+      clearTimeout(closeTimeout);
+      setCloseTimeout(null);
+    }
+    // Changement instantané de menu
+    setActiveMenu(menuId);
+  };
+
+  // FR: Fermer le menu avec un délai seulement si on quitte complètement
+  // EN: Close menu with delay only if leaving completely
+  const handleMenuLeave = () => {
+    const timeout = setTimeout(() => {
+      setActiveMenu(null);
+    }, 150);
+    setCloseTimeout(timeout);
+  };
 
   // FR: Gestionnaire pour les actions de menu
   // EN: Handler for menu actions
@@ -63,6 +84,10 @@ function MenuBar() {
       }
     } catch (error) {
       console.warn(`❌ Erreur lors de l'action ${action}:`, error);
+    }
+    if (closeTimeout) {
+      clearTimeout(closeTimeout);
+      setCloseTimeout(null);
     }
     setActiveMenu(null);
   };
@@ -154,14 +179,17 @@ function MenuBar() {
   ];
 
   return (
-    <div className="menu-bar" style={{ justifyContent: 'flex-start' }}>
+    <div
+      className="menu-bar"
+      style={{ justifyContent: 'flex-start' }}
+      onMouseLeave={handleMenuLeave}
+    >
       <div className="menu-logo" />
       {menuItems.map(menu => (
         <div
           key={menu.id}
           className={`menu-item ${activeMenu === menu.id ? 'active' : ''}`}
-          onMouseEnter={() => setActiveMenu(menu.id)}
-          onMouseLeave={() => setActiveMenu(null)}
+          onMouseEnter={() => handleMenuEnter(menu.id)}
         >
           <button type="button" className="menu-button">
             <menu.icon className="icon-small" />
@@ -169,14 +197,20 @@ function MenuBar() {
             <ChevronDown className="icon-small" />
           </button>
 
-          {activeMenu === menu.id && (
-            <div className="menu-dropdown">
+          <div
+            className="menu-dropdown"
+            onMouseEnter={() => handleMenuEnter(menu.id)}
+          >
               {menu.items.map(item => (
                 <button
                   type="button"
                   key={`${menu.id}-${item.label}`}
                   className="menu-item-option"
                   onClick={() => {
+                    if (closeTimeout) {
+                      clearTimeout(closeTimeout);
+                      setCloseTimeout(null);
+                    }
                     if (menu.id === 'tools' && item.label.startsWith('Préférences')) {
                       navigate('/settings');
                       setActiveMenu(null);
@@ -193,7 +227,6 @@ function MenuBar() {
                 </button>
               ))}
             </div>
-          )}
         </div>
       ))}
     </div>

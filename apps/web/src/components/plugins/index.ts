@@ -14,3 +14,5 @@ export type { AuditDashboardProps } from './AuditDashboard';
 
 export { PolicyEditor } from './PolicyEditor';
 export type { PolicyEditorProps } from './PolicyEditor';
+
+export { PluginDetailPage } from './PluginDetailPage';

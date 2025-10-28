@@ -24,7 +24,7 @@ export function PolicyEditor({ pluginId, initialPolicy, onSave, onCancel }: Poli
 
   const [currentStatement, setCurrentStatement] = useState<Partial<PolicyStatement>>({
     effect: PolicyEffect.ALLOW,
-    action: '',
+    action: undefined,
   });
 
   const addStatement = () => {
@@ -44,7 +44,7 @@ export function PolicyEditor({ pluginId, initialPolicy, onSave, onCancel }: Poli
 
     setCurrentStatement({
       effect: PolicyEffect.ALLOW,
-      action: '',
+      action: undefined,
     });
   };
 
@@ -250,7 +250,12 @@ export function PolicyEditor({ pluginId, initialPolicy, onSave, onCancel }: Poli
               id="policy-action"
               type="text"
               value={currentStatement.action || ''}
-              onChange={e => setCurrentStatement({ ...currentStatement, action: e.target.value })}
+              onChange={e =>
+                setCurrentStatement({
+                  ...currentStatement,
+                  action: (e.target.value || undefined) as any,
+                })
+              }
               placeholder="mindmap:read, mindmap:write, network, *, etc."
               style={{
                 width: '100%',

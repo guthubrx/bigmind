@@ -11,6 +11,11 @@ import JSZip from 'jszip';
 import { useViewport } from './useViewport';
 import { useCanvasOptions } from './useCanvasOptions';
 import { useTagStore } from './useTagStore';
+import { adaptBigMindToContent } from '../utils/contentAdapter';
+import {
+  applyOverlayFromLocalStorage,
+  applyOverlayFromZip,
+} from '../utils/overlayLoader';
 
 /**
  * FR: Limites de sécurité pour les archives ZIP
@@ -90,16 +95,7 @@ export const useFileOperations = () => {
 
         // FR: Adapter la structure pour useOpenFiles
         // EN: Adapt structure for useOpenFiles
-        const adaptedContent = {
-          id: bigMindData.id,
-          name: bigMindData.name,
-          rootNode: {
-            id: bigMindData.rootId,
-            title: bigMindData.nodes[bigMindData.rootId]?.title || 'Racine',
-            children: bigMindData.nodes[bigMindData.rootId]?.children || [],
-          },
-          nodes: bigMindData.nodes,
-        };
+        const adaptedContent = adaptBigMindToContent(bigMindData);
 
         return addFileToOpenFiles({
           name: file.name,
@@ -141,68 +137,23 @@ export const useFileOperations = () => {
 
           // FR: Adapter la structure pour useOpenFiles
           // EN: Adapt structure for useOpenFiles
-          const adaptedContent: any = {
-            id: bigMindData.id,
-            name: bigMindData.name,
-            rootNode: {
-              id: bigMindData.rootId,
-              title: bigMindData.nodes[bigMindData.rootId]?.title || 'Racine',
-              children: bigMindData.nodes[bigMindData.rootId]?.children || [],
-            },
-            nodes: bigMindData.nodes,
-          };
+          let adaptedContent = adaptBigMindToContent(bigMindData);
 
-          // FR: Appliquer un overlay local persisté (titre/notes/style par id)
-          try {
-            const key = `bigmind_overlay_${file.name}`;
-            const raw = localStorage.getItem(key);
-            if (raw) {
-              const overlay = JSON.parse(raw);
-              // FR: Valider l'overlay avant fusion
-              // EN: Validate overlay before merging
-              if (validateOverlay(overlay) && overlay?.nodes) {
-                Object.entries(overlay.nodes).forEach(([id, patch]: any) => {
-                  if (adaptedContent.nodes?.[id]) {
-                    adaptedContent.nodes[id] = { ...adaptedContent.nodes[id], ...patch };
-                  }
-                });
-                // Mettre à jour aussi le titre du root affiché si modifié
-                const rid = adaptedContent.rootNode.id;
-                if (overlay.nodes[rid]?.title) {
-                  adaptedContent.rootNode.title = overlay.nodes[rid].title;
-                }
-              }
-            }
-          } catch (e) {
-            // Ignore errors
-          }
+          // FR: Appliquer overlay depuis localStorage
+          // EN: Apply overlay from localStorage
+          applyOverlayFromLocalStorage(adaptedContent, file.name);
 
-          // FR: Appliquer bigmind.json embarqué si présent dans l'archive
+          // FR: Appliquer overlay depuis ZIP si présent
+          // EN: Apply overlay from ZIP if present
           let loadedTags: any = null;
           try {
             const zip = await JSZip.loadAsync(arrayBuffer);
-
-            const sidecar = zip.file('bigmind.json');
-            if (sidecar) {
-              const text = await sidecar.async('text');
-              const data = JSON.parse(text);
-
-              // FR: Valider les données avant fusion
-              // EN: Validate data before merging
-              if (validateOverlay(data)) {
-                if (data?.nodes) {
-                  Object.entries(data.nodes).forEach(([id, patch]: any) => {
-                    if (adaptedContent.nodes?.[id]) {
-                      adaptedContent.nodes[id] = { ...adaptedContent.nodes[id], ...patch };
-                    }
-                  });
-                }
-                // FR: Sauvegarder les tags pour les charger après
-                // EN: Save tags to load them later
-                if (data?.tags) {
-                  loadedTags = data.tags;
-                }
-              }
+            const { tags: zipTags } = await applyOverlayFromZip(adaptedContent, zip);
+            // Tags can be an object with full structure or empty array
+            if (zipTags && typeof zipTags === 'object' && !Array.isArray(zipTags)) {
+              loadedTags = zipTags;
+            } else if (Array.isArray(zipTags) && zipTags.length > 0) {
+              loadedTags = zipTags;
             }
           } catch (e) {
             // Ignore errors
@@ -253,62 +204,23 @@ export const useFileOperations = () => {
 
           // FR: Adapter la structure pour useOpenFiles
           // EN: Adapt structure for useOpenFiles
-          const adaptedContent: any = {
-            id: bigMindData.id,
-            name: bigMindData.name,
-            rootNode: {
-              id: bigMindData.rootId,
-              title: bigMindData.nodes[bigMindData.rootId]?.title || 'Racine',
-              children: bigMindData.nodes[bigMindData.rootId]?.children || [],
-            },
-            nodes: bigMindData.nodes,
-          };
-          try {
-            const key = `bigmind_overlay_${file.name}`;
-            const raw = localStorage.getItem(key);
-            if (raw) {
-              const overlay = JSON.parse(raw);
-              // FR: Valider l'overlay avant fusion
-              // EN: Validate overlay before merging
-              if (validateOverlay(overlay) && overlay?.nodes) {
-                Object.entries(overlay.nodes).forEach(([id, patch]: any) => {
-                  if (adaptedContent.nodes?.[id]) {
-                    adaptedContent.nodes[id] = { ...adaptedContent.nodes[id], ...patch };
-                  }
-                });
-                const rid = adaptedContent.rootNode.id;
-                if (overlay.nodes[rid]?.title) {
-                  adaptedContent.rootNode.title = overlay.nodes[rid].title;
-                }
-              }
-            }
-          } catch (e) {
-            // Ignore errors
-          }
+          let adaptedContent = adaptBigMindToContent(bigMindData);
 
+          // FR: Appliquer overlay depuis localStorage
+          // EN: Apply overlay from localStorage
+          applyOverlayFromLocalStorage(adaptedContent, file.name);
+
+          // FR: Appliquer overlay depuis ZIP si présent
+          // EN: Apply overlay from ZIP if present
           let loadedTagsFallback: any = null;
           try {
             const zip = await JSZip.loadAsync(arrayBuffer);
-
-            const sidecar = zip.file('bigmind.json');
-            if (sidecar) {
-              const text = await sidecar.async('text');
-              const data = JSON.parse(text);
-
-              // FR: Valider les données avant fusion
-              // EN: Validate data before merging
-              if (validateOverlay(data)) {
-                if (data?.nodes) {
-                  Object.entries(data.nodes).forEach(([id, patch]: any) => {
-                    if (adaptedContent.nodes?.[id]) {
-                      adaptedContent.nodes[id] = { ...adaptedContent.nodes[id], ...patch };
-                    }
-                  });
-                }
-                if (data?.tags) {
-                  loadedTagsFallback = data.tags;
-                }
-              }
+            const { tags: zipTags } = await applyOverlayFromZip(adaptedContent, zip);
+            // Tags can be an object with full structure or empty array
+            if (zipTags && typeof zipTags === 'object' && !Array.isArray(zipTags)) {
+              loadedTagsFallback = zipTags;
+            } else if (Array.isArray(zipTags) && zipTags.length > 0) {
+              loadedTagsFallback = zipTags;
             }
           } catch (e) {
             // Ignore errors

@@ -37,7 +37,7 @@ function MindMapNodeTags({ nodeId, onRemoveTag }: MindMapNodeTagsProps) {
         type: 'tag',
         tagId,
         sourceNodeId: nodeId,
-        tagLabel: allTags.find(t => t.id === tagId)?.label || '',
+        tagLabel: tags.find((t: any) => t.id === tagId)?.label || '',
       })
     );
   };

@@ -44,6 +44,20 @@ function PaletteSelector({ palettes, value, onChange, 'aria-label': ariaLabel }:
     setIsOpen(false);
   };
 
+  // FR: Si aucune palette n'est disponible
+  // EN: If no palette is available
+  if (!selectedPalette || palettes.length === 0) {
+    return (
+      <div className="palette-selector" ref={containerRef}>
+        <div className="palette-selector-button" style={{ opacity: 0.6, cursor: 'not-allowed' }}>
+          <div className="palette-selector-preview">
+            <span className="palette-selector-name">Aucune palette (activez le plugin)</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="palette-selector" ref={containerRef}>
       <button

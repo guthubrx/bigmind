@@ -13,6 +13,7 @@ export interface PluginManagerProps {
   onDeactivate: (pluginId: string) => Promise<void>;
   onUninstall: (pluginId: string) => Promise<void>;
   onViewPermissions: (pluginId: string) => void;
+  onViewDetails?: (pluginId: string) => void;
 }
 
 const getStateColor = (state: PluginState): string => {
@@ -49,6 +50,7 @@ export function PluginManager({
   onDeactivate,
   onUninstall,
   onViewPermissions,
+  onViewDetails,
 }: PluginManagerProps) {
   const [filter, setFilter] = useState<'all' | PluginState>('all');
   const [loading, setLoading] = useState<string | null>(null);
@@ -226,6 +228,24 @@ export function PluginManager({
 
                 {/* Actions */}
                 <div style={{ display: 'flex', gap: '8px', marginLeft: '20px' }}>
+                  {onViewDetails && (
+                    <button
+                      type="button"
+                      onClick={() => onViewDetails(info.plugin.manifest.id)}
+                      style={{
+                        padding: '8px 16px',
+                        border: '1px solid var(--accent-color)',
+                        borderRadius: '6px',
+                        backgroundColor: 'white',
+                        color: 'var(--accent-color)',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                      }}
+                    >
+                      ℹ️ Détails
+                    </button>
+                  )}
                   {info.state === PluginState.ACTIVE ? (
                     <button
                       type="button"

@@ -45,7 +45,7 @@ class LocalStoragePermissionStorage implements PermissionStorage {
 export const pluginSystem = createPluginSystem({
   bigmindVersion: '1.0.0',
   permissionStorage: new LocalStoragePermissionStorage(),
-  eventBus,
+  eventBus: eventBus as any,
 });
 
 // Export for easy access

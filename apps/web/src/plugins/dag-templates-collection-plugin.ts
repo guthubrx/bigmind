@@ -1,0 +1,274 @@
+/**
+ * DAG Templates Collection Plugin
+ * Provides predefined DAG structure templates
+ */
+
+import type { IPluginContext, PluginManifest } from '@bigmind/plugin-system';
+import { registerTemplates, unregisterTemplate, type DagTemplate } from '../utils/dagTemplates';
+
+// FR: Templates DAG prédéfinis
+// EN: Predefined DAG templates
+const DAG_TEMPLATES: DagTemplate[] = [
+  // Modèle: Taxonomie biologique
+  {
+    id: 'biological-taxonomy',
+    name: 'Biological Taxonomy',
+    description: 'Hierarchical biological classification',
+    isFavorite: true,
+    tags: [
+      {
+        id: 'kingdom-1',
+        label: 'Animalia',
+        parentIds: [],
+        children: ['phylum-1', 'phylum-2'],
+        relations: [],
+        color: '#ef4444',
+      },
+      {
+        id: 'phylum-1',
+        label: 'Chordata',
+        parentIds: ['kingdom-1'],
+        children: ['class-1', 'class-2'],
+        relations: [],
+        color: '#f97316',
+      },
+      {
+        id: 'phylum-2',
+        label: 'Arthropoda',
+        parentIds: ['kingdom-1'],
+        children: ['class-3'],
+        relations: [],
+        color: '#f97316',
+      },
+      {
+        id: 'class-1',
+        label: 'Mammalia',
+        parentIds: ['phylum-1'],
+        children: [],
+        relations: [],
+        color: '#eab308',
+      },
+      {
+        id: 'class-2',
+        label: 'Aves',
+        parentIds: ['phylum-1'],
+        children: [],
+        relations: [],
+        color: '#eab308',
+      },
+      {
+        id: 'class-3',
+        label: 'Insecta',
+        parentIds: ['phylum-2'],
+        children: [],
+        relations: [],
+        color: '#eab308',
+      },
+    ],
+    links: [],
+  },
+
+  // Modèle: Architecture logicielle
+  {
+    id: 'software-architecture',
+    name: 'Software Architecture',
+    description: 'Layered software architecture',
+    isFavorite: true,
+    tags: [
+      {
+        id: 'arch-1',
+        label: 'Application',
+        parentIds: [],
+        children: ['arch-2', 'arch-3'],
+        relations: [],
+        color: '#3b82f6',
+      },
+      {
+        id: 'arch-2',
+        label: 'Presentation Layer',
+        parentIds: ['arch-1'],
+        children: ['arch-4'],
+        relations: [],
+        color: '#06b6d4',
+      },
+      {
+        id: 'arch-3',
+        label: 'Business Logic Layer',
+        parentIds: ['arch-1'],
+        children: ['arch-5'],
+        relations: [],
+        color: '#06b6d4',
+      },
+      {
+        id: 'arch-4',
+        label: 'Data Access Layer',
+        parentIds: ['arch-2', 'arch-3'],
+        children: ['arch-6'],
+        relations: [],
+        color: '#8b5cf6',
+      },
+      {
+        id: 'arch-5',
+        label: 'Database',
+        parentIds: ['arch-4'],
+        children: [],
+        relations: [],
+        color: '#8b5cf6',
+      },
+      {
+        id: 'arch-6',
+        label: 'External Services',
+        parentIds: ['arch-4'],
+        children: [],
+        relations: [],
+        color: '#ec4899',
+      },
+    ],
+    links: [],
+  },
+
+  // Modèle: Processus de projet
+  {
+    id: 'project-process',
+    name: 'Project Process',
+    description: 'Waterfall project phases',
+    isFavorite: false,
+    tags: [
+      {
+        id: 'phase-1',
+        label: 'Concept',
+        parentIds: [],
+        children: ['phase-2'],
+        relations: [],
+        color: '#22c55e',
+      },
+      {
+        id: 'phase-2',
+        label: 'Design',
+        parentIds: ['phase-1'],
+        children: ['phase-3'],
+        relations: [],
+        color: '#16a34a',
+      },
+      {
+        id: 'phase-3',
+        label: 'Development',
+        parentIds: ['phase-2'],
+        children: ['phase-4'],
+        relations: [],
+        color: '#15803d',
+      },
+      {
+        id: 'phase-4',
+        label: 'Testing',
+        parentIds: ['phase-3'],
+        children: ['phase-5'],
+        relations: [],
+        color: '#166534',
+      },
+      {
+        id: 'phase-5',
+        label: 'Deployment',
+        parentIds: ['phase-4'],
+        children: [],
+        relations: [],
+        color: '#14532d',
+      },
+    ],
+    links: [],
+  },
+];
+
+export const manifest: PluginManifest = {
+  id: 'com.bigmind.dag-templates-collection',
+  name: 'DAG Templates Collection',
+  version: '1.0.0',
+  description: '3 templates DAG prédéfinis pour démarrer rapidement vos projets',
+  author: {
+    name: 'BigMind Team',
+    email: 'team@bigmind.com',
+  },
+  main: 'dag-templates-collection-plugin.js',
+  icon: '📋',
+  category: 'productivity',
+  tags: ['templates', 'dag', 'structures', 'productivity'],
+  license: 'MIT',
+  bigmindVersion: '1.0.0',
+
+  // Features
+  features: [
+    {
+      label: 'Biological Taxonomy',
+      description: 'Classification hiérarchique biologique (Royaume → Phylum → Classe)',
+      icon: '🧬',
+    },
+    {
+      label: 'Software Architecture',
+      description: 'Architecture logicielle en couches (Présentation → Logic → Data)',
+      icon: '🏗️',
+    },
+    {
+      label: 'Project Process',
+      description: 'Phases de projet en cascade (Concept → Design → Dev → Test → Deploy)',
+      icon: '📊',
+    },
+  ],
+
+  // Changelog
+  changelog: [
+    {
+      version: '1.0.0',
+      date: '2025-01-28',
+      changes: [
+        {
+          type: 'added',
+          description: 'Template "Biological Taxonomy" (favori)',
+        },
+        {
+          type: 'added',
+          description: 'Template "Software Architecture" (favori)',
+        },
+        {
+          type: 'added',
+          description: 'Template "Project Process"',
+        },
+      ],
+    },
+  ],
+
+  // Hooks
+  hooks: {
+    listens: [],
+    emits: [],
+  },
+
+  // UI Contributions
+  uiContributions: {
+    commands: [],
+    menus: [],
+    panels: [],
+    settings: false,
+  },
+
+  permissions: [],
+};
+
+export async function activate(context: IPluginContext): Promise<void> {
+  console.log('📋 [DAG Templates Collection] Plugin activé');
+
+  // Register all DAG templates
+  registerTemplates(DAG_TEMPLATES);
+
+  console.log(`📋 [DAG Templates Collection] ${DAG_TEMPLATES.length} templates enregistrés`);
+}
+
+export async function deactivate(): Promise<void> {
+  console.log('📋 [DAG Templates Collection] Plugin désactivé');
+
+  // Unregister all templates
+  DAG_TEMPLATES.forEach(template => {
+    unregisterTemplate(template.id);
+  });
+
+  console.log('📋 [DAG Templates Collection] Templates désenregistrés');
+}

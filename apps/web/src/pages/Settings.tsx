@@ -11,14 +11,15 @@ import { usePlatform } from '../hooks/usePlatform';
 import { X } from 'lucide-react';
 import { useAppSettings } from '../hooks/useAppSettings';
 import { getAllInterfaceThemes } from '../themes/colorThemes';
-import { getAllPalettes } from '../themes/colorPalettes';
-import PaletteSelector from '../components/PaletteSelector';
+import { getSettingsSections } from '../utils/settingsRegistry';
 import {
   PluginManager,
   PermissionDialog,
   AuditDashboard,
   PolicyEditor,
+  PluginDetailPage,
 } from '../components/plugins';
+import { EventMonitorPanel } from '../components/plugins/EventMonitorPanel';
 import { pluginSystem, saveActivatedPlugins } from '../utils/pluginManager';
 import type {
   PluginInfo,
@@ -36,10 +37,6 @@ function SettingsPage() {
   const setAccentColor = useAppSettings(s => s.setAccentColor);
   const themeId = useAppSettings(s => s.themeId);
   const setTheme = useAppSettings(s => s.setTheme);
-  const defaultNodePaletteId = useAppSettings(s => s.defaultNodePaletteId);
-  const setDefaultNodePalette = useAppSettings(s => s.setDefaultNodePalette);
-  const defaultTagPaletteId = useAppSettings(s => s.defaultTagPaletteId);
-  const setDefaultTagPalette = useAppSettings(s => s.setDefaultTagPalette);
   const showMinimap = useAppSettings(s => s.showMinimap);
   const setShowMinimap = useAppSettings(s => s.setShowMinimap);
   const reopenFilesOnStartup = useAppSettings(s => s.reopenFilesOnStartup);
@@ -53,7 +50,6 @@ function SettingsPage() {
   const defaultNodeFontFamily = useAppSettings(s => s.defaultNodeFontFamily);
   const setDefaultNodeFontFamily = useAppSettings(s => s.setDefaultNodeFontFamily);
   const allInterfaceThemes = getAllInterfaceThemes();
-  const allPalettes = getAllPalettes();
   const shortcuts = useShortcuts(s => s.map);
   const setShortcut = useShortcuts(s => s.setShortcut);
   const resetShortcuts = useShortcuts(s => s.resetDefaults);
@@ -62,8 +58,11 @@ function SettingsPage() {
   const platform = usePlatform();
 
   // Plugin management state
-  const [pluginView, setPluginView] = useState<'manager' | 'audit' | 'policy'>('manager');
+  const [pluginView, setPluginView] = useState<'manager' | 'audit' | 'policy' | 'panels'>(
+    'manager'
+  );
   const [plugins, setPlugins] = useState<Map<string, PluginInfo>>(new Map());
+  const [selectedPlugin, setSelectedPlugin] = useState<string | null>(null); // NEW: Selected plugin for detail view
   const [permissionRequest, setPermissionRequest] = useState<{
     pluginId: string;
     pluginName: string;
@@ -71,6 +70,9 @@ function SettingsPage() {
     resolve: (approved: boolean) => void;
   } | null>(null);
   const [policyEditing, setPolicyEditing] = useState<string | null>(null);
+
+  // Force re-render of dynamic settings sections when plugins change
+  const [settingsVersion, setSettingsVersion] = useState(0);
 
   // Check URL params for section (e.g., /settings?section=plugins)
   useEffect(() => {
@@ -88,6 +90,8 @@ function SettingsPage() {
   useEffect(() => {
     const updatePlugins = () => {
       setPlugins(registry.getAllPlugins());
+      // Force re-render of dynamic settings sections
+      setSettingsVersion(v => v + 1);
     };
 
     updatePlugins();
@@ -298,41 +302,12 @@ function SettingsPage() {
                     />
                   </div>
 
-                  {/* FR: Séparateur */}
-                  {/* EN: Separator */}
-                  <hr className="settings-separator" />
-
-                  {/* FR: Palette par défaut pour les nœuds */}
-                  {/* EN: Default palette for nodes */}
-                  <div className="settings-field">
-                    <span className="settings-label">Palette par défaut des nœuds</span>
-                    <div style={{ flex: 1 }}>
-                      <PaletteSelector
-                        palettes={allPalettes}
-                        value={defaultNodePaletteId}
-                        onChange={setDefaultNodePalette}
-                        aria-label="Sélectionner une palette pour les nœuds"
-                      />
-                    </div>
-                  </div>
-
-                  {/* FR: Palette par défaut pour les tags */}
-                  {/* EN: Default palette for tags */}
-                  <div className="settings-field">
-                    <span className="settings-label">Palette par défaut des tags</span>
-                    <div style={{ flex: 1 }}>
-                      <PaletteSelector
-                        palettes={allPalettes}
-                        value={defaultTagPaletteId}
-                        onChange={setDefaultTagPalette}
-                        aria-label="Sélectionner une palette pour les tags"
-                      />
-                    </div>
-                  </div>
-
-                  {/* FR: Séparateur */}
-                  {/* EN: Separator */}
-                  <hr className="settings-separator" />
+                  {/* FR: Sections dynamiques injectées par les plugins */}
+                  {/* EN: Dynamic sections injected by plugins */}
+                  {getSettingsSections('appearance').map(settingsSection => {
+                    const Component = settingsSection.component;
+                    return <Component key={settingsSection.id} />;
+                  })}
 
                   <h3 className="settings-subsection-title">Style par défaut des nœuds</h3>
 
@@ -481,6 +456,7 @@ function SettingsPage() {
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
                     {[
                       { id: 'manager' as const, label: 'Gestionnaire', icon: '🔌' },
+                      { id: 'panels' as const, label: 'Panels', icon: '🖼️' },
                       { id: 'audit' as const, label: 'Audit', icon: '📊' },
                       { id: 'policy' as const, label: 'Politiques', icon: '🔐' },
                     ].map(({ id, label, icon }) => (
@@ -509,14 +485,49 @@ function SettingsPage() {
                   </div>
 
                   {/* Plugin content */}
-                  {pluginView === 'manager' && (
-                    <PluginManager
-                      plugins={plugins}
-                      onActivate={handleActivate}
-                      onDeactivate={handleDeactivate}
-                      onUninstall={handleUninstall}
-                      onViewPermissions={handleViewPermissions}
-                    />
+                  {pluginView === 'manager' &&
+                    (selectedPlugin ? (
+                      <PluginDetailPage
+                        plugin={plugins.get(selectedPlugin)!}
+                        onBack={() => setSelectedPlugin(null)}
+                        onActivate={
+                          plugins.get(selectedPlugin)?.state === 'active'
+                            ? undefined
+                            : async () => {
+                                await handleActivate(selectedPlugin);
+                                setSelectedPlugin(null);
+                              }
+                        }
+                        onDeactivate={
+                          plugins.get(selectedPlugin)?.state === 'active'
+                            ? async () => {
+                                await handleDeactivate(selectedPlugin);
+                                setSelectedPlugin(null);
+                              }
+                            : undefined
+                        }
+                      />
+                    ) : (
+                      <PluginManager
+                        plugins={plugins}
+                        onActivate={handleActivate}
+                        onDeactivate={handleDeactivate}
+                        onUninstall={handleUninstall}
+                        onViewPermissions={handleViewPermissions}
+                        onViewDetails={pluginId => setSelectedPlugin(pluginId)}
+                      />
+                    ))}
+
+                  {pluginView === 'panels' && (
+                    <div>
+                      <div style={{ marginBottom: '16px' }}>
+                        <h3>Panneaux des Plugins</h3>
+                        <p style={{ color: 'var(--fg-secondary)', fontSize: '14px' }}>
+                          Interface créée par les plugins actifs
+                        </p>
+                      </div>
+                      <EventMonitorPanel />
+                    </div>
                   )}
 
                   {pluginView === 'audit' && <AuditDashboard onQuery={handleQueryAudit} />}
@@ -534,7 +545,7 @@ function SettingsPage() {
                       {policyEditing ? (
                         <PolicyEditor
                           pluginId={policyEditing}
-                          onSave={handleSavePolicy}
+                          onSave={async policy => handleSavePolicy(policyEditing, policy)}
                           onCancel={() => setPolicyEditing(null)}
                         />
                       ) : (
@@ -577,6 +588,7 @@ function SettingsPage() {
                   {/* Permission Dialog */}
                   {permissionRequest && (
                     <PermissionDialog
+                      pluginId={permissionRequest.pluginId}
                       pluginName={permissionRequest.pluginName}
                       permissions={permissionRequest.permissions}
                       onApprove={handlePermissionApprove}

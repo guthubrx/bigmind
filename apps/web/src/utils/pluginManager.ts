@@ -9,6 +9,14 @@ import { createEnhancedPluginSystem } from '@bigmind/plugin-system';
 import { eventBus } from './eventBus';
 import examplePlugin from '../plugins/example-plugin';
 import analyticsPlugin from '../plugins/analytics-plugin';
+import * as eventMonitorPlugin from '../plugins/event-monitor-plugin';
+import * as dagTemplatesPlugin from '../plugins/dag-templates-plugin';
+import * as dagTemplatesCollectionPlugin from '../plugins/dag-templates-collection-plugin';
+import * as exportManagerPlugin from '../plugins/export-manager-plugin';
+import * as paletteManagerPlugin from '../plugins/palette-manager-plugin';
+import * as paletteSettingsPlugin from '../plugins/palette-settings-plugin';
+import * as colorPalettesCollectionPlugin from '../plugins/color-palettes-collection-plugin';
+import * as themeManagerPlugin from '../plugins/theme-manager-plugin';
 
 // Create the enhanced plugin system with Phase 2 security
 const system = createEnhancedPluginSystem({
@@ -26,7 +34,7 @@ const system = createEnhancedPluginSystem({
       return new Map(JSON.parse(data));
     },
   },
-  eventBus,
+  eventBus: eventBus as any,
 });
 
 const {
@@ -81,6 +89,32 @@ export async function initializePlugins(): Promise<void> {
   console.log('🔌 Initializing plugin system...');
 
   try {
+    // Register core plugins (migrated from core)
+    await registry.register(dagTemplatesPlugin);
+    console.log('✅ Registered: DAG Templates Manager');
+
+    await registry.register(dagTemplatesCollectionPlugin);
+    console.log('✅ Registered: DAG Templates Collection');
+
+    await registry.register(exportManagerPlugin);
+    console.log('✅ Registered: Export Manager');
+
+    await registry.register(paletteManagerPlugin);
+    console.log('✅ Registered: Palette Manager');
+
+    await registry.register(paletteSettingsPlugin);
+    console.log('✅ Registered: Palette Settings');
+
+    await registry.register(colorPalettesCollectionPlugin);
+    console.log('✅ Registered: Color Palettes Collection');
+
+    await registry.register(themeManagerPlugin);
+    console.log('✅ Registered: Theme Manager');
+
+    // Register developer/utility plugins
+    await registry.register(eventMonitorPlugin);
+    console.log('✅ Registered: Event Monitor');
+
     // Register example plugins
     await registry.register(examplePlugin);
     console.log('✅ Registered: Example Plugin');

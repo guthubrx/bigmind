@@ -12,8 +12,11 @@ const manifest: PluginManifest = {
   description: 'Analyse et collecte des statistiques sur vos mindmaps (exemple)',
   author: 'BigMind Team',
   main: 'analytics-plugin.js',
-  permissions: ['mindmap:read', 'storage:read', 'storage:write'],
-  hooks: ['mindmap.nodeCreated', 'mindmap.nodeUpdated', 'mindmap.nodeDeleted'],
+  permissions: [],
+  hooks: {
+    listens: ['mindmap.nodeCreated', 'mindmap.nodeUpdated', 'mindmap.nodeDeleted'],
+    emits: [],
+  },
 };
 
 export class AnalyticsPlugin implements Plugin {
@@ -33,7 +36,7 @@ export class AnalyticsPlugin implements Plugin {
 
     // Load previous stats from storage
     try {
-      const saved = await context.api.storage.get('analytics-stats');
+      const saved = await context.api.storage.get<string>('analytics-stats');
       if (saved) {
         this.stats = JSON.parse(saved);
         console.log('📈 Loaded stats:', this.stats);

@@ -135,6 +135,20 @@ body {
 
 :root {
   --accent-color: #3b82f6;
+
+  /* Background colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+
+  /* Foreground/Text colors */
+  --fg: #111827;
+  --fg-secondary: #4b5563;
+  --fg-tertiary: #6b7280;
+
+  /* Border colors */
+  --border-color: #e5e7eb;
+  --border-secondary: #d1d5db;
 }
 
 /* Utility to access accent CSS variable directly when needed */

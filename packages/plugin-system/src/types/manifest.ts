@@ -35,6 +35,33 @@ export interface PluginManifest {
   license?: string;
   keywords?: string[];
 
+  // WordPress-like rich metadata
+  category?: 'productivity' | 'integration' | 'theme' | 'developer' | 'export' | 'template';
+  tags?: string[];
+  screenshots?: string[];
+  documentation?: string;
+
+  // Features list (what the plugin does)
+  features?: PluginFeature[];
+
+  // Changelog
+  changelog?: ChangelogEntry[];
+
+  // Hooks/Events
+  hooks?: {
+    listens?: string[]; // Events this plugin listens to
+    emits?: string[]; // Events this plugin emits
+  };
+
+  // UI contributions summary
+  uiContributions?: {
+    menus?: string[];
+    pages?: string[];
+    panels?: string[];
+    commands?: string[];
+    settings?: boolean;
+  };
+
   // Plugin capabilities
   contributes?: {
     commands?: CommandContribution[];
@@ -43,6 +70,27 @@ export interface PluginManifest {
     templates?: TemplateContribution[];
     fileFormats?: FileFormatContribution[];
   };
+}
+
+/**
+ * Plugin feature description
+ */
+export interface PluginFeature {
+  label: string;
+  description: string;
+  icon?: string;
+}
+
+/**
+ * Changelog entry
+ */
+export interface ChangelogEntry {
+  version: string;
+  date: string;
+  changes: {
+    type: 'added' | 'fixed' | 'changed' | 'removed' | 'security';
+    description: string;
+  }[];
 }
 
 /**
