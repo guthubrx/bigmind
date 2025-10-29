@@ -103,33 +103,35 @@ export function PluginMarketplace() {
 
       {!showAdmin && (
         <div className="plugin-manager-header">
-          <div className="plugin-manager-title">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
+            <div className="plugin-manager-title">
               <h1 style={{ margin: 0 }}>🏪 Plugin Marketplace</h1>
-              <button
-                type="button"
-                onClick={() => setShowAdmin(true)}
-                style={{
-                  padding: '6px 10px',
-                  background: '#fbbf24',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                }}
-                title="Admin Panel (Moderation)"
-              >
-                <Settings size={16} />
-                Admin
-              </button>
+              <p className="plugin-manager-subtitle">
+                Découvrez et installez des plugins pour étendre les capacités de BigMind
+              </p>
             </div>
-            <p className="plugin-manager-subtitle">
-              Découvrez et installez des plugins pour étendre les capacités de BigMind
-            </p>
+            <button
+              type="button"
+              onClick={() => setShowAdmin(true)}
+              style={{
+                padding: '8px 12px',
+                background: '#fbbf24',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '13px',
+                fontWeight: 600,
+                color: '#000',
+                marginTop: '4px',
+              }}
+              title="Admin Panel - Moderation des avis"
+            >
+              <Settings size={18} />
+              Admin
+            </button>
           </div>
 
           <div className="plugin-manager-stats">
