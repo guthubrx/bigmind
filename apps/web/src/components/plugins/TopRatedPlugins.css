@@ -1,0 +1,136 @@
+/* Top Rated Plugins Widget */
+
+.top-rated-plugins {
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 20px;
+}
+
+.top-rated-plugins__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: var(--fg-primary);
+}
+
+.top-rated-plugins__header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.top-rated-plugins__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.top-rated-plugins__card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: var(--bg-primary);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.top-rated-plugins__card:hover {
+  background: var(--bg-secondary);
+  border-color: #fbbf24;
+  transform: translateX(4px);
+}
+
+.top-rated-plugins__badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: #fbbf24;
+  color: #000000;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.top-rated-plugins__content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.top-rated-plugins__icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.top-rated-plugins__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.top-rated-plugins__name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-primary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.top-rated-plugins__rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--fg-tertiary);
+}
+
+.top-rated-plugins__score {
+  font-weight: 600;
+  color: #fbbf24;
+}
+
+.top-rated-plugins__count {
+  color: var(--fg-tertiary);
+}
+
+.top-rated-plugins__loading {
+  padding: 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--fg-tertiary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .top-rated-plugins {
+    padding: 12px;
+  }
+
+  .top-rated-plugins__card {
+    padding: 8px;
+  }
+
+  .top-rated-plugins__badge {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+
+  .top-rated-plugins__icon {
+    font-size: 20px;
+  }
+}
