@@ -12,12 +12,15 @@ export const manifest: PluginManifest = {
   id: 'com.bigmind.palette-manager',
   name: 'Palette Manager',
   version: '1.0.0',
-  description: 'Gérez les palettes de couleurs pour personnaliser automatiquement vos nœuds et tags',
+  description:
+    'Gérez les palettes de couleurs pour personnaliser automatiquement vos nœuds et tags',
+  /* eslint-disable max-len */
   longDescription: `Donnez vie à vos cartes mentales avec un système de coloration automatique intelligent. Palette Manager calcule automatiquement les couleurs de vos nœuds en fonction de leur position dans la hiérarchie et de la palette active.
 
 **La couleur au service de la clarté**
 
 Fini les nœuds tous blancs ou les couleurs incohérentes. Ce plugin applique automatiquement une palette harmonieuse à vos cartes mentales, rendant la structure visuelle immédiatement compréhensible. Chaque niveau de la hiérarchie se distingue naturellement, guidant l'œil et facilitant la navigation.`,
+  /* eslint-enable max-len */
   author: {
     name: 'BigMind Team',
     email: 'team@bigmind.com',
@@ -32,7 +35,8 @@ Fini les nœuds tous blancs ou les couleurs incohérentes. Ce plugin applique au
   bigmindVersion: '1.0.0',
 
   // Classification
-  source: 'core',
+  source: 'official',
+  autoActivate: true, // Auto-activate (essential for color management)
   pricing: 'free',
   featured: false,
 
@@ -42,7 +46,7 @@ Fini les nœuds tous blancs ou les couleurs incohérentes. Ce plugin applique au
     'Calcul automatique des couleurs selon la hiérarchie',
     'Respect des couleurs manuelles existantes',
     'Contraste optimal pour la lisibilité du texte',
-    'S\'intègre avec toutes les palettes disponibles',
+    "S'intègre avec toutes les palettes disponibles",
     'API complète pour étendre le système',
     'Priorité configurable pour la composition',
   ],

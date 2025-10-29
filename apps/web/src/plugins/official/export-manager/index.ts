@@ -15,11 +15,13 @@ export const manifest: PluginManifest = {
   name: 'Export Manager',
   version: '1.0.0',
   description: 'Exportez vos mind maps dans tous les formats populaires',
+  /* eslint-disable max-len */
   longDescription: `Partagez et sauvegardez vos cartes mentales en toute simplicité grâce à un moteur d'export universel et intelligent. Export Manager garantit que toutes vos données - styles, tags, notes - sont parfaitement préservées lors de l'exportation.
 
 **Vos données, partout où vous en avez besoin**
 
 Travaillez en toute sérénité : vos cartes peuvent être exportées au format XMind pour collaborer avec d'autres outils, ou sauvegardées avec toutes les métadonnées BigMind intactes. Le système de sidecar intelligent préserve absolument toutes vos personnalisations, même les fonctionnalités avancées de BigMind que XMind ne supporte pas nativement.`,
+  /* eslint-enable max-len */
   author: {
     name: 'BigMind Team',
     email: 'team@bigmind.com',
@@ -34,7 +36,8 @@ Travaillez en toute sérénité : vos cartes peuvent être exportées au format 
   // Classification
   category: 'export',
   tags: ['export', 'save', 'xmind', 'interoperability', 'backup'],
-  source: 'core',
+  source: 'official',
+  autoActivate: true, // Auto-activate (essential for export functionality)
   pricing: 'free',
 
   license: 'MIT',
@@ -47,15 +50,15 @@ Travaillez en toute sérénité : vos cartes peuvent être exportées au format 
     'Préservation automatique de tous les styles et tags',
     'Métadonnées BigMind embarquées (sidecar JSON)',
     'Sauvegarde complète du viewport et des options',
-    'Aucune perte de données lors de l\'export/import',
-    'Commande rapide accessible depuis le menu'
+    "Aucune perte de données lors de l'export/import",
+    'Commande rapide accessible depuis le menu',
   ],
   useCases: [
     'Partager des cartes avec des utilisateurs XMind',
     'Créer des sauvegardes complètes de vos projets',
     'Migrer entre BigMind et XMind sans perte',
     'Archiver des cartes avec toutes leurs métadonnées',
-    'Collaborer en utilisant XMind comme format d\'échange'
+    "Collaborer en utilisant XMind comme format d'échange",
   ],
 
   // Features

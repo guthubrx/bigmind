@@ -16,11 +16,13 @@ export const manifest: PluginManifest = {
   name: 'DAG Templates Manager',
   version: '1.0.0',
   description: 'Gérez et appliquez des structures DAG prédéfinies pour démarrer vos projets',
+  /* eslint-disable max-len */
   longDescription: `Ne partez plus jamais d'une feuille blanche. DAG Templates Manager vous permet d'appliquer en un clic des structures hiérarchiques complètes avec tags et relations déjà configurés.
 
 **Le pouvoir des templates**
 
 Gagnez des heures de configuration en partant de structures éprouvées. Ce plugin gère l'application des templates créés par vous ou fournis par d'autres plugins. Il sert de moteur central pour tout le système de templates de BigMind.`,
+  /* eslint-enable max-len */
   author: {
     name: 'BigMind Team',
     email: 'team@bigmind.com',
@@ -35,12 +37,13 @@ Gagnez des heures de configuration en partant de structures éprouvées. Ce plug
   bigmindVersion: '1.0.0',
 
   // Classification
-  source: 'core',
+  source: 'official',
   pricing: 'free',
   featured: false,
+  autoActivate: true, // Auto-activate (essential for template system)
 
   // Marketing
-  tagline: 'Appliquez des structures DAG prêtes à l\'emploi',
+  tagline: "Appliquez des structures DAG prêtes à l'emploi",
   benefits: [
     'Moteur central pour gérer tous les templates DAG',
     'Application en un clic avec préservation des données existantes',
@@ -50,7 +53,7 @@ Gagnez des heures de configuration en partant de structures éprouvées. Ce plug
   ],
   useCases: [
     'Démarrer rapidement un nouveau projet avec une structure éprouvée',
-    'Standardiser l\'organisation de vos cartes mentales',
+    "Standardiser l'organisation de vos cartes mentales",
     'Réutiliser des structures qui ont fait leurs preuves',
     'Créer des bibliothèques de templates pour votre équipe',
   ],

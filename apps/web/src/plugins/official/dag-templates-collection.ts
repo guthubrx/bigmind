@@ -184,11 +184,13 @@ export const manifest: PluginManifest = {
   name: 'DAG Templates Collection',
   version: '1.0.0',
   description: '3 templates DAG professionnels pour démarrer rapidement vos projets',
+  /* eslint-disable max-len */
   longDescription: `Trois structures complètes et prêtes à l'emploi pour vous faire gagner du temps sur vos projets les plus courants. Chaque template inclut une hiérarchie de tags pré-configurée avec des couleurs harmonieuses et des relations logiques.
 
 **Vos projets, instantanément structurés**
 
 Que vous documentiez une taxonomie biologique, conceviez une architecture logicielle ou planifiez un projet en cascade, ces templates vous offrent une base solide pour construire vos cartes mentales. Plus besoin de recréer la même structure à chaque fois : appliquez le template et concentrez-vous sur le contenu.`,
+  /* eslint-enable max-len */
   author: {
     name: 'BigMind Team',
     email: 'team@bigmind.com',
@@ -203,12 +205,13 @@ Que vous documentiez une taxonomie biologique, conceviez une architecture logici
   bigmindVersion: '1.0.0',
 
   // Classification
-  source: 'core',
+  source: 'official',
   pricing: 'free',
   featured: true,
+  autoActivate: false, // User must enable manually
 
   // Marketing
-  tagline: 'Structures professionnelles prêtes à l\'emploi',
+  tagline: "Structures professionnelles prêtes à l'emploi",
   benefits: [
     'Biological Taxonomy : hiérarchie scientifique complète (Royaume → Phylum → Classe)',
     'Software Architecture : architecture en couches pour vos projets techniques',
