@@ -53,6 +53,85 @@
   gap: 20px;
 }
 
+/* Plugin Grid - for marketplace sections */
+.plugin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  width: 100%;
+}
+
+/* Plugin Sections Container */
+.plugin-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  width: 100%;
+}
+
+.plugin-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.plugin-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.plugin-section-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--fg-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plugin-section-icon {
+  font-size: 24px;
+}
+
+.plugin-section-count {
+  font-size: 12px;
+  padding: 4px 8px;
+  background: var(--accent-color-10);
+  color: var(--accent-color);
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.plugin-empty-state {
+  padding: 60px 20px;
+  text-align: center;
+  background: var(--bg-secondary);
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  color: var(--fg-tertiary);
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.empty-state-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--fg-primary);
+  margin-bottom: 8px;
+}
+
+.empty-state-message {
+  font-size: 14px;
+  color: var(--fg-secondary);
+}
+
 /* Pagination */
 .plugin-manager__pagination {
   display: flex;

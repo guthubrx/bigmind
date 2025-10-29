@@ -25,6 +25,7 @@ export function PluginMarketplace() {
   const [selectedPluginId, setSelectedPluginId] = useState<string | null>(null);
   const [minRating, setMinRating] = useState<number | null>(null);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [gridColumns, setGridColumns] = useState(2);
 
   // Filter manifests
   const filteredManifests = useMemo(
@@ -103,7 +104,14 @@ export function PluginMarketplace() {
 
       {!showAdmin && (
         <div className="plugin-manager-header">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              width: '100%',
+            }}
+          >
             <div className="plugin-manager-title">
               <h1 style={{ margin: 0 }}>🏪 Plugin Marketplace</h1>
               <p className="plugin-manager-subtitle">
@@ -167,6 +175,7 @@ export function PluginMarketplace() {
         totalCount={manifests.length}
         filteredCount={filteredManifests.length}
         showStatusFilter={false} // Hide status filter in marketplace
+        onGridColumnsChange={setGridColumns}
       />
 
       {/* Rating Filter */}
@@ -185,7 +194,10 @@ export function PluginMarketplace() {
               </h2>
               <span className="plugin-section-count">{corePlugins.length}</span>
             </div>
-            <div className="plugin-grid">
+            <div
+              className="plugin-grid"
+              style={{ gridTemplateColumns: `repeat(${gridColumns}, 1fr)` }}
+            >
               {corePlugins.map(loaded => (
                 <PluginCard
                   key={loaded.manifest.id}
@@ -213,7 +225,10 @@ export function PluginMarketplace() {
               </h2>
               <span className="plugin-section-count">{featuredPlugins.length}</span>
             </div>
-            <div className="plugin-grid">
+            <div
+              className="plugin-grid"
+              style={{ gridTemplateColumns: `repeat(${gridColumns}, 1fr)` }}
+            >
               {featuredPlugins.map(loaded => (
                 <PluginCard
                   key={loaded.manifest.id}
@@ -240,7 +255,10 @@ export function PluginMarketplace() {
               </h2>
               <span className="plugin-section-count">{communityPlugins.length}</span>
             </div>
-            <div className="plugin-grid">
+            <div
+              className="plugin-grid"
+              style={{ gridTemplateColumns: `repeat(${gridColumns}, 1fr)` }}
+            >
               {communityPlugins.map(loaded => (
                 <PluginCard
                   key={loaded.manifest.id}
@@ -263,7 +281,7 @@ export function PluginMarketplace() {
             <div className="empty-state-icon">🔍</div>
             <div className="empty-state-title">Aucun plugin trouvé</div>
             <div className="empty-state-message">
-              Essayez d'ajuster vos filtres ou votre recherche
+              Essayez d&apos;ajuster vos filtres ou votre recherche
             </div>
           </div>
         )}
