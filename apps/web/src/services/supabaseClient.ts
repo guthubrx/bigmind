@@ -27,6 +27,17 @@ export interface PluginRating {
 }
 
 /**
+ * Rating Reply Interface
+ */
+export interface RatingReply {
+  id?: string;
+  rating_id: string;
+  author_name: string;
+  reply_text: string;
+  created_at?: string;
+}
+
+/**
  * Aggregate ratings for a plugin
  */
 export interface PluginRatingsAggregate {
@@ -202,4 +213,52 @@ export async function exportRatingsToCSV(pluginId: string): Promise<string> {
     .join('\n');
 
   return csv;
+}
+
+/**
+ * Get replies for a rating
+ */
+export async function getRatingReplies(ratingId: string): Promise<RatingReply[]> {
+  const { data, error } = await supabase
+    .from('plugin_rating_replies')
+    .select('*')
+    .eq('rating_id', ratingId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('[Supabase] Error fetching replies:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+/**
+ * Submit a reply to a rating
+ */
+export async function submitRatingReply(
+  ratingId: string,
+  authorName: string,
+  replyText: string
+): Promise<boolean> {
+  if (!ratingId || !authorName.trim() || !replyText.trim()) {
+    console.error('[Supabase] Invalid reply data');
+    return false;
+  }
+
+  const { error } = await supabase.from('plugin_rating_replies').insert([
+    {
+      rating_id: ratingId,
+      author_name: authorName.trim(),
+      reply_text: replyText.trim(),
+      created_at: new Date().toISOString(),
+    },
+  ]);
+
+  if (error) {
+    console.error('[Supabase] Error submitting reply:', error);
+    return false;
+  }
+
+  return true;
 }

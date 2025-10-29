@@ -1,0 +1,52 @@
+/* Rating Replies List */
+
+.rating-replies-list {
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--bg-primary);
+  border-left: 3px solid #fbbf24;
+  border-radius: 3px;
+}
+
+.rating-replies-list__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fbbf24;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rating-replies-list__items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rating-replies-list__item {
+  padding: 6px;
+  background: var(--bg-secondary);
+  border-radius: 3px;
+  border: 1px solid var(--border-color);
+}
+
+.rating-replies-list__author {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-primary);
+}
+
+.rating-replies-list__date {
+  font-size: 10px;
+  color: var(--fg-tertiary);
+  margin-bottom: 4px;
+}
+
+.rating-replies-list__text {
+  font-size: 11px;
+  color: var(--fg-primary);
+  line-height: 1.4;
+}
