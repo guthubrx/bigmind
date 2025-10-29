@@ -62,6 +62,7 @@ function SettingsPage() {
   const [pluginView, setPluginView] = useState<
     'marketplace' | 'manager' | 'audit' | 'policy' | 'panels'
   >('marketplace');
+  const [pluginCardWidth, setPluginCardWidth] = useState<'compact' | 'normal' | 'wide'>('normal');
   const [plugins, setPlugins] = useState<Map<string, PluginInfo>>(new Map());
   const [selectedPlugin, setSelectedPlugin] = useState<string | null>(null); // NEW: Selected plugin for detail view
   const [permissionRequest, setPermissionRequest] = useState<{
@@ -471,158 +472,234 @@ function SettingsPage() {
                 </div>
               )}
 
-              {section === 'plugins' && (
-                <div>
-                  <h2 className="settings-section-title">Gestion des Plugins</h2>
+              {section === 'plugins' &&
+                (() => {
+                  // Calculate card width based on selected preset
+                  const cardWidthMap = {
+                    compact: '70%',
+                    normal: '100%',
+                    wide: '1400px',
+                  };
 
-                  {/* Plugin sub-navigation */}
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
-                    {[
-                      { id: 'marketplace' as const, label: 'Marketplace', icon: '🏪' },
-                      { id: 'manager' as const, label: 'Gestionnaire', icon: '🔌' },
-                      { id: 'panels' as const, label: 'Panels', icon: '🖼️' },
-                      { id: 'audit' as const, label: 'Audit', icon: '📊' },
-                      { id: 'policy' as const, label: 'Politiques', icon: '🔐' },
-                    ].map(({ id, label, icon }) => (
-                      <button
-                        key={id}
-                        type="button"
-                        onClick={() => setPluginView(id)}
+                  return (
+                    <div>
+                      <div
                         style={{
-                          padding: '8px 16px',
-                          border:
-                            pluginView === id
-                              ? '2px solid var(--accent-color)'
-                              : '1px solid #d1d5db',
-                          borderRadius: '6px',
-                          backgroundColor:
-                            pluginView === id ? 'var(--accent-color-10)' : 'transparent',
-                          color: pluginView === id ? 'var(--accent-color)' : 'var(--fg-primary)',
-                          fontWeight: pluginView === id ? 600 : 400,
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: '24px',
                         }}
                       >
-                        {icon} {label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Plugin content */}
-                  {pluginView === 'marketplace' && <PluginMarketplace />}
-
-                  {pluginView === 'manager' &&
-                    (selectedPlugin ? (
-                      <PluginDetailPage
-                        plugin={plugins.get(selectedPlugin)!}
-                        onBack={() => setSelectedPlugin(null)}
-                        onActivate={
-                          plugins.get(selectedPlugin)?.state === 'active'
-                            ? undefined
-                            : async () => {
-                                await handleActivate(selectedPlugin);
-                                setSelectedPlugin(null);
-                              }
-                        }
-                        onDeactivate={
-                          plugins.get(selectedPlugin)?.state === 'active'
-                            ? async () => {
-                                await handleDeactivate(selectedPlugin);
-                                setSelectedPlugin(null);
-                              }
-                            : undefined
-                        }
-                      />
-                    ) : (
-                      <PluginManager
-                        plugins={plugins}
-                        onActivate={handleActivate}
-                        onDeactivate={handleDeactivate}
-                        onUninstall={handleUninstall}
-                        onViewPermissions={handleViewPermissions}
-                        onViewDetails={pluginId => setSelectedPlugin(pluginId)}
-                      />
-                    ))}
-
-                  {pluginView === 'panels' && (
-                    <div>
-                      <div style={{ marginBottom: '16px' }}>
-                        <h3>Panneaux des Plugins</h3>
-                        <p style={{ color: 'var(--fg-secondary)', fontSize: '14px' }}>
-                          Interface créée par les plugins actifs
-                        </p>
-                      </div>
-                      <EventMonitorPanel />
-                    </div>
-                  )}
-
-                  {pluginView === 'audit' && <AuditDashboard onQuery={handleQueryAudit} />}
-
-                  {pluginView === 'policy' && (
-                    <div>
-                      <div style={{ marginBottom: '16px' }}>
-                        <h3>Politiques ABAC</h3>
-                        <p style={{ color: 'var(--fg-secondary)', fontSize: '14px' }}>
-                          Définissez des règles d&apos;accès basées sur les attributs pour chaque
-                          plugin.
-                        </p>
-                      </div>
-
-                      {policyEditing ? (
-                        <PolicyEditor
-                          pluginId={policyEditing}
-                          onSave={async policy => handleSavePolicy(policyEditing, policy)}
-                          onCancel={() => setPolicyEditing(null)}
-                        />
-                      ) : (
-                        <div>
-                          {Array.from(plugins.keys()).map(pluginId => (
-                            <div
-                              key={pluginId}
+                        <h2 className="settings-section-title">Gestion des Plugins</h2>
+                        {/* Width controls */}
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          {[
+                            { id: 'compact' as const, label: 'Compact', width: '70%' },
+                            { id: 'normal' as const, label: 'Normal', width: '100%' },
+                            { id: 'wide' as const, label: 'Large', width: '1400px' },
+                          ].map(({ id, label }) => (
+                            <button
+                              key={id}
+                              type="button"
+                              onClick={() => setPluginCardWidth(id)}
                               style={{
-                                padding: '12px',
-                                border: '1px solid #e5e7eb',
-                                borderRadius: '6px',
-                                marginBottom: '8px',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
+                                padding: '6px 12px',
+                                border:
+                                  pluginCardWidth === id
+                                    ? '2px solid var(--accent-color)'
+                                    : '1px solid #d1d5db',
+                                borderRadius: '4px',
+                                backgroundColor:
+                                  pluginCardWidth === id ? 'var(--accent-color-10)' : 'transparent',
+                                color:
+                                  pluginCardWidth === id
+                                    ? 'var(--accent-color)'
+                                    : 'var(--fg-secondary)',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                fontWeight: pluginCardWidth === id ? 600 : 400,
+                                transition: 'all 0.2s',
                               }}
+                              title={`Largeur: ${label}`}
                             >
-                              <span>{pluginId}</span>
-                              <button
-                                type="button"
-                                onClick={() => setPolicyEditing(pluginId)}
-                                style={{
-                                  padding: '6px 12px',
-                                  border: '1px solid var(--accent-color)',
-                                  borderRadius: '4px',
-                                  backgroundColor: 'transparent',
-                                  color: 'var(--accent-color)',
-                                  cursor: 'pointer',
-                                }}
-                              >
-                                Éditer la politique
-                              </button>
-                            </div>
+                              {label}
+                            </button>
                           ))}
                         </div>
-                      )}
-                    </div>
-                  )}
+                      </div>
 
-                  {/* Permission Dialog */}
-                  {permissionRequest && (
-                    <PermissionDialog
-                      pluginId={permissionRequest.pluginId}
-                      pluginName={permissionRequest.pluginName}
-                      permissions={permissionRequest.permissions}
-                      onApprove={handlePermissionApprove}
-                      onDeny={handlePermissionDeny}
-                    />
-                  )}
-                </div>
-              )}
+                      {/* Plugin card container */}
+                      <div
+                        style={{
+                          width: cardWidthMap[pluginCardWidth],
+                          margin: '0 auto',
+                          padding: '24px',
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '8px',
+                          transition: 'all 0.3s ease',
+                        }}
+                      >
+                        {/* Plugin sub-navigation */}
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: '8px',
+                            marginBottom: '24px',
+                            flexWrap: 'wrap',
+                          }}
+                        >
+                          {[
+                            { id: 'marketplace' as const, label: 'Marketplace', icon: '🏪' },
+                            { id: 'manager' as const, label: 'Gestionnaire', icon: '🔌' },
+                            { id: 'panels' as const, label: 'Panels', icon: '🖼️' },
+                            { id: 'audit' as const, label: 'Audit', icon: '📊' },
+                            { id: 'policy' as const, label: 'Politiques', icon: '🔐' },
+                          ].map(({ id, label, icon }) => (
+                            <button
+                              key={id}
+                              type="button"
+                              onClick={() => setPluginView(id)}
+                              style={{
+                                padding: '8px 16px',
+                                border:
+                                  pluginView === id
+                                    ? '2px solid var(--accent-color)'
+                                    : '1px solid #d1d5db',
+                                borderRadius: '6px',
+                                backgroundColor:
+                                  pluginView === id ? 'var(--accent-color-10)' : 'transparent',
+                                color:
+                                  pluginView === id ? 'var(--accent-color)' : 'var(--fg-primary)',
+                                fontWeight: pluginView === id ? 600 : 400,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                              }}
+                            >
+                              {icon} {label}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Plugin content */}
+                        {pluginView === 'marketplace' && <PluginMarketplace />}
+
+                        {pluginView === 'manager' &&
+                          (selectedPlugin ? (
+                            <PluginDetailPage
+                              plugin={plugins.get(selectedPlugin)!}
+                              onBack={() => setSelectedPlugin(null)}
+                              onActivate={
+                                plugins.get(selectedPlugin)?.state === 'active'
+                                  ? undefined
+                                  : async () => {
+                                      await handleActivate(selectedPlugin);
+                                      setSelectedPlugin(null);
+                                    }
+                              }
+                              onDeactivate={
+                                plugins.get(selectedPlugin)?.state === 'active'
+                                  ? async () => {
+                                      await handleDeactivate(selectedPlugin);
+                                      setSelectedPlugin(null);
+                                    }
+                                  : undefined
+                              }
+                            />
+                          ) : (
+                            <PluginManager
+                              plugins={plugins}
+                              onActivate={handleActivate}
+                              onDeactivate={handleDeactivate}
+                              onUninstall={handleUninstall}
+                              onViewPermissions={handleViewPermissions}
+                              onViewDetails={pluginId => setSelectedPlugin(pluginId)}
+                            />
+                          ))}
+
+                        {pluginView === 'panels' && (
+                          <div>
+                            <div style={{ marginBottom: '16px' }}>
+                              <h3>Panneaux des Plugins</h3>
+                              <p style={{ color: 'var(--fg-secondary)', fontSize: '14px' }}>
+                                Interface créée par les plugins actifs
+                              </p>
+                            </div>
+                            <EventMonitorPanel />
+                          </div>
+                        )}
+
+                        {pluginView === 'audit' && <AuditDashboard onQuery={handleQueryAudit} />}
+
+                        {pluginView === 'policy' && (
+                          <div>
+                            <div style={{ marginBottom: '16px' }}>
+                              <h3>Politiques ABAC</h3>
+                              <p style={{ color: 'var(--fg-secondary)', fontSize: '14px' }}>
+                                Définissez des règles d&apos;accès basées sur les attributs pour
+                                chaque plugin.
+                              </p>
+                            </div>
+
+                            {policyEditing ? (
+                              <PolicyEditor
+                                pluginId={policyEditing}
+                                onSave={async policy => handleSavePolicy(policyEditing, policy)}
+                                onCancel={() => setPolicyEditing(null)}
+                              />
+                            ) : (
+                              <div>
+                                {Array.from(plugins.keys()).map(pluginId => (
+                                  <div
+                                    key={pluginId}
+                                    style={{
+                                      padding: '12px',
+                                      border: '1px solid #e5e7eb',
+                                      borderRadius: '6px',
+                                      marginBottom: '8px',
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      alignItems: 'center',
+                                    }}
+                                  >
+                                    <span>{pluginId}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setPolicyEditing(pluginId)}
+                                      style={{
+                                        padding: '6px 12px',
+                                        border: '1px solid var(--accent-color)',
+                                        borderRadius: '4px',
+                                        backgroundColor: 'transparent',
+                                        color: 'var(--accent-color)',
+                                        cursor: 'pointer',
+                                      }}
+                                    >
+                                      Éditer la politique
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Permission Dialog */}
+                        {permissionRequest && (
+                          <PermissionDialog
+                            pluginId={permissionRequest.pluginId}
+                            pluginName={permissionRequest.pluginName}
+                            permissions={permissionRequest.permissions}
+                            onApprove={handlePermissionApprove}
+                            onDeny={handlePermissionDeny}
+                          />
+                        )}
+                      </div>
+                      {/* End of card container */}
+                    </div>
+                  );
+                })()}
             </section>
           </div>
         </div>
