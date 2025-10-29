@@ -10,7 +10,11 @@ import { X, Check, Star, Download, Calendar, Tag, ExternalLink } from 'lucide-re
 import { PluginRatingForm } from './PluginRatingForm';
 import { PluginRatingsDisplay } from './PluginRatingsDisplay';
 import { PluginReviews } from './PluginReviews';
-import { getPluginRatingsAggregate, type PluginRatingsAggregate } from '../../services/supabaseClient';
+import { ExportRatingsButton } from './ExportRatingsButton';
+import {
+  getPluginRatingsAggregate,
+  type PluginRatingsAggregate,
+} from '../../services/supabaseClient';
 import './PluginDetailModal.css';
 
 export interface PluginDetailModalProps {
@@ -262,10 +266,20 @@ export function PluginDetailModal({
 
           {/* Ratings & Reviews */}
           <section className="plugin-detail-modal__section">
-            <h3 className="plugin-detail-modal__section-title">
-              <Star size={20} />
-              Avis et notations
-            </h3>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '16px',
+              }}
+            >
+              <h3 className="plugin-detail-modal__section-title">
+                <Star size={20} />
+                Avis et notations
+              </h3>
+              <ExportRatingsButton pluginId={manifest.id} pluginName={manifest.name} />
+            </div>
             <PluginRatingsDisplay pluginId={manifest.id} refreshTrigger={ratingsRefresh} />
           </section>
 

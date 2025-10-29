@@ -3,7 +3,7 @@
  * Shows aggregated ratings and individual reviews
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Star, MessageCircle } from 'lucide-react';
 import {
   getPluginRatings,
@@ -11,6 +11,8 @@ import {
   type PluginRating,
   type PluginRatingsAggregate,
 } from '../../services/supabaseClient';
+import { RatingReplyForm } from './RatingReplyForm';
+import { RatingRepliesList } from './RatingRepliesList';
 import './PluginRatingsDisplay.css';
 
 export interface PluginRatingsDisplayProps {
@@ -24,9 +26,10 @@ export function PluginRatingsDisplay({ pluginId, refreshTrigger }: PluginRatings
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOrder, setSortOrder] = useState<'recent' | 'highest'>('recent');
+  const [repliesRefresh, setRepliesRefresh] = useState(0);
   const itemsPerPage = 5;
 
-  const loadRatings = async () => {
+  const loadRatings = useCallback(async () => {
     setIsLoading(true);
     try {
       const [agg, ratingsList] = await Promise.all([
@@ -40,20 +43,19 @@ export function PluginRatingsDisplay({ pluginId, refreshTrigger }: PluginRatings
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [pluginId]);
 
   useEffect(() => {
     loadRatings();
     setCurrentPage(1); // Reset pagination when refresh triggered
-  }, [pluginId, refreshTrigger]);
+  }, [pluginId, refreshTrigger, loadRatings]);
 
   // Sort and paginate ratings
   const sortedRatings = [...ratings].sort((a, b) => {
     if (sortOrder === 'recent') {
       return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
-    } else {
-      return b.rating - a.rating;
     }
+    return b.rating - a.rating;
   });
 
   const totalPages = Math.ceil(sortedRatings.length / itemsPerPage);
@@ -130,13 +132,20 @@ export function PluginRatingsDisplay({ pluginId, refreshTrigger }: PluginRatings
 
       {/* Individual Ratings */}
       <div className="plugin-ratings-display__list">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '16px',
+          }}
+        >
           <h4 className="plugin-ratings-display__list-title">Les avis ({ratings.length})</h4>
           {ratings.length > 0 && (
             <div style={{ display: 'flex', gap: '8px' }}>
               <select
                 value={sortOrder}
-                onChange={(e) => {
+                onChange={e => {
                   setSortOrder(e.target.value as 'recent' | 'highest');
                   setCurrentPage(1);
                 }}
@@ -155,36 +164,59 @@ export function PluginRatingsDisplay({ pluginId, refreshTrigger }: PluginRatings
             </div>
           )}
         </div>
-        {paginatedRatings.map(rating => (
-          <div key={rating.id} className="plugin-ratings-display__rating-card">
-            <div className="plugin-ratings-display__rating-header">
-              <div className="plugin-ratings-display__rating-info">
-                <span className="plugin-ratings-display__rating-name">{rating.userName}</span>
-                <div className="plugin-ratings-display__rating-stars">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={`rating-star-${i}`}
-                      size={14}
-                      className={
-                        i < rating.rating
-                          ? 'plugin-ratings-display__small-star--filled'
-                          : 'plugin-ratings-display__small-star--empty'
-                      }
-                    />
-                  ))}
+        {paginatedRatings.map(rating => {
+          const ratingId = rating.id || '';
+          return (
+            <div key={ratingId} className="plugin-ratings-display__rating-card">
+              <div className="plugin-ratings-display__rating-header">
+                <div className="plugin-ratings-display__rating-info">
+                  <span className="plugin-ratings-display__rating-name">{rating.userName}</span>
+                  <div className="plugin-ratings-display__rating-stars">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={`rating-star-${i}`}
+                        size={14}
+                        className={
+                          i < rating.rating
+                            ? 'plugin-ratings-display__small-star--filled'
+                            : 'plugin-ratings-display__small-star--empty'
+                        }
+                      />
+                    ))}
+                  </div>
                 </div>
+                <span className="plugin-ratings-display__rating-date">
+                  {new Date(rating.created_at || '').toLocaleDateString('fr-FR')}
+                </span>
               </div>
-              <span className="plugin-ratings-display__rating-date">
-                {new Date(rating.created_at || '').toLocaleDateString('fr-FR')}
-              </span>
+              {rating.comment && (
+                <p className="plugin-ratings-display__rating-comment">{rating.comment}</p>
+              )}
+              {ratingId && (
+                <>
+                  <RatingRepliesList ratingId={ratingId} refreshTrigger={repliesRefresh} />
+                  <RatingReplyForm
+                    ratingId={ratingId}
+                    onSuccess={() => setRepliesRefresh(prev => prev + 1)}
+                  />
+                </>
+              )}
             </div>
-            <p className="plugin-ratings-display__rating-comment">{rating.comment}</p>
-          </div>
-        ))}
+          );
+        })}
 
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '8px',
+              marginTop: '16px',
+              paddingTop: '16px',
+              borderTop: '1px solid var(--border-color)',
+            }}
+          >
             <button
               type="button"
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}

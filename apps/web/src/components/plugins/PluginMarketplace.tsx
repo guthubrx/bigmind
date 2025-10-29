@@ -7,8 +7,10 @@
 import React, { useState, useMemo } from 'react';
 import { getAllAvailableManifests } from '../../core/plugins';
 import { PluginCard } from './PluginCard';
-import { PluginFilters, type PluginStatus, type PluginCategory } from './PluginFilters';
+import { PluginFilters, type PluginCategory } from './PluginFilters';
 import { PluginDetailModal } from './PluginDetailModal';
+import { TopRatedPlugins } from './TopRatedPlugins';
+import { RatingFilter } from './RatingFilter';
 import './PluginManager.css';
 
 export function PluginMarketplace() {
@@ -19,44 +21,45 @@ export function PluginMarketplace() {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<PluginCategory>('all');
   const [selectedPluginId, setSelectedPluginId] = useState<string | null>(null);
+  const [minRating, setMinRating] = useState<number | null>(null);
 
   // Filter manifests
-  const filteredManifests = useMemo(() => {
-    return manifests.filter((loaded) => {
-      const manifest = loaded.manifest;
+  const filteredManifests = useMemo(
+    () =>
+      manifests.filter(loaded => {
+        const { manifest } = loaded;
 
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesName = manifest.name.toLowerCase().includes(query);
-        const matchesDesc = manifest.description?.toLowerCase().includes(query);
-        const matchesId = manifest.id.toLowerCase().includes(query);
-        const matchesTags = manifest.tags?.some((tag) =>
-          tag.toLowerCase().includes(query)
-        );
+        // Search filter
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase();
+          const matchesName = manifest.name.toLowerCase().includes(query);
+          const matchesDesc = manifest.description?.toLowerCase().includes(query);
+          const matchesId = manifest.id.toLowerCase().includes(query);
+          const matchesTags = manifest.tags?.some(tag => tag.toLowerCase().includes(query));
 
-        if (!matchesName && !matchesDesc && !matchesId && !matchesTags) {
-          return false;
+          if (!matchesName && !matchesDesc && !matchesId && !matchesTags) {
+            return false;
+          }
         }
-      }
 
-      // Category filter
-      if (categoryFilter !== 'all') {
-        if (manifest.category !== categoryFilter) return false;
-      }
+        // Category filter
+        if (categoryFilter !== 'all') {
+          if (manifest.category !== categoryFilter) return false;
+        }
 
-      return true;
-    });
-  }, [manifests, searchQuery, categoryFilter]);
+        return true;
+      }),
+    [manifests, searchQuery, categoryFilter]
+  );
 
   // Organize plugins into sections
   const { corePlugins, featuredPlugins, communityPlugins } = useMemo(() => {
-    const core = filteredManifests.filter((m) => m.manifest.source === 'core');
+    const core = filteredManifests.filter(m => m.manifest.source === 'core');
     const featured = filteredManifests.filter(
-      (m) => m.manifest.featured === true && m.manifest.source !== 'core'
+      m => m.manifest.featured === true && m.manifest.source !== 'core'
     );
     const community = filteredManifests.filter(
-      (m) => m.manifest.source !== 'core' && !m.manifest.featured
+      m => m.manifest.source !== 'core' && !m.manifest.featured
     );
 
     return {
@@ -68,7 +71,7 @@ export function PluginMarketplace() {
 
   // Find selected manifest
   const selectedManifest = selectedPluginId
-    ? manifests.find((m) => m.manifest.id === selectedPluginId)?.manifest
+    ? manifests.find(m => m.manifest.id === selectedPluginId)?.manifest
     : null;
 
   return (
@@ -97,6 +100,12 @@ export function PluginMarketplace() {
         </div>
       </div>
 
+      {/* Top Rated Plugins Widget */}
+      <TopRatedPlugins
+        allPlugins={manifests.map(m => m.manifest)}
+        onSelectPlugin={pluginId => setSelectedPluginId(pluginId)}
+      />
+
       <PluginFilters
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -108,6 +117,11 @@ export function PluginMarketplace() {
         filteredCount={filteredManifests.length}
         showStatusFilter={false} // Hide status filter in marketplace
       />
+
+      {/* Rating Filter */}
+      <div style={{ marginBottom: '16px' }}>
+        <RatingFilter selectedRating={minRating} onRatingChange={setMinRating} />
+      </div>
 
       <div className="plugin-sections">
         {/* Core Plugins */}
@@ -121,11 +135,11 @@ export function PluginMarketplace() {
               <span className="plugin-section-count">{corePlugins.length}</span>
             </div>
             <div className="plugin-grid">
-              {corePlugins.map((loaded) => (
+              {corePlugins.map(loaded => (
                 <PluginCard
                   key={loaded.manifest.id}
                   manifest={loaded.manifest}
-                  state={'inactive'} // Show as available for install
+                  state="inactive" // Show as available for install
                   onActivate={async () => {
                     // TODO: Implement installation
                     alert(`Installation de ${loaded.manifest.name} à implémenter`);
@@ -149,11 +163,11 @@ export function PluginMarketplace() {
               <span className="plugin-section-count">{featuredPlugins.length}</span>
             </div>
             <div className="plugin-grid">
-              {featuredPlugins.map((loaded) => (
+              {featuredPlugins.map(loaded => (
                 <PluginCard
                   key={loaded.manifest.id}
                   manifest={loaded.manifest}
-                  state={'inactive'}
+                  state="inactive"
                   onActivate={async () => {
                     alert(`Installation de ${loaded.manifest.name} à implémenter`);
                   }}
@@ -176,11 +190,11 @@ export function PluginMarketplace() {
               <span className="plugin-section-count">{communityPlugins.length}</span>
             </div>
             <div className="plugin-grid">
-              {communityPlugins.map((loaded) => (
+              {communityPlugins.map(loaded => (
                 <PluginCard
                   key={loaded.manifest.id}
                   manifest={loaded.manifest}
-                  state={'inactive'}
+                  state="inactive"
                   onActivate={async () => {
                     alert(`Installation de ${loaded.manifest.name} à implémenter`);
                   }}
@@ -208,7 +222,7 @@ export function PluginMarketplace() {
       {selectedManifest && (
         <PluginDetailModal
           manifest={selectedManifest}
-          state={'inactive'}
+          state="inactive"
           onClose={() => setSelectedPluginId(null)}
           onActivate={async () => {
             alert(`Installation de ${selectedManifest.name} à implémenter`);
