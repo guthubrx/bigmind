@@ -6,9 +6,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { PluginManifest } from '@bigmind/plugin-system';
 import { PluginBadges } from './PluginBadges';
-import { Download, Settings, Info, ChevronDown, Trash2, Power } from 'lucide-react';
+import { Download, Settings, ChevronDown, Trash2, Power } from 'lucide-react';
 import { StarRating } from './StarRating';
-import { getPluginRatingsAggregate, type PluginRatingsAggregate } from '../../services/supabaseClient';
+import {
+  getPluginRatingsAggregate,
+  type PluginRatingsAggregate,
+} from '../../services/supabaseClient';
 import './PluginCard.css';
 
 export interface PluginCardProps {
@@ -51,14 +54,6 @@ export function PluginCard({
 
   // Determine plugin source
   const source = manifest.source || 'community';
-
-  // Determine plugin state
-  const getState = (): 'active' | 'inactive' | 'available' | undefined => {
-    if (!isInstalled) return 'available';
-    if (isActive) return 'active';
-    if (canDisable) return 'inactive';
-    return undefined;
-  };
 
   // Get author name (handle both string and object formats)
   const getAuthorName = () => {
@@ -109,7 +104,7 @@ export function PluginCard({
             onClick={onViewDetails}
             role="button"
             tabIndex={0}
-            onKeyPress={(e) => e.key === 'Enter' && onViewDetails?.()}
+            onKeyPress={e => e.key === 'Enter' && onViewDetails?.()}
           >
             {logoUrl && logoUrl.startsWith('/') ? (
               <img src={logoUrl} alt={manifest.name} className="plugin-card__logo" />
@@ -117,9 +112,7 @@ export function PluginCard({
               <div className="plugin-card__logo-emoji">{manifest.icon || '🔌'}</div>
             )}
           </div>
-          {manifest.featured && (
-            <span className="plugin-card__featured-tag">VEDETTE</span>
-          )}
+          {manifest.featured && <span className="plugin-card__featured-tag">VEDETTE</span>}
         </div>
 
         <div className="plugin-card__header-content">
@@ -128,22 +121,23 @@ export function PluginCard({
             onClick={onViewDetails}
             role="button"
             tabIndex={0}
-            onKeyPress={(e) => e.key === 'Enter' && onViewDetails?.()}
+            onKeyPress={e => e.key === 'Enter' && onViewDetails?.()}
           >
             {manifest.name}
           </h3>
 
-          <div className="plugin-card__author">
-            by {getAuthorName()}
-          </div>
+          <div className="plugin-card__author">by {getAuthorName()}</div>
         </div>
 
         <div className="plugin-card__badges">
           {canDisable && (
             <div className="plugin-card__state-dropdown" ref={dropdownRef}>
               <button
+                type="button"
                 className={`plugin-card__state-badge ${
-                  isActive ? 'plugin-card__state-badge--active' : 'plugin-card__state-badge--inactive'
+                  isActive
+                    ? 'plugin-card__state-badge--active'
+                    : 'plugin-card__state-badge--inactive'
                 }`}
                 onClick={() => {
                   if (isActive && isInstalled) {
@@ -161,6 +155,7 @@ export function PluginCard({
               {dropdownOpen && isActive && isInstalled && (
                 <div className="plugin-card__dropdown-menu">
                   <button
+                    type="button"
                     className="plugin-card__dropdown-item plugin-card__dropdown-item--deactivate"
                     onClick={handleDeactivate}
                   >
@@ -168,6 +163,7 @@ export function PluginCard({
                     <span>Désactiver</span>
                   </button>
                   <button
+                    type="button"
                     className="plugin-card__dropdown-item plugin-card__dropdown-item--uninstall"
                     onClick={handleUninstall}
                   >
@@ -179,11 +175,7 @@ export function PluginCard({
             </div>
           )}
           {isActive && manifest.uiContributions?.settings && (
-            <button
-              className="plugin-card__config-btn"
-              onClick={onConfigure}
-              title="Configurer"
-            >
+            <button type="button" className="plugin-card__config-btn" onClick={onConfigure} title="Configurer">
               <Settings size={14} />
             </button>
           )}
@@ -217,7 +209,7 @@ export function PluginCard({
               rating={ratingAggregate.averageRating}
               reviewCount={ratingAggregate.totalRatings}
               size="small"
-              showCount={true}
+              showCount
             />
           )}
         </div>
