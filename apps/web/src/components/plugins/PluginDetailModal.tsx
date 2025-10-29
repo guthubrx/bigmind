@@ -7,8 +7,8 @@ import React, { useState } from 'react';
 import type { PluginManifest } from '@bigmind/plugin-system';
 import { PluginBadge, type BadgeType } from './PluginBadge';
 import { X, Check, Star, Download, Calendar, Tag, ExternalLink } from 'lucide-react';
-import { StarRatingInput } from './StarRatingInput';
-import { PluginRatingService } from '../../services/PluginRatingService';
+import { PluginRatingForm } from './PluginRatingForm';
+import { PluginRatingsDisplay } from './PluginRatingsDisplay';
 import { PluginReviews } from './PluginReviews';
 import './PluginDetailModal.css';
 
@@ -27,9 +27,7 @@ export function PluginDetailModal({
   onClose,
   onToggle,
 }: PluginDetailModalProps) {
-  const [userRating, setUserRating] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [ratingsRefresh, setRatingsRefresh] = useState(0);
 
   const getBadges = (): BadgeType[] => {
     const badges: BadgeType[] = [];
@@ -40,42 +38,6 @@ export function PluginDetailModal({
     if (manifest.pricing === 'paid' || manifest.pricing === 'freemium') badges.push('premium');
     if (manifest.source === 'community') badges.push('community');
     return badges;
-  };
-
-  const handleRatingSubmit = async (rating: number) => {
-    setUserRating(rating);
-    setIsSubmitting(true);
-    setSubmitMessage(null);
-
-    // Check if rating service is available
-    if (!PluginRatingService.isAvailable()) {
-      setSubmitMessage({
-        type: 'error',
-        text: 'Le service de notation n\'est pas encore configuré. Contactez l\'administrateur.',
-      });
-      setIsSubmitting(false);
-      return;
-    }
-
-    try {
-      await PluginRatingService.submitRating({
-        pluginId: manifest.id,
-        pluginName: manifest.name,
-        rating,
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-      });
-
-      setSubmitMessage({ type: 'success', text: 'Merci pour votre note !' });
-    } catch (error) {
-      console.error('Error submitting rating:', error);
-      setSubmitMessage({
-        type: 'error',
-        text: 'Erreur lors de l\'envoi de la note. Réessayez plus tard.',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   const logoUrl = manifest.logo || manifest.icon;
@@ -272,30 +234,25 @@ export function PluginDetailModal({
             </div>
           </section>
 
-          {/* User Rating */}
+          {/* Ratings & Reviews */}
           <section className="plugin-detail-modal__section">
             <h3 className="plugin-detail-modal__section-title">
               <Star size={20} />
-              Notez ce plugin
+              Avis et notations
             </h3>
-            <div className="plugin-detail-modal__rating-container">
-              <p className="plugin-detail-modal__rating-description">
-                Votre note aide la communauté à découvrir les meilleurs plugins
-              </p>
-              <div className="plugin-detail-modal__rating-input">
-                <StarRatingInput
-                  rating={userRating}
-                  onRate={handleRatingSubmit}
-                  size="large"
-                  disabled={isSubmitting}
-                />
-              </div>
-              {submitMessage && (
-                <div className={`plugin-detail-modal__rating-message plugin-detail-modal__rating-message--${submitMessage.type}`}>
-                  {submitMessage.text}
-                </div>
-              )}
-            </div>
+            <PluginRatingsDisplay pluginId={manifest.id} refreshTrigger={ratingsRefresh} />
+          </section>
+
+          {/* Rating Form */}
+          <section className="plugin-detail-modal__section">
+            <h3 className="plugin-detail-modal__section-title">
+              <Star size={20} />
+              Donnez votre avis
+            </h3>
+            <PluginRatingForm
+              pluginId={manifest.id}
+              onSuccess={() => setRatingsRefresh(prev => prev + 1)}
+            />
           </section>
 
           {/* Reviews via Giscus */}
