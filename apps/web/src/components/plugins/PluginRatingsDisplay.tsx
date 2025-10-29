@@ -8,6 +8,7 @@ import { Star, MessageCircle } from 'lucide-react';
 import {
   getPluginRatings,
   getPluginRatingsAggregate,
+  supabase,
   type PluginRating,
   type PluginRatingsAggregate,
 } from '../../services/supabaseClient';
@@ -49,6 +50,42 @@ export function PluginRatingsDisplay({ pluginId, refreshTrigger }: PluginRatings
     loadRatings();
     setCurrentPage(1); // Reset pagination when refresh triggered
   }, [pluginId, refreshTrigger, loadRatings]);
+
+  // Subscribe to realtime rating updates
+  useEffect(() => {
+    if (!pluginId) return;
+
+    const subscription = supabase
+      .channel(`ratings:${pluginId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'plugin_ratings',
+          filter: `plugin_id=eq.${pluginId}`,
+        },
+        (payload) => {
+          const newRating = payload.new as PluginRating;
+          // Add new rating to the beginning of the list
+          setRatings(prev => [newRating, ...prev]);
+          // Update aggregate
+          setAggregate(prev => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              totalRatings: prev.totalRatings + 1,
+              averageRating: (prev.averageRating * prev.totalRatings + newRating.rating) / (prev.totalRatings + 1),
+            };
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [pluginId]);
 
   // Sort and paginate ratings
   const sortedRatings = [...ratings].sort((a, b) => {

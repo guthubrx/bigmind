@@ -5,7 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { MessageCircle } from 'lucide-react';
-import { getRatingReplies, type RatingReply } from '../../services/supabaseClient';
+import { getRatingReplies, supabase, type RatingReply } from '../../services/supabaseClient';
 import './RatingRepliesList.css';
 
 export interface RatingRepliesListProps {
@@ -32,6 +32,33 @@ export function RatingRepliesList({ ratingId, refreshTrigger }: RatingRepliesLis
 
     fetchReplies();
   }, [ratingId, refreshTrigger]);
+
+  // Subscribe to realtime reply updates
+  useEffect(() => {
+    if (!ratingId) return;
+
+    const subscription = supabase
+      .channel(`replies:${ratingId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'plugin_rating_replies',
+          filter: `rating_id=eq.${ratingId}`,
+        },
+        (payload) => {
+          const newReply = payload.new as RatingReply;
+          // Add new reply to the end of the list
+          setReplies(prev => [...prev, newReply]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [ratingId]);
 
   if (isLoading) {
     return null;
