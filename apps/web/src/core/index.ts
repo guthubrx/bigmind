@@ -17,3 +17,6 @@ export * from './theme';
 
 // Plugin System
 export * from './plugins';
+
+// Accessibility (a11y)
+export * from './a11y';
