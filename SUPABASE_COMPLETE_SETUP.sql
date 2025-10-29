@@ -8,9 +8,22 @@
 -- ============================================
 DROP TABLE IF EXISTS plugin_rating_replies CASCADE;
 DROP TABLE IF EXISTS plugin_ratings CASCADE;
+DROP TABLE IF EXISTS rating_submissions CASCADE;
 
 -- ============================================
--- STEP 2: Create plugin_ratings table
+-- STEP 2: Create rating_submissions table (for rate limiting)
+-- ============================================
+CREATE TABLE rating_submissions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "pluginId" TEXT NOT NULL,
+  ip_address TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_rating_submissions_plugin_ip ON rating_submissions("pluginId", ip_address, created_at DESC);
+
+-- ============================================
+-- STEP 3: Create plugin_ratings table
 -- ============================================
 CREATE TABLE plugin_ratings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -1,6 +1,9 @@
 apps/web/vite.config.ts
 scripts/render-icon-from-svg.js
 
+# Supabase Edge Functions (Deno, not TypeScript)
+supabase/functions/
+
 # Fichiers générés par TypeScript
 # Generated files by TypeScript
 **/*.d.ts
