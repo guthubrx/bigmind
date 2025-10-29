@@ -35,6 +35,31 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
     setIsSubmitting(true);
 
     try {
+      // Check rate limit via Edge Function
+      const checkRateLimitResponse = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/check-rate-limit`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ pluginId }),
+        }
+      );
+
+      const rateLimitData = await checkRateLimitResponse.json();
+
+      if (!rateLimitData.allowed) {
+        setMessage({
+          type: 'error',
+          text: rateLimitData.message || 'Trop de tentatives. Veuillez réessayer plus tard.',
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Submit rating
       const success = await submitPluginRating(
         pluginId,
         userName.trim(),
