@@ -74,3 +74,4 @@ playwright/.cache/
 
 # SpecStory history - contains local paths
 .specstory/
+supabase/.temp/
