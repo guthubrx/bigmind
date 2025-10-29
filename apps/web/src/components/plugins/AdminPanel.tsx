@@ -39,10 +39,17 @@ export function AdminPanel() {
 
   // Fetch unapproved ratings when logged in
   useEffect(() => {
-    if (!isLoggedIn) return;
+    if (!isLoggedIn) {
+      console.log('[AdminPanel] Not logged in, skipping fetch');
+      return;
+    }
+
+    console.log('[AdminPanel] Fetching unapproved ratings (trigger:', refreshTrigger, ')');
 
     const fetchRatings = async () => {
       const ratings = await getUnapprovedRatings();
+      console.log('[AdminPanel] Fetched ratings:', ratings);
+      console.log('[AdminPanel] Number of unapproved ratings:', ratings.length);
       setUnapprovedRatings(ratings);
     };
 
@@ -86,7 +93,9 @@ export function AdminPanel() {
   };
 
   const handleApprove = async (ratingId: string) => {
+    console.log('[AdminPanel] Approving rating:', ratingId);
     const success = await approveRating(ratingId);
+    console.log('[AdminPanel] Approve result:', success);
     if (success) {
       setMessage({ type: 'success', text: 'Avis approuvé!' });
       setRefreshTrigger(prev => prev + 1);
@@ -100,7 +109,9 @@ export function AdminPanel() {
       return;
     }
 
+    console.log('[AdminPanel] Rejecting rating:', ratingId);
     const success = await rejectRating(ratingId);
+    console.log('[AdminPanel] Reject result:', success);
     if (success) {
       setMessage({ type: 'success', text: 'Avis rejeté!' });
       setRefreshTrigger(prev => prev + 1);

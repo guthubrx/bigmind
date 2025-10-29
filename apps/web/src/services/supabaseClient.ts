@@ -267,6 +267,8 @@ export async function submitRatingReply(
  * Admin: Get unapproved ratings (in moderation queue)
  */
 export async function getUnapprovedRatings(): Promise<PluginRating[]> {
+  console.log('[Supabase] Fetching unapproved ratings...');
+
   const { data, error } = await supabase
     .from('plugin_ratings')
     .select('*')
@@ -274,10 +276,13 @@ export async function getUnapprovedRatings(): Promise<PluginRating[]> {
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('[Supabase] Error fetching unapproved ratings:', error);
+    console.error('[Supabase] ❌ Error fetching unapproved ratings:', error);
+    console.error('[Supabase] Error code:', error.code);
+    console.error('[Supabase] Error message:', error.message);
     return [];
   }
 
+  console.log('[Supabase] ✅ Got unapproved ratings:', data);
   return data || [];
 }
 
@@ -285,16 +290,22 @@ export async function getUnapprovedRatings(): Promise<PluginRating[]> {
  * Admin: Approve a rating
  */
 export async function approveRating(ratingId: string): Promise<boolean> {
+  console.log('[Supabase] Approving rating:', ratingId);
+
   const { error } = await supabase
     .from('plugin_ratings')
     .update({ is_approved: true })
     .eq('id', ratingId);
 
   if (error) {
-    console.error('[Supabase] Error approving rating:', error);
+    console.error('[Supabase] ❌ Error approving rating:', error);
+    console.error('[Supabase] Error code:', error.code);
+    console.error('[Supabase] Error message:', error.message);
+    console.error('[Supabase] Error details:', error.details);
     return false;
   }
 
+  console.log('[Supabase] ✅ Rating approved successfully');
   return true;
 }
 
@@ -302,16 +313,22 @@ export async function approveRating(ratingId: string): Promise<boolean> {
  * Admin: Reject (delete) a rating
  */
 export async function rejectRating(ratingId: string): Promise<boolean> {
+  console.log('[Supabase] Rejecting rating:', ratingId);
+
   const { error } = await supabase
     .from('plugin_ratings')
     .delete()
     .eq('id', ratingId);
 
   if (error) {
-    console.error('[Supabase] Error rejecting rating:', error);
+    console.error('[Supabase] ❌ Error rejecting rating:', error);
+    console.error('[Supabase] Error code:', error.code);
+    console.error('[Supabase] Error message:', error.message);
+    console.error('[Supabase] Error details:', error.details);
     return false;
   }
 
+  console.log('[Supabase] ✅ Rating rejected successfully');
   return true;
 }
 
