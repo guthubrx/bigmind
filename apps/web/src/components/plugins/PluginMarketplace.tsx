@@ -148,7 +148,6 @@ export function PluginMarketplace() {
           </div>
         </div>
       )}
-      </div>
 
       {/* Top Rated Plugins Widget */}
       <TopRatedPlugins
