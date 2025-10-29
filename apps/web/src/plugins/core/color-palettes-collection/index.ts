@@ -4,7 +4,7 @@
  */
 
 import type { IPluginContext, PluginManifest } from '@bigmind/plugin-system';
-import { registerPalettes, unregisterPalette, type ColorPalette } from '../themes/colorPalettes';
+import { registerPalettes, unregisterPalette, type ColorPalette } from '../../../themes/colorPalettes';
 
 // FR: Collection complète de 41 palettes de couleurs
 // EN: Complete collection of 41 color palettes
@@ -737,17 +737,48 @@ export const manifest: PluginManifest = {
   id: 'com.bigmind.color-palettes-collection',
   name: 'Color Palettes Collection',
   version: '1.0.0',
-  description: '41 palettes de couleurs complètes pour tous les besoins',
+  description: '41 palettes de couleurs professionnelles pour sublimer vos mind maps',
+  longDescription: `Transformez l'apparence de vos cartes mentales avec notre collection exclusive de 41 palettes de couleurs soigneusement sélectionnées. Des classiques intemporels aux thèmes modernes de développeurs, en passant par les styles rétro et les ambiances naturelles.
+
+**Pourquoi ce plugin est essentiel ?**
+
+Chaque palette a été conçue pour maximiser la lisibilité et l'impact visuel de vos idées. Que vous créiez une présentation professionnelle, organisiez un brainstorming créatif ou structuriez un projet technique, vous trouverez la palette parfaite pour votre contexte.`,
   author: {
     name: 'BigMind Team',
     email: 'team@bigmind.com',
   },
   main: 'color-palettes-collection-plugin.js',
+
+  // Visual identity
   icon: '🎨',
+  logo: '/assets/plugin-logos/color-palettes-collection.svg',
+  color: '#8B5CF6',
+
+  // Classification
   category: 'theme',
-  tags: ['colors', 'palettes', 'theme', 'essential', 'extended'],
+  tags: ['colors', 'palettes', 'theme', 'design', 'productivity'],
+  source: 'core',
+  pricing: 'free',
+  featured: true,
+
   license: 'MIT',
   bigmindVersion: '1.0.0',
+
+  // Marketing
+  tagline: 'Des couleurs parfaites pour chaque contexte',
+  benefits: [
+    '41 palettes professionnelles prêtes à l\'emploi',
+    'Thèmes populaires de développeurs (Dracula, Nord, Tokyo Night...)',
+    'Styles vintage et rétro (60s, 70s, 80s, Synthwave)',
+    'Harmonies naturelles et thématiques',
+    'Compatibilité garantie avec tous vos projets'
+  ],
+  useCases: [
+    'Présentations professionnelles avec palette Corporate ou Material',
+    'Brainstorming créatif avec palettes Vibrant ou Tropical',
+    'Documentation technique avec thèmes de code (Monokai, Gruvbox)',
+    'Projets personnels avec styles Pastel ou Vintage'
+  ],
 
   // Features
   features: [

@@ -16,3 +16,16 @@ export { PolicyEditor } from './PolicyEditor';
 export type { PolicyEditorProps } from './PolicyEditor';
 
 export { PluginDetailPage } from './PluginDetailPage';
+
+// Marketplace components
+export { PluginBadge } from './PluginBadge';
+export type { PluginBadgeProps, BadgeType } from './PluginBadge';
+
+export { PluginCard } from './PluginCard';
+export type { PluginCardProps } from './PluginCard';
+
+export { PluginDetailModal } from './PluginDetailModal';
+export type { PluginDetailModalProps } from './PluginDetailModal';
+
+export { PluginFilters } from './PluginFilters';
+export type { PluginFiltersProps, PluginStatus, PluginCategory } from './PluginFilters';

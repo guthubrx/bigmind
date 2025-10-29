@@ -10,7 +10,8 @@ export interface PluginManifest {
   id: string; // Unique identifier (e.g., "com.example.myplugin")
   name: string; // Display name
   version: string; // Semantic version (e.g., "1.0.0")
-  description: string; // Short description
+  description: string; // Short description (1-2 lignes)
+  longDescription?: string; // Description marketing longue (markdown supporté)
   author:
     | string
     | {
@@ -28,18 +29,33 @@ export interface PluginManifest {
   // Permissions requested
   permissions?: Permission[];
 
-  // Optional metadata
-  icon?: string; // Icon URL or path
+  // Visual identity
+  icon?: string; // Icon URL or path (recommandé: SVG)
+  logo?: string; // Logo haute résolution pour la page de détails
+  color?: string; // Couleur principale du plugin (hex)
+  banner?: string; // Image de bannière pour la page de détails
+
+  // Classification & Discovery
+  category?: 'productivity' | 'integration' | 'theme' | 'developer' | 'export' | 'template';
+  tags?: string[];
+  source?: 'core' | 'community' | 'enterprise'; // Source du plugin
+  pricing?: 'free' | 'paid' | 'freemium'; // Modèle économique
+  featured?: boolean; // Plugin mis en avant
+
+  // Marketplace metadata
   homepage?: string;
   repository?: string;
   license?: string;
   keywords?: string[];
-
-  // WordPress-like rich metadata
-  category?: 'productivity' | 'integration' | 'theme' | 'developer' | 'export' | 'template';
-  tags?: string[];
   screenshots?: string[];
   documentation?: string;
+  rating?: number; // Note moyenne (0-5)
+  downloads?: number; // Nombre de téléchargements
+
+  // Content marketing
+  tagline?: string; // Accroche courte (1 phrase)
+  benefits?: string[]; // Liste des bénéfices pour l'utilisateur
+  useCases?: string[]; // Cas d'usage typiques
 
   // Features list (what the plugin does)
   features?: PluginFeature[];

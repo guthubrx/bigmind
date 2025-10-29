@@ -5,11 +5,11 @@
 
 import React, { useState, useMemo } from 'react';
 import { useTagStore } from '../hooks/useTagStore';
-import { useMindMapDAGSync } from '../hooks/useMindMapDAGSync';
-import { useAppSettings } from '../hooks/useAppSettings';
-import { getNextColorFromPalette } from '../themes/colorPalettes';
+import { useMindMapDAGSync } from '../../../../hooks/useMindMapDAGSync';
+import { useAppSettings } from '../../../../hooks/useAppSettings';
+import { getNextColorFromPalette } from '../../../../themes/colorPalettes';
 import { X, Plus, Sparkles } from 'lucide-react';
-import { DagTag } from '../types/dag';
+import { DagTag } from '../../../../types/dag';
 import './NodeTagPanel.css';
 
 interface NodeTagPanelProps {

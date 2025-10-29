@@ -19,11 +19,38 @@ export interface MapSettingsSection {
 const mapSettingsSectionsRegistry: Map<string, MapSettingsSection> = new Map();
 
 /**
+ * FR: Listeners pour les changements de registre
+ * EN: Listeners for registry changes
+ */
+const listeners: Set<() => void> = new Set();
+
+/**
+ * FR: Notifier les listeners d'un changement
+ * EN: Notify listeners of a change
+ */
+function notifyChange(): void {
+  listeners.forEach(listener => listener());
+}
+
+/**
+ * FR: S'abonner aux changements du registre
+ * EN: Subscribe to registry changes
+ */
+export function onMapSettingsRegistryChange(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+/**
  * FR: Enregistrer une section MapSettings (utilisé par les plugins)
  * EN: Register a MapSettings section (used by plugins)
  */
 export function registerMapSettingsSection(section: MapSettingsSection): void {
+  console.log('[MapSettingsRegistry] Registering section:', section.id, 'for plugin:', section.pluginId);
   mapSettingsSectionsRegistry.set(section.id, section);
+  console.log('[MapSettingsRegistry] Total sections:', mapSettingsSectionsRegistry.size);
+  notifyChange();
+  console.log('[MapSettingsRegistry] Notified', listeners.size, 'listeners');
 }
 
 /**
@@ -32,6 +59,7 @@ export function registerMapSettingsSection(section: MapSettingsSection): void {
  */
 export function unregisterMapSettingsSection(sectionId: string): void {
   mapSettingsSectionsRegistry.delete(sectionId);
+  notifyChange();
 }
 
 /**

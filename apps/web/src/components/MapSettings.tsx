@@ -3,15 +3,31 @@
  * EN: Settings specific to the current mind map
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Settings } from 'lucide-react';
 import { useOpenFiles } from '../hooks/useOpenFiles';
-import { getMapSettingsSections } from '../utils/mapSettingsRegistry';
+import { getMapSettingsSections, onMapSettingsRegistryChange } from '../utils/mapSettingsRegistry';
 import './MapSettings.css';
 
 function MapSettings() {
   const activeFile = useOpenFiles(state => state.openFiles.find(f => f.isActive) || null);
   const updateDefaultNodeStyle = useOpenFiles(state => state.updateActiveFileDefaultNodeStyle);
+  const [settingsVersion, setSettingsVersion] = useState(0);
+
+  // Force re-render when map settings registry changes
+  useEffect(() => {
+    console.log('[MapSettings] Subscribing to map settings registry changes');
+
+    // Force initial render to pick up any sections already registered
+    setSettingsVersion(v => v + 1);
+
+    const unsubscribe = onMapSettingsRegistryChange(() => {
+      console.log('[MapSettings] Map settings registry changed, forcing re-render');
+      setSettingsVersion(v => v + 1);
+    });
+
+    return unsubscribe;
+  }, []);
 
   if (!activeFile) {
     return (
@@ -27,6 +43,9 @@ function MapSettings() {
     );
   }
 
+  const mapSections = getMapSettingsSections();
+  console.log('[MapSettings Render] Sections:', mapSections.length, mapSections);
+
   return (
     <div className="map-settings">
       <div className="panel-content">
@@ -37,9 +56,9 @@ function MapSettings() {
 
         {/* FR: Sections dynamiques injectées par les plugins */}
         {/* EN: Dynamic sections injected by plugins */}
-        {getMapSettingsSections().map(section => {
+        {mapSections.map(section => {
           const Component = section.component;
-          return <Component key={section.id} activeFile={activeFile} />;
+          return <Component key={`${section.id}-${settingsVersion}`} activeFile={activeFile} />;
         })}
 
         <div className="map-settings-section">

@@ -1,0 +1,141 @@
+.plugin-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+/* Search */
+.plugin-filters__search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.plugin-filters__search-icon {
+  position: absolute;
+  left: 16px;
+  color: var(--fg-tertiary);
+  pointer-events: none;
+}
+
+.plugin-filters__search-input {
+  flex: 1;
+  padding: 12px 48px 12px 48px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--fg-primary);
+  font-size: 15px;
+  transition: all 0.2s ease;
+}
+
+.plugin-filters__search-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  background: var(--bg-primary);
+  box-shadow: 0 0 0 3px var(--accent-color-alpha);
+}
+
+.plugin-filters__search-input::placeholder {
+  color: var(--fg-tertiary);
+}
+
+.plugin-filters__search-clear {
+  position: absolute;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: var(--fg-tertiary);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.plugin-filters__search-clear:hover {
+  color: var(--fg-secondary);
+}
+
+/* Controls */
+.plugin-filters__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.plugin-filters__filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fg-tertiary);
+}
+
+.plugin-filters__select {
+  padding: 8px 32px 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--fg-primary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%239CA3AF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.plugin-filters__select:hover {
+  border-color: var(--accent-color);
+  background: var(--bg-primary);
+}
+
+.plugin-filters__select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-color-alpha);
+}
+
+.plugin-filters__count {
+  margin-left: auto;
+  padding: 8px 16px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--fg-secondary);
+  white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .plugin-filters {
+    padding: 16px;
+  }
+
+  .plugin-filters__controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .plugin-filters__filter-group {
+    width: 100%;
+  }
+
+  .plugin-filters__select {
+    flex: 1;
+  }
+
+  .plugin-filters__count {
+    margin-left: 0;
+    text-align: center;
+  }
+}

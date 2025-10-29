@@ -183,17 +183,46 @@ export const manifest: PluginManifest = {
   id: 'com.bigmind.dag-templates-collection',
   name: 'DAG Templates Collection',
   version: '1.0.0',
-  description: '3 templates DAG prédéfinis pour démarrer rapidement vos projets',
+  description: '3 templates DAG professionnels pour démarrer rapidement vos projets',
+  longDescription: `Trois structures complètes et prêtes à l'emploi pour vous faire gagner du temps sur vos projets les plus courants. Chaque template inclut une hiérarchie de tags pré-configurée avec des couleurs harmonieuses et des relations logiques.
+
+**Vos projets, instantanément structurés**
+
+Que vous documentiez une taxonomie biologique, conceviez une architecture logicielle ou planifiez un projet en cascade, ces templates vous offrent une base solide pour construire vos cartes mentales. Plus besoin de recréer la même structure à chaque fois : appliquez le template et concentrez-vous sur le contenu.`,
   author: {
     name: 'BigMind Team',
     email: 'team@bigmind.com',
   },
   main: 'dag-templates-collection-plugin.js',
   icon: '📋',
+  logo: '/assets/plugin-logos/dag-templates-collection.svg',
+  color: '#06B6D4',
   category: 'productivity',
   tags: ['templates', 'dag', 'structures', 'productivity'],
   license: 'MIT',
   bigmindVersion: '1.0.0',
+
+  // Classification
+  source: 'core',
+  pricing: 'free',
+  featured: true,
+
+  // Marketing
+  tagline: 'Structures professionnelles prêtes à l\'emploi',
+  benefits: [
+    'Biological Taxonomy : hiérarchie scientifique complète (Royaume → Phylum → Classe)',
+    'Software Architecture : architecture en couches pour vos projets techniques',
+    'Project Process : phases de projet en cascade (Waterfall)',
+    'Templates favoris marqués pour accès rapide',
+    'Couleurs harmonieuses pré-configurées',
+    'Relations hiérarchiques déjà établies',
+  ],
+  useCases: [
+    'Documentation scientifique : classifier des espèces avec Biological Taxonomy',
+    'Conception logicielle : structurer votre code avec Software Architecture',
+    'Gestion de projet : planifier les phases avec Project Process',
+    'Apprentissage : comprendre des structures hiérarchiques complexes',
+  ],
 
   // Features
   features: [

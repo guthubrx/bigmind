@@ -10,26 +10,59 @@
  */
 
 import type { IPluginContext, PluginManifest } from '@bigmind/plugin-system';
-import { nodeStyleRegistry } from '../utils/nodeStyleRegistry';
-import type { NodeStyleContext } from '../utils/nodeStyleRegistry';
+import { nodeStyleRegistry } from '../../../utils/nodeStyleRegistry';
+import type { NodeStyleContext } from '../../../utils/nodeStyleRegistry';
 
 export const manifest: PluginManifest = {
   id: 'com.xmind.compatibility',
   name: 'XMind Compatibility',
   version: '1.0.0',
-  description:
-    'Assure une compatibilité bidirectionnelle complète avec le format XMind, ' +
-    'en préservant toutes les données XMind tout en permettant les extensions BigMind',
+  description: 'Compatibilité bidirectionnelle totale avec XMind - sans perte de données',
+  longDescription: `Travaillez en toute transparence entre BigMind et XMind grâce à un moteur de compatibilité de niveau professionnel. Ce plugin garantit une synchronisation parfaite des données dans les deux sens, préservant absolument toutes les informations.
+
+**La promesse de l'interopérabilité parfaite**
+
+Oubliez les craintes de perte de données lors de l'import ou de l'export. XMind Compatibility analyse et comprend en profondeur le format XMind : thèmes, palettes de couleurs, markers, rich text, métadonnées... Tout est préservé. Et quand vous utilisez des fonctionnalités avancées de BigMind, elles sont intelligemment stockées dans un sidecar qui voyage avec votre fichier.
+
+C'est comme avoir un traducteur expert qui non seulement maîtrise parfaitement les deux langues, mais sait aussi préserver les nuances et le contexte culturel.`,
   author: {
     name: 'BigMind Team',
     email: 'team@bigmind.com',
   },
   main: 'xmind-compatibility-plugin.js',
+
+  // Visual identity
   icon: '🔄',
+  logo: '/assets/plugin-logos/xmind-compatibility.svg',
+  color: '#FF6B35',
+
+  // Classification
   category: 'integration',
-  tags: ['xmind', 'compatibility', 'import', 'export', 'sync'],
+  tags: ['xmind', 'compatibility', 'interoperability', 'sync', 'professional'],
+  source: 'core',
+  pricing: 'free',
+  featured: true,
+
   license: 'MIT',
   bigmindVersion: '1.0.0',
+
+  // Marketing
+  tagline: 'XMind et BigMind en parfaite harmonie',
+  benefits: [
+    'Import/Export XMind sans aucune perte de données',
+    'Conversion automatique Rich Text ↔ Markdown',
+    'Mapping intelligent Markers XMind ↔ Tags BigMind',
+    'Préservation des thèmes et palettes de couleurs',
+    'Calcul automatique des couleurs héritées',
+    'Stockage sidecar pour les fonctionnalités BigMind'
+  ],
+  useCases: [
+    'Migrer vos cartes XMind vers BigMind en conservant tout',
+    'Collaborer avec des équipes utilisant XMind',
+    'Utiliser BigMind comme éditeur avancé de fichiers XMind',
+    'Créer des workflows hybrides BigMind/XMind',
+    'Archiver vos cartes dans un format standard ouvert'
+  ],
 
   features: [
     {

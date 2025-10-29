@@ -10,14 +10,17 @@ import { eventBus } from './eventBus';
 import examplePlugin from '../plugins/example-plugin';
 import analyticsPlugin from '../plugins/analytics-plugin';
 import * as eventMonitorPlugin from '../plugins/event-monitor-plugin';
-import * as xmindCompatibilityPlugin from '../plugins/xmind-compatibility-plugin';
 import * as dagTemplatesPlugin from '../plugins/dag-templates-plugin';
 import * as dagTemplatesCollectionPlugin from '../plugins/dag-templates-collection-plugin';
-import * as exportManagerPlugin from '../plugins/export-manager-plugin';
 import * as paletteManagerPlugin from '../plugins/palette-manager-plugin';
-import * as paletteSettingsPlugin from '../plugins/palette-settings-plugin';
-import * as colorPalettesCollectionPlugin from '../plugins/color-palettes-collection-plugin';
 import * as themeManagerPlugin from '../plugins/theme-manager-plugin';
+
+// Core plugins (from plugins/core/)
+import * as xmindCompatibilityPlugin from '../plugins/core/xmind-compatibility';
+import * as exportManagerPlugin from '../plugins/core/export-manager';
+import * as paletteSettingsPlugin from '../plugins/core/palette-settings';
+import * as colorPalettesCollectionPlugin from '../plugins/core/color-palettes-collection';
+import * as tagsManagerPlugin from '../plugins/core/tags-manager';
 
 // Create the enhanced plugin system with Phase 2 security
 const system = createEnhancedPluginSystem({
@@ -112,6 +115,9 @@ export async function initializePlugins(): Promise<void> {
 
     await registry.register(colorPalettesCollectionPlugin);
     // console.log('✅ Registered: Color Palettes Collection');
+
+    await registry.register(tagsManagerPlugin);
+    // console.log('✅ Registered: Tags Manager');
 
     await registry.register(themeManagerPlugin);
     // console.log('✅ Registered: Theme Manager');

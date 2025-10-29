@@ -508,6 +508,41 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     const rootId = active.content.rootNode?.id || active.content.nodes?.root?.id;
     if (!rootId) return;
 
+    // FR: Si c'est la palette "__map__", on ne recalcule PAS les couleurs
+    // EN: If it's the "__map__" palette, DON'T recalculate colors
+    // (ces couleurs SONT déjà la palette de la carte)
+    if (paletteId === '__map__') {
+      const updatedContent = {
+        ...active.content,
+        nodePaletteId: paletteId,
+      };
+
+      // Persister dans localStorage
+      try {
+        const key = `bigmind_overlay_${active.name}`;
+        const overlay = loadOverlayFromStorage(key);
+        overlay.nodePaletteId = paletteId;
+        saveOverlayToStorage(key, overlay);
+      } catch (e) {
+        // Ignore errors
+      }
+
+      set(prev => ({
+        ...prev,
+        openFiles: prev.openFiles.map(f =>
+          f.id === active.id ? { ...f, content: updatedContent } : f
+        ),
+      }));
+
+      // Emit palette changed event
+      emitPaletteChanged({
+        type: 'node',
+        paletteId,
+      });
+
+      return;
+    }
+
     // FR: Obtenir la palette et créer un thème temporaire
     // EN: Get palette and create temporary theme
     const palette = getPalette(paletteId);
@@ -596,6 +631,9 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
     const active = state.openFiles.find(f => f.isActive);
     if (!active || !active.content) return;
 
+    // FR: Note: pour les tags, on ne recalcule jamais les couleurs automatiquement
+    // EN: Note: for tags, we never recalculate colors automatically
+    // (les tags obtiennent leur couleur au moment de la création)
     const updatedContent = {
       ...active.content,
       tagPaletteId: paletteId,

@@ -3,7 +3,7 @@
  * EN: Dockable panels layout (Photoshop style)
  */
 
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { Layout, Model, TabNode, IJsonModel, Actions, DockLocation } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
 import MenuBar from '../components/MenuBar';
@@ -11,10 +11,9 @@ import FileTabs from '../components/FileTabs';
 import NodeExplorer from '../components/NodeExplorer';
 import MindMapCanvas from '../components/MindMapCanvas';
 import NodeProperties from '../components/NodeProperties';
-import TagLayersPanelRCT from '../components/TagLayersPanelRCT';
 import MapSettings from '../components/MapSettings';
 import StatusBar from '../components/StatusBar';
-import { useTagStore } from '../hooks/useTagStore';
+import { getAllPanels, onPanelRegistryChange } from '../utils/panelRegistry';
 import './DockableLayout.css';
 
 // FR: Configuration initiale du layout
@@ -104,12 +103,6 @@ const DEFAULT_LAYOUT: IJsonModel = {
             children: [
               {
                 type: 'tab',
-                name: 'Organisation',
-                component: 'tags',
-                enableClose: false,
-              },
-              {
-                type: 'tab',
                 name: 'Paramètres de la carte',
                 component: 'mapsettings',
                 enableClose: false,
@@ -124,28 +117,49 @@ const DEFAULT_LAYOUT: IJsonModel = {
 
 const STORAGE_KEY = 'bigmind_layout_config_v11'; // v11 with MapSettings tab
 
-// FR: Liste de tous les onglets disponibles
-// EN: List of all available tabs
-const AVAILABLE_TABS = [
+// FR: Liste des onglets core disponibles
+// EN: List of available core tabs
+const CORE_TABS = [
   { id: 'files', name: 'Fichiers', component: 'files' },
   { id: 'explorer', name: 'Explorateur', component: 'explorer' },
   { id: 'properties', name: 'Propriétés', component: 'properties' },
-  { id: 'tags', name: 'Organisation', component: 'tags' },
   { id: 'mapsettings', name: 'Paramètres de la carte', component: 'mapsettings' },
 ];
 
 function DockableLayout() {
   const layoutRef = useRef<Layout>(null);
-  // FR: Optimiser le sélecteur pour éviter Object.keys à chaque render
-  // EN: Optimize selector to avoid Object.keys on every render
-  const tagsCount = useTagStore(
-    state => Object.keys(state.tags).length,
-    (a, b) => a === b // FR: Comparaison par valeur / EN: Compare by value
-  );
-  const [addTabMenuState, setAddTabMenuState] = React.useState<{
+  const [registryVersion, setRegistryVersion] = useState(0);
+  const [addTabMenuState, setAddTabMenuState] = useState<{
     tabSetId: string | null;
     anchorEl: HTMLElement | null;
   }>({ tabSetId: null, anchorEl: null });
+
+  // FR: Force re-render when panel registry changes
+  // EN: Force re-render when panel registry changes
+  useEffect(() => {
+    setRegistryVersion(v => v + 1);
+
+    const unsubscribe = onPanelRegistryChange(() => {
+      setRegistryVersion(v => v + 1);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  // FR: Obtenir les panneaux dynamiques depuis le registre
+  // EN: Get dynamic panels from registry
+  const pluginPanels = getAllPanels();
+
+  // FR: Combiner les onglets core + onglets des plugins
+  // EN: Combine core tabs + plugin tabs
+  const allAvailableTabs = React.useMemo(() => {
+    const pluginTabs = pluginPanels.map(panel => ({
+      id: panel.id,
+      name: panel.name,
+      component: panel.id,
+    }));
+    return [...CORE_TABS, ...pluginTabs];
+  }, [pluginPanels]);
 
   // FR: Charger la configuration sauvegardée ou utiliser la configuration par défaut
   // EN: Load saved configuration or use default configuration
@@ -289,13 +303,6 @@ function DockableLayout() {
           </div>
         );
 
-      case 'tags':
-        return (
-          <div className="panel-content">
-            <TagLayersPanelRCT />
-          </div>
-        );
-
       case 'mapsettings':
         return (
           <div className="panel-content">
@@ -303,41 +310,61 @@ function DockableLayout() {
           </div>
         );
 
-      default:
+      default: {
+        // FR: Vérifier si c'est un panneau du registre
+        // EN: Check if it's a panel from the registry
+        const panel = pluginPanels.find(p => p.id === component);
+        if (panel) {
+          const Component = panel.component;
+          return (
+            <div className="panel-content">
+              <Component />
+            </div>
+          );
+        }
         return <div className="panel-content">Unknown component: {component}</div>;
+      }
     }
-  }, []);
+  }, [pluginPanels]);
 
-  // FR: Rendu personnalisé du nom des onglets
-  // EN: Custom tab name rendering
+  // FR: Rendu personnalisé du nom des onglets (avec badges)
+  // EN: Custom tab name rendering (with badges)
   const onRenderTab = useCallback(
     (node: TabNode, renderValues: any) => {
-      if (node.getComponent() === 'tags') {
-        renderValues.content = (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>Organisation</span>
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minWidth: '20px',
-                height: '16px',
-                padding: '0 4px',
-                background: 'var(--accent-color)',
-                borderRadius: '8px',
-                fontSize: '10px',
-                fontWeight: '600',
-                color: 'white',
-              }}
-            >
-              {tagsCount}
-            </span>
-          </div>
-        );
+      const component = node.getComponent();
+
+      // FR: Vérifier si c'est un panneau du registre avec badge
+      // EN: Check if it's a panel from the registry with badge
+      const panel = pluginPanels.find(p => p.id === component);
+      if (panel && panel.badge) {
+        const badgeCount = panel.badge();
+        if (badgeCount !== null && badgeCount > 0) {
+          renderValues.content = (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>{panel.name}</span>
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: '20px',
+                  height: '16px',
+                  padding: '0 4px',
+                  background: 'var(--accent-color)',
+                  borderRadius: '8px',
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  color: 'white',
+                }}
+              >
+                {badgeCount}
+              </span>
+            </div>
+          );
+        }
       }
     },
-    [tagsCount]
+    [pluginPanels]
   );
 
   // FR: Action personnalisée pour gérer le split 50/50
@@ -381,7 +408,7 @@ function DockableLayout() {
 
       // FR: Filtrer les onglets disponibles pour n'afficher que ceux qui ne sont pas déjà présents
       // EN: Filter available tabs to show only those not already present
-      const availableTabs = AVAILABLE_TABS.filter(
+      const availableTabs = allAvailableTabs.filter(
         tab => !existingComponents.includes(tab.component) && tab.component !== 'canvas'
       );
 
@@ -594,7 +621,7 @@ function DockableLayout() {
             overflow: 'hidden',
           }}
         >
-          {AVAILABLE_TABS.filter(tab => {
+          {allAvailableTabs.filter(tab => {
             // FR: Filtrer les onglets qui ne sont pas déjà dans le tabset
             // EN: Filter tabs that are not already in the tabset
             const tabSetNode = model.getNodeById(addTabMenuState.tabSetId!);

@@ -3,7 +3,7 @@
  * EN: Selected node properties
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Type,
   Palette,
@@ -14,13 +14,11 @@ import {
   Italic,
   Underline,
   Settings,
-  Tag,
 } from 'lucide-react';
 import { useMindmap } from '../hooks/useMindmap';
 import { useOpenFiles } from '../hooks/useOpenFiles';
 import { useSelection } from '../hooks/useSelection';
-import { useTagStore } from '../hooks/useTagStore';
-import NodeTagPanel from './NodeTagPanel';
+import { getNodePropertiesTabs, onNodePropertiesRegistryChange } from '../utils/nodePropertiesRegistry';
 import MarkdownEditor from './MarkdownEditor';
 import './NodeProperties.css';
 
@@ -29,17 +27,27 @@ function NodeProperties() {
   const activeFile = useOpenFiles(state => state.openFiles.find(f => f.isActive) || null);
   const selectedNodeId = useSelection(s => s.selectedNodeId) || selection.primaryNode;
   const updateActiveFileNode = useOpenFiles(s => s.updateActiveFileNode);
-  const [activeTab, setActiveTab] = useState<'content' | 'style' | 'tags' | 'advanced'>('content');
-
-  // FR: Sélecteur réactif pour le nombre de tags du nœud
-  // EN: Reactive selector for node tags count
-  const nodeTagsCount = useTagStore(state =>
-    selectedNodeId && state.nodeTagMap[selectedNodeId]
-      ? state.nodeTagMap[selectedNodeId].size
-      : 0
-  );
+  const [activeTab, setActiveTab] = useState<string>('content');
+  const [registryVersion, setRegistryVersion] = useState(0);
 
   const selectedNode = selectedNodeId ? activeFile?.content?.nodes?.[selectedNodeId] : null;
+
+  // FR: Force re-render when node properties registry changes
+  // EN: Force re-render when node properties registry changes
+  useEffect(() => {
+    // Force initial render to pick up any tabs already registered
+    setRegistryVersion(v => v + 1);
+
+    const unsubscribe = onNodePropertiesRegistryChange(() => {
+      setRegistryVersion(v => v + 1);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  // FR: Obtenir les onglets dynamiques depuis le registre
+  // EN: Get dynamic tabs from registry
+  const pluginTabs = getNodePropertiesTabs();
 
   if (!selectedNode) {
     return (
@@ -58,6 +66,8 @@ function NodeProperties() {
         {/* FR: Onglets */}
         {/* EN: Tabs */}
         <div className="properties-tabs">
+          {/* FR: Onglets core (contenu, style, avancé) */}
+          {/* EN: Core tabs (content, style, advanced) */}
           <button
             type="button"
             className={`tab ${activeTab === 'content' ? 'active' : ''}`}
@@ -74,34 +84,46 @@ function NodeProperties() {
             <Palette className="icon-small" />
             Style
           </button>
-          <button
-            type="button"
-            className={`tab ${activeTab === 'tags' ? 'active' : ''}`}
-            onClick={() => setActiveTab('tags')}
-          >
-            <Tag className="icon-small" />
-            Tags
-            {nodeTagsCount > 0 && (
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minWidth: '20px',
-                  height: '16px',
-                  padding: '0 4px',
-                  background: 'var(--accent-color)',
-                  borderRadius: '8px',
-                  fontSize: '10px',
-                  fontWeight: '600',
-                  color: 'white',
-                  marginLeft: '6px',
-                }}
+
+          {/* FR: Onglets dynamiques depuis les plugins */}
+          {/* EN: Dynamic tabs from plugins */}
+          {pluginTabs.map(tab => {
+            const Icon = tab.icon;
+            const badgeCount = tab.badge && selectedNodeId ? tab.badge(selectedNodeId, selectedNode) : null;
+
+            return (
+              <button
+                key={`${tab.id}-${registryVersion}`}
+                type="button"
+                className={`tab ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
               >
-                {nodeTagsCount}
-              </span>
-            )}
-          </button>
+                {Icon && <Icon className="icon-small" />}
+                {tab.label}
+                {badgeCount !== null && badgeCount > 0 && (
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minWidth: '20px',
+                      height: '16px',
+                      padding: '0 4px',
+                      background: 'var(--accent-color)',
+                      borderRadius: '8px',
+                      fontSize: '10px',
+                      fontWeight: '600',
+                      color: 'white',
+                      marginLeft: '6px',
+                    }}
+                  >
+                    {badgeCount}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+
           <button
             type="button"
             className={`tab ${activeTab === 'advanced' ? 'active' : ''}`}
@@ -256,11 +278,18 @@ function NodeProperties() {
             </div>
           )}
 
-          {activeTab === 'tags' && selectedNodeId && (
-            <div className="tags-tab">
-              <NodeTagPanel nodeId={selectedNodeId} />
-            </div>
-          )}
+          {/* FR: Contenu des onglets dynamiques depuis les plugins */}
+          {/* EN: Dynamic tab content from plugins */}
+          {pluginTabs.map(tab => {
+            if (activeTab !== tab.id) return null;
+
+            const Component = tab.component;
+            return (
+              <div key={`${tab.id}-content-${registryVersion}`} className={`${tab.id}-tab`}>
+                {selectedNodeId && <Component nodeId={selectedNodeId} node={selectedNode} />}
+              </div>
+            );
+          })}
 
           {activeTab === 'advanced' && (
             <div className="advanced-tab">

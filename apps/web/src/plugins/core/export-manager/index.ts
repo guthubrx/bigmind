@@ -4,27 +4,59 @@
  */
 
 import type { IPluginContext, PluginManifest } from '@bigmind/plugin-system';
-import { useOpenFiles } from '../hooks/useOpenFiles';
-import { useViewport } from '../hooks/useViewport';
-import { useCanvasOptions } from '../hooks/useCanvasOptions';
-import { useTagStore } from '../hooks/useTagStore';
+import { useOpenFiles } from '../../../hooks/useOpenFiles';
+import { useViewport } from '../../../hooks/useViewport';
+import { useCanvasOptions } from '../../../hooks/useCanvasOptions';
+import { useTagStore } from '../tags-manager/hooks/useTagStore';
 import JSZip from 'jszip';
 
 export const manifest: PluginManifest = {
   id: 'com.bigmind.export-manager',
   name: 'Export Manager',
   version: '1.0.0',
-  description: "Gère l'export des cartes mentales dans différents formats (XMind, etc.)",
+  description: 'Exportez vos mind maps dans tous les formats populaires',
+  longDescription: `Partagez et sauvegardez vos cartes mentales en toute simplicité grâce à un moteur d'export universel et intelligent. Export Manager garantit que toutes vos données - styles, tags, notes - sont parfaitement préservées lors de l'exportation.
+
+**Vos données, partout où vous en avez besoin**
+
+Travaillez en toute sérénité : vos cartes peuvent être exportées au format XMind pour collaborer avec d'autres outils, ou sauvegardées avec toutes les métadonnées BigMind intactes. Le système de sidecar intelligent préserve absolument toutes vos personnalisations, même les fonctionnalités avancées de BigMind que XMind ne supporte pas nativement.`,
   author: {
     name: 'BigMind Team',
     email: 'team@bigmind.com',
   },
   main: 'export-manager-plugin.js',
+
+  // Visual identity
   icon: '📤',
+  logo: '/assets/plugin-logos/export-manager.svg',
+  color: '#10B981',
+
+  // Classification
   category: 'export',
-  tags: ['export', 'xmind', 'save', 'file'],
+  tags: ['export', 'save', 'xmind', 'interoperability', 'backup'],
+  source: 'core',
+  pricing: 'free',
+
   license: 'MIT',
   bigmindVersion: '1.0.0',
+
+  // Marketing
+  tagline: 'Exportez sans compromis',
+  benefits: [
+    'Export XMind natif avec compatibilité totale',
+    'Préservation automatique de tous les styles et tags',
+    'Métadonnées BigMind embarquées (sidecar JSON)',
+    'Sauvegarde complète du viewport et des options',
+    'Aucune perte de données lors de l\'export/import',
+    'Commande rapide accessible depuis le menu'
+  ],
+  useCases: [
+    'Partager des cartes avec des utilisateurs XMind',
+    'Créer des sauvegardes complètes de vos projets',
+    'Migrer entre BigMind et XMind sans perte',
+    'Archiver des cartes avec toutes leurs métadonnées',
+    'Collaborer en utilisant XMind comme format d\'échange'
+  ],
 
   // Features
   features: [

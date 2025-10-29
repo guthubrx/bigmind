@@ -11,17 +11,46 @@ export const manifest: PluginManifest = {
   name: 'Theme Manager',
   version: '1.0.0',
   description:
-    "Gère les thèmes d'interface Light et Dark pour personnaliser l'apparence de BigMind",
+    "Gérez les thèmes d'interface Light et Dark pour personnaliser l'apparence globale",
+  longDescription: `Adaptez BigMind à votre environnement de travail et à vos préférences visuelles. Theme Manager gère l'ensemble du système de thèmes de l'interface, appliquant automatiquement les variables CSS à tous les composants.
+
+**Un confort visuel optimal**
+
+Travaillez de jour avec le mode Light lumineux et passez au mode Dark le soir pour préserver vos yeux. Tous les éléments de l'interface s'adaptent instantanément : panneaux, boutons, menus, nœuds. Le thème sélectionné est sauvegardé et restauré automatiquement à chaque session.`,
   author: {
     name: 'BigMind Team',
     email: 'team@bigmind.com',
   },
   main: 'theme-manager-plugin.js',
   icon: '🌓',
+  logo: '/assets/plugin-logos/theme-manager.svg',
+  color: '#6366F1',
   category: 'theme',
   tags: ['theme', 'dark-mode', 'light-mode', 'appearance', 'ui'],
   license: 'MIT',
   bigmindVersion: '1.0.0',
+
+  // Classification
+  source: 'core',
+  pricing: 'free',
+  featured: false,
+
+  // Marketing
+  tagline: 'Light ou Dark, choisissez votre ambiance',
+  benefits: [
+    'Mode Light : interface claire pour environnement lumineux',
+    'Mode Dark : réduction de la fatigue oculaire',
+    'Application instantanée sur tous les composants',
+    'Variables CSS automatiques pour cohérence parfaite',
+    'Persistance automatique du thème sélectionné',
+    'Base extensible pour créer vos propres thèmes',
+  ],
+  useCases: [
+    'Travail de jour : utilisez le mode Light pour une interface claire',
+    'Travail de nuit : passez en mode Dark pour protéger vos yeux',
+    'Présentations : choisissez le thème adapté à votre écran',
+    'Personnalisation : créez votre propre thème avec les variables CSS',
+  ],
 
   // Features
   features: [

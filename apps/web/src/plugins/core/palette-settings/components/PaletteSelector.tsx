@@ -5,7 +5,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { ColorPalette } from '../themes/colorPalettes';
+import { ColorPalette } from '../../../../themes/colorPalettes';
 import './PaletteSelector.css';
 
 interface PaletteSelectorProps {

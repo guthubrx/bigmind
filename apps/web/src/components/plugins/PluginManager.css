@@ -1,0 +1,125 @@
+.plugin-manager {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* Header */
+.plugin-manager__header {
+  margin-bottom: 32px;
+}
+
+.plugin-manager__title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--fg-primary);
+  margin: 0 0 8px 0;
+}
+
+.plugin-manager__description {
+  font-size: 16px;
+  color: var(--fg-secondary);
+  margin: 0;
+}
+
+/* Section */
+.plugin-manager__section {
+  margin-bottom: 48px;
+}
+
+.plugin-manager__section-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.plugin-manager__section-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--fg-primary);
+  margin: 0 0 8px 0;
+}
+
+.plugin-manager__section-subtitle {
+  font-size: 14px;
+  color: var(--fg-tertiary);
+  margin: 0;
+}
+
+/* Grid */
+.plugin-manager__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+/* Empty State */
+.plugin-manager__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+  color: var(--fg-tertiary);
+  font-size: 16px;
+}
+
+/* Loading */
+.plugin-manager__loading {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 16px 24px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  color: var(--fg-primary);
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 1000;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .plugin-manager__grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .plugin-manager {
+    padding: 0;
+  }
+
+  .plugin-manager__header {
+    margin-bottom: 24px;
+  }
+
+  .plugin-manager__title {
+    font-size: 24px;
+  }
+
+  .plugin-manager__description {
+    font-size: 14px;
+  }
+
+  .plugin-manager__section {
+    margin-bottom: 32px;
+  }
+
+  .plugin-manager__section-header {
+    margin-bottom: 16px;
+  }
+
+  .plugin-manager__section-title {
+    font-size: 20px;
+  }
+
+  .plugin-manager__grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}

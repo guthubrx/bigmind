@@ -11,7 +11,7 @@ import { usePlatform } from '../hooks/usePlatform';
 import { X } from 'lucide-react';
 import { useAppSettings } from '../hooks/useAppSettings';
 import { getAllInterfaceThemes } from '../themes/colorThemes';
-import { getSettingsSections } from '../utils/settingsRegistry';
+import { getSettingsSections, onSettingsRegistryChange } from '../utils/settingsRegistry';
 import {
   PluginManager,
   PermissionDialog,
@@ -90,8 +90,6 @@ function SettingsPage() {
   useEffect(() => {
     const updatePlugins = () => {
       setPlugins(registry.getAllPlugins());
-      // Force re-render of dynamic settings sections
-      setSettingsVersion(v => v + 1);
     };
 
     updatePlugins();
@@ -108,6 +106,21 @@ function SettingsPage() {
       registry.off('plugin:deactivated', updatePlugins);
       registry.off('plugin:unregistered', updatePlugins);
     };
+  }, []);
+
+  // Listen to settings registry changes
+  useEffect(() => {
+    console.log('[Settings] Subscribing to settings registry changes');
+
+    // Force initial render to pick up any sections already registered
+    setSettingsVersion(v => v + 1);
+
+    const unsubscribe = onSettingsRegistryChange(() => {
+      console.log('[Settings] Settings registry changed, forcing re-render');
+      setSettingsVersion(v => v + 1);
+    });
+
+    return unsubscribe;
   }, []);
 
   // Plugin handlers
@@ -239,6 +252,11 @@ function SettingsPage() {
               {section === 'appearance' && (
                 <div className="settings-section">
                   <h2 className="settings-section-title">Apparence</h2>
+                  {(() => {
+                    const sections = getSettingsSections('appearance');
+                    console.log('[Settings Render] Appearance sections:', sections.length, sections);
+                    return null;
+                  })()}
 
                   {/* FR: Sélecteur de thème d'interface */}
                   {/* EN: Interface theme selector */}
@@ -306,7 +324,7 @@ function SettingsPage() {
                   {/* EN: Dynamic sections injected by plugins */}
                   {getSettingsSections('appearance').map(settingsSection => {
                     const Component = settingsSection.component;
-                    return <Component key={settingsSection.id} />;
+                    return <Component key={`${settingsSection.id}-${settingsVersion}`} />;
                   })}
 
                   <h3 className="settings-subsection-title">Style par défaut des nœuds</h3>

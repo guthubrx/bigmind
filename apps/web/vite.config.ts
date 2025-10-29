@@ -16,7 +16,11 @@ export default defineConfig({
   server: {
     port: 5173,
     open: false, // FR: Ouvrir automatiquement le navigateur / EN: Auto-open browser
+    hmr: {
+      overlay: false, // FR: Désactiver l'overlay d'erreur / EN: Disable error overlay
+    },
   },
+  logLevel: 'warn', // FR: Ne logger que les warnings et erreurs / EN: Only log warnings and errors
   build: {
     outDir: 'dist',
     sourcemap: true,

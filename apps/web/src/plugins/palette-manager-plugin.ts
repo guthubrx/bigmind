@@ -12,17 +12,46 @@ export const manifest: PluginManifest = {
   id: 'com.bigmind.palette-manager',
   name: 'Palette Manager',
   version: '1.0.0',
-  description: 'Fournit des palettes de couleurs prédéfinies pour personnaliser vos nœuds et tags',
+  description: 'Gérez les palettes de couleurs pour personnaliser automatiquement vos nœuds et tags',
+  longDescription: `Donnez vie à vos cartes mentales avec un système de coloration automatique intelligent. Palette Manager calcule automatiquement les couleurs de vos nœuds en fonction de leur position dans la hiérarchie et de la palette active.
+
+**La couleur au service de la clarté**
+
+Fini les nœuds tous blancs ou les couleurs incohérentes. Ce plugin applique automatiquement une palette harmonieuse à vos cartes mentales, rendant la structure visuelle immédiatement compréhensible. Chaque niveau de la hiérarchie se distingue naturellement, guidant l'œil et facilitant la navigation.`,
   author: {
     name: 'BigMind Team',
     email: 'team@bigmind.com',
   },
   main: 'palette-manager-plugin.js',
   icon: '🎨',
+  logo: '/assets/plugin-logos/palette-manager.svg',
+  color: '#F59E0B',
   category: 'theme',
   tags: ['colors', 'palettes', 'theme', 'customization'],
   license: 'MIT',
   bigmindVersion: '1.0.0',
+
+  // Classification
+  source: 'core',
+  pricing: 'free',
+  featured: false,
+
+  // Marketing
+  tagline: 'Coloration automatique intelligente',
+  benefits: [
+    'Calcul automatique des couleurs selon la hiérarchie',
+    'Respect des couleurs manuelles existantes',
+    'Contraste optimal pour la lisibilité du texte',
+    'S\'intègre avec toutes les palettes disponibles',
+    'API complète pour étendre le système',
+    'Priorité configurable pour la composition',
+  ],
+  useCases: [
+    'Visualiser automatiquement la structure de vos cartes mentales',
+    'Maintenir une cohérence visuelle sans effort manuel',
+    'Identifier rapidement les différents niveaux de profondeur',
+    'Créer des cartes esthétiques pour vos présentations',
+  ],
 
   // Features
   features: [
