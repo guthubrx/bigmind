@@ -11,6 +11,7 @@ import {
   PermissionDialog,
   AuditDashboard,
   PolicyEditor,
+  PluginMarketplace,
 } from '../components/plugins';
 import { pluginSystem, saveActivatedPlugins } from '../utils/pluginManager';
 import type {
@@ -23,10 +24,10 @@ import type {
 
 const { registry, permissionManager, auditLogger, policyEngine } = pluginSystem;
 
-type View = 'manager' | 'audit' | 'policy';
+type View = 'marketplace' | 'manager' | 'audit' | 'policy';
 
 export function PluginsPage() {
-  const [currentView, setCurrentView] = useState<View>('manager');
+  const [currentView, setCurrentView] = useState<View>('marketplace');
   const [plugins, setPlugins] = useState<Map<string, PluginInfo>>(new Map());
   const [permissionRequest, setPermissionRequest] = useState<{
     pluginId: string;
@@ -149,6 +150,7 @@ export function PluginsPage() {
       >
         <div style={{ display: 'flex', gap: '8px' }}>
           {[
+            { id: 'marketplace' as View, label: 'Marketplace', icon: '🏪' },
             { id: 'manager' as View, label: 'Gestionnaire', icon: '🔌' },
             { id: 'audit' as View, label: 'Audit', icon: '📊' },
             { id: 'policy' as View, label: 'Politiques', icon: '🔐' },
@@ -176,6 +178,8 @@ export function PluginsPage() {
 
       {/* Content */}
       <div>
+        {currentView === 'marketplace' && <PluginMarketplace />}
+
         {currentView === 'manager' && (
           <PluginManager
             plugins={plugins}

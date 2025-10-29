@@ -29,3 +29,5 @@ export type { PluginDetailModalProps } from './PluginDetailModal';
 
 export { PluginFilters } from './PluginFilters';
 export type { PluginFiltersProps, PluginStatus, PluginCategory } from './PluginFilters';
+
+export { PluginMarketplace } from './PluginMarketplace';
