@@ -3,10 +3,13 @@
  * Displays comprehensive plugin information in a modal
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import type { PluginManifest } from '@bigmind/plugin-system';
 import { PluginBadge, type BadgeType } from './PluginBadge';
 import { X, Check, Star, Download, Calendar, Tag, ExternalLink } from 'lucide-react';
+import { StarRatingInput } from './StarRatingInput';
+import { PluginRatingService } from '../../services/PluginRatingService';
+import { PluginReviews } from './PluginReviews';
 import './PluginDetailModal.css';
 
 export interface PluginDetailModalProps {
@@ -24,6 +27,10 @@ export function PluginDetailModal({
   onClose,
   onToggle,
 }: PluginDetailModalProps) {
+  const [userRating, setUserRating] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   const getBadges = (): BadgeType[] => {
     const badges: BadgeType[] = [];
     if (manifest.source === 'core') badges.push('core');
@@ -33,6 +40,42 @@ export function PluginDetailModal({
     if (manifest.pricing === 'paid' || manifest.pricing === 'freemium') badges.push('premium');
     if (manifest.source === 'community') badges.push('community');
     return badges;
+  };
+
+  const handleRatingSubmit = async (rating: number) => {
+    setUserRating(rating);
+    setIsSubmitting(true);
+    setSubmitMessage(null);
+
+    // Check if rating service is available
+    if (!PluginRatingService.isAvailable()) {
+      setSubmitMessage({
+        type: 'error',
+        text: 'Le service de notation n\'est pas encore configuré. Contactez l\'administrateur.',
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      await PluginRatingService.submitRating({
+        pluginId: manifest.id,
+        pluginName: manifest.name,
+        rating,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+      });
+
+      setSubmitMessage({ type: 'success', text: 'Merci pour votre note !' });
+    } catch (error) {
+      console.error('Error submitting rating:', error);
+      setSubmitMessage({
+        type: 'error',
+        text: 'Erreur lors de l\'envoi de la note. Réessayez plus tard.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const logoUrl = manifest.logo || manifest.icon;
@@ -79,6 +122,24 @@ export function PluginDetailModal({
                   </span>
                 )}
                 {manifest.license && <span>Licence {manifest.license}</span>}
+              </div>
+
+              <div className="plugin-detail-modal__meta-stats">
+                {manifest.rating !== undefined && manifest.rating > 0 && (
+                  <span className="plugin-detail-modal__meta-rating">
+                    <Star size={14} fill="currentColor" />
+                    {manifest.rating.toFixed(1)}/5
+                    {manifest.reviewCount && <span className="plugin-detail-modal__meta-reviews">({manifest.reviewCount} avis)</span>}
+                  </span>
+                )}
+                {manifest.downloads !== undefined && (
+                  <span className="plugin-detail-modal__meta-downloads">
+                    <Download size={14} />
+                    {manifest.downloads >= 1000
+                      ? `${(manifest.downloads / 1000).toFixed(1)}k`
+                      : manifest.downloads} téléchargements
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -182,7 +243,7 @@ export function PluginDetailModal({
                   <Star size={20} fill="currentColor" />
                   <div>
                     <div className="plugin-detail-modal__stat-value">{manifest.rating.toFixed(1)}/5</div>
-                    <div className="plugin-detail-modal__stat-label">Note</div>
+                    <div className="plugin-detail-modal__stat-label">Note moyenne</div>
                   </div>
                 </div>
               )}
@@ -210,6 +271,35 @@ export function PluginDetailModal({
               )}
             </div>
           </section>
+
+          {/* User Rating */}
+          <section className="plugin-detail-modal__section">
+            <h3 className="plugin-detail-modal__section-title">
+              <Star size={20} />
+              Notez ce plugin
+            </h3>
+            <div className="plugin-detail-modal__rating-container">
+              <p className="plugin-detail-modal__rating-description">
+                Votre note aide la communauté à découvrir les meilleurs plugins
+              </p>
+              <div className="plugin-detail-modal__rating-input">
+                <StarRatingInput
+                  rating={userRating}
+                  onRate={handleRatingSubmit}
+                  size="large"
+                  disabled={isSubmitting}
+                />
+              </div>
+              {submitMessage && (
+                <div className={`plugin-detail-modal__rating-message plugin-detail-modal__rating-message--${submitMessage.type}`}>
+                  {submitMessage.text}
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Reviews via Giscus */}
+          <PluginReviews pluginId={manifest.id} pluginName={manifest.name} />
 
           {/* Links */}
           {(manifest.homepage || manifest.repository || manifest.documentation) && (

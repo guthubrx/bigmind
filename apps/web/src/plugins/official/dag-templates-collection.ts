@@ -4,7 +4,7 @@
  */
 
 import type { IPluginContext, PluginManifest } from '@bigmind/plugin-system';
-import { registerTemplates, unregisterTemplate, type DagTemplate } from '../utils/dagTemplates';
+import { registerTemplates, unregisterTemplate, type DagTemplate } from '../../utils/dagTemplates';
 
 // FR: Templates DAG prédéfinis
 // EN: Predefined DAG templates

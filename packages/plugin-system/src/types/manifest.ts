@@ -41,6 +41,7 @@ export interface PluginManifest {
   source?: 'core' | 'community' | 'enterprise'; // Source du plugin
   pricing?: 'free' | 'paid' | 'freemium'; // Modèle économique
   featured?: boolean; // Plugin mis en avant
+  autoActivate?: boolean; // Auto-activer au premier lancement (défaut: false)
 
   // Marketplace metadata
   homepage?: string;
@@ -51,6 +52,7 @@ export interface PluginManifest {
   documentation?: string;
   rating?: number; // Note moyenne (0-5)
   downloads?: number; // Nombre de téléchargements
+  reviewCount?: number; // Nombre d'avis
 
   // Content marketing
   tagline?: string; // Accroche courte (1 phrase)

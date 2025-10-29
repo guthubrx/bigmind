@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, Grid3x3, List } from 'lucide-react';
 import './PluginFilters.css';
 
 export type PluginStatus = 'all' | 'active' | 'inactive';
@@ -19,6 +19,11 @@ export interface PluginFiltersProps {
   onCategoryChange: (category: PluginCategory) => void;
   totalCount: number;
   filteredCount: number;
+  gridColumns: number;
+  onGridColumnsChange: (columns: number) => void;
+  itemsPerPage: number;
+  onItemsPerPageChange: (items: number) => void;
+  screenSize?: 'mobile' | 'tablet' | 'desktop';
 }
 
 const STATUS_OPTIONS: { value: PluginStatus; label: string }[] = [
@@ -46,7 +51,17 @@ export function PluginFilters({
   onCategoryChange,
   totalCount,
   filteredCount,
+  gridColumns,
+  onGridColumnsChange,
+  itemsPerPage,
+  onItemsPerPageChange,
+  screenSize = 'desktop',
 }: PluginFiltersProps) {
+  const getColumnHint = () => {
+    if (screenSize === 'mobile') return ' (1 col sur mobile)';
+    if (screenSize === 'tablet') return ' (max 2 cols sur tablette)';
+    return '';
+  };
   return (
     <div className="plugin-filters">
       {/* Search */}
@@ -97,6 +112,38 @@ export function PluginFilters({
                 {option.label}
               </option>
             ))}
+          </select>
+        </div>
+
+        {screenSize !== 'mobile' && (
+          <div className="plugin-filters__filter-group">
+            <Grid3x3 size={16} />
+            <select
+              className="plugin-filters__select"
+              value={gridColumns}
+              onChange={e => onGridColumnsChange(Number(e.target.value))}
+              title={`Colonnes par ligne${getColumnHint()}`}
+            >
+              <option value="2">2 colonnes{getColumnHint()}</option>
+              <option value="3">3 colonnes{getColumnHint()}</option>
+              <option value="4">4 colonnes{getColumnHint()}</option>
+              <option value="5">5 colonnes{getColumnHint()}</option>
+            </select>
+          </div>
+        )}
+
+        <div className="plugin-filters__filter-group">
+          <List size={16} />
+          <select
+            className="plugin-filters__select"
+            value={itemsPerPage}
+            onChange={e => onItemsPerPageChange(Number(e.target.value))}
+            title="Éléments par page"
+          >
+            <option value="12">12 par page</option>
+            <option value="24">24 par page</option>
+            <option value="48">48 par page</option>
+            <option value="999999">Tous</option>
           </select>
         </div>
 

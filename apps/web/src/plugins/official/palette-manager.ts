@@ -4,9 +4,9 @@
  */
 
 import type { IPluginContext, PluginManifest } from '@bigmind/plugin-system';
-import { getAllPalettes, getPalette } from '../themes/colorPalettes';
-import { nodeStyleRegistry } from '../utils/nodeStyleRegistry';
-import { getNodeColor } from '../utils/nodeColors';
+import { getAllPalettes, getPalette } from '../../themes/colorPalettes';
+import { nodeStyleRegistry } from '../../utils/nodeStyleRegistry';
+import { getNodeColor } from '../../utils/nodeColors';
 
 export const manifest: PluginManifest = {
   id: 'com.bigmind.palette-manager',

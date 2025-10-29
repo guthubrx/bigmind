@@ -46,7 +46,7 @@ export class PluginRegistry extends EventEmitter {
   /**
    * Register a plugin
    */
-  async register(plugin: Plugin): Promise<void> {
+  async register(plugin: Plugin, autoActivate: boolean = true): Promise<void> {
     const { manifest } = plugin;
 
     // Validate manifest
@@ -80,6 +80,19 @@ export class PluginRegistry extends EventEmitter {
     this.emit('plugin:registered', manifest.id, manifest);
 
     console.log(`[PluginRegistry] Registered plugin: ${manifest.id} v${manifest.version}`);
+
+    // Auto-activate if enabled in manifest or by default
+    if ((manifest.autoActivate ?? autoActivate) && autoActivate) {
+      try {
+        await this.activate(manifest.id);
+      } catch (error) {
+        console.warn(
+          `[PluginRegistry] Failed to auto-activate plugin ${manifest.id}:`,
+          error
+        );
+        // Don't throw - plugin is still registered, just not active
+      }
+    }
   }
 
   /**

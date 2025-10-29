@@ -44,7 +44,13 @@ cp -r "$SOURCE_DIR/official/"* official/
 
 echo "   - Copie de community/..."
 mkdir -p community
-cp -r "$SOURCE_DIR/community/"* community/
+# Copy community files if they exist (handle empty directory case)
+if [ "$(ls -A "$SOURCE_DIR/community/" 2>/dev/null)" ]; then
+    cp -r "$SOURCE_DIR/community/"* community/ 2>/dev/null || true
+else
+    # Create .gitkeep to preserve empty directory
+    touch community/.gitkeep
+fi
 
 # Copier les fichiers racine
 echo "   - Copie des fichiers racine..."
@@ -53,6 +59,7 @@ cp "$SOURCE_DIR/CONTRIBUTING.md" .
 cp "$SOURCE_DIR/LICENSE" .
 cp "$SOURCE_DIR/package.json" .
 cp "$SOURCE_DIR/.gitignore" .
+cp "$SOURCE_DIR/registry.json" .
 
 echo "✅ Étape 4/5: Vérification des fichiers copiés..."
 echo ""

@@ -4,7 +4,7 @@
  */
 
 import type { IPluginContext, PluginManifest } from '@bigmind/plugin-system';
-import { getAllInterfaceThemes, getTheme, applyThemeToDocument } from '../themes/colorThemes';
+import { getAllInterfaceThemes, getTheme, applyThemeToDocument } from '../../../themes/colorThemes';
 
 export const manifest: PluginManifest = {
   id: 'com.bigmind.theme-manager',
@@ -34,6 +34,7 @@ Travaillez de jour avec le mode Light lumineux et passez au mode Dark le soir po
   source: 'core',
   pricing: 'free',
   featured: false,
+  autoActivate: true, // Auto-activate on first launch
 
   // Marketing
   tagline: 'Light ou Dark, choisissez votre ambiance',

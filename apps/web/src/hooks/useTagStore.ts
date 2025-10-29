@@ -1,6 +1,6 @@
 /**
  * Re-export from tags-manager plugin for backward compatibility
- * @deprecated Import from plugins/core/tags-manager/hooks/useTagStore instead
+ * @deprecated Import from plugins/official/tags-manager/hooks/useTagStore instead
  */
 
-export * from '../plugins/core/tags-manager/hooks/useTagStore';
+export * from '../plugins/official/tags-manager/hooks/useTagStore';

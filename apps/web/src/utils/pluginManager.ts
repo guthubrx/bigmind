@@ -10,17 +10,19 @@ import { eventBus } from './eventBus';
 import examplePlugin from '../plugins/example-plugin';
 import analyticsPlugin from '../plugins/analytics-plugin';
 import * as eventMonitorPlugin from '../plugins/event-monitor-plugin';
-import * as dagTemplatesPlugin from '../plugins/dag-templates-plugin';
-import * as dagTemplatesCollectionPlugin from '../plugins/dag-templates-collection-plugin';
-import * as paletteManagerPlugin from '../plugins/palette-manager-plugin';
-import * as themeManagerPlugin from '../plugins/theme-manager-plugin';
 
-// Core plugins (from plugins/core/)
+// Core plugins (essential, auto-activated)
 import * as xmindCompatibilityPlugin from '../plugins/core/xmind-compatibility';
-import * as exportManagerPlugin from '../plugins/core/export-manager';
-import * as paletteSettingsPlugin from '../plugins/core/palette-settings';
+import * as themeManagerPlugin from '../plugins/core/theme-manager';
+
+// Official plugins (team-made, optional)
 import * as colorPalettesCollectionPlugin from '../plugins/core/color-palettes-collection';
-import * as tagsManagerPlugin from '../plugins/core/tags-manager';
+import * as tagsManagerPlugin from '../plugins/official/tags-manager';
+import * as exportManagerPlugin from '../plugins/official/export-manager';
+import * as paletteSettingsPlugin from '../plugins/official/palette-settings';
+import * as paletteManagerPlugin from '../plugins/official/palette-manager';
+import * as dagTemplatesPlugin from '../plugins/official/dag-templates';
+import * as dagTemplatesCollectionPlugin from '../plugins/official/dag-templates-collection';
 
 // Create the enhanced plugin system with Phase 2 security
 const system = createEnhancedPluginSystem({

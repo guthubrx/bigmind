@@ -390,3 +390,78 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* Rating Section */
+.plugin-detail-modal__rating-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+}
+
+.plugin-detail-modal__rating-description {
+  color: var(--fg-secondary);
+  font-size: 14px;
+  margin: 0;
+  text-align: center;
+}
+
+.plugin-detail-modal__rating-input {
+  display: flex;
+  justify-content: center;
+}
+
+.plugin-detail-modal__rating-message {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.plugin-detail-modal__rating-message--success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.plugin-detail-modal__rating-message--error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+/* Meta Stats */
+.plugin-detail-modal__meta-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--fg-secondary);
+  flex-wrap: wrap;
+}
+
+.plugin-detail-modal__meta-rating,
+.plugin-detail-modal__meta-downloads {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.plugin-detail-modal__meta-rating svg {
+  color: #fbbf24;
+}
+
+.plugin-detail-modal__meta-downloads svg {
+  color: var(--fg-tertiary);
+}
+
+.plugin-detail-modal__meta-reviews {
+  margin-left: 4px;
+  color: var(--fg-tertiary);
+  font-size: 12px;
+}

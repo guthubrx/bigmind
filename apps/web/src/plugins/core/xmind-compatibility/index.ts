@@ -42,6 +42,7 @@ C'est comme avoir un traducteur expert qui non seulement maîtrise parfaitement 
   source: 'core',
   pricing: 'free',
   featured: true,
+  autoActivate: true, // Auto-activate on first launch
 
   license: 'MIT',
   bigmindVersion: '1.0.0',

@@ -50,8 +50,48 @@
 /* Grid */
 .plugin-manager__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 20px;
+}
+
+/* Pagination */
+.plugin-manager__pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color);
+}
+
+.plugin-manager__pagination-btn {
+  padding: 8px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--fg-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.plugin-manager__pagination-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+}
+
+.plugin-manager__pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.plugin-manager__pagination-info {
+  color: var(--fg-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 120px;
+  text-align: center;
 }
 
 /* Empty State */
@@ -84,7 +124,6 @@
 /* Responsive */
 @media (max-width: 1200px) {
   .plugin-manager__grid {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 16px;
   }
 }
@@ -119,7 +158,16 @@
   }
 
   .plugin-manager__grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
     gap: 12px;
+  }
+
+  .plugin-manager__pagination {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .plugin-manager__pagination-btn {
+    width: 100%;
   }
 }

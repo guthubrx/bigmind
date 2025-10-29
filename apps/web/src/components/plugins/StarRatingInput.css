@@ -1,0 +1,46 @@
+.star-rating-input {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.star-rating-input__star {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  color: #d1d5db;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.star-rating-input__star:hover {
+  transform: scale(1.1);
+}
+
+.star-rating-input__star--filled {
+  color: #fbbf24;
+}
+
+.star-rating-input__star--hovering {
+  animation: pulse 0.3s ease;
+}
+
+.star-rating-input--disabled .star-rating-input__star {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.star-rating-input--disabled .star-rating-input__star:hover {
+  transform: none;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}

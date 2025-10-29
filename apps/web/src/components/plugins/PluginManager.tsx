@@ -3,12 +3,14 @@
  * Main interface for managing plugins - Refactored with modern marketplace UI
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { PluginInfo } from '@bigmind/plugin-system';
 import { PluginState } from '@bigmind/plugin-system';
 import { PluginCard } from './PluginCard';
 import { PluginFilters, type PluginStatus, type PluginCategory } from './PluginFilters';
 import { PluginDetailModal } from './PluginDetailModal';
+import { gitHubPluginRegistry, type PluginRegistryEntry } from '../../services/GitHubPluginRegistry';
+import type { PluginManifest } from '@bigmind/plugin-system';
 import './PluginManager.css';
 
 export interface PluginManagerProps {
@@ -24,6 +26,7 @@ export function PluginManager({
   plugins,
   onActivate,
   onDeactivate,
+  onUninstall,
   onViewPermissions,
 }: PluginManagerProps) {
   // State
@@ -32,13 +35,117 @@ export function PluginManager({
   const [categoryFilter, setCategoryFilter] = useState<PluginCategory>('all');
   const [selectedPlugin, setSelectedPlugin] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
+  const [remotePlugins, setRemotePlugins] = useState<PluginRegistryEntry[]>([]);
+  const [loadingRemote, setLoadingRemote] = useState(false);
+  const [gridColumns, setGridColumns] = useState(3);
+  const [itemsPerPage, setItemsPerPage] = useState(24);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [screenSize, setScreenSize] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
+
+  // Detect screen size with breakpoints
+  useEffect(() => {
+    const checkScreenSize = () => {
+      const width = window.innerWidth;
+      if (width <= 768) {
+        setScreenSize('mobile');
+      } else if (width <= 1024) {
+        setScreenSize('tablet');
+      } else {
+        setScreenSize('desktop');
+      }
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // Calculate effective grid columns based on screen size
+  const effectiveGridColumns = (() => {
+    if (screenSize === 'mobile') return 1;
+    if (screenSize === 'tablet') return Math.min(gridColumns, 2);
+    return gridColumns;
+  })();
+
+  // Load remote plugins from GitHub
+  useEffect(() => {
+    const loadRemote = async () => {
+      setLoadingRemote(true);
+      try {
+        const registry = await gitHubPluginRegistry.fetchRegistry();
+        setRemotePlugins(registry);
+      } catch (error) {
+        console.error('[PluginManager] Failed to load remote plugins:', error);
+      } finally {
+        setLoadingRemote(false);
+      }
+    };
+
+    loadRemote();
+  }, []);
 
   const pluginList = Array.from(plugins.values());
 
+  // Create unified plugin list (builtin + remote)
+  const unifiedPlugins = useMemo(() => {
+    const installed = new Set(pluginList.map(p => p.plugin.manifest.id));
+    const unified: Array<{
+      type: 'builtin' | 'remote';
+      manifest: PluginManifest;
+      isActive?: boolean;
+      isInstalled: boolean;
+      entry?: PluginRegistryEntry;
+    }> = [];
+
+    // Add builtin plugins
+    pluginList.forEach(info => {
+      unified.push({
+        type: 'builtin',
+        manifest: info.plugin.manifest,
+        isActive: info.state === PluginState.ACTIVE,
+        isInstalled: true,
+      });
+    });
+
+    // Add remote plugins that are not yet installed
+    remotePlugins.forEach(entry => {
+      if (!installed.has(entry.id)) {
+        // Convert PluginRegistryEntry to PluginManifest
+        const manifest: PluginManifest = {
+          id: entry.id,
+          name: entry.name,
+          version: entry.version,
+          description: entry.description,
+          author: entry.author,
+          main: '',
+          icon: entry.icon,
+          category: entry.category as any,
+          tags: entry.tags,
+          source: entry.source as any,
+          featured: entry.featured,
+          downloads: entry.downloads,
+          rating: entry.rating,
+          reviewCount: entry.reviewCount,
+        };
+
+        unified.push({
+          type: 'remote',
+          manifest,
+          isActive: false,
+          isInstalled: false,
+          entry,
+        });
+      }
+    });
+
+    return unified;
+  }, [pluginList, remotePlugins]);
+
   // Filter and search plugins
   const filteredPlugins = useMemo(() => {
-    return pluginList.filter(info => {
-      const manifest = info.plugin.manifest;
+    return unifiedPlugins.filter(item => {
+      const manifest = item.manifest;
 
       // Search filter
       if (searchQuery) {
@@ -55,9 +162,9 @@ export function PluginManager({
 
       // Status filter
       if (statusFilter !== 'all') {
-        const isActive = info.state === PluginState.ACTIVE;
+        const isActive = item.isActive ?? false;
         if (statusFilter === 'active' && !isActive) return false;
-        if (statusFilter === 'inactive' && isActive) return false;
+        if (statusFilter === 'inactive' && (isActive || !item.isInstalled)) return false;
       }
 
       // Category filter
@@ -67,38 +174,49 @@ export function PluginManager({
 
       return true;
     });
-  }, [pluginList, searchQuery, statusFilter, categoryFilter]);
+  }, [unifiedPlugins, searchQuery, statusFilter, categoryFilter]);
 
-  // Organize plugins into sections
-  const { corePlugins, featuredPlugins, activePlugins, availablePlugins } = useMemo(() => {
-    const core: PluginInfo[] = [];
-    const featured: PluginInfo[] = [];
-    const active: PluginInfo[] = [];
-    const available: PluginInfo[] = [];
+  // Organize plugins into sections: Installés vs Disponibles
+  const { installedPlugins, availablePlugins } = useMemo(() => {
+    const installed: typeof filteredPlugins = [];
+    const available: typeof filteredPlugins = [];
 
-    filteredPlugins.forEach(info => {
-      const isActive = info.state === PluginState.ACTIVE;
-      const isCore = info.plugin.manifest.source === 'core';
-      const isFeatured = info.plugin.manifest.featured === true;
-
-      if (isCore) {
-        core.push(info);
-      } else if (isFeatured && !isActive) {
-        featured.push(info);
-      } else if (isActive) {
-        active.push(info);
+    filteredPlugins.forEach(item => {
+      if (item.isInstalled) {
+        installed.push(item);
       } else {
-        available.push(info);
+        available.push(item);
       }
     });
 
     return {
-      corePlugins: core,
-      featuredPlugins: featured,
-      activePlugins: active,
+      installedPlugins: installed,
       availablePlugins: available,
     };
   }, [filteredPlugins]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, categoryFilter]);
+
+  // Calculate pagination
+  const paginateItems = <T,>(items: T[]): { items: T[]; totalPages: number; hasMore: boolean } => {
+    if (itemsPerPage >= 999999) {
+      return { items, totalPages: 1, hasMore: false };
+    }
+
+    const totalPages = Math.ceil(items.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedItems = items.slice(startIndex, endIndex);
+
+    return {
+      items: paginatedItems,
+      totalPages,
+      hasMore: currentPage < totalPages,
+    };
+  };
 
   // Handlers
   const handleAction = async (action: () => Promise<void>, pluginId: string) => {
@@ -129,36 +247,77 @@ export function PluginManager({
   };
 
   // Render plugin section
-  const renderSection = (title: string, subtitle: string, plugins: PluginInfo[]) => {
-    if (plugins.length === 0) return null;
+  const renderSection = (title: string, subtitle: string, items: typeof filteredPlugins) => {
+    if (items.length === 0) return null;
+
+    const { items: paginatedItems, totalPages } = paginateItems(items);
 
     return (
       <section className="plugin-manager__section">
         <div className="plugin-manager__section-header">
           <h3 className="plugin-manager__section-title">{title}</h3>
-          <p className="plugin-manager__section-subtitle">{subtitle}</p>
+          <p className="plugin-manager__section-subtitle">
+            {subtitle} ({items.length} plugin{items.length > 1 ? 's' : ''})
+          </p>
         </div>
 
-        <div className="plugin-manager__grid">
-          {plugins.map(info => {
-            const isActive = info.state === PluginState.ACTIVE;
-            const isCore = info.plugin.manifest.source === 'core';
+        <div
+          className="plugin-manager__grid"
+          style={{
+            gridTemplateColumns: `repeat(${effectiveGridColumns}, minmax(0, 1fr))`,
+          }}
+        >
+          {paginatedItems.map(item => {
+            const isActive = item.isActive ?? false;
+            const isCore = item.manifest.source === 'core';
+            const isInstalled = item.isInstalled;
 
             return (
               <PluginCard
-                key={info.plugin.manifest.id}
-                manifest={info.plugin.manifest}
+                key={item.manifest.id}
+                manifest={item.manifest}
                 isActive={isActive}
                 canDisable={!isCore}
-                onToggle={() =>
-                  isCore ? undefined : handleToggle(info.plugin.manifest.id, isActive)
-                }
-                onConfigure={() => onViewPermissions(info.plugin.manifest.id)}
-                onViewDetails={() => handleViewDetails(info.plugin.manifest.id)}
+                isInstalled={isInstalled}
+                onToggle={() => {
+                  if (isCore) return;
+                  if (!isInstalled) {
+                    // TODO: Install remote plugin
+                    alert(`Installation de ${item.manifest.name} à implémenter`);
+                  } else {
+                    handleToggle(item.manifest.id, isActive);
+                  }
+                }}
+                onConfigure={() => onViewPermissions(item.manifest.id)}
+                onViewDetails={() => handleViewDetails(item.manifest.id)}
+                onUninstall={() => handleAction(() => onUninstall(item.manifest.id), item.manifest.id)}
               />
             );
           })}
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="plugin-manager__pagination">
+            <button
+              className="plugin-manager__pagination-btn"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+            >
+              ← Précédent
+            </button>
+            <span className="plugin-manager__pagination-info">
+              Page {currentPage} / {totalPages}
+            </span>
+            <button
+              className="plugin-manager__pagination-btn"
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Suivant →
+            </button>
+          </div>
+        )}
       </section>
     );
   };
@@ -181,32 +340,25 @@ export function PluginManager({
         onStatusChange={setStatusFilter}
         category={categoryFilter}
         onCategoryChange={setCategoryFilter}
-        totalCount={pluginList.length}
+        totalCount={unifiedPlugins.length}
         filteredCount={filteredPlugins.length}
+        gridColumns={gridColumns}
+        onGridColumnsChange={setGridColumns}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
+        screenSize={screenSize}
       />
 
       {/* Plugin Sections */}
       {renderSection(
-        'Plugins Système',
-        'Plugins essentiels qui font partie du cœur de BigMind',
-        corePlugins
-      )}
-
-      {renderSection(
-        'Recommandés pour vous',
-        'Plugins populaires et utiles que nous vous suggérons d\'essayer',
-        featuredPlugins
-      )}
-
-      {renderSection(
-        'Plugins Actifs',
-        'Plugins actuellement actifs dans votre installation',
-        activePlugins
+        'Plugins Installés',
+        'Plugins installés sur votre système',
+        installedPlugins
       )}
 
       {renderSection(
         'Plugins Disponibles',
-        'Autres plugins que vous pouvez activer',
+        'Plugins disponibles pour installation',
         availablePlugins
       )}
 
@@ -218,23 +370,26 @@ export function PluginManager({
       )}
 
       {/* Detail Modal */}
-      {selectedPlugin && (
-        <PluginDetailModal
-          manifest={plugins.get(selectedPlugin)!.plugin.manifest}
-          isActive={plugins.get(selectedPlugin)!.state === PluginState.ACTIVE}
-          canDisable={plugins.get(selectedPlugin)!.plugin.manifest.source !== 'core'}
-          onClose={handleCloseModal}
-          onToggle={() => {
-            const info = plugins.get(selectedPlugin)!;
-            const isActive = info.state === PluginState.ACTIVE;
-            const isCore = info.plugin.manifest.source === 'core';
-            if (!isCore) {
-              handleToggle(selectedPlugin, isActive);
-              handleCloseModal();
-            }
-          }}
-        />
-      )}
+      {selectedPlugin && (() => {
+        const selectedItem = unifiedPlugins.find(item => item.manifest.id === selectedPlugin);
+        if (!selectedItem) return null;
+
+        return (
+          <PluginDetailModal
+            manifest={selectedItem.manifest}
+            isActive={selectedItem.isActive ?? false}
+            canDisable={selectedItem.manifest.source !== 'core'}
+            onClose={handleCloseModal}
+            onToggle={() => {
+              const isCore = selectedItem.manifest.source === 'core';
+              if (!isCore && selectedItem.isInstalled) {
+                handleToggle(selectedPlugin, selectedItem.isActive ?? false);
+                handleCloseModal();
+              }
+            }}
+          />
+        );
+      })()}
 
       {/* Loading indicator */}
       {loading && (

@@ -12,6 +12,7 @@
     "test:coverage": "vitest --coverage"
   },
   "dependencies": {
+    "@xmldom/xmldom": "^0.8.11",
     "immer": "^10.0.3",
     "nanoid": "^5.0.4"
   },

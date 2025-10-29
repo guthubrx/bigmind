@@ -3,127 +3,209 @@
  * Displays plugin information in a card format
  */
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { PluginManifest } from '@bigmind/plugin-system';
-import { PluginBadge, type BadgeType } from './PluginBadge';
-import { Download, Star, Settings, Info } from 'lucide-react';
+import { PluginBadges } from './PluginBadges';
+import { Download, Settings, Info, ChevronDown, Trash2, Power } from 'lucide-react';
+import { StarRating } from './StarRating';
 import './PluginCard.css';
 
 export interface PluginCardProps {
   manifest: PluginManifest;
   isActive: boolean;
   canDisable?: boolean;
+  isInstalled?: boolean;
   onToggle?: () => void;
   onConfigure?: () => void;
   onViewDetails?: () => void;
+  onUninstall?: () => void;
 }
 
 export function PluginCard({
   manifest,
   isActive,
   canDisable = true,
+  isInstalled = true,
   onToggle,
   onConfigure,
   onViewDetails,
+  onUninstall,
 }: PluginCardProps) {
-  const getBadges = (): BadgeType[] => {
-    const badges: BadgeType[] = [];
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-    if (manifest.source === 'core') badges.push('core');
-    if (isActive) badges.push('active');
-    else if (!isActive && canDisable) badges.push('inactive');
-    if (manifest.featured) badges.push('featured');
-    if (manifest.pricing === 'paid' || manifest.pricing === 'freemium') badges.push('premium');
-    if (manifest.source === 'community') badges.push('community');
+  // Determine plugin source
+  const source = manifest.source || 'community';
 
-    return badges;
+  // Determine plugin state
+  const getState = (): 'active' | 'inactive' | 'available' | undefined => {
+    if (!isInstalled) return 'available';
+    if (isActive) return 'active';
+    if (canDisable) return 'inactive';
+    return undefined;
+  };
+
+  // Get author name (handle both string and object formats)
+  const getAuthorName = () => {
+    if (!manifest.author) return 'Unknown';
+    if (typeof manifest.author === 'string') return manifest.author;
+    if (typeof manifest.author === 'object' && 'name' in manifest.author) {
+      return manifest.author.name;
+    }
+    return 'Unknown';
   };
 
   const logoUrl = manifest.logo || manifest.icon;
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [dropdownOpen]);
+
+  const handleDeactivate = () => {
+    setDropdownOpen(false);
+    onToggle?.();
+  };
+
+  const handleUninstall = () => {
+    setDropdownOpen(false);
+    onUninstall?.();
+  };
 
   return (
     <div
       className={`plugin-card ${isActive ? 'plugin-card--active' : ''}`}
       style={{ '--plugin-color': manifest.color || '#6B7280' } as React.CSSProperties}
     >
-      {/* Header avec logo et badges */}
+      {/* Header avec logo et titre */}
       <div className="plugin-card__header">
-        <div className="plugin-card__logo-container">
-          {logoUrl && logoUrl.startsWith('/') ? (
-            <img src={logoUrl} alt={manifest.name} className="plugin-card__logo" />
-          ) : (
-            <div className="plugin-card__logo-emoji">{manifest.icon || '🔌'}</div>
+        <div className="plugin-card__logo-wrapper">
+          <div
+            className="plugin-card__logo-container plugin-card__logo-container--clickable"
+            onClick={onViewDetails}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && onViewDetails?.()}
+          >
+            {logoUrl && logoUrl.startsWith('/') ? (
+              <img src={logoUrl} alt={manifest.name} className="plugin-card__logo" />
+            ) : (
+              <div className="plugin-card__logo-emoji">{manifest.icon || '🔌'}</div>
+            )}
+          </div>
+          {manifest.featured && (
+            <span className="plugin-card__featured-tag">VEDETTE</span>
           )}
         </div>
 
+        <div className="plugin-card__header-content">
+          <h3
+            className="plugin-card__title plugin-card__title--clickable"
+            onClick={onViewDetails}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && onViewDetails?.()}
+          >
+            {manifest.name}
+          </h3>
+
+          <div className="plugin-card__author">
+            by {getAuthorName()}
+          </div>
+        </div>
+
         <div className="plugin-card__badges">
-          {getBadges().map(badge => (
-            <PluginBadge key={badge} type={badge} small />
-          ))}
+          {canDisable && (
+            <div className="plugin-card__state-dropdown" ref={dropdownRef}>
+              <button
+                className={`plugin-card__state-badge ${
+                  isActive ? 'plugin-card__state-badge--active' : 'plugin-card__state-badge--inactive'
+                }`}
+                onClick={() => {
+                  if (isActive && isInstalled) {
+                    setDropdownOpen(!dropdownOpen);
+                  } else {
+                    onToggle?.();
+                  }
+                }}
+                disabled={!canDisable}
+              >
+                {isActive ? 'ACTIF' : 'ACTIVER'}
+                {isActive && isInstalled && <ChevronDown size={12} style={{ marginLeft: '4px' }} />}
+              </button>
+
+              {dropdownOpen && isActive && isInstalled && (
+                <div className="plugin-card__dropdown-menu">
+                  <button
+                    className="plugin-card__dropdown-item plugin-card__dropdown-item--deactivate"
+                    onClick={handleDeactivate}
+                  >
+                    <Power size={14} />
+                    <span>Désactiver</span>
+                  </button>
+                  <button
+                    className="plugin-card__dropdown-item plugin-card__dropdown-item--uninstall"
+                    onClick={handleUninstall}
+                  >
+                    <Trash2 size={14} />
+                    <span>Supprimer</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          {isActive && manifest.uiContributions?.settings && (
+            <button
+              className="plugin-card__config-btn"
+              onClick={onConfigure}
+              title="Configurer"
+            >
+              <Settings size={14} />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Contenu */}
-      <div className="plugin-card__content">
-        <h3 className="plugin-card__title">{manifest.name}</h3>
+      {/* Description */}
+      <p className="plugin-card__description">{manifest.description}</p>
 
-        {manifest.tagline && (
-          <p className="plugin-card__tagline">{manifest.tagline}</p>
-        )}
-
-        <p className="plugin-card__description">{manifest.description}</p>
-
-        {/* Métadonnées */}
-        <div className="plugin-card__meta">
+      {/* Footer avec métadonnées */}
+      <div className="plugin-card__footer">
+        <div className="plugin-card__footer-left">
           <span className="plugin-card__version">v{manifest.version}</span>
+          <PluginBadges
+            source={source as 'core' | 'official' | 'community'}
+            state={null}
+            featured={false}
+          />
+        </div>
+        <div className="plugin-card__footer-right">
           {manifest.downloads !== undefined && (
             <span className="plugin-card__downloads">
-              <Download size={14} />
+              <Download size={12} />
               {manifest.downloads >= 1000
                 ? `${(manifest.downloads / 1000).toFixed(1)}k`
                 : manifest.downloads}
             </span>
           )}
-          {manifest.rating !== undefined && (
-            <span className="plugin-card__rating">
-              <Star size={14} fill="currentColor" />
-              {manifest.rating.toFixed(1)}
-            </span>
+          {manifest.rating !== undefined && manifest.rating > 0 && (
+            <StarRating
+              rating={manifest.rating}
+              reviewCount={manifest.reviewCount}
+              size="small"
+              showCount={true}
+            />
           )}
         </div>
-      </div>
-
-      {/* Actions */}
-      <div className="plugin-card__actions">
-        <button
-          className="plugin-card__action-btn plugin-card__action-btn--secondary"
-          onClick={onViewDetails}
-          title="Voir les détails"
-        >
-          <Info size={16} />
-          Détails
-        </button>
-
-        {isActive && manifest.uiContributions?.settings && (
-          <button
-            className="plugin-card__action-btn plugin-card__action-btn--secondary"
-            onClick={onConfigure}
-            title="Configurer"
-          >
-            <Settings size={16} />
-          </button>
-        )}
-
-        {canDisable && (
-          <button
-            className={`plugin-card__action-btn plugin-card__action-btn--primary ${
-              isActive ? 'plugin-card__action-btn--danger' : 'plugin-card__action-btn--success'
-            }`}
-            onClick={onToggle}
-          >
-            {isActive ? 'Désactiver' : 'Activer'}
-          </button>
-        )}
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ import {
   getFavoriteTemplates,
   getTemplate,
   applyTemplate,
-} from '../utils/dagTemplates';
+} from '../../utils/dagTemplates';
 
 export const manifest: PluginManifest = {
   id: 'com.bigmind.dag-templates',

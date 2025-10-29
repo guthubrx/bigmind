@@ -17,6 +17,7 @@
   "source": "core",
   "pricing": "free",
   "featured": true,
+  "autoActivate": true,
   "license": "MIT",
   "bigmindVersion": "1.0.0",
   "tagline": "XMind et BigMind en parfaite harmonie",
