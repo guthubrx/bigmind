@@ -18,6 +18,7 @@ import {
   AuditDashboard,
   PolicyEditor,
   PluginDetailPage,
+  PluginMarketplace,
 } from '../components/plugins';
 import { EventMonitorPanel } from '../components/plugins/EventMonitorPanel';
 import { pluginSystem, saveActivatedPlugins } from '../utils/pluginManager';
@@ -58,9 +59,9 @@ function SettingsPage() {
   const platform = usePlatform();
 
   // Plugin management state
-  const [pluginView, setPluginView] = useState<'manager' | 'audit' | 'policy' | 'panels'>(
-    'manager'
-  );
+  const [pluginView, setPluginView] = useState<
+    'marketplace' | 'manager' | 'audit' | 'policy' | 'panels'
+  >('marketplace');
   const [plugins, setPlugins] = useState<Map<string, PluginInfo>>(new Map());
   const [selectedPlugin, setSelectedPlugin] = useState<string | null>(null); // NEW: Selected plugin for detail view
   const [permissionRequest, setPermissionRequest] = useState<{
@@ -254,7 +255,11 @@ function SettingsPage() {
                   <h2 className="settings-section-title">Apparence</h2>
                   {(() => {
                     const sections = getSettingsSections('appearance');
-                    console.log('[Settings Render] Appearance sections:', sections.length, sections);
+                    console.log(
+                      '[Settings Render] Appearance sections:',
+                      sections.length,
+                      sections
+                    );
                     return null;
                   })()}
 
@@ -473,6 +478,7 @@ function SettingsPage() {
                   {/* Plugin sub-navigation */}
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
                     {[
+                      { id: 'marketplace' as const, label: 'Marketplace', icon: '🏪' },
                       { id: 'manager' as const, label: 'Gestionnaire', icon: '🔌' },
                       { id: 'panels' as const, label: 'Panels', icon: '🖼️' },
                       { id: 'audit' as const, label: 'Audit', icon: '📊' },
@@ -503,6 +509,8 @@ function SettingsPage() {
                   </div>
 
                   {/* Plugin content */}
+                  {pluginView === 'marketplace' && <PluginMarketplace />}
+
                   {pluginView === 'manager' &&
                     (selectedPlugin ? (
                       <PluginDetailPage
