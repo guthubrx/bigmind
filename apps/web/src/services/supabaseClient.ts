@@ -87,22 +87,34 @@ export async function submitPluginRating(
     return false;
   }
 
-  const { error } = await supabase.from('plugin_ratings').insert([
+  console.log('[Supabase] Submitting rating:', {
+    pluginId,
+    userName,
+    rating,
+    comment: comment.substring(0, 50) + '...',
+    is_approved: false,
+  });
+
+  const { data, error } = await supabase.from('plugin_ratings').insert([
     {
       pluginId,
       userName,
       email: email || null,
       rating,
       comment: comment.trim(),
+      is_approved: false, // Explicitly set to false
       created_at: new Date().toISOString(),
     },
-  ]);
+  ]).select();
 
   if (error) {
-    console.error('[Supabase] Error submitting rating:', error);
+    console.error('[Supabase] ❌ Error submitting rating:', error);
+    console.error('[Supabase] Error code:', error.code);
+    console.error('[Supabase] Error message:', error.message);
     return false;
   }
 
+  console.log('[Supabase] ✅ Rating submitted successfully:', data);
   return true;
 }
 
