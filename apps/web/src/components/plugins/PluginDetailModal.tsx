@@ -50,7 +50,7 @@ export function PluginDetailModal({
           className="plugin-detail-modal__header"
           style={{ '--plugin-color': manifest.color || '#6B7280' } as React.CSSProperties}
         >
-          <button className="plugin-detail-modal__close" onClick={onClose}>
+          <button type="button" className="plugin-detail-modal__close" onClick={onClose}>
             <X size={24} />
           </button>
 
@@ -80,7 +80,8 @@ export function PluginDetailModal({
                 <span>v{manifest.version}</span>
                 {manifest.author && (
                   <span>
-                    par {typeof manifest.author === 'string' ? manifest.author : manifest.author.name}
+                    par{' '}
+                    {typeof manifest.author === 'string' ? manifest.author : manifest.author.name}
                   </span>
                 )}
                 {manifest.license && <span>Licence {manifest.license}</span>}
@@ -91,7 +92,11 @@ export function PluginDetailModal({
                   <span className="plugin-detail-modal__meta-rating">
                     <Star size={14} fill="currentColor" />
                     {manifest.rating.toFixed(1)}/5
-                    {manifest.reviewCount && <span className="plugin-detail-modal__meta-reviews">({manifest.reviewCount} avis)</span>}
+                    {manifest.reviewCount && (
+                      <span className="plugin-detail-modal__meta-reviews">
+                        ({manifest.reviewCount} avis)
+                      </span>
+                    )}
                   </span>
                 )}
                 {manifest.downloads !== undefined && (
@@ -99,7 +104,8 @@ export function PluginDetailModal({
                     <Download size={14} />
                     {manifest.downloads >= 1000
                       ? `${(manifest.downloads / 1000).toFixed(1)}k`
-                      : manifest.downloads} téléchargements
+                      : manifest.downloads}{' '}
+                    téléchargements
                   </span>
                 )}
               </div>
@@ -108,6 +114,7 @@ export function PluginDetailModal({
 
           {canDisable && onToggle && (
             <button
+              type="button"
               className={`plugin-detail-modal__toggle-btn ${
                 isActive ? 'plugin-detail-modal__toggle-btn--active' : ''
               }`}
@@ -126,7 +133,9 @@ export function PluginDetailModal({
               <div
                 className="plugin-detail-modal__long-description"
                 dangerouslySetInnerHTML={{
-                  __html: manifest.longDescription.replace(/\n\n/g, '</p><p>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'),
+                  __html: manifest.longDescription
+                    .replace(/\n\n/g, '</p><p>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'),
                 }}
               />
             </section>
@@ -141,7 +150,7 @@ export function PluginDetailModal({
               </h3>
               <ul className="plugin-detail-modal__benefits-list">
                 {manifest.benefits.map((benefit, index) => (
-                  <li key={index}>
+                  <li key={`benefit_${index}`}>
                     <Check size={16} className="plugin-detail-modal__check-icon" />
                     {benefit}
                   </li>
@@ -155,11 +164,11 @@ export function PluginDetailModal({
             <section className="plugin-detail-modal__section">
               <h3 className="plugin-detail-modal__section-title">
                 <Star size={20} />
-                Cas d'usage
+                Cas d&apos;usage
               </h3>
               <ul className="plugin-detail-modal__usecases-list">
                 {manifest.useCases.map((useCase, index) => (
-                  <li key={index}>{useCase}</li>
+                  <li key={`usecase_${index}`}>{useCase}</li>
                 ))}
               </ul>
             </section>
@@ -171,11 +180,13 @@ export function PluginDetailModal({
               <h3 className="plugin-detail-modal__section-title">Fonctionnalités</h3>
               <div className="plugin-detail-modal__features-grid">
                 {manifest.features.map((feature, index) => (
-                  <div key={index} className="plugin-detail-modal__feature-card">
+                  <div key={`feature_${index}`} className="plugin-detail-modal__feature-card">
                     <div className="plugin-detail-modal__feature-icon">{feature.icon || '✨'}</div>
                     <div>
                       <h4 className="plugin-detail-modal__feature-label">{feature.label}</h4>
-                      <p className="plugin-detail-modal__feature-description">{feature.description}</p>
+                      <p className="plugin-detail-modal__feature-description">
+                        {feature.description}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -204,7 +215,9 @@ export function PluginDetailModal({
                 <div className="plugin-detail-modal__stat">
                   <Star size={20} fill="currentColor" />
                   <div>
-                    <div className="plugin-detail-modal__stat-value">{manifest.rating.toFixed(1)}/5</div>
+                    <div className="plugin-detail-modal__stat-value">
+                      {manifest.rating.toFixed(1)}/5
+                    </div>
                     <div className="plugin-detail-modal__stat-label">Note moyenne</div>
                   </div>
                 </div>
