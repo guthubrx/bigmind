@@ -10,10 +10,11 @@ import './RatingReplyForm.css';
 
 export interface RatingReplyFormProps {
   ratingId: string;
+  pluginId: string;
   onSuccess?: () => void;
 }
 
-export function RatingReplyForm({ ratingId, onSuccess }: RatingReplyFormProps) {
+export function RatingReplyForm({ ratingId, pluginId, onSuccess }: RatingReplyFormProps) {
   const [authorName, setAuthorName] = useState('');
   const [replyText, setReplyText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,6 +33,29 @@ export function RatingReplyForm({ ratingId, onSuccess }: RatingReplyFormProps) {
     setIsSubmitting(true);
 
     try {
+      // Check rate limit for replies
+      const checkRateLimitResponse = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/check-rate-limit`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ pluginId, requestType: 'reply' }),
+        }
+      );
+
+      if (!checkRateLimitResponse.ok) {
+        const errorData = await checkRateLimitResponse.json();
+        setMessage({
+          type: 'error',
+          text: errorData.message || 'Trop de réponses. Veuillez attendre avant de réessayer.',
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       const success = await submitRatingReply(ratingId, authorName, replyText);
 
       if (success) {

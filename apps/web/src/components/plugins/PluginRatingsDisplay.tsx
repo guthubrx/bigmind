@@ -197,6 +197,7 @@ export function PluginRatingsDisplay({ pluginId, refreshTrigger }: PluginRatings
                   <RatingRepliesList ratingId={ratingId} refreshTrigger={repliesRefresh} />
                   <RatingReplyForm
                     ratingId={ratingId}
+                    pluginId={pluginId}
                     onSuccess={() => setRepliesRefresh(prev => prev + 1)}
                   />
                 </>
