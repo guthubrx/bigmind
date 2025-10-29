@@ -1,0 +1,31 @@
+/* Export Ratings Button */
+
+.export-ratings-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  color: var(--fg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.export-ratings-button:hover:not(:disabled) {
+  background: #fbbf24;
+  color: #000000;
+  border-color: #f59e0b;
+}
+
+.export-ratings-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.export-ratings-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
