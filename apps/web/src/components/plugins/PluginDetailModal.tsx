@@ -3,13 +3,14 @@
  * Displays comprehensive plugin information in a modal
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { PluginManifest } from '@bigmind/plugin-system';
 import { PluginBadge, type BadgeType } from './PluginBadge';
 import { X, Check, Star, Download, Calendar, Tag, ExternalLink } from 'lucide-react';
 import { PluginRatingForm } from './PluginRatingForm';
 import { PluginRatingsDisplay } from './PluginRatingsDisplay';
 import { PluginReviews } from './PluginReviews';
+import { getPluginRatingsAggregate, type PluginRatingsAggregate } from '../../services/supabaseClient';
 import './PluginDetailModal.css';
 
 export interface PluginDetailModalProps {
@@ -28,6 +29,20 @@ export function PluginDetailModal({
   onToggle,
 }: PluginDetailModalProps) {
   const [ratingsRefresh, setRatingsRefresh] = useState(0);
+  const [ratingAggregate, setRatingAggregate] = useState<PluginRatingsAggregate | null>(null);
+
+  // Fetch rating aggregate from Supabase
+  useEffect(() => {
+    const fetchRating = async () => {
+      try {
+        const aggregate = await getPluginRatingsAggregate(manifest.id);
+        setRatingAggregate(aggregate);
+      } catch (error) {
+        console.error('[PluginDetailModal] Error fetching rating:', error);
+      }
+    };
+    fetchRating();
+  }, [manifest.id, ratingsRefresh]);
 
   const getBadges = (): BadgeType[] => {
     const badges: BadgeType[] = [];
@@ -88,15 +103,13 @@ export function PluginDetailModal({
               </div>
 
               <div className="plugin-detail-modal__meta-stats">
-                {manifest.rating !== undefined && manifest.rating > 0 && (
+                {ratingAggregate && ratingAggregate.totalRatings > 0 && (
                   <span className="plugin-detail-modal__meta-rating">
                     <Star size={14} fill="currentColor" />
-                    {manifest.rating.toFixed(1)}/5
-                    {manifest.reviewCount && (
-                      <span className="plugin-detail-modal__meta-reviews">
-                        ({manifest.reviewCount} avis)
-                      </span>
-                    )}
+                    {ratingAggregate.averageRating.toFixed(1)}/5
+                    <span className="plugin-detail-modal__meta-reviews">
+                      ({ratingAggregate.totalRatings} avis)
+                    </span>
                   </span>
                 )}
                 {manifest.downloads !== undefined && (
