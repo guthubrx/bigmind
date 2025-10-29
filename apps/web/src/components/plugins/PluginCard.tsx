@@ -8,6 +8,7 @@ import type { PluginManifest } from '@bigmind/plugin-system';
 import { PluginBadges } from './PluginBadges';
 import { Download, Settings, Info, ChevronDown, Trash2, Power } from 'lucide-react';
 import { StarRating } from './StarRating';
+import { getPluginRatingsAggregate, type PluginRatingsAggregate } from '../../services/supabaseClient';
 import './PluginCard.css';
 
 export interface PluginCardProps {
@@ -32,7 +33,21 @@ export function PluginCard({
   onUninstall,
 }: PluginCardProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [ratingAggregate, setRatingAggregate] = useState<PluginRatingsAggregate | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fetch rating aggregate from Supabase
+  useEffect(() => {
+    const fetchRating = async () => {
+      try {
+        const aggregate = await getPluginRatingsAggregate(manifest.id);
+        setRatingAggregate(aggregate);
+      } catch (error) {
+        console.error('[PluginCard] Error fetching rating:', error);
+      }
+    };
+    fetchRating();
+  }, [manifest.id]);
 
   // Determine plugin source
   const source = manifest.source || 'community';
@@ -197,10 +212,10 @@ export function PluginCard({
                 : manifest.downloads}
             </span>
           )}
-          {manifest.rating !== undefined && manifest.rating > 0 && (
+          {ratingAggregate && ratingAggregate.totalRatings > 0 && (
             <StarRating
-              rating={manifest.rating}
-              reviewCount={manifest.reviewCount}
+              rating={ratingAggregate.averageRating}
+              reviewCount={ratingAggregate.totalRatings}
               size="small"
               showCount={true}
             />
