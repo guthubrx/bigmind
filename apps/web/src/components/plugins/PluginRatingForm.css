@@ -41,31 +41,25 @@
 }
 
 .plugin-rating-form__star {
-  background: #fef3c7;
-  border: 1px solid #fcd34d;
+  background: transparent;
+  border: none;
   padding: 4px;
   cursor: pointer;
-  color: #f59e0b;
+  color: #d1d5db;
   border-radius: 4px;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
 }
 
 .plugin-rating-form__star:hover {
-  background: #fbbf24;
-  color: #000000;
-  transform: scale(1.05);
-  box-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+  color: #fbbf24;
+  transform: scale(1.15);
 }
 
 .plugin-rating-form__star--filled {
-  background: #fbbf24;
-  color: #000000;
-  border-color: #f59e0b;
+  color: #fbbf24;
 }
 
 .plugin-rating-form__rating-text {
