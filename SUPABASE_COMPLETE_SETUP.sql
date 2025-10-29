@@ -14,8 +14,8 @@ DROP TABLE IF EXISTS plugin_ratings CASCADE;
 -- ============================================
 CREATE TABLE plugin_ratings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  pluginId TEXT NOT NULL,
-  userName TEXT NOT NULL,
+  "pluginId" TEXT NOT NULL,
+  "userName" TEXT NOT NULL,
   email TEXT,
   rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
   comment TEXT NOT NULL,
@@ -29,20 +29,20 @@ CREATE TABLE plugin_ratings (
 -- ============================================
 CREATE TABLE plugin_rating_replies (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  rating_id UUID NOT NULL REFERENCES plugin_ratings(id) ON DELETE CASCADE,
-  author_name TEXT NOT NULL,
-  reply_text TEXT NOT NULL,
+  "rating_id" UUID NOT NULL REFERENCES plugin_ratings(id) ON DELETE CASCADE,
+  "author_name" TEXT NOT NULL,
+  "reply_text" TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- ============================================
 -- STEP 4: Create indexes for performance
 -- ============================================
-CREATE INDEX idx_plugin_ratings_pluginId ON plugin_ratings(pluginId);
+CREATE INDEX idx_plugin_ratings_pluginId ON plugin_ratings("pluginId");
 CREATE INDEX idx_plugin_ratings_is_approved ON plugin_ratings(is_approved) WHERE is_approved = false;
 CREATE INDEX idx_plugin_ratings_created_at ON plugin_ratings(created_at DESC);
-CREATE INDEX idx_plugin_ratings_plugin_approved ON plugin_ratings(pluginId, is_approved);
-CREATE INDEX idx_plugin_rating_replies_rating_id ON plugin_rating_replies(rating_id);
+CREATE INDEX idx_plugin_ratings_plugin_approved ON plugin_ratings("pluginId", is_approved);
+CREATE INDEX idx_plugin_rating_replies_rating_id ON plugin_rating_replies("rating_id");
 
 -- ============================================
 -- STEP 5: Enable RLS (Row Level Security)
