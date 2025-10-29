@@ -1,0 +1,88 @@
+{
+  "id": "com.bigmind.palette-settings",
+  "name": "Palette Settings",
+  "version": "1.0.0",
+  "description": "Contrôlez vos palettes de couleurs depuis les paramètres",
+  "longDescription": "Prenez le contrôle total de l'apparence colorée de vos cartes mentales avec une interface intuitive de gestion des palettes. Ce plugin essentiel ajoute des options de configuration avancées directement dans vos paramètres.\n\n**L'interface qu'il vous manquait**\n\nPlus besoin de naviguer dans des menus complexes : définissez vos palettes par défaut en quelques clics. Choisissez une palette globale pour tous vos nouveaux nœuds, et une autre spécifique pour vos tags. Chaque carte peut même avoir sa propre palette dédiée.",
+  "author": {
+    "name": "BigMind Team",
+    "email": "team@bigmind.com"
+  },
+  "main": "index.js",
+  "icon": "🎨",
+  "logo": "/assets/plugin-logos/palette-settings.svg",
+  "color": "#8B5CF6",
+  "category": "theme",
+  "tags": ["settings", "palettes", "ui", "configuration", "productivity"],
+  "source": "core",
+  "pricing": "free",
+  "license": "MIT",
+  "bigmindVersion": "1.0.0",
+  "tagline": "Gérez vos couleurs comme un pro",
+  "benefits": [
+    "Interface centralisée dans les paramètres",
+    "Palette par défaut pour tous les nouveaux nœuds",
+    "Palette dédiée aux tags pour mieux les distinguer",
+    "Configuration spécifique par carte mentale",
+    "Aperçu en temps réel des palettes disponibles"
+  ],
+  "useCases": [
+    "Définir une identité visuelle cohérente pour tous vos projets",
+    "Utiliser des couleurs différentes selon le type de carte",
+    "Adapter rapidement l'ambiance d'une présentation",
+    "Standardiser les couleurs au sein d'une équipe"
+  ],
+  "features": [
+    {
+      "label": "Injection UI dynamique",
+      "description": "Ajoute les sélecteurs de palette dans l'onglet Apparence des paramètres",
+      "icon": "⚙️"
+    },
+    {
+      "label": "Gestion des palettes",
+      "description": "Permet de choisir la palette par défaut pour les nœuds et les tags",
+      "icon": "🎨"
+    }
+  ],
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2025-01-28",
+      "changes": [
+        {
+          "type": "added",
+          "description": "Section Settings pour la sélection de palettes"
+        },
+        {
+          "type": "added",
+          "description": "Injection dynamique dans l'onglet Apparence"
+        }
+      ]
+    }
+  ],
+  "hooks": {
+    "listens": [],
+    "emits": []
+  },
+  "uiContributions": {
+    "commands": [],
+    "menus": [],
+    "panels": [],
+    "settings": [
+      {
+        "id": "palette-defaults",
+        "label": "Palettes de couleurs",
+        "section": "appearance",
+        "webview": "webviews/palette-settings.html"
+      }
+    ],
+    "mapSettings": [
+      {
+        "id": "map-palette",
+        "label": "Palette de la carte",
+        "webview": "webviews/map-palette-settings.html"
+      }
+    ]
+  },
+  "permissions": []
+}

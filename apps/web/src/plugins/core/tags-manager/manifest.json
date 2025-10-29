@@ -1,0 +1,102 @@
+{
+  "id": "com.bigmind.tags-manager",
+  "name": "Tags Manager",
+  "version": "1.0.0",
+  "description": "Organisez vos idées avec un système de tags puissant et flexible",
+  "longDescription": "Transformez le chaos de vos mind maps en organisation structurée grâce à un système de tags hiérarchique et intelligent. Tags Manager est l'outil essentiel pour tous ceux qui gèrent des cartes mentales complexes avec des dizaines ou centaines de nœuds.\n\n**Pourquoi les tags changent tout**\n\nImaginez pouvoir identifier instantanément tous les nœuds liés à un projet, une priorité ou une catégorie spécifique. Créez des hiérarchies de tags pour refléter votre taxonomie personnelle. Filtrez votre vue pour vous concentrer uniquement sur ce qui compte en ce moment. C'est comme avoir un système de classement infiniment flexible, directement intégré dans vos cartes mentales.",
+  "author": {
+    "name": "BigMind Team",
+    "email": "team@bigmind.com"
+  },
+  "main": "index.js",
+  "icon": "🏷️",
+  "logo": "/assets/plugin-logos/tags-manager.svg",
+  "color": "#3B82F6",
+  "category": "productivity",
+  "tags": ["tags", "organization", "filtering", "productivity", "workflow"],
+  "source": "core",
+  "pricing": "free",
+  "featured": true,
+  "license": "MIT",
+  "bigmindVersion": "1.0.0",
+  "tagline": "Maîtrisez la complexité avec les tags",
+  "benefits": [
+    "Tags hiérarchiques pour une organisation multi-niveaux",
+    "Création rapide de tags directement depuis les nœuds",
+    "Panneau dédié pour gérer toute votre taxonomie",
+    "Filtrage visuel pour isoler les nœuds pertinents",
+    "Compteurs automatiques sur chaque tag",
+    "Couleurs personnalisables pour chaque tag"
+  ],
+  "useCases": [
+    "Gestion de projet : tags par statut (À faire, En cours, Terminé)",
+    "Recherche : catégoriser les sources et les thématiques",
+    "Apprentissage : organiser les concepts par difficulté ou priorité",
+    "Brainstorming : identifier les idées prometteuses vs à creuser",
+    "Documentation : structurer par type de contenu (API, Guide, Référence)"
+  ],
+  "features": [
+    {
+      "label": "Gestion des tags",
+      "description": "Créer, modifier et supprimer des tags pour organiser vos nœuds",
+      "icon": "🏷️"
+    },
+    {
+      "label": "Filtrage par tags",
+      "description": "Filtrer la carte mentale par tags pour se concentrer sur certains nœuds",
+      "icon": "🔍"
+    },
+    {
+      "label": "Panneau Organisation",
+      "description": "Interface dédiée pour gérer tous les tags de votre carte",
+      "icon": "📋"
+    }
+  ],
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2025-01-28",
+      "changes": [
+        {
+          "type": "added",
+          "description": "Migration du système de tags depuis le core vers un plugin"
+        },
+        {
+          "type": "added",
+          "description": "Onglet Tags dans les propriétés du nœud"
+        },
+        {
+          "type": "added",
+          "description": "Panneau Organisation dans la barre latérale"
+        }
+      ]
+    }
+  ],
+  "hooks": {
+    "listens": [],
+    "emits": []
+  },
+  "uiContributions": {
+    "commands": [],
+    "menus": [],
+    "panels": [
+      {
+        "id": "tags-organization",
+        "title": "Organisation",
+        "location": "sidebar",
+        "webview": "webviews/tags-panel.html"
+      }
+    ],
+    "nodePropertiesTabs": [
+      {
+        "id": "tags",
+        "label": "Tags",
+        "icon": "Tag",
+        "order": 30,
+        "webview": "webviews/node-tags-panel.html"
+      }
+    ],
+    "settings": []
+  },
+  "permissions": []
+}

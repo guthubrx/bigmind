@@ -14,3 +14,6 @@ export * from './commands';
 
 // Theme System
 export * from './theme';
+
+// Plugin System
+export * from './plugins';

@@ -1,0 +1,98 @@
+{
+  "id": "com.bigmind.export-manager",
+  "name": "Export Manager",
+  "version": "1.0.0",
+  "description": "Exportez vos mind maps dans tous les formats populaires",
+  "longDescription": "Partagez et sauvegardez vos cartes mentales en toute simplicité grâce à un moteur d'export universel et intelligent. Export Manager garantit que toutes vos données - styles, tags, notes - sont parfaitement préservées lors de l'exportation.\n\n**Vos données, partout où vous en avez besoin**\n\nTravaillez en toute sérénité : vos cartes peuvent être exportées au format XMind pour collaborer avec d'autres outils, ou sauvegardées avec toutes les métadonnées BigMind intactes. Le système de sidecar intelligent préserve absolument toutes vos personnalisations, même les fonctionnalités avancées de BigMind que XMind ne supporte pas nativement.",
+  "author": {
+    "name": "BigMind Team",
+    "email": "team@bigmind.com"
+  },
+  "main": "index.js",
+  "icon": "📤",
+  "logo": "/assets/plugin-logos/export-manager.svg",
+  "color": "#10B981",
+  "category": "export",
+  "tags": ["export", "save", "xmind", "interoperability", "backup"],
+  "source": "core",
+  "pricing": "free",
+  "license": "MIT",
+  "bigmindVersion": "1.0.0",
+  "tagline": "Exportez sans compromis",
+  "benefits": [
+    "Export XMind natif avec compatibilité totale",
+    "Préservation automatique de tous les styles et tags",
+    "Métadonnées BigMind embarquées (sidecar JSON)",
+    "Sauvegarde complète du viewport et des options",
+    "Aucune perte de données lors de l'export/import",
+    "Commande rapide accessible depuis le menu"
+  ],
+  "useCases": [
+    "Partager des cartes avec des utilisateurs XMind",
+    "Créer des sauvegardes complètes de vos projets",
+    "Migrer entre BigMind et XMind sans perte",
+    "Archiver des cartes avec toutes leurs métadonnées",
+    "Collaborer en utilisant XMind comme format d'échange"
+  ],
+  "features": [
+    {
+      "label": "Export XMind",
+      "description": "Exportez vos cartes au format XMind avec sidecar BigMind intégré",
+      "icon": "📁"
+    },
+    {
+      "label": "Préservation des données",
+      "description": "Tous les overlays (notes, styles, tags) sont préservés lors de l'export",
+      "icon": "💾"
+    },
+    {
+      "label": "Export avec métadonnées",
+      "description": "Inclut viewport, options canvas, et tags dans le fichier",
+      "icon": "📋"
+    }
+  ],
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2025-01-28",
+      "changes": [
+        {
+          "type": "added",
+          "description": "Export au format XMind (.xmind)"
+        },
+        {
+          "type": "added",
+          "description": "Intégration du sidecar bigmind.json dans l'archive"
+        },
+        {
+          "type": "added",
+          "description": "Sauvegarde automatique des tags et associations"
+        }
+      ]
+    }
+  ],
+  "hooks": {
+    "listens": [],
+    "emits": ["export.started", "export.completed", "export.failed"]
+  },
+  "uiContributions": {
+    "commands": [
+      {
+        "id": "export.xmind",
+        "title": "Export XMind",
+        "shortcut": "Cmd+Shift+E",
+        "category": "File"
+      }
+    ],
+    "menus": [
+      {
+        "id": "export-xmind-menu",
+        "label": "Export > XMind",
+        "command": "export.xmind"
+      }
+    ],
+    "panels": [],
+    "settings": []
+  },
+  "permissions": []
+}

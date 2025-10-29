@@ -1,0 +1,89 @@
+{
+  "id": "com.bigmind.color-palettes-collection",
+  "name": "Color Palettes Collection",
+  "version": "1.0.0",
+  "description": "41 palettes de couleurs professionnelles pour sublimer vos mind maps",
+  "longDescription": "Transformez l'apparence de vos cartes mentales avec notre collection exclusive de 41 palettes de couleurs soigneusement sélectionnées. Des classiques intemporels aux thèmes modernes de développeurs, en passant par les styles rétro et les ambiances naturelles.\n\n**Pourquoi ce plugin est essentiel ?**\n\nChaque palette a été conçue pour maximiser la lisibilité et l'impact visuel de vos idées. Que vous créiez une présentation professionnelle, organisiez un brainstorming créatif ou structuriez un projet technique, vous trouverez la palette parfaite pour votre contexte.",
+  "author": {
+    "name": "BigMind Team",
+    "email": "team@bigmind.com"
+  },
+  "main": "index.js",
+  "icon": "🎨",
+  "logo": "/assets/plugin-logos/color-palettes-collection.svg",
+  "color": "#8B5CF6",
+  "category": "theme",
+  "tags": ["colors", "palettes", "theme", "design", "productivity"],
+  "source": "core",
+  "pricing": "free",
+  "featured": true,
+  "license": "MIT",
+  "bigmindVersion": "1.0.0",
+  "tagline": "Des couleurs parfaites pour chaque contexte",
+  "benefits": [
+    "41 palettes professionnelles prêtes à l'emploi",
+    "Thèmes populaires de développeurs (Dracula, Nord, Tokyo Night...)",
+    "Styles vintage et rétro (60s, 70s, 80s, Synthwave)",
+    "Harmonies naturelles et thématiques",
+    "Compatibilité garantie avec tous vos projets"
+  ],
+  "useCases": [
+    "Présentations professionnelles avec palette Corporate ou Material",
+    "Brainstorming créatif avec palettes Vibrant ou Tropical",
+    "Documentation technique avec thèmes de code (Monokai, Gruvbox)",
+    "Projets personnels avec styles Pastel ou Vintage"
+  ],
+  "features": [
+    {
+      "label": "41 Palettes complètes",
+      "description": "Collection complète : essentielles + étendues + thèmes populaires",
+      "icon": "🌈"
+    },
+    {
+      "label": "Thèmes de code",
+      "description": "Dracula, Nord, Solarized, Tokyo Night, Gruvbox, Monokai, etc.",
+      "icon": "⭐"
+    },
+    {
+      "label": "Styles rétro",
+      "description": "Années 60s, 70s, 80s, Synthwave, Vaporwave, Cyberpunk",
+      "icon": "🕹️"
+    },
+    {
+      "label": "Thématiques variées",
+      "description": "Pastel, Earth, Neon, Ocean, Sunset, Forest, Tropical, etc.",
+      "icon": "🎯"
+    }
+  ],
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2025-01-28",
+      "changes": [
+        {
+          "type": "added",
+          "description": "Collection complète de 41 palettes de couleurs"
+        },
+        {
+          "type": "added",
+          "description": "Thèmes de code populaires (Dracula, Nord, etc.)"
+        },
+        {
+          "type": "added",
+          "description": "Palettes vintage et rétro"
+        }
+      ]
+    }
+  ],
+  "hooks": {
+    "listens": [],
+    "emits": []
+  },
+  "uiContributions": {
+    "commands": [],
+    "menus": [],
+    "panels": [],
+    "settings": []
+  },
+  "permissions": []
+}
