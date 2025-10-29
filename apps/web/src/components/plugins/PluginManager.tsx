@@ -9,7 +9,10 @@ import { PluginState } from '@bigmind/plugin-system';
 import { PluginCard } from './PluginCard';
 import { PluginFilters, type PluginStatus, type PluginCategory } from './PluginFilters';
 import { PluginDetailModal } from './PluginDetailModal';
-import { gitHubPluginRegistry, type PluginRegistryEntry } from '../../services/GitHubPluginRegistry';
+import {
+  gitHubPluginRegistry,
+  type PluginRegistryEntry,
+} from '../../services/GitHubPluginRegistry';
 import type { PluginManifest } from '@bigmind/plugin-system';
 import './PluginManager.css';
 
@@ -143,38 +146,40 @@ export function PluginManager({
   }, [pluginList, remotePlugins]);
 
   // Filter and search plugins
-  const filteredPlugins = useMemo(() => {
-    return unifiedPlugins.filter(item => {
-      const manifest = item.manifest;
+  const filteredPlugins = useMemo(
+    () =>
+      unifiedPlugins.filter(item => {
+        const { manifest } = item;
 
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesName = manifest.name.toLowerCase().includes(query);
-        const matchesDesc = manifest.description?.toLowerCase().includes(query);
-        const matchesId = manifest.id.toLowerCase().includes(query);
-        const matchesTags = manifest.tags?.some(tag => tag.toLowerCase().includes(query));
+        // Search filter
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase();
+          const matchesName = manifest.name.toLowerCase().includes(query);
+          const matchesDesc = manifest.description?.toLowerCase().includes(query);
+          const matchesId = manifest.id.toLowerCase().includes(query);
+          const matchesTags = manifest.tags?.some(tag => tag.toLowerCase().includes(query));
 
-        if (!matchesName && !matchesDesc && !matchesId && !matchesTags) {
-          return false;
+          if (!matchesName && !matchesDesc && !matchesId && !matchesTags) {
+            return false;
+          }
         }
-      }
 
-      // Status filter
-      if (statusFilter !== 'all') {
-        const isActive = item.isActive ?? false;
-        if (statusFilter === 'active' && !isActive) return false;
-        if (statusFilter === 'inactive' && (isActive || !item.isInstalled)) return false;
-      }
+        // Status filter
+        if (statusFilter !== 'all') {
+          const isActive = item.isActive ?? false;
+          if (statusFilter === 'active' && !isActive) return false;
+          if (statusFilter === 'inactive' && (isActive || !item.isInstalled)) return false;
+        }
 
-      // Category filter
-      if (categoryFilter !== 'all') {
-        if (manifest.category !== categoryFilter) return false;
-      }
+        // Category filter
+        if (categoryFilter !== 'all') {
+          if (manifest.category !== categoryFilter) return false;
+        }
 
-      return true;
-    });
-  }, [unifiedPlugins, searchQuery, statusFilter, categoryFilter]);
+        return true;
+      }),
+    [unifiedPlugins, searchQuery, statusFilter, categoryFilter]
+  );
 
   // Organize plugins into sections: Installés vs Disponibles
   const { installedPlugins, availablePlugins } = useMemo(() => {
@@ -270,7 +275,7 @@ export function PluginManager({
           {paginatedItems.map(item => {
             const isActive = item.isActive ?? false;
             const isCore = item.manifest.source === 'core';
-            const isInstalled = item.isInstalled;
+            const { isInstalled } = item;
 
             return (
               <PluginCard
@@ -290,7 +295,9 @@ export function PluginManager({
                 }}
                 onConfigure={() => onViewPermissions(item.manifest.id)}
                 onViewDetails={() => handleViewDetails(item.manifest.id)}
-                onUninstall={() => handleAction(() => onUninstall(item.manifest.id), item.manifest.id)}
+                onUninstall={() =>
+                  handleAction(() => onUninstall(item.manifest.id), item.manifest.id)
+                }
               />
             );
           })}
@@ -350,11 +357,7 @@ export function PluginManager({
       />
 
       {/* Plugin Sections */}
-      {renderSection(
-        'Plugins Installés',
-        'Plugins installés sur votre système',
-        installedPlugins
-      )}
+      {renderSection('Plugins Installés', 'Plugins installés sur votre système', installedPlugins)}
 
       {renderSection(
         'Plugins Disponibles',
@@ -370,33 +373,30 @@ export function PluginManager({
       )}
 
       {/* Detail Modal */}
-      {selectedPlugin && (() => {
-        const selectedItem = unifiedPlugins.find(item => item.manifest.id === selectedPlugin);
-        if (!selectedItem) return null;
+      {selectedPlugin &&
+        (() => {
+          const selectedItem = unifiedPlugins.find(item => item.manifest.id === selectedPlugin);
+          if (!selectedItem) return null;
 
-        return (
-          <PluginDetailModal
-            manifest={selectedItem.manifest}
-            isActive={selectedItem.isActive ?? false}
-            canDisable={selectedItem.manifest.source !== 'core'}
-            onClose={handleCloseModal}
-            onToggle={() => {
-              const isCore = selectedItem.manifest.source === 'core';
-              if (!isCore && selectedItem.isInstalled) {
-                handleToggle(selectedPlugin, selectedItem.isActive ?? false);
-                handleCloseModal();
-              }
-            }}
-          />
-        );
-      })()}
+          return (
+            <PluginDetailModal
+              manifest={selectedItem.manifest}
+              isActive={selectedItem.isActive ?? false}
+              canDisable={selectedItem.manifest.source !== 'core'}
+              onClose={handleCloseModal}
+              onToggle={() => {
+                const isCore = selectedItem.manifest.source === 'core';
+                if (!isCore && selectedItem.isInstalled) {
+                  handleToggle(selectedPlugin, selectedItem.isActive ?? false);
+                  handleCloseModal();
+                }
+              }}
+            />
+          );
+        })()}
 
       {/* Loading indicator */}
-      {loading && (
-        <div className="plugin-manager__loading">
-          Chargement en cours...
-        </div>
-      )}
+      {loading && <div className="plugin-manager__loading">Chargement en cours...</div>}
     </div>
   );
 }

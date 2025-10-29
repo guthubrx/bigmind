@@ -19,13 +19,6 @@ export function PluginMarketplace() {
   // Load all available manifests
   const manifests = getAllAvailableManifests();
 
-  // Debug: log all plugins
-  console.log('[PluginMarketplace] Total manifests:', manifests.length);
-  manifests.forEach(m => {
-    console.log(
-      `  - ${m.manifest.id} (source: ${m.manifest.source}, featured: ${m.manifest.featured})`
-    );
-  });
 
   // State
   const [searchQuery, setSearchQuery] = useState('');
@@ -76,15 +69,6 @@ export function PluginMarketplace() {
       m => m.manifest.source !== 'core' && !m.manifest.featured
     );
 
-    console.log(
-      '[PluginMarketplace] Categorized:',
-      `Core: ${core.length}`,
-      `Featured: ${featured.length}`,
-      `Community: ${community.length}`
-    );
-    community.forEach(c => {
-      console.log(`  Community: ${c.manifest.id}`);
-    });
 
     return {
       corePlugins: core,
@@ -226,6 +210,7 @@ export function PluginMarketplace() {
                   state="inactive" // Show as available for install
                   onActivate={async () => {
                     // TODO: Implement installation
+                    // eslint-disable-next-line no-alert
                     alert(`Installation de ${loaded.manifest.name} à implémenter`);
                   }}
                   onDeactivate={async () => {}}
@@ -256,6 +241,7 @@ export function PluginMarketplace() {
                   manifest={loaded.manifest}
                   state="inactive"
                   onActivate={async () => {
+                    // eslint-disable-next-line no-alert
                     alert(`Installation de ${loaded.manifest.name} à implémenter`);
                   }}
                   onDeactivate={async () => {}}
@@ -286,6 +272,7 @@ export function PluginMarketplace() {
                   manifest={loaded.manifest}
                   state="inactive"
                   onActivate={async () => {
+                    // eslint-disable-next-line no-alert
                     alert(`Installation de ${loaded.manifest.name} à implémenter`);
                   }}
                   onDeactivate={async () => {}}
@@ -315,6 +302,7 @@ export function PluginMarketplace() {
           state="inactive"
           onClose={() => setSelectedPluginId(null)}
           onActivate={async () => {
+            // eslint-disable-next-line no-alert
             alert(`Installation de ${selectedManifest.name} à implémenter`);
           }}
           onDeactivate={async () => {}}

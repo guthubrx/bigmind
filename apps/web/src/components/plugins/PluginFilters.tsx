@@ -8,7 +8,14 @@ import { Search, Filter, Grid3x3, List } from 'lucide-react';
 import './PluginFilters.css';
 
 export type PluginStatus = 'all' | 'active' | 'inactive';
-export type PluginCategory = 'all' | 'productivity' | 'integration' | 'theme' | 'developer' | 'export' | 'template';
+export type PluginCategory =
+  | 'all'
+  | 'productivity'
+  | 'integration'
+  | 'theme'
+  | 'developer'
+  | 'export'
+  | 'template';
 
 export interface PluginFiltersProps {
   searchQuery: string;
@@ -75,10 +82,7 @@ export function PluginFilters({
           onChange={e => onSearchChange(e.target.value)}
         />
         {searchQuery && (
-          <button
-            className="plugin-filters__search-clear"
-            onClick={() => onSearchChange('')}
-          >
+          <button className="plugin-filters__search-clear" onClick={() => onSearchChange('')}>
             ×
           </button>
         )}
@@ -149,7 +153,9 @@ export function PluginFilters({
 
         <div className="plugin-filters__count">
           {filteredCount === totalCount ? (
-            <span>{totalCount} plugin{totalCount > 1 ? 's' : ''}</span>
+            <span>
+              {totalCount} plugin{totalCount > 1 ? 's' : ''}
+            </span>
           ) : (
             <span>
               {filteredCount} / {totalCount} plugin{totalCount > 1 ? 's' : ''}

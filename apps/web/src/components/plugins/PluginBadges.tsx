@@ -56,24 +56,26 @@ export function PluginBadges({ source, state, featured }: PluginBadgesProps) {
       }[state]
     : null;
 
-  const Badge = ({ config }: { config: any }) => (
-    <span
-      style={{
-        display: 'inline-block',
-        padding: '2px 8px',
-        fontSize: '10px',
-        fontWeight: 600,
-        textTransform: 'uppercase',
-        letterSpacing: '0.05em',
-        backgroundColor: config.bgColor,
-        color: config.textColor,
-        border: `1px solid ${config.borderColor}`,
-        borderRadius: '3px',
-      }}
-    >
-      {config.label}
-    </span>
-  );
+  function Badge({ config }: { config: any }) {
+    return (
+      <span
+        style={{
+          display: 'inline-block',
+          padding: '2px 8px',
+          fontSize: '10px',
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          backgroundColor: config.bgColor,
+          color: config.textColor,
+          border: `1px solid ${config.borderColor}`,
+          borderRadius: '3px',
+        }}
+      >
+        {config.label}
+      </span>
+    );
+  }
 
   const featuredBadge = {
     label: 'VEDETTE',

@@ -1,0 +1,19 @@
+{
+  "name": "@bigmind/plugin-hello-world",
+  "version": "1.0.0",
+  "description": "Example plugin for BigMind",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch"
+  },
+  "peerDependencies": {
+    "@bigmind/plugin-sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@bigmind/plugin-sdk": "^1.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0"
+  },
+  "license": "MIT"
+}

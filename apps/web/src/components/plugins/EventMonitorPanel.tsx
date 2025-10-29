@@ -234,7 +234,12 @@ export const EventMonitorPanel: React.FC = () => {
         ) : (
           <div style={{ padding: '10px' }}>
             {filteredEvents.map(event => (
-              <EventCard key={event.id} event={event} categoryColor={getCategoryColor(event.category)} formatTimestamp={formatTimestamp} />
+              <EventCard
+                key={event.id}
+                event={event}
+                categoryColor={getCategoryColor(event.category)}
+                formatTimestamp={formatTimestamp}
+              />
             ))}
           </div>
         )}
@@ -289,7 +294,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, categoryColor, formatTimes
           style={{
             padding: '2px 8px',
             borderRadius: '4px',
-            background: categoryColor + '20',
+            background: `${categoryColor}20`,
             color: categoryColor,
             fontSize: '11px',
             fontWeight: 'bold',

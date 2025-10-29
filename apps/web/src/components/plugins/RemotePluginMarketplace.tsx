@@ -87,7 +87,7 @@ export function RemotePluginMarketplace() {
             border: '1px solid #fecaca',
             borderRadius: '8px',
             marginBottom: '16px',
-            color: '#991b1b'
+            color: '#991b1b',
           }}
         >
           <strong>Error:</strong> {error}
@@ -103,7 +103,7 @@ export function RemotePluginMarketplace() {
             border: '1px solid #bfdbfe',
             borderRadius: '8px',
             marginBottom: '16px',
-            color: '#1e40af'
+            color: '#1e40af',
           }}
         >
           Installing <strong>{installing}</strong>... Please wait.

@@ -19,7 +19,7 @@ export const PluginDetailPage: React.FC<PluginDetailPageProps> = ({
   onDeactivate,
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'technical' | 'changelog'>('overview');
-  const manifest = plugin.plugin.manifest;
+  const { manifest } = plugin.plugin;
 
   const tabs = [
     { id: 'overview' as const, label: '📖 Overview', icon: '📖' },
@@ -79,9 +79,7 @@ export const PluginDetailPage: React.FC<PluginDetailPageProps> = ({
               </span>
               <span>
                 <strong>Auteur:</strong>{' '}
-                {typeof manifest.author === 'string'
-                  ? manifest.author
-                  : manifest.author.name}
+                {typeof manifest.author === 'string' ? manifest.author : manifest.author.name}
               </span>
               {manifest.category && (
                 <span
@@ -151,7 +149,8 @@ export const PluginDetailPage: React.FC<PluginDetailPageProps> = ({
             style={{
               padding: '12px 20px',
               border: 'none',
-              borderBottom: activeTab === tab.id ? '2px solid var(--accent-color)' : '2px solid transparent',
+              borderBottom:
+                activeTab === tab.id ? '2px solid var(--accent-color)' : '2px solid transparent',
               background: 'transparent',
               color: activeTab === tab.id ? 'var(--accent-color)' : '#6b7280',
               cursor: 'pointer',
@@ -176,7 +175,7 @@ export const PluginDetailPage: React.FC<PluginDetailPageProps> = ({
 
 // Overview Tab
 const OverviewTab: React.FC<{ plugin: PluginInfo }> = ({ plugin }) => {
-  const manifest = plugin.plugin.manifest;
+  const { manifest } = plugin.plugin;
   return (
     <div>
       {/* Features */}
@@ -219,7 +218,13 @@ const OverviewTab: React.FC<{ plugin: PluginInfo }> = ({ plugin }) => {
           <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '16px' }}>
             📸 Screenshots
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: '16px',
+            }}
+          >
             {manifest.screenshots.map((screenshot, idx) => (
               <img
                 key={idx}
@@ -238,9 +243,7 @@ const OverviewTab: React.FC<{ plugin: PluginInfo }> = ({ plugin }) => {
 
       {/* Links */}
       <section>
-        <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '16px' }}>
-          🔗 Liens
-        </h2>
+        <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '16px' }}>🔗 Liens</h2>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           {manifest.homepage && (
             <a
@@ -298,7 +301,7 @@ const OverviewTab: React.FC<{ plugin: PluginInfo }> = ({ plugin }) => {
 
 // Technical Tab
 const TechnicalTab: React.FC<{ plugin: PluginInfo }> = ({ plugin }) => {
-  const manifest = plugin.plugin.manifest;
+  const { manifest } = plugin.plugin;
   return (
     <div style={{ display: 'grid', gap: '24px' }}>
       {/* Events listened */}
@@ -392,14 +395,15 @@ const TechnicalTab: React.FC<{ plugin: PluginInfo }> = ({ plugin }) => {
                   </dd>
                 </>
               )}
-              {manifest.uiContributions.commands && manifest.uiContributions.commands.length > 0 && (
-                <>
-                  <dt style={{ fontWeight: 600 }}>Commandes ajoutées :</dt>
-                  <dd style={{ margin: 0, paddingLeft: '16px', color: '#6b7280' }}>
-                    {manifest.uiContributions.commands.join(', ')}
-                  </dd>
-                </>
-              )}
+              {manifest.uiContributions.commands &&
+                manifest.uiContributions.commands.length > 0 && (
+                  <>
+                    <dt style={{ fontWeight: 600 }}>Commandes ajoutées :</dt>
+                    <dd style={{ margin: 0, paddingLeft: '16px', color: '#6b7280' }}>
+                      {manifest.uiContributions.commands.join(', ')}
+                    </dd>
+                  </>
+                )}
               {manifest.uiContributions.panels && manifest.uiContributions.panels.length > 0 && (
                 <>
                   <dt style={{ fontWeight: 600 }}>Panneaux ajoutés :</dt>
@@ -481,9 +485,7 @@ const TechnicalTab: React.FC<{ plugin: PluginInfo }> = ({ plugin }) => {
             {manifest.bigmindVersion && (
               <div style={{ display: 'flex', gap: '8px' }}>
                 <dt style={{ fontWeight: 600, minWidth: '120px' }}>Compatibilité:</dt>
-                <dd style={{ margin: 0, color: '#6b7280' }}>
-                  BigMind {manifest.bigmindVersion}
-                </dd>
+                <dd style={{ margin: 0, color: '#6b7280' }}>BigMind {manifest.bigmindVersion}</dd>
               </div>
             )}
           </dl>
@@ -495,7 +497,7 @@ const TechnicalTab: React.FC<{ plugin: PluginInfo }> = ({ plugin }) => {
 
 // Changelog Tab
 const ChangelogTab: React.FC<{ plugin: PluginInfo }> = ({ plugin }) => {
-  const manifest = plugin.plugin.manifest;
+  const { manifest } = plugin.plugin;
   if (!manifest.changelog || manifest.changelog.length === 0) {
     return (
       <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>

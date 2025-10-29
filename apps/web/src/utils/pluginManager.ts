@@ -7,9 +7,9 @@
 
 import { createEnhancedPluginSystem } from '@bigmind/plugin-system';
 import { eventBus } from './eventBus';
-import examplePlugin from '../plugins/example-plugin';
-import analyticsPlugin from '../plugins/analytics-plugin';
-import * as eventMonitorPlugin from '../plugins/event-monitor-plugin';
+import examplePlugin from '../plugins/example';
+import analyticsPlugin from '../plugins/analytics';
+import * as eventMonitorPlugin from '../plugins/event-monitor';
 
 // Core plugins (essential, auto-activated)
 import * as xmindCompatibilityPlugin from '../plugins/core/xmind-compatibility';
