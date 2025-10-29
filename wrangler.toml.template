@@ -1,0 +1,19 @@
+# Cloudflare Worker Configuration
+# Renommer ce fichier en "wrangler.toml" et le placer dans le même dossier que worker.js
+
+name = "bigmind-registry"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# R2 Bucket binding
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "bigmind-plugins"
+
+# Variables d'environnement (optionnel)
+[vars]
+ENVIRONMENT = "production"
+
+# Configuration pour le développement local (optionnel)
+[dev]
+port = 8787
