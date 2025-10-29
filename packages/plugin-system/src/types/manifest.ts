@@ -86,6 +86,47 @@ export interface PluginManifest {
     templates?: TemplateContribution[];
     fileFormats?: FileFormatContribution[];
   };
+
+  // Phase 4: Distribution & Security
+  distribution?: PluginDistribution;
+}
+
+/**
+ * Plugin distribution configuration
+ * Phase 4 - Storage & Distribution
+ */
+export interface PluginDistribution {
+  // Registry configuration
+  registry?: string; // URL of the registry (e.g., "https://registry.bigmind.app")
+  cdn?: string; // CDN base URL (e.g., "https://cdn.bigmind.app/plugins")
+
+  // Security & Integrity
+  integrity?: {
+    sig?: string; // Ed25519 signature (base64)
+    pubKeyId?: string; // Public key ID (e.g., "dev:john@example.com")
+    hash?: string; // SHA-256 hash of the package
+    algorithm?: 'ed25519' | 'rsa'; // Signature algorithm
+  };
+
+  // Supply Chain Security
+  sbom?: string; // Path to SBOM file (CycloneDX/SPDX)
+  provenance?: string; // SLSA provenance attestation URL
+
+  // Assets
+  assets?: string[]; // Additional assets to distribute (icons, docs, etc.)
+
+  // Dependencies
+  dependencies?: Record<string, string>; // External dependencies with versions
+  peerDependencies?: Record<string, string>; // Peer dependencies
+
+  // Publishing metadata
+  publishedAt?: string; // ISO date of publication
+  publishedBy?: string; // Publisher identifier
+  channel?: 'stable' | 'beta' | 'alpha'; // Release channel
+
+  // License & Compliance
+  licenseFile?: string; // Path to LICENSE file
+  notices?: string; // Path to NOTICES file (third-party licenses)
 }
 
 /**

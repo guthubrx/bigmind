@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  verdaccio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bigmind-registry
+    ports:
+      - "4873:4873"
+    environment:
+      - VERDACCIO_PORT=4873
+      - NODE_ENV=production
+    volumes:
+      - verdaccio-storage:/verdaccio/storage
+      - verdaccio-conf:/verdaccio/conf
+    restart: unless-stopped
+    networks:
+      - bigmind-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.verdaccio.rule=Host(`registry.bigmind.local`)"
+      - "traefik.http.services.verdaccio.loadbalancer.server.port=4873"
+
+  # PostgreSQL for marketplace backend (will be used in Sprint 4)
+  postgres:
+    image: postgres:16-alpine
+    container_name: bigmind-db
+    environment:
+      - POSTGRES_DB=bigmind_marketplace
+      - POSTGRES_USER=bigmind
+      - POSTGRES_PASSWORD=changeme_in_production
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ../database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - bigmind-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bigmind"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  verdaccio-storage:
+    driver: local
+  verdaccio-conf:
+    driver: local
+  postgres-data:
+    driver: local
+
+networks:
+  bigmind-network:
+    driver: bridge

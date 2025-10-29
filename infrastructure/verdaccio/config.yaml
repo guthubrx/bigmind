@@ -1,0 +1,110 @@
+#
+# BigMind Verdaccio Registry Configuration
+# Private npm registry for @bigmind scoped packages
+#
+
+# Storage path for packages
+storage: ./storage
+
+# Authentication using htpasswd
+auth:
+  htpasswd:
+    file: ./htpasswd
+    # Maximum number of users allowed to register, -1 = unlimited
+    max_users: -1
+    # Hash algorithm (bcrypt, md5, sha1)
+    algorithm: bcrypt
+
+# Uplinks to proxy public npm registry
+uplinks:
+  npmjs:
+    url: https://registry.npmjs.org/
+    # Cache timeout
+    timeout: 10s
+    # Maximum number of failures before circuit breaker opens
+    maxage: 2m
+    max_fails: 2
+    fail_timeout: 5m
+
+# Package access control
+packages:
+  # BigMind scoped packages
+  '@bigmind/*':
+    # Allow access to authenticated users
+    access: $authenticated
+    # Allow publishing for authenticated users
+    publish: $authenticated
+    # Proxy to npmjs for dependencies
+    proxy: npmjs
+
+  # BigMind plugins
+  '@bigmind/plugin-*':
+    access: $authenticated
+    publish: $authenticated
+    proxy: npmjs
+
+  # Public packages (proxy only)
+  '**':
+    access: $all
+    publish: $authenticated
+    proxy: npmjs
+
+# Server configuration
+server:
+  keepAliveTimeout: 60
+
+# Web UI configuration
+web:
+  title: BigMind Package Registry
+  logo: https://cdn.bigmind.app/logo.png
+  gravatar: true
+  scope: '@bigmind'
+  darkMode: true
+
+# Logs configuration
+logs:
+  type: stdout
+  format: pretty
+  level: info
+
+# Listen on all interfaces
+listen:
+  - 0.0.0.0:4873
+
+# Enable publishing
+publish:
+  allow_offline: false
+
+# Security
+security:
+  api:
+    # JWT secret (should be overridden via environment variable)
+    jwt:
+      sign:
+        expiresIn: 7d
+      verify:
+        maxAge: 7d
+  web:
+    sign:
+      expiresIn: 7d
+    verify:
+      maxAge: 7d
+
+# Middleware
+middlewares:
+  audit:
+    enabled: true
+
+# Experiments (optional features)
+experiments:
+  # Enable token-based authentication
+  token: true
+  # Enable search
+  search: true
+
+# Notifications (webhooks)
+notify:
+  method: POST
+  headers: [{'Content-Type': 'application/json'}]
+  endpoint: https://api.bigmind.app/webhooks/package-published
+  content: '{"name": "{{name}}", "version": "{{version}}", "tag": "{{tag}}"}'
