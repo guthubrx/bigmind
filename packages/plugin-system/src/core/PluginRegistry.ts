@@ -14,6 +14,7 @@ import { PluginSandbox } from '../runtime/PluginSandbox';
 import { PluginContext } from '../runtime/PluginContext';
 import { validateManifest } from '../validation/manifestSchema';
 import { HookSystem } from './HookSystem';
+import { PluginLoader } from './PluginLoader';
 import { EventEmitter } from 'eventemitter3';
 
 /**
@@ -30,17 +31,21 @@ export class PluginRegistry extends EventEmitter {
 
   private bigmindVersion: string;
 
+  private marketplaceUrl: string;
+
   constructor(
     permissionManager: PermissionManager,
     hookSystem: HookSystem,
     eventBus: EventEmitter,
-    bigmindVersion: string = '1.0.0'
+    bigmindVersion: string = '1.0.0',
+    marketplaceUrl: string = 'https://bigmind-registry.workers.dev'
   ) {
     super();
     this.permissionManager = permissionManager;
     this.hookSystem = hookSystem;
     this.eventBus = eventBus;
     this.bigmindVersion = bigmindVersion;
+    this.marketplaceUrl = marketplaceUrl;
   }
 
   /**
@@ -80,6 +85,67 @@ export class PluginRegistry extends EventEmitter {
     this.emit('plugin:registered', manifest.id, manifest);
 
     console.log(`[PluginRegistry] Registered plugin: ${manifest.id} v${manifest.version}`);
+  }
+
+  /**
+   * Install plugin from remote marketplace
+   * Downloads, validates, and registers a plugin from the marketplace
+   * @param pluginId - Plugin identifier (e.g., "com.bigmind.teams")
+   * @param version - Optional specific version (defaults to latest)
+   */
+  async installFromMarketplace(
+    pluginId: string,
+    version?: string
+  ): Promise<void> {
+    console.log(`[PluginRegistry] Installing ${pluginId} from marketplace...`);
+
+    try {
+      // 1. Download plugin using PluginLoader
+      const loader = new PluginLoader({
+        marketplaceUrl: this.marketplaceUrl,
+        validateSecurity: true
+      });
+
+      const plugin = await loader.download(pluginId, version);
+
+      // 2. Register the downloaded plugin
+      await this.register(plugin);
+
+      // 3. Emit marketplace install event
+      this.emit('plugin:installed-from-marketplace', pluginId, plugin.manifest.version);
+
+      console.log(`[PluginRegistry] Successfully installed ${pluginId} from marketplace`);
+    } catch (error) {
+      console.error(`[PluginRegistry] Failed to install ${pluginId} from marketplace:`, error);
+      this.emit('plugin:install-failed', pluginId, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Install plugin from local file (for development/sideloading)
+   * @param file - Plugin ZIP file
+   */
+  async installFromFile(file: File): Promise<void> {
+    console.log(`[PluginRegistry] Installing plugin from file: ${file.name}`);
+
+    try {
+      const loader = new PluginLoader({
+        marketplaceUrl: this.marketplaceUrl,
+        validateSecurity: true
+      });
+
+      const plugin = await loader.loadFromFile(file);
+
+      await this.register(plugin);
+
+      this.emit('plugin:installed-from-file', plugin.manifest.id);
+
+      console.log(`[PluginRegistry] Successfully installed ${plugin.manifest.id} from file`);
+    } catch (error) {
+      console.error(`[PluginRegistry] Failed to install from file:`, error);
+      throw error;
+    }
   }
 
   /**

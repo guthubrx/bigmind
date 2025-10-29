@@ -12,6 +12,7 @@ import {
   AuditDashboard,
   PolicyEditor,
   PluginMarketplace,
+  RemotePluginMarketplace,
 } from '../components/plugins';
 import { pluginSystem, saveActivatedPlugins } from '../utils/pluginManager';
 import type {
@@ -24,7 +25,7 @@ import type {
 
 const { registry, permissionManager, auditLogger, policyEngine } = pluginSystem;
 
-type View = 'marketplace' | 'manager' | 'audit' | 'policy';
+type View = 'marketplace' | 'remote' | 'manager' | 'audit' | 'policy';
 
 export function PluginsPage() {
   const [currentView, setCurrentView] = useState<View>('marketplace');
@@ -150,7 +151,8 @@ export function PluginsPage() {
       >
         <div style={{ display: 'flex', gap: '8px' }}>
           {[
-            { id: 'marketplace' as View, label: 'Marketplace', icon: '🏪' },
+            { id: 'marketplace' as View, label: 'Local', icon: '🏪' },
+            { id: 'remote' as View, label: 'Remote', icon: '🌐' },
             { id: 'manager' as View, label: 'Gestionnaire', icon: '🔌' },
             { id: 'audit' as View, label: 'Audit', icon: '📊' },
             { id: 'policy' as View, label: 'Politiques', icon: '🔐' },
@@ -179,6 +181,8 @@ export function PluginsPage() {
       {/* Content */}
       <div>
         {currentView === 'marketplace' && <PluginMarketplace />}
+
+        {currentView === 'remote' && <RemotePluginMarketplace />}
 
         {currentView === 'manager' && (
           <PluginManager

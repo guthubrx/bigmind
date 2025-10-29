@@ -31,3 +31,4 @@ export { PluginFilters } from './PluginFilters';
 export type { PluginFiltersProps, PluginStatus, PluginCategory } from './PluginFilters';
 
 export { PluginMarketplace } from './PluginMarketplace';
+export { RemotePluginMarketplace } from './RemotePluginMarketplace';

@@ -18,6 +18,8 @@ import { EventEmitter } from 'eventemitter3';
 
 export { PluginRegistry } from './core/PluginRegistry';
 export { HookSystem, HookType } from './core/HookSystem';
+export { PluginLoader } from './core/PluginLoader';
+export type { PluginLoadOptions } from './core/PluginLoader';
 
 // ===== Types =====
 export type { Plugin, PluginInfo } from './types/plugin';
