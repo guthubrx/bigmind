@@ -116,7 +116,8 @@ export class DependencyResolver {
         const existing = resolved.get(dep.id)!;
 
         // Check for version conflict
-        if (!this.versionResolver.satisfies(existing.version, dep.version)) {
+        // We need to check if the RESOLVED version satisfies the new range requirement
+        if (!this.versionResolver.satisfies(existing.resolved, dep.version)) {
           this.addConflict(conflicts, dep.id, parentId, dep.version, existing.version);
         }
 

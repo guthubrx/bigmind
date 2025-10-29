@@ -159,7 +159,8 @@ export class DependencyGraph {
       }
     }
 
-    return stack.reverse();
+    // DFS post-order gives us the correct order (dependencies before dependents)
+    return stack;
   }
 
   /**

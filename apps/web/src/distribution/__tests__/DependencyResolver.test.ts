@@ -207,6 +207,7 @@ describe('DependencyResolver', () => {
       const depC = createManifest('plugin-c', '1.0.0', { 'plugin-a': '1.0.0' });
 
       const available = new Map([
+        ['plugin-a', [manifest]],
         ['plugin-b', [depB]],
         ['plugin-c', [depC]],
       ]);
