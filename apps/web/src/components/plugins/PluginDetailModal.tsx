@@ -9,7 +9,6 @@ import { PluginBadge, type BadgeType } from './PluginBadge';
 import { X, Check, Star, Download, Calendar, Tag, ExternalLink } from 'lucide-react';
 import { PluginRatingForm } from './PluginRatingForm';
 import { PluginRatingsDisplay } from './PluginRatingsDisplay';
-import { PluginReviews } from './PluginReviews';
 import { ExportRatingsButton } from './ExportRatingsButton';
 import {
   getPluginRatingsAggregate,
@@ -294,9 +293,6 @@ export function PluginDetailModal({
               onSuccess={() => setRatingsRefresh(prev => prev + 1)}
             />
           </section>
-
-          {/* Reviews via Giscus */}
-          <PluginReviews pluginId={manifest.id} pluginName={manifest.name} />
 
           {/* Links */}
           {(manifest.homepage || manifest.repository || manifest.documentation) && (
