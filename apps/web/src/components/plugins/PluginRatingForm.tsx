@@ -104,7 +104,7 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
                 onMouseLeave={() => setHoverRating(0)}
                 onClick={() => setRating(star)}
               >
-                <Star size={24} />
+                <Star size={24} fill="currentColor" />
               </button>
             ))}
           </div>
