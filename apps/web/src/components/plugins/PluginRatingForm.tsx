@@ -69,7 +69,10 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
       );
 
       if (success) {
-        setMessage({ type: 'success', text: 'Merci ! Votre avis a été enregistré.' });
+        setMessage({
+          type: 'success',
+          text: 'Merci ! Votre avis a été envoyé pour approbation et apparaîtra une fois approuvé.',
+        });
         setRating(0);
         setUserName('');
         setEmail('');

@@ -262,3 +262,102 @@ export async function submitRatingReply(
 
   return true;
 }
+
+/**
+ * Admin: Get unapproved ratings (in moderation queue)
+ */
+export async function getUnapprovedRatings(): Promise<PluginRating[]> {
+  const { data, error } = await supabase
+    .from('plugin_ratings')
+    .select('*')
+    .eq('is_approved', false)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('[Supabase] Error fetching unapproved ratings:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+/**
+ * Admin: Approve a rating
+ */
+export async function approveRating(ratingId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('plugin_ratings')
+    .update({ is_approved: true })
+    .eq('id', ratingId);
+
+  if (error) {
+    console.error('[Supabase] Error approving rating:', error);
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Admin: Reject (delete) a rating
+ */
+export async function rejectRating(ratingId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('plugin_ratings')
+    .delete()
+    .eq('id', ratingId);
+
+  if (error) {
+    console.error('[Supabase] Error rejecting rating:', error);
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Check if current user is a moderator
+ */
+export async function isModerator(): Promise<boolean> {
+  const user = await supabase.auth.getUser();
+
+  if (!user.data.user) {
+    return false;
+  }
+
+  const { data, error } = await supabase
+    .from('moderators')
+    .select('id')
+    .eq('user_id', user.data.user.id)
+    .single();
+
+  return !error && !!data;
+}
+
+/**
+ * Get current authenticated user
+ */
+export async function getCurrentUser() {
+  const { data, error } = await supabase.auth.getUser();
+
+  if (error) {
+    console.error('[Supabase] Error getting current user:', error);
+    return null;
+  }
+
+  return data.user;
+}
+
+/**
+ * Sign out current user
+ */
+export async function signOut(): Promise<boolean> {
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    console.error('[Supabase] Error signing out:', error);
+    return false;
+  }
+
+  return true;
+}
