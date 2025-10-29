@@ -5,10 +5,12 @@
  */
 
 import React, { useState, useMemo } from 'react';
+import { Settings } from 'lucide-react';
 import { getAllAvailableManifests } from '../../core/plugins';
 import { PluginCard } from './PluginCard';
 import { PluginFilters, type PluginCategory } from './PluginFilters';
 import { PluginDetailModal } from './PluginDetailModal';
+import { AdminPanel } from './AdminPanel';
 import { TopRatedPlugins } from './TopRatedPlugins';
 import { RatingFilter } from './RatingFilter';
 import './PluginManager.css';
@@ -22,6 +24,7 @@ export function PluginMarketplace() {
   const [categoryFilter, setCategoryFilter] = useState<PluginCategory>('all');
   const [selectedPluginId, setSelectedPluginId] = useState<string | null>(null);
   const [minRating, setMinRating] = useState<number | null>(null);
+  const [showAdmin, setShowAdmin] = useState(false);
 
   // Filter manifests
   const filteredManifests = useMemo(
@@ -76,28 +79,75 @@ export function PluginMarketplace() {
 
   return (
     <div className="plugin-manager">
-      <div className="plugin-manager-header">
-        <div className="plugin-manager-title">
-          <h1>🏪 Plugin Marketplace</h1>
-          <p className="plugin-manager-subtitle">
-            Découvrez et installez des plugins pour étendre les capacités de BigMind
-          </p>
+      {showAdmin && (
+        <div style={{ marginBottom: '24px' }}>
+          <button
+            type="button"
+            onClick={() => setShowAdmin(false)}
+            style={{
+              padding: '8px 16px',
+              marginBottom: '16px',
+              background: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px',
+            }}
+          >
+            Fermer Admin Panel
+          </button>
+          <AdminPanel />
         </div>
+      )}
 
-        <div className="plugin-manager-stats">
-          <div className="stat-card">
-            <div className="stat-value">{manifests.length}</div>
-            <div className="stat-label">Plugins disponibles</div>
+      {!showAdmin && (
+        <div className="plugin-manager-header">
+          <div className="plugin-manager-title">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <h1 style={{ margin: 0 }}>🏪 Plugin Marketplace</h1>
+              <button
+                type="button"
+                onClick={() => setShowAdmin(true)}
+                style={{
+                  padding: '6px 10px',
+                  background: '#fbbf24',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                }}
+                title="Admin Panel (Moderation)"
+              >
+                <Settings size={16} />
+                Admin
+              </button>
+            </div>
+            <p className="plugin-manager-subtitle">
+              Découvrez et installez des plugins pour étendre les capacités de BigMind
+            </p>
           </div>
-          <div className="stat-card">
-            <div className="stat-value">{corePlugins.length}</div>
-            <div className="stat-label">Plugins Core</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-value">{featuredPlugins.length}</div>
-            <div className="stat-label">En vedette</div>
+
+          <div className="plugin-manager-stats">
+            <div className="stat-card">
+              <div className="stat-value">{manifests.length}</div>
+              <div className="stat-label">Plugins disponibles</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-value">{corePlugins.length}</div>
+              <div className="stat-label">Plugins Core</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-value">{featuredPlugins.length}</div>
+              <div className="stat-label">En vedette</div>
+            </div>
           </div>
         </div>
+      )}
       </div>
 
       {/* Top Rated Plugins Widget */}
