@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { eventMonitorStore, type EventLogEntry } from '../../plugins/event-monitor-plugin';
+import { eventMonitorStore, type EventLogEntry } from '../../plugins/event-monitor';
 
 export const EventMonitorPanel: React.FC = () => {
   const [events, setEvents] = useState<EventLogEntry[]>([]);
