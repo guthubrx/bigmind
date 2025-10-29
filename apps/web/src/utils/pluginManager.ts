@@ -16,7 +16,7 @@ import * as xmindCompatibilityPlugin from '../plugins/core/xmind-compatibility';
 import * as themeManagerPlugin from '../plugins/core/theme-manager';
 
 // Official plugins (team-made, optional)
-import * as colorPalettesCollectionPlugin from '../plugins/core/color-palettes-collection';
+import * as colorPalettesCollectionPlugin from '../plugins/official/color-palettes-collection';
 import * as tagsManagerPlugin from '../plugins/official/tags-manager';
 import * as exportManagerPlugin from '../plugins/official/export-manager';
 import * as paletteSettingsPlugin from '../plugins/official/palette-settings';
