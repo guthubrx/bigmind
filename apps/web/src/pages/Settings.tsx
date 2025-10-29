@@ -174,6 +174,41 @@ function SettingsPage() {
     saveActivationState();
   };
 
+  const handleInstall = async (pluginId: string) => {
+    try {
+      // eslint-disable-next-line no-console
+      console.log(`[Settings] Installing plugin: ${pluginId}`);
+
+      // Import the installer service dynamically
+      const { installPlugin } = await import('../services/PluginInstaller');
+
+      // Download and install the plugin
+      const plugin = await installPlugin(pluginId);
+      // eslint-disable-next-line no-console
+      console.log(`[Settings] Plugin downloaded successfully: ${pluginId}`);
+
+      // Register the plugin in the registry
+      await registry.register(plugin, false); // Don't auto-activate
+      // eslint-disable-next-line no-console
+      console.log(`[Settings] Plugin registered successfully: ${pluginId}`);
+
+      // Activate the plugin
+      await handleActivate(pluginId);
+      // eslint-disable-next-line no-console
+      console.log(`[Settings] Plugin activated successfully: ${pluginId}`);
+
+      // eslint-disable-next-line no-alert
+      alert(`Plugin ${plugin.manifest.name} installé et activé avec succès!`);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(`[Settings] Failed to install plugin ${pluginId}:`, error);
+      // eslint-disable-next-line no-alert
+      alert(
+        `Échec de l'installation: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+      );
+    }
+  };
+
   const handleViewPermissions = (pluginId: string) => {
     const summary = permissionManager.getSecuritySummary(pluginId);
     alert(`Permissions pour ${pluginId}:\n\n${JSON.stringify(summary, null, 2)}`);
@@ -615,6 +650,7 @@ function SettingsPage() {
                               onUninstall={handleUninstall}
                               onViewPermissions={handleViewPermissions}
                               onViewDetails={pluginId => setSelectedPlugin(pluginId)}
+                              onInstall={handleInstall}
                             />
                           ))}
 

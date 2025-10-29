@@ -1,0 +1,228 @@
+/**
+ * Plugin Installer Service
+ * Handles installation of remote plugins from GitHub registry
+ */
+
+import { gitHubPluginRegistry } from './GitHubPluginRegistry';
+import type { Plugin, PluginManifest } from '@bigmind/plugin-system';
+
+// IndexedDB configuration
+const DB_NAME = 'bigmind-plugins';
+const DB_VERSION = 1;
+const STORE_NAME = 'installed-plugins';
+
+interface InstalledPluginData {
+  id: string;
+  manifest: PluginManifest;
+  code: string;
+  installedAt: string;
+  version: string;
+}
+
+/**
+ * Open IndexedDB connection
+ */
+function openDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+
+    request.onupgradeneeded = event => {
+      const db = (event.target as IDBOpenDBRequest).result;
+
+      // Create object store if it doesn't exist
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      }
+    };
+  });
+}
+
+/**
+ * Save plugin to IndexedDB
+ */
+async function savePluginToDB(data: InstalledPluginData): Promise<void> {
+  const db = await openDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([STORE_NAME], 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.put(data);
+
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve();
+  });
+}
+
+/**
+ * Get plugin from IndexedDB
+ */
+async function getPluginFromDB(pluginId: string): Promise<InstalledPluginData | null> {
+  const db = await openDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([STORE_NAME], 'readonly');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.get(pluginId);
+
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result || null);
+  });
+}
+
+/**
+ * Remove plugin from IndexedDB
+ */
+async function removePluginFromDB(pluginId: string): Promise<void> {
+  const db = await openDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([STORE_NAME], 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.delete(pluginId);
+
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve();
+  });
+}
+
+/**
+ * Get all installed plugins from IndexedDB
+ */
+export async function getAllInstalledPlugins(): Promise<InstalledPluginData[]> {
+  const db = await openDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([STORE_NAME], 'readonly');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.getAll();
+
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+  });
+}
+
+/**
+ * Load plugin code dynamically and create Plugin object
+ */
+function createPluginFromCode(code: string, manifest: PluginManifest): Plugin {
+  try {
+    // Note: This is a simplified version using Function constructor
+    // In production, you should use proper module loading with dynamic import()
+    // or a secure sandboxed environment for executing plugin code
+
+    // Extract functions from code using Function constructor
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+    const moduleFactory = new Function('exports', `${code}\n; return exports;`);
+    const pluginModule = moduleFactory({});
+
+    // Validate that activate and deactivate exist
+    if (typeof pluginModule.activate !== 'function') {
+      throw new Error('Plugin must export an activate function');
+    }
+
+    return {
+      manifest,
+      activate: pluginModule.activate,
+      deactivate: pluginModule.deactivate || (async () => {}),
+    };
+  } catch (error) {
+    console.error('[PluginInstaller] Failed to create plugin from code:', error);
+    throw new Error(
+      `Failed to load plugin code: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
+/**
+ * Install a plugin from the remote registry
+ */
+export async function installPlugin(pluginId: string): Promise<Plugin> {
+  // eslint-disable-next-line no-console
+  console.log(`[PluginInstaller] Installing plugin: ${pluginId}`);
+
+  try {
+    // Check if already installed
+    const existing = await getPluginFromDB(pluginId);
+    if (existing) {
+      // eslint-disable-next-line no-console
+      console.log('[PluginInstaller] Plugin already installed, loading from cache');
+      return createPluginFromCode(existing.code, existing.manifest);
+    }
+
+    // Download manifest
+    const manifest = await gitHubPluginRegistry.getManifest(pluginId);
+    // eslint-disable-next-line no-console
+    console.log('[PluginInstaller] Downloaded manifest:', manifest.name);
+
+    // Download plugin code
+    const blob = await gitHubPluginRegistry.downloadPlugin(pluginId);
+    const code = await blob.text();
+    // eslint-disable-next-line no-console
+    console.log('[PluginInstaller] Downloaded plugin code:', code.length, 'bytes');
+
+    // Save to IndexedDB
+    const pluginData: InstalledPluginData = {
+      id: pluginId,
+      manifest: manifest as PluginManifest,
+      code,
+      installedAt: new Date().toISOString(),
+      version: manifest.version,
+    };
+
+    await savePluginToDB(pluginData);
+    // eslint-disable-next-line no-console
+    console.log('[PluginInstaller] Saved plugin to IndexedDB');
+
+    // Create plugin object
+    const plugin = createPluginFromCode(code, manifest as PluginManifest);
+    // eslint-disable-next-line no-console
+    console.log(`[PluginInstaller] Successfully installed: ${pluginId}`);
+
+    return plugin;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(`[PluginInstaller] Failed to install plugin ${pluginId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Uninstall a plugin
+ */
+export async function uninstallPlugin(pluginId: string): Promise<void> {
+  // eslint-disable-next-line no-console
+  console.log(`[PluginInstaller] Uninstalling plugin: ${pluginId}`);
+
+  try {
+    await removePluginFromDB(pluginId);
+    // eslint-disable-next-line no-console
+    console.log(`[PluginInstaller] Successfully uninstalled: ${pluginId}`);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(`[PluginInstaller] Failed to uninstall plugin ${pluginId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Check if a plugin is installed
+ */
+export async function isPluginInstalled(pluginId: string): Promise<boolean> {
+  const plugin = await getPluginFromDB(pluginId);
+  return plugin !== null;
+}
+
+/**
+ * Load an installed plugin from IndexedDB
+ */
+export async function loadInstalledPlugin(pluginId: string): Promise<Plugin | null> {
+  const data = await getPluginFromDB(pluginId);
+  if (!data) {
+    return null;
+  }
+
+  return createPluginFromCode(data.code, data.manifest);
+}

@@ -13,6 +13,7 @@ import {
   gitHubPluginRegistry,
   type PluginRegistryEntry,
 } from '../../services/GitHubPluginRegistry';
+import { installPlugin } from '../../services/PluginInstaller';
 import type { PluginManifest } from '@bigmind/plugin-system';
 import './PluginManager.css';
 
@@ -22,7 +23,7 @@ export interface PluginManagerProps {
   onDeactivate: (pluginId: string) => Promise<void>;
   onUninstall: (pluginId: string) => Promise<void>;
   onViewPermissions: (pluginId: string) => void;
-  onViewDetails?: (pluginId: string) => void;
+  onInstall?: (pluginId: string) => Promise<void>;
 }
 
 export function PluginManager({
@@ -31,6 +32,7 @@ export function PluginManager({
   onDeactivate,
   onUninstall,
   onViewPermissions,
+  onInstall,
 }: PluginManagerProps) {
   // State
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,7 +41,6 @@ export function PluginManager({
   const [selectedPlugin, setSelectedPlugin] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
   const [remotePlugins, setRemotePlugins] = useState<PluginRegistryEntry[]>([]);
-  const [loadingRemote, setLoadingRemote] = useState(false);
   const [gridColumns, setGridColumns] = useState(3);
   const [itemsPerPage, setItemsPerPage] = useState(24);
   const [currentPage, setCurrentPage] = useState(1);
@@ -74,14 +75,12 @@ export function PluginManager({
   // Load remote plugins from GitHub
   useEffect(() => {
     const loadRemote = async () => {
-      setLoadingRemote(true);
       try {
         const registry = await gitHubPluginRegistry.fetchRegistry();
         setRemotePlugins(registry);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('[PluginManager] Failed to load remote plugins:', error);
-      } finally {
-        setLoadingRemote(false);
       }
     };
 
@@ -251,6 +250,38 @@ export function PluginManager({
     setSelectedPlugin(null);
   };
 
+  const handleInstall = async (pluginId: string) => {
+    setLoading(pluginId);
+    try {
+      // eslint-disable-next-line no-console
+      console.log(`[PluginManager] Installing plugin: ${pluginId}`);
+
+      // If onInstall prop is provided, use it
+      if (onInstall) {
+        await onInstall(pluginId);
+      } else {
+        // Otherwise, use default installation logic
+        await installPlugin(pluginId);
+        // eslint-disable-next-line no-console
+        console.log(`[PluginManager] Plugin installed successfully: ${pluginId}`);
+      }
+
+      // Refresh the remote plugins list
+      const registry = await gitHubPluginRegistry.fetchRegistry();
+      setRemotePlugins(registry);
+
+      // eslint-disable-next-line no-console
+      console.log(`[PluginManager] Successfully installed: ${pluginId}`);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(`[PluginManager] Failed to install plugin ${pluginId}:`, error);
+      // eslint-disable-next-line no-alert
+      alert(`Installation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setLoading(null);
+    }
+  };
+
   // Render plugin section
   const renderSection = (title: string, subtitle: string, items: typeof filteredPlugins) => {
     if (items.length === 0) return null;
@@ -287,8 +318,7 @@ export function PluginManager({
                 onToggle={() => {
                   if (isCore) return;
                   if (!isInstalled) {
-                    // TODO: Install remote plugin
-                    alert(`Installation de ${item.manifest.name} à implémenter`);
+                    handleInstall(item.manifest.id);
                   } else {
                     handleToggle(item.manifest.id, isActive);
                   }
@@ -307,6 +337,7 @@ export function PluginManager({
         {totalPages > 1 && (
           <div className="plugin-manager__pagination">
             <button
+              type="button"
               className="plugin-manager__pagination-btn"
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
@@ -317,6 +348,7 @@ export function PluginManager({
               Page {currentPage} / {totalPages}
             </span>
             <button
+              type="button"
               className="plugin-manager__pagination-btn"
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
