@@ -19,6 +19,14 @@ export function PluginMarketplace() {
   // Load all available manifests
   const manifests = getAllAvailableManifests();
 
+  // Debug: log all plugins
+  console.log('[PluginMarketplace] Total manifests:', manifests.length);
+  manifests.forEach(m => {
+    console.log(
+      `  - ${m.manifest.id} (source: ${m.manifest.source}, featured: ${m.manifest.featured})`
+    );
+  });
+
   // State
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<PluginCategory>('all');
@@ -26,6 +34,8 @@ export function PluginMarketplace() {
   const [minRating, setMinRating] = useState<number | null>(null);
   const [showAdmin, setShowAdmin] = useState(false);
   const [gridColumns, setGridColumns] = useState(2);
+  // itemsPerPage for future pagination support
+  const [, setItemsPerPage] = useState(12);
 
   // Filter manifests
   const filteredManifests = useMemo(
@@ -65,6 +75,16 @@ export function PluginMarketplace() {
     const community = filteredManifests.filter(
       m => m.manifest.source !== 'core' && !m.manifest.featured
     );
+
+    console.log(
+      '[PluginMarketplace] Categorized:',
+      `Core: ${core.length}`,
+      `Featured: ${featured.length}`,
+      `Community: ${community.length}`
+    );
+    community.forEach(c => {
+      console.log(`  Community: ${c.manifest.id}`);
+    });
 
     return {
       corePlugins: core,
@@ -176,6 +196,7 @@ export function PluginMarketplace() {
         filteredCount={filteredManifests.length}
         showStatusFilter={false} // Hide status filter in marketplace
         onGridColumnsChange={setGridColumns}
+        onItemsPerPageChange={setItemsPerPage}
       />
 
       {/* Rating Filter */}
