@@ -27,8 +27,8 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
     setMessage(null);
 
     // Validation
-    if (!rating || !userName.trim() || !comment.trim()) {
-      setMessage({ type: 'error', text: 'Veuillez remplir tous les champs' });
+    if (!rating || !userName.trim()) {
+      setMessage({ type: 'error', text: 'Veuillez donner une note et votre nom' });
       return;
     }
 
@@ -88,72 +88,67 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
 
   return (
     <form className="plugin-rating-form" onSubmit={handleSubmit}>
-      <h4 className="plugin-rating-form__title">Laissez votre avis</h4>
-
-      {/* Star Rating */}
-      <div className="plugin-rating-form__rating">
-        <div className="plugin-rating-form__label" role="heading" aria-level={3}>Note</div>
-        <div className="plugin-rating-form__stars">
-          {[1, 2, 3, 4, 5].map(star => (
-            <button
-              key={star}
-              type="button"
-              className={`plugin-rating-form__star ${
-                (hoverRating || rating) >= star ? 'plugin-rating-form__star--filled' : ''
-              }`}
-              onMouseEnter={() => setHoverRating(star)}
-              onMouseLeave={() => setHoverRating(0)}
-              onClick={() => setRating(star)}
-            >
-              <Star size={28} />
-            </button>
-          ))}
+      {/* Compact Header */}
+      <div className="plugin-rating-form__compact-header">
+        <div>
+          <div className="plugin-rating-form__label" role="heading" aria-level={3}>Note</div>
+          <div className="plugin-rating-form__stars">
+            {[1, 2, 3, 4, 5].map(star => (
+              <button
+                key={star}
+                type="button"
+                className={`plugin-rating-form__star ${
+                  (hoverRating || rating) >= star ? 'plugin-rating-form__star--filled' : ''
+                }`}
+                onMouseEnter={() => setHoverRating(star)}
+                onMouseLeave={() => setHoverRating(0)}
+                onClick={() => setRating(star)}
+              >
+                <Star size={24} />
+              </button>
+            ))}
+          </div>
         </div>
         {rating > 0 && <span className="plugin-rating-form__rating-text">{rating}/5</span>}
       </div>
 
-      {/* User Name */}
-      <div className="plugin-rating-form__field">
-        <label htmlFor="userName" className="plugin-rating-form__label">
-          Votre nom
-        </label>
-        <input
-          type="text"
-          id="userName"
-          className="plugin-rating-form__input"
-          placeholder="Alice"
-          value={userName}
-          onChange={e => setUserName(e.target.value)}
-          disabled={isSubmitting}
-        />
+      {/* Compact Fields Row */}
+      <div className="plugin-rating-form__compact-row">
+        <div className="plugin-rating-form__field plugin-rating-form__field--inline">
+          <label htmlFor="userName" className="plugin-rating-form__label">Votre nom</label>
+          <input
+            type="text"
+            id="userName"
+            className="plugin-rating-form__input"
+            placeholder="Alice"
+            value={userName}
+            onChange={e => setUserName(e.target.value)}
+            disabled={isSubmitting}
+          />
+        </div>
+
+        <div className="plugin-rating-form__field plugin-rating-form__field--inline">
+          <label htmlFor="email" className="plugin-rating-form__label">Email (optionnel)</label>
+          <input
+            type="email"
+            id="email"
+            className="plugin-rating-form__input"
+            placeholder="alice@example.com"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            disabled={isSubmitting}
+          />
+        </div>
       </div>
 
-      {/* Email (optional) */}
+      {/* Optional Comment */}
       <div className="plugin-rating-form__field">
-        <label htmlFor="email" className="plugin-rating-form__label">
-          Email (optionnel)
-        </label>
-        <input
-          type="email"
-          id="email"
-          className="plugin-rating-form__input"
-          placeholder="alice@example.com"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          disabled={isSubmitting}
-        />
-      </div>
-
-      {/* Comment */}
-      <div className="plugin-rating-form__field">
-        <label htmlFor="comment" className="plugin-rating-form__label">
-          Votre avis
-        </label>
+        <label htmlFor="comment" className="plugin-rating-form__label">Votre avis (optionnel)</label>
         <textarea
           id="comment"
           className="plugin-rating-form__textarea"
           placeholder="Dites-nous ce que vous en pensez..."
-          rows={4}
+          rows={2}
           value={comment}
           onChange={e => setComment(e.target.value)}
           disabled={isSubmitting}
