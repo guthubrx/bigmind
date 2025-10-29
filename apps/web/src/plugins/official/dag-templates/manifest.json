@@ -16,7 +16,7 @@
   "tags": ["templates", "dag", "productivity", "structures"],
   "license": "MIT",
   "bigmindVersion": "1.0.0",
-  "source": "core",
+  "source": "official",
   "pricing": "free",
   "featured": false,
   "tagline": "Appliquez des structures DAG prêtes à l'emploi",

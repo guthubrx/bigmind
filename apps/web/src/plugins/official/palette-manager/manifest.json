@@ -16,7 +16,7 @@
   "tags": ["colors", "palettes", "theme", "customization"],
   "license": "MIT",
   "bigmindVersion": "1.0.0",
-  "source": "core",
+  "source": "official",
   "pricing": "free",
   "featured": false,
   "tagline": "Coloration automatique intelligente",
