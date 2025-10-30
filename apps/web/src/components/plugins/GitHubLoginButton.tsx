@@ -301,7 +301,7 @@ export function GitHubLoginButton() {
                 <a
                   href={
                     'https://github.com/settings/tokens/new?' +
-                    'description=BigMind%20Plugin%20Dev&scopes=public_repo,read:user'
+                    'description=BigMind%20Plugin%20Dev&scopes=read:user'
                   }
                   target="_blank"
                   rel="noopener noreferrer"
@@ -312,7 +312,7 @@ export function GitHubLoginButton() {
                 >
                   Créer un token
                 </a>
-                {' avec les scopes: public_repo, read:user'}
+                {' avec le scope: read:user uniquement'}
               </div>
             </div>
 

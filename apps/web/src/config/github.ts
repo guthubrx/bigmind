@@ -24,7 +24,9 @@ export const GITHUB_CONFIG = {
     'https://your-project.supabase.co/functions/v1/github-oauth',
 
   // GitHub OAuth scopes (minimal privileges)
-  scopes: ['public_repo', 'read:user'],
+  // On a juste besoin de savoir qui est l'user pour vérifier author.github
+  // La publication se fait via PR sur notre repo bigmind-plugins
+  scopes: ['read:user'],
 
   // GitHub authorization URL
   authUrl: 'https://github.com/login/oauth/authorize',
