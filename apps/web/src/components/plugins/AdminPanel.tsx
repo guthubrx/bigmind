@@ -4,14 +4,11 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { LogOut, CheckCircle, XCircle, AlertTriangle, Clock, Flag, Shield, Star, MessageSquare } from 'lucide-react';
+import { LogOut, CheckCircle, XCircle, AlertTriangle, Clock, Flag, Shield, Star, MessageSquare, User } from 'lucide-react';
 import {
-  supabase,
   getUnapprovedRatings,
   approveRating,
   rejectRating,
-  getCurrentUser,
-  signOut,
   type PluginRating,
 } from '../../services/supabaseClient';
 import {
@@ -21,15 +18,14 @@ import {
   type PluginReport,
   type ReportStatus,
 } from '../../services/PluginReportService';
+import { gitHubAuthService, type GitHubUser } from '../../services/GitHubAuthService';
+import { GitHubLoginButton } from './GitHubLoginButton';
 import './AdminPanel.css';
 
 type TabType = 'approvals' | 'reports';
 
 export function AdminPanel() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<GitHubUser | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [unapprovedRatings, setUnapprovedRatings] = useState<PluginRating[]>([]);
   const [reports, setReports] = useState<PluginReport[]>([]);
@@ -37,21 +33,16 @@ export function AdminPanel() {
   const [reportStatusFilter, setReportStatusFilter] = useState<ReportStatus | 'all'>('pending');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Check if user is already logged in
+  // Check if user is already logged in via GitHub
   useEffect(() => {
-    const checkAuth = async () => {
-      const user = await getCurrentUser();
-      if (user) {
-        setIsLoggedIn(true);
-        setEmail(user.email || '');
-      }
-    };
-    checkAuth();
+    const currentUser = gitHubAuthService.getUser();
+    console.log('[AdminPanel] Checking GitHub auth:', currentUser);
+    setUser(currentUser);
   }, []);
 
   // Fetch data when logged in or when tab/filter changes
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (!user) {
       console.log('[AdminPanel] Not logged in, skipping fetch');
       return;
     }
@@ -74,42 +65,13 @@ export function AdminPanel() {
     };
 
     fetchData();
-  }, [isLoggedIn, activeTab, reportStatusFilter, refreshTrigger]);
+  }, [user, activeTab, reportStatusFilter, refreshTrigger]);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setMessage(null);
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        setMessage({ type: 'error', text: `Erreur: ${error.message}` });
-        setIsLoading(false);
-        return;
-      }
-
-      setIsLoggedIn(true);
-      setPassword('');
-      setMessage({ type: 'success', text: 'Connecté!' });
-    } catch (err) {
-      console.error('[AdminPanel] Login error:', err);
-      setMessage({ type: 'error', text: 'Erreur de connexion' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    await signOut();
-    setIsLoggedIn(false);
-    setEmail('');
-    setPassword('');
+  const handleLogout = () => {
+    gitHubAuthService.logout();
+    setUser(null);
     setUnapprovedRatings([]);
+    setReports([]);
   };
 
   const handleApprove = async (ratingId: string) => {
@@ -179,51 +141,16 @@ export function AdminPanel() {
     return labels[category] || category;
   };
 
-  // Not logged in - show login form
-  if (!isLoggedIn) {
+  // Not logged in - show GitHub login
+  if (!user) {
     return (
       <div className="admin-panel">
         <div className="admin-panel__login">
-          <h2>Admin Panel</h2>
-          <form onSubmit={handleLogin}>
-            <div className="admin-panel__field">
-              <label htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="ton-email@example.com"
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="admin-panel__field">
-              <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                disabled={isLoading}
-              />
-            </div>
-
-            {message && (
-              <div className={`admin-panel__message admin-panel__message--${message.type}`}>
-                {message.text}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoading || !email || !password}
-              className="admin-panel__button admin-panel__button--primary"
-            >
-              {isLoading ? 'Connexion...' : 'Se Connecter'}
-            </button>
-          </form>
+          <h2>Panneau d'Administration</h2>
+          <p style={{ marginBottom: '20px', color: 'var(--fg-secondary)', fontSize: '14px' }}>
+            Connectez-vous avec votre compte GitHub pour accéder au panneau d'administration.
+          </p>
+          <GitHubLoginButton />
         </div>
       </div>
     );
@@ -241,7 +168,24 @@ export function AdminPanel() {
           </div>
         </div>
         <div className="admin-panel__user">
-          <span>{email}</span>
+          {user.avatarUrl && (
+            <img
+              src={user.avatarUrl}
+              alt={user.login}
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                border: '2px solid var(--border-color)',
+              }}
+            />
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <span style={{ fontWeight: 600, fontSize: '14px' }}>@{user.login}</span>
+            {user.name && (
+              <span style={{ fontSize: '12px', color: 'var(--fg-tertiary)' }}>{user.name}</span>
+            )}
+          </div>
           <button
             type="button"
             onClick={handleLogout}
