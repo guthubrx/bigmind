@@ -118,15 +118,27 @@ function createPluginFromCode(code: string, manifest: PluginManifest): Plugin {
     const moduleFactory = new Function('exports', `${code}\n; return exports;`);
     const pluginModule = moduleFactory({});
 
-    // Validate that activate and deactivate exist
-    if (typeof pluginModule.activate !== 'function') {
+    // Support both formats:
+    // 1. Direct exports: exports.activate = function() { ... }
+    // 2. Default export with methods: export default { activate() { ... } }
+    let pluginInstance = pluginModule;
+
+    // If there's a default export, use it
+    if (pluginModule.default) {
+      pluginInstance = pluginModule.default;
+    }
+
+    // Validate that activate exists (either as function or method)
+    if (typeof pluginInstance.activate !== 'function') {
       throw new Error('Plugin must export an activate function');
     }
 
     return {
       manifest,
-      activate: pluginModule.activate,
-      deactivate: pluginModule.deactivate || (async () => {}),
+      activate: pluginInstance.activate.bind(pluginInstance),
+      deactivate: pluginInstance.deactivate
+        ? pluginInstance.deactivate.bind(pluginInstance)
+        : async () => {},
     };
   } catch (error) {
     console.error('[PluginInstaller] Failed to create plugin from code:', error);
