@@ -320,7 +320,7 @@ Plus besoin de naviguer dans des menus complexes : définissez vos palettes par 
   // Classification
   category: 'theme',
   tags: ['settings', 'palettes', 'ui', 'configuration', 'productivity'],
-  source: 'core',
+  source: 'official',
   pricing: 'free',
 
   license: 'MIT',
