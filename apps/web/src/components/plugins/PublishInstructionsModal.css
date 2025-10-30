@@ -1,0 +1,335 @@
+/**
+ * Publish Instructions Modal Styles
+ */
+
+.publish-instructions-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.publish-instructions-modal {
+  background: var(--bg-primary);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease-out;
+  border: 1px solid var(--border-color);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.publish-instructions-modal__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.publish-instructions-modal__header-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  background: var(--accent-color);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.publish-instructions-modal__header-content {
+  flex: 1;
+}
+
+.publish-instructions-modal__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--fg-primary);
+  margin: 0 0 4px 0;
+}
+
+.publish-instructions-modal__subtitle {
+  font-size: 14px;
+  color: var(--fg-secondary);
+  margin: 0;
+}
+
+.publish-instructions-modal__close {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.publish-instructions-modal__close:hover {
+  background: var(--bg-hover);
+  color: var(--fg-primary);
+}
+
+/* Steps */
+.publish-instructions-modal__steps {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.publish-instructions-modal__step {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  background: var(--bg-secondary);
+}
+
+.publish-instructions-modal__step-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.publish-instructions-modal__step-number {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.publish-instructions-modal__step-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--fg-primary);
+}
+
+.publish-instructions-modal__step-description {
+  font-size: 14px;
+  color: var(--fg-secondary);
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+}
+
+/* Commands */
+.publish-instructions-modal__commands {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.publish-instructions-modal__command-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.publish-instructions-modal__command {
+  flex: 1;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  background: var(--bg-primary);
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  color: var(--accent-color);
+  display: block;
+}
+
+.publish-instructions-modal__copy-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--fg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.publish-instructions-modal__copy-btn:hover {
+  background: var(--bg-hover);
+  color: var(--fg-primary);
+  transform: scale(1.05);
+}
+
+.publish-instructions-modal__copy-btn--copied {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.publish-instructions-modal__copy-btn--copied:hover {
+  background: #059669;
+  border-color: #059669;
+}
+
+/* Links */
+.publish-instructions-modal__links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.publish-instructions-modal__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--accent-color);
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.publish-instructions-modal__link:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-color);
+  transform: translateX(4px);
+}
+
+/* Items */
+.publish-instructions-modal__items {
+  margin: 12px 0 0 0;
+  padding-left: 20px;
+  list-style: disc;
+}
+
+.publish-instructions-modal__items li {
+  font-size: 14px;
+  color: var(--fg-secondary);
+  line-height: 1.6;
+  margin-bottom: 6px;
+}
+
+/* Footer */
+.publish-instructions-modal__footer {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.publish-instructions-modal__footer-icon {
+  flex-shrink: 0;
+  color: #10b981;
+}
+
+.publish-instructions-modal__footer-note {
+  flex: 1;
+  font-size: 13px;
+  color: var(--fg-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.publish-instructions-modal__done-btn {
+  flex-shrink: 0;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent-color);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.publish-instructions-modal__done-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent-color) 40%, transparent);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .publish-instructions-modal {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .publish-instructions-modal__header {
+    padding: 20px 16px 16px;
+  }
+
+  .publish-instructions-modal__steps {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .publish-instructions-modal__step {
+    padding: 16px;
+  }
+
+  .publish-instructions-modal__footer {
+    flex-wrap: wrap;
+    padding: 16px;
+  }
+
+  .publish-instructions-modal__done-btn {
+    width: 100%;
+  }
+}

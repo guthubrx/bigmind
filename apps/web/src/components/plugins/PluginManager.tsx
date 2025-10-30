@@ -9,6 +9,9 @@ import { PluginState } from '@bigmind/plugin-system';
 import { PluginCard } from './PluginCard';
 import { PluginFilters, type PluginStatus, type PluginCategory } from './PluginFilters';
 import { PluginDetailModal } from './PluginDetailModal';
+import { BulkActionsBar } from './BulkActionsBar';
+import { CloneInstructionsModal } from './CloneInstructionsModal';
+import { PublishInstructionsModal } from './PublishInstructionsModal';
 import {
   gitHubPluginRegistry,
   type PluginRegistryEntry,
@@ -17,6 +20,7 @@ import { installPlugin } from '../../services/PluginInstaller';
 import { pluginDevService } from '../../services/PluginDevService';
 import { useDeveloperMode } from './DeveloperModeToggle';
 import type { PluginManifest } from '@bigmind/plugin-system';
+import { Toast, type ToastType } from '../ui/Toast';
 import './PluginManager.css';
 
 export interface PluginManagerProps {
@@ -51,6 +55,27 @@ export function PluginManager({
     core: false,
     optional: false,
   });
+  const [toast, setToast] = useState<{
+    message: string;
+    type: ToastType;
+  } | null>(null);
+
+  // Selection mode state
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedPluginIds, setSelectedPluginIds] = useState<Set<string>>(new Set());
+
+  // Clone instructions modal state
+  const [cloneInstructions, setCloneInstructions] = useState<{
+    pluginName: string;
+    files: Array<{ name: string; content: string }>;
+    localPath: string;
+  } | null>(null);
+
+  // Publish instructions modal state
+  const [publishInstructions, setPublishInstructions] = useState<{
+    pluginName: string;
+    instructions: string[];
+  } | null>(null);
 
   // Developer mode state
   const developerMode = useDeveloperMode();
@@ -269,9 +294,15 @@ export function PluginManager({
 
   const handleInstall = async (pluginId: string) => {
     setLoading(pluginId);
+    setToast({ message: 'Installation en cours...', type: 'loading' });
+
     try {
       // eslint-disable-next-line no-console
       console.log(`[PluginManager] Installing plugin: ${pluginId}`);
+
+      // Get plugin name from remote plugins list
+      const pluginEntry = remotePlugins.find(p => p.id === pluginId);
+      const pluginName = pluginEntry?.name || pluginId;
 
       // If onInstall prop is provided, use it
       if (onInstall) {
@@ -283,6 +314,12 @@ export function PluginManager({
         console.log(`[PluginManager] Plugin installed successfully: ${pluginId}`);
       }
 
+      // Show success notification (for both cases)
+      setToast({
+        message: `${pluginName} installé avec succès !`,
+        type: 'success',
+      });
+
       // Refresh the remote plugins list
       const registry = await gitHubPluginRegistry.fetchRegistry();
       setRemotePlugins(registry);
@@ -292,8 +329,10 @@ export function PluginManager({
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(`[PluginManager] Failed to install plugin ${pluginId}:`, error);
-      // eslint-disable-next-line no-alert
-      alert(`Installation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setToast({
+        message: `Échec de l'installation: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
+        type: 'error',
+      });
     } finally {
       setLoading(null);
     }
@@ -302,28 +341,40 @@ export function PluginManager({
   // Developer mode handlers
   const handleCloneForDev = async (pluginId: string) => {
     try {
+      setToast({ message: 'Téléchargement du plugin...', type: 'loading' });
       const result = await pluginDevService.clonePlugin(pluginId);
+
       if (result.success) {
-        // Show instructions in alert
+        // Vérifier si c'est un clonage manuel (instructions disponibles)
         const instructions = sessionStorage.getItem(`clone-instructions-${pluginId}`);
+
         if (instructions) {
+          // Clonage manuel - afficher la modale
           const data = JSON.parse(instructions);
-          // eslint-disable-next-line no-alert
-          alert(
-            `Instructions pour cloner ${pluginId}:\n\n${data.instructions.join(
-              '\n\n'
-            )}\n\nLes fichiers sont disponibles dans sessionStorage.`
-          );
+
+          setCloneInstructions({
+            pluginName: data.pluginName,
+            files: data.files,
+            localPath: data.localPath,
+          });
+          setToast(null);
+        } else {
+          // Clonage automatique réussi
+          setToast({
+            message: result.message,
+            type: 'success',
+          });
         }
       } else {
-        // eslint-disable-next-line no-alert
-        alert(`Erreur: ${result.message}`);
+        setToast({ message: `Erreur: ${result.message}`, type: 'error' });
       }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('[PluginManager] Clone failed:', error);
-      // eslint-disable-next-line no-alert
-      alert(`Échec du clonage: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+      setToast({
+        message: `Échec du clonage: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
+        type: 'error',
+      });
     }
   };
 
@@ -331,25 +382,178 @@ export function PluginManager({
     try {
       const result = await pluginDevService.publishPlugin(pluginId, manifest);
       if (result.success && result.instructions) {
-        // eslint-disable-next-line no-alert
-        alert(result.instructions.join('\n'));
+        // Afficher la modale avec les instructions
+        const pluginName = manifest.name;
+        setPublishInstructions({
+          pluginName,
+          instructions: result.instructions,
+        });
       } else {
-        // eslint-disable-next-line no-alert
-        alert(`Erreur: ${result.message}`);
+        setToast({ message: `Erreur: ${result.message}`, type: 'error' });
       }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('[PluginManager] Publish failed:', error);
-      // eslint-disable-next-line no-alert
-      alert(
-        `Échec de la publication: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
-      );
+      setToast({
+        message: `Échec de la publication: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
+        type: 'error',
+      });
     }
   };
 
   const handleOpenInVSCode = (pluginId: string) => {
     pluginDevService.openInVSCode(pluginId);
   };
+
+  // Selection mode handlers
+  const handleEnterSelectionMode = (pluginId: string) => {
+    setSelectionMode(true);
+    setSelectedPluginIds(new Set([pluginId]));
+  };
+
+  const handleExitSelectionMode = () => {
+    setSelectionMode(false);
+    setSelectedPluginIds(new Set());
+  };
+
+  const handleToggleSelection = (pluginId: string) => {
+    setSelectedPluginIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(pluginId)) {
+        newSet.delete(pluginId);
+      } else {
+        newSet.add(pluginId);
+      }
+      return newSet;
+    });
+  };
+
+  // Bulk actions
+  const handleBulkInstall = async () => {
+    const pluginsToInstall = Array.from(selectedPluginIds).filter(id => {
+      const item = unifiedPlugins.find(p => p.manifest.id === id);
+      return item && !item.isInstalled;
+    });
+
+    if (pluginsToInstall.length === 0) return;
+
+    setToast({ message: `Installation de ${pluginsToInstall.length} plugin(s)...`, type: 'loading' });
+
+    for (const pluginId of pluginsToInstall) {
+      try {
+        await handleInstall(pluginId);
+      } catch (error) {
+        console.error(`Failed to install ${pluginId}:`, error);
+      }
+    }
+
+    handleExitSelectionMode();
+  };
+
+  const handleBulkActivate = async () => {
+    const pluginsToActivate = Array.from(selectedPluginIds).filter(id => {
+      const item = unifiedPlugins.find(p => p.manifest.id === id);
+      return item && item.isInstalled && !item.isActive;
+    });
+
+    if (pluginsToActivate.length === 0) return;
+
+    setToast({ message: `Activation de ${pluginsToActivate.length} plugin(s)...`, type: 'loading' });
+
+    for (const pluginId of pluginsToActivate) {
+      try {
+        await onActivate(pluginId);
+      } catch (error) {
+        console.error(`Failed to activate ${pluginId}:`, error);
+      }
+    }
+
+    setToast({ message: `${pluginsToActivate.length} plugin(s) activé(s)`, type: 'success' });
+    handleExitSelectionMode();
+  };
+
+  const handleBulkDeactivate = async () => {
+    const pluginsToDeactivate = Array.from(selectedPluginIds).filter(id => {
+      const item = unifiedPlugins.find(p => p.manifest.id === id);
+      return item && item.isActive;
+    });
+
+    if (pluginsToDeactivate.length === 0) return;
+
+    setToast({
+      message: `Désactivation de ${pluginsToDeactivate.length} plugin(s)...`,
+      type: 'loading',
+    });
+
+    for (const pluginId of pluginsToDeactivate) {
+      try {
+        await onDeactivate(pluginId);
+      } catch (error) {
+        console.error(`Failed to deactivate ${pluginId}:`, error);
+      }
+    }
+
+    setToast({ message: `${pluginsToDeactivate.length} plugin(s) désactivé(s)`, type: 'success' });
+    handleExitSelectionMode();
+  };
+
+  const handleBulkUninstall = async () => {
+    const pluginsToUninstall = Array.from(selectedPluginIds).filter(id => {
+      const item = unifiedPlugins.find(p => p.manifest.id === id);
+      return item && item.isInstalled && item.manifest.source !== 'core';
+    });
+
+    if (pluginsToUninstall.length === 0) return;
+
+    const confirmed = window.confirm(
+      `Êtes-vous sûr de vouloir supprimer ${pluginsToUninstall.length} plugin(s) ?`
+    );
+    if (!confirmed) return;
+
+    setToast({
+      message: `Suppression de ${pluginsToUninstall.length} plugin(s)...`,
+      type: 'loading',
+    });
+
+    for (const pluginId of pluginsToUninstall) {
+      try {
+        await onUninstall(pluginId);
+      } catch (error) {
+        console.error(`Failed to uninstall ${pluginId}:`, error);
+      }
+    }
+
+    setToast({ message: `${pluginsToUninstall.length} plugin(s) supprimé(s)`, type: 'success' });
+    handleExitSelectionMode();
+  };
+
+  // Handle ESC key to exit selection mode
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && selectionMode) {
+        handleExitSelectionMode();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectionMode]);
+
+  // Calculate available bulk actions
+  const bulkActionCapabilities = useMemo(() => {
+    const selectedItems = Array.from(selectedPluginIds)
+      .map(id => unifiedPlugins.find(p => p.manifest.id === id))
+      .filter(Boolean);
+
+    const canInstall = selectedItems.some(item => item && !item.isInstalled);
+    const canActivate = selectedItems.some(item => item && item.isInstalled && !item.isActive);
+    const canDeactivate = selectedItems.some(item => item && item.isActive);
+    const canUninstall = selectedItems.some(
+      item => item && item.isInstalled && item.manifest.source !== 'core'
+    );
+
+    return { canInstall, canActivate, canDeactivate, canUninstall };
+  }, [selectedPluginIds, unifiedPlugins]);
 
   // Render plugin section
   const renderSection = (
@@ -427,22 +631,15 @@ export function PluginManager({
                     onUninstall={() =>
                       handleAction(() => onUninstall(item.manifest.id), item.manifest.id)
                     }
-                    developerMode={developerMode && isCommunity}
-                    onCloneForDev={
-                      developerMode && isCommunity
-                        ? () => handleCloneForDev(item.manifest.id)
-                        : undefined
-                    }
-                    onPublish={
-                      developerMode && isCommunity
-                        ? () => handlePublish(item.manifest.id, item.manifest)
-                        : undefined
-                    }
-                    onOpenInVSCode={
-                      developerMode && isCommunity
-                        ? () => handleOpenInVSCode(item.manifest.id)
-                        : undefined
-                    }
+                    developerMode={false}
+                    onCloneForDev={undefined}
+                    onPublish={undefined}
+                    onOpenInVSCode={undefined}
+                    selectionMode={selectionMode}
+                    isSelected={selectedPluginIds.has(item.manifest.id)}
+                    hasSelection={selectedPluginIds.size > 0}
+                    onEnterSelectionMode={() => handleEnterSelectionMode(item.manifest.id)}
+                    onToggleSelection={() => handleToggleSelection(item.manifest.id)}
                   />
                 );
               })}
@@ -494,22 +691,42 @@ export function PluginManager({
         </p>
       </div>
 
+      {/* Bulk Actions Bar - Sticky at top */}
+      {selectionMode && selectedPluginIds.size > 0 && (
+        <BulkActionsBar
+          selectedCount={selectedPluginIds.size}
+          canInstall={bulkActionCapabilities.canInstall}
+          canActivate={bulkActionCapabilities.canActivate}
+          canDeactivate={bulkActionCapabilities.canDeactivate}
+          canUninstall={bulkActionCapabilities.canUninstall}
+          onInstall={handleBulkInstall}
+          onActivate={handleBulkActivate}
+          onDeactivate={handleBulkDeactivate}
+          onUninstall={handleBulkUninstall}
+          onCancel={handleExitSelectionMode}
+        />
+      )}
+
       {/* Filters */}
-      <PluginFilters
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        status={statusFilter}
-        onStatusChange={setStatusFilter}
-        category={categoryFilter}
-        onCategoryChange={setCategoryFilter}
-        totalCount={unifiedPlugins.length}
-        filteredCount={filteredPlugins.length}
-        gridColumns={gridColumns}
-        onGridColumnsChange={setGridColumns}
-        itemsPerPage={itemsPerPage}
-        onItemsPerPageChange={setItemsPerPage}
-        screenSize={screenSize}
-      />
+      {!selectionMode && (
+        <div className="plugin-manager__filter-bar-wrapper">
+          <PluginFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            status={statusFilter}
+            onStatusChange={setStatusFilter}
+            category={categoryFilter}
+            onCategoryChange={setCategoryFilter}
+            totalCount={unifiedPlugins.length}
+            filteredCount={filteredPlugins.length}
+            gridColumns={gridColumns}
+            onGridColumnsChange={setGridColumns}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={setItemsPerPage}
+            screenSize={screenSize}
+          />
+        </div>
+      )}
 
       {/* Plugin Sections */}
       {renderSection(
@@ -556,8 +773,27 @@ export function PluginManager({
           );
         })()}
 
-      {/* Loading indicator */}
-      {loading && <div className="plugin-manager__loading">Chargement en cours...</div>}
+      {/* Toast notification */}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+      {/* Clone Instructions Modal */}
+      {cloneInstructions && (
+        <CloneInstructionsModal
+          pluginName={cloneInstructions.pluginName}
+          files={cloneInstructions.files}
+          localPath={cloneInstructions.localPath}
+          onClose={() => setCloneInstructions(null)}
+        />
+      )}
+
+      {/* Publish Instructions Modal */}
+      {publishInstructions && (
+        <PublishInstructionsModal
+          pluginName={publishInstructions.pluginName}
+          instructions={publishInstructions.instructions}
+          onClose={() => setPublishInstructions(null)}
+        />
+      )}
     </div>
   );
 }

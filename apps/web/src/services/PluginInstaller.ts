@@ -113,10 +113,18 @@ function createPluginFromCode(code: string, manifest: PluginManifest): Plugin {
     // In production, you should use proper module loading with dynamic import()
     // or a secure sandboxed environment for executing plugin code
 
-    // Extract functions from code using Function constructor
+    // For UMD format, we need to provide both 'exports' and 'module' in the scope
+    // The UMD wrapper checks: typeof exports=="object"&&typeof module<"u"
     // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-    const moduleFactory = new Function('exports', `${code}\n; return exports;`);
-    const pluginModule = moduleFactory({});
+    const moduleFactory = new Function(
+      'exports',
+      'module',
+      `${code}\n; return exports;`
+    );
+
+    const exports = {};
+    const module = { exports };
+    const pluginModule = moduleFactory(exports, module);
 
     // Support both formats:
     // 1. Direct exports: exports.activate = function() { ... }

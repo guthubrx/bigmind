@@ -9,6 +9,7 @@ import { GITHUB_CONFIG } from '../config/github';
 const GITHUB_TOKEN_KEY = 'bigmind-github-token';
 const GITHUB_USER_KEY = 'bigmind-github-user';
 const OAUTH_STATE_KEY = 'bigmind-oauth-state';
+const OAUTH_RETURN_URL_KEY = 'bigmind-oauth-return-url';
 
 export interface GitHubUser {
   login: string; // GitHub username
@@ -139,9 +140,17 @@ export class GitHubAuthService {
       throw new Error('GitHub OAuth not configured. Set VITE_GITHUB_CLIENT_ID in .env.local');
     }
 
+    // Sauvegarder l'URL actuelle pour y revenir après OAuth
+    const currentUrl = window.location.href;
+    localStorage.setItem(OAUTH_RETURN_URL_KEY, currentUrl);
+
     // Générer un state random pour CSRF protection
     const state = Math.random().toString(36).substring(2, 15);
     localStorage.setItem(OAUTH_STATE_KEY, state);
+
+    // eslint-disable-next-line no-console
+    console.log('[GitHubAuth] State saved to localStorage:', state);
+    console.log('[GitHubAuth] Verifying state was saved:', localStorage.getItem(OAUTH_STATE_KEY));
 
     // Construire l'URL d'autorisation GitHub
     const params = new URLSearchParams({
@@ -155,9 +164,14 @@ export class GitHubAuthService {
 
     // eslint-disable-next-line no-console
     console.log('[GitHubAuth] Starting OAuth flow...');
+    console.log('[GitHubAuth] Redirect URL:', authUrl);
 
-    // Rediriger vers GitHub
-    window.location.href = authUrl;
+    // Petit délai pour s'assurer que localStorage est persisté avant la redirection
+    setTimeout(() => {
+      // eslint-disable-next-line no-console
+      console.log('[GitHubAuth] Final state check before redirect:', localStorage.getItem(OAUTH_STATE_KEY));
+      window.location.href = authUrl;
+    }, 100);
   }
 
   /**
@@ -170,8 +184,14 @@ export class GitHubAuthService {
     state: string
   ): Promise<{ success: boolean; user?: GitHubUser; error?: string }> {
     try {
+      // eslint-disable-next-line no-console
+      console.log('[GitHubAuth] handleOAuthCallback called with code:', code.substring(0, 10) + '...');
+
       // Vérifier le state pour CSRF protection
       const savedState = localStorage.getItem(OAUTH_STATE_KEY);
+      // eslint-disable-next-line no-console
+      console.log('[GitHubAuth] Checking state - saved:', savedState, 'received:', state);
+
       if (!savedState || savedState !== state) {
         throw new Error('Invalid state parameter - possible CSRF attack');
       }
@@ -180,9 +200,17 @@ export class GitHubAuthService {
       localStorage.removeItem(OAUTH_STATE_KEY);
 
       // eslint-disable-next-line no-console
+      console.log('[GitHubAuth] Edge Function URL:', GITHUB_CONFIG.oauthCallbackUrl);
+
+      // Vérifier que l'URL est configurée
+      if (!GITHUB_CONFIG.oauthCallbackUrl || GITHUB_CONFIG.oauthCallbackUrl.includes('your-project')) {
+        throw new Error('Edge Function URL not configured. Check VITE_SUPABASE_FUNCTIONS_URL in .env.local');
+      }
+
       console.log('[GitHubAuth] Exchanging code for token via Edge Function...');
 
       // Appeler la Supabase Edge Function pour échanger le code
+      // Note: Edge Function est déployée avec --no-verify-jwt (pas besoin d'auth)
       const response = await fetch(GITHUB_CONFIG.oauthCallbackUrl, {
         method: 'POST',
         headers: {
@@ -190,6 +218,9 @@ export class GitHubAuthService {
         },
         body: JSON.stringify({ code }),
       });
+
+      // eslint-disable-next-line no-console
+      console.log('[GitHubAuth] Fetch completed, response status:', response.status);
 
       if (!response.ok) {
         const error = await response.text();

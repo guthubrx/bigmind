@@ -1,0 +1,137 @@
+/**
+ * Bulk Actions Bar Styles
+ */
+
+.bulk-actions-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--accent-color);
+  color: white;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent-color) 40%, transparent);
+  border: none;
+  min-height: 56px;
+  box-sizing: border-box;
+}
+
+
+.bulk-actions-bar__content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.bulk-actions-bar__info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bulk-actions-bar__count {
+  font-size: 24px;
+  font-weight: 700;
+  min-width: 32px;
+  text-align: center;
+}
+
+.bulk-actions-bar__label {
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.bulk-actions-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bulk-actions-bar__action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.bulk-actions-bar__action:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.bulk-actions-bar__action:active {
+  transform: translateY(0);
+}
+
+.bulk-actions-bar__action--install:hover {
+  background: #10b981;
+  border-color: #059669;
+}
+
+.bulk-actions-bar__action--activate:hover {
+  background: #3b82f6;
+  border-color: #2563eb;
+}
+
+.bulk-actions-bar__action--deactivate:hover {
+  background: #f59e0b;
+  border-color: #d97706;
+}
+
+.bulk-actions-bar__action--uninstall:hover {
+  background: #ef4444;
+  border-color: #dc2626;
+}
+
+.bulk-actions-bar__action--cancel {
+  margin-left: 8px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.bulk-actions-bar__action--cancel:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .bulk-actions-bar {
+    padding: 12px 16px;
+  }
+
+  .bulk-actions-bar__content {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .bulk-actions-bar__info {
+    width: 100%;
+  }
+
+  .bulk-actions-bar__actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .bulk-actions-bar__action {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .bulk-actions-bar__action span {
+    display: none;
+  }
+}

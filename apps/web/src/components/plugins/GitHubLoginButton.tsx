@@ -20,29 +20,12 @@ export function GitHubLoginButton() {
   // Load user on mount
   useEffect(() => {
     const currentUser = gitHubAuthService.getUser();
+    // eslint-disable-next-line no-console
+    console.log('[GitHubLoginButton] Loading user from localStorage:', currentUser);
     setUser(currentUser);
   }, []);
 
-  // Check for OAuth callback on mount
-  useEffect(() => {
-    const handleOAuthCallback = async () => {
-      const callback = gitHubAuthService.checkOAuthCallback();
-      if (callback) {
-        setLoading(true);
-        const result = await gitHubAuthService.handleOAuthCallback(callback.code, callback.state);
-
-        if (result.success && result.user) {
-          setUser(result.user);
-          gitHubAuthService.cleanOAuthParams();
-        } else {
-          setError(result.error || 'Échec de la connexion OAuth');
-        }
-        setLoading(false);
-      }
-    };
-
-    handleOAuthCallback();
-  }, []);
+  // Note: OAuth callback is now handled globally by OAuthCallbackHandler in App.tsx
 
   const handleOAuthLogin = () => {
     try {

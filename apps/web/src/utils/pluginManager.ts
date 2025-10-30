@@ -121,6 +121,32 @@ export async function initializePlugins(): Promise<void> {
     await registry.register(themeManagerPlugin);
     // console.log('✅ Registered: Theme Manager');
 
+    // Load installed plugins from IndexedDB
+    try {
+      const { getAllInstalledPlugins } = await import('../services/PluginInstaller');
+      const installedPlugins = await getAllInstalledPlugins();
+
+      if (installedPlugins.length > 0) {
+        console.log(`🔄 Loading ${installedPlugins.length} installed plugins from IndexedDB...`);
+
+        for (const pluginData of installedPlugins) {
+          try {
+            const { loadInstalledPlugin } = await import('../services/PluginInstaller');
+            const plugin = await loadInstalledPlugin(pluginData.id);
+
+            if (plugin) {
+              await registry.register(plugin, false); // Don't auto-activate
+              console.log(`✅ Loaded installed plugin: ${pluginData.manifest.name}`);
+            }
+          } catch (error) {
+            console.error(`❌ Failed to load installed plugin ${pluginData.id}:`, error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('❌ Failed to load installed plugins:', error);
+    }
+
     // Auto-activate previously activated plugins
     const activatedPlugins = getActivatedPlugins();
     if (activatedPlugins.size > 0) {

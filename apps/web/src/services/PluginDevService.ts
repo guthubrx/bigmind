@@ -26,10 +26,30 @@ export interface PublishResult {
 
 export class PluginDevService {
   /**
+   * Vérifie si File System Access API est disponible
+   */
+  private isFileSystemAccessSupported(): boolean {
+    return 'showDirectoryPicker' in window;
+  }
+
+  /**
+   * Crée un fichier dans un dossier avec File System Access API
+   */
+  private async createFile(
+    dirHandle: FileSystemDirectoryHandle,
+    fileName: string,
+    content: string
+  ): Promise<void> {
+    const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
+    const writable = await fileHandle.createWritable();
+    await writable.write(content);
+    await writable.close();
+  }
+
+  /**
    * Clone un plugin depuis GitHub vers le monorepo local
    * Télécharge index.ts, manifest.json et crée les fichiers de config
    */
-  // eslint-disable-next-line class-methods-use-this
   async clonePlugin(pluginId: string): Promise<CloneResult> {
     try {
       // eslint-disable-next-line no-console
@@ -41,33 +61,103 @@ export class PluginDevService {
         throw new Error(`Plugin manifest introuvable: ${pluginId}`);
       }
 
-      // 2. Télécharger index.ts
-      const indexUrl = `https://raw.githubusercontent.com/${
-        GITHUB_REPO_OWNER
-      }/${GITHUB_REPO_NAME}/${GITHUB_BRANCH}/plugins/${pluginId}/index.ts`;
+      // 2. Déterminer le chemin correct basé sur le source
+      const source = manifest.source || 'community';
+      const pluginName = pluginId.replace(/^com\.bigmind\./, ''); // Remove prefix
+      const pluginPath = `${source}/${pluginName}`;
+
+      // 3. Télécharger index.ts
+      const indexUrl = `https://raw.githubusercontent.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/${GITHUB_BRANCH}/${pluginPath}/index.ts`;
+      // eslint-disable-next-line no-console
+      console.log(`[PluginDev] Downloading from: ${indexUrl}`);
+
       const indexResponse = await fetch(indexUrl);
       if (!indexResponse.ok) {
         throw new Error(`Impossible de télécharger index.ts (HTTP ${indexResponse.status})`);
       }
       const indexContent = await indexResponse.text();
 
-      // 3. Créer les fichiers localement
-      // (simulation - en réalité utiliser File System Access API)
-      // Pour MVP: on affiche les instructions à l'utilisateur
-      const localPath = `/apps/web/src/plugins/community/${pluginId}`;
+      const localPath = `apps/web/src/plugins/${source}/${pluginName}`;
 
-      const instructions = [
-        `📁 Créez le dossier: ${localPath}`,
-        `📄 Créez ${localPath}/manifest.json avec le contenu suivant:`,
-        JSON.stringify(manifest, null, 2),
-        `📄 Créez ${localPath}/index.ts avec le contenu suivant:`,
-        indexContent,
-        `📄 Créez ${localPath}/package.json:`,
-        JSON.stringify(this.generatePackageJson(pluginId, manifest), null, 2),
-        `📄 Créez ${localPath}/tsconfig.json:`,
-        JSON.stringify(this.generateTsConfig(), null, 2),
-        `📄 Créez ${localPath}/vite.config.ts:`,
-        this.generateViteConfig(pluginId),
+      // 4. Vérifier si File System Access API est disponible
+      if (this.isFileSystemAccessSupported()) {
+        try {
+          // Demander à l'utilisateur de sélectionner un dossier
+          const dirHandle = await (window as any).showDirectoryPicker({
+            mode: 'readwrite',
+            startIn: 'documents',
+          });
+
+          // Créer le dossier du plugin
+          const pluginDirHandle = await dirHandle.getDirectoryHandle(pluginName, {
+            create: true,
+          });
+
+          // Créer tous les fichiers
+          await this.createFile(
+            pluginDirHandle,
+            'manifest.json',
+            JSON.stringify(manifest, null, 2)
+          );
+
+          await this.createFile(pluginDirHandle, 'index.ts', indexContent);
+
+          await this.createFile(
+            pluginDirHandle,
+            'package.json',
+            JSON.stringify(this.generatePackageJson(pluginName, manifest), null, 2)
+          );
+
+          await this.createFile(
+            pluginDirHandle,
+            'tsconfig.json',
+            JSON.stringify(this.generateTsConfig(), null, 2)
+          );
+
+          await this.createFile(
+            pluginDirHandle,
+            'vite.config.ts',
+            this.generateViteConfig(pluginName)
+          );
+
+          // eslint-disable-next-line no-console
+          console.log(`✅ Plugin ${pluginName} cloné avec succès dans ${dirHandle.name}/`);
+
+          return {
+            success: true,
+            pluginId,
+            localPath: `${dirHandle.name}/${pluginName}`,
+            message: `Plugin cloné avec succès dans ${dirHandle.name}/${pluginName}/`,
+          };
+        } catch (fsError) {
+          // Si l'utilisateur annule ou si l'API échoue, fallback sur les instructions
+          // eslint-disable-next-line no-console
+          console.warn('[PluginDev] File System Access failed, showing instructions:', fsError);
+        }
+      }
+
+      // 5. Fallback: Afficher les instructions manuelles
+      const files = [
+        {
+          name: 'manifest.json',
+          content: JSON.stringify(manifest, null, 2),
+        },
+        {
+          name: 'index.ts',
+          content: indexContent,
+        },
+        {
+          name: 'package.json',
+          content: JSON.stringify(this.generatePackageJson(pluginName, manifest), null, 2),
+        },
+        {
+          name: 'tsconfig.json',
+          content: JSON.stringify(this.generateTsConfig(), null, 2),
+        },
+        {
+          name: 'vite.config.ts',
+          content: this.generateViteConfig(pluginName),
+        },
       ];
 
       // Pour le MVP, on sauvegarde ces infos dans sessionStorage pour affichage
@@ -75,18 +165,20 @@ export class PluginDevService {
         `clone-instructions-${pluginId}`,
         JSON.stringify({
           pluginId,
+          pluginName,
           localPath,
-          manifest,
-          indexContent,
-          instructions,
+          files,
         })
       );
+
+      // eslint-disable-next-line no-console
+      console.log(`Instructions pour cloner ${pluginId}:`, { localPath, files });
 
       return {
         success: true,
         pluginId,
         localPath,
-        message: `Plugin ${pluginId} prêt à être cloné. Consultez les instructions.`,
+        message: `Consultez la console pour les instructions de clonage manuel.`,
       };
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -125,12 +217,17 @@ export class PluginDevService {
         throw new Error(`Vous n'êtes pas l'auteur. Auteur: ${authorGithub}, Vous: ${user.login}`);
       }
 
-      // 3. Générer les instructions de publication
+      // 3. Déterminer le chemin correct
+      const source = manifest.source || 'community';
+      const pluginName = pluginId.replace(/^com\.bigmind\./, '');
+      const pluginPath = `${source}/${pluginName}`;
+
+      // 4. Générer les instructions de publication
       const instructions = [
         '=== Instructions pour publier votre plugin ===',
         '',
         '1. Assurez-vous que vos modifications sont prêtes:',
-        `   cd apps/web/src/plugins/community/${pluginId}`,
+        `   cd apps/web/src/plugins/${pluginPath}`,
         '   npm run build',
         '',
         '2. Testez le plugin localement avant de publier',
@@ -138,11 +235,12 @@ export class PluginDevService {
         '3. Créez une Pull Request sur le repo bigmind-plugins:',
         `   - Fork: https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}`,
         `   - Branche: ${GITHUB_BRANCH}`,
-        `   - Ajoutez/modifiez: plugins/${pluginId}/`,
+        `   - Ajoutez/modifiez: ${pluginPath}/`,
         '',
         '4. Fichiers à inclure dans la PR:',
-        `   - plugins/${pluginId}/index.ts (code buildé)`,
-        `   - plugins/${pluginId}/manifest.json`,
+        `   - ${pluginPath}/index.ts (votre code source)`,
+        `   - ${pluginPath}/manifest.json`,
+        `   - ${pluginPath}/dist/index.js (code buildé)`,
         `   - Mettre à jour registry.json avec les métadonnées`,
         '',
         '5. Une fois la PR mergée, plugin disponible dans le marketplace!',
@@ -174,7 +272,12 @@ export class PluginDevService {
    */
   // eslint-disable-next-line class-methods-use-this
   openInVSCode(pluginId: string): void {
-    const localPath = `/apps/web/src/plugins/community/${pluginId}`;
+    // Détermine le nom du plugin sans préfixe
+    const pluginName = pluginId.replace(/^com\.bigmind\./, '');
+
+    // Essaye d'abord dans community, puis official
+    const localPath = `/apps/web/src/plugins/community/${pluginName}`;
+
     // VSCode protocol: vscode://file/{path}
     // Note: VSCode doit être installé et le protocole activé
     const vscodeUrl = `vscode://file${localPath}`;

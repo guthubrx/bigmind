@@ -249,6 +249,11 @@
   color: var(--fg-primary);
   margin: 0;
   line-height: 1.3;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  width: 100%;
 }
 
 .plugin-card__title--clickable {
@@ -278,10 +283,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding-top: 12px;
   margin-top: auto;
   border-top: 1px solid #f3f4f6;
   font-size: 12px;
+  flex-wrap: wrap;
 }
 
 .plugin-card__footer-left {
@@ -365,4 +372,63 @@
   .plugin-card__footer-right {
     width: 100%;
   }
+}
+
+/* Selection Mode */
+.plugin-card__selection-circle {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 10;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.plugin-card__selection-circle:hover {
+  border-color: #667eea;
+  transform: scale(1.1);
+}
+
+.plugin-card__selection-circle--selected {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+}
+
+.plugin-card--selection-mode {
+  cursor: pointer;
+}
+
+.plugin-card--selection-mode:hover {
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.plugin-card--selected {
+  border-color: #667eea;
+  background: linear-gradient(
+    to bottom,
+    rgba(102, 126, 234, 0.05),
+    transparent
+  );
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3);
 }

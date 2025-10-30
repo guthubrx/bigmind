@@ -4,9 +4,24 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Code } from 'lucide-react';
+import { Code, AlertTriangle, ExternalLink } from 'lucide-react';
 
 const DEVELOPER_MODE_KEY = 'bigmind-developer-mode';
+
+/**
+ * Détecte si l'application tourne en mode développement (avec code source)
+ * ou en mode production (app distribuée/compilée)
+ */
+export function isRunningInDevEnvironment(): boolean {
+  // En dev : Vite dev server sur localhost
+  // En prod : App compilée depuis file:// ou domaine de prod
+  return (
+    import.meta.env.DEV === true ||
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.port === '5173' // Port Vite par défaut
+  );
+}
 
 export interface DeveloperModeToggleProps {
   onChange?: (enabled: boolean) => void;
@@ -17,6 +32,8 @@ export function DeveloperModeToggle({ onChange }: DeveloperModeToggleProps) {
     const stored = localStorage.getItem(DEVELOPER_MODE_KEY);
     return stored === 'true';
   });
+
+  const isDevEnv = isRunningInDevEnvironment();
 
   useEffect(() => {
     localStorage.setItem(DEVELOPER_MODE_KEY, enabled.toString());
@@ -114,19 +131,112 @@ export function DeveloperModeToggle({ onChange }: DeveloperModeToggleProps) {
           style={{
             marginTop: '12px',
             padding: '12px',
-            backgroundColor: 'var(--accent-color-10)',
-            border: '1px solid var(--accent-color)',
+            backgroundColor: isDevEnv
+              ? 'var(--accent-color-10)'
+              : '#FEF3C7', // Jaune warning si prod
+            border: `1px solid ${isDevEnv ? 'var(--accent-color)' : '#FCD34D'}`,
             borderRadius: '4px',
             fontSize: '12px',
-            color: 'var(--fg-primary)',
+            color: isDevEnv ? 'var(--fg-primary)' : '#92400E',
           }}
         >
-          <strong>Mode développeur activé</strong>
-          <ul style={{ margin: '8px 0 0 20px', paddingLeft: 0 }}>
-            <li>Clone des plugins community vers votre environnement local</li>
-            <li>Publication de vos modifications vers GitHub</li>
-            <li>Outils de build et test intégrés</li>
-          </ul>
+          {isDevEnv ? (
+            <>
+              <strong>✅ Mode développeur activé</strong>
+              <ul style={{ margin: '8px 0 0 20px', paddingLeft: 0 }}>
+                <li>Clone des plugins community vers votre environnement local</li>
+                <li>Publication de vos modifications vers GitHub</li>
+                <li>Outils de build et test intégrés</li>
+              </ul>
+            </>
+          ) : (
+            <>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                <AlertTriangle size={16} style={{ marginTop: '2px', flexShrink: 0 }} />
+                <div>
+                  <strong>⚠️ Application distribuée détectée</strong>
+                  <p style={{ margin: '8px 0' }}>
+                    Le mode développeur nécessite le code source. Pour développer des plugins :
+                  </p>
+                  <ol style={{ margin: '8px 0 8px 16px', paddingLeft: 0 }}>
+                    <li style={{ marginBottom: '6px' }}>
+                      <strong>Clonez le monorepo BigMind :</strong>
+                      <br />
+                      <code
+                        style={{
+                          display: 'block',
+                          marginTop: '4px',
+                          padding: '6px 8px',
+                          backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                          borderRadius: '3px',
+                          fontSize: '11px',
+                          fontFamily: 'monospace',
+                          wordBreak: 'break-all',
+                        }}
+                      >
+                        git clone https://github.com/guthubrx/bigmind.git
+                      </code>
+                    </li>
+                    <li style={{ marginBottom: '6px' }}>
+                      <strong>Installez les dépendances :</strong>
+                      <br />
+                      <code
+                        style={{
+                          display: 'block',
+                          marginTop: '4px',
+                          padding: '6px 8px',
+                          backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                          borderRadius: '3px',
+                          fontSize: '11px',
+                          fontFamily: 'monospace',
+                        }}
+                      >
+                        cd bigmind && pnpm install
+                      </code>
+                    </li>
+                    <li style={{ marginBottom: '6px' }}>
+                      <strong>Lancez en mode développement :</strong>
+                      <br />
+                      <code
+                        style={{
+                          display: 'block',
+                          marginTop: '4px',
+                          padding: '6px 8px',
+                          backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                          borderRadius: '3px',
+                          fontSize: '11px',
+                          fontFamily: 'monospace',
+                        }}
+                      >
+                        pnpm run dev:web
+                      </code>
+                    </li>
+                    <li>
+                      <strong>Activez le mode développeur</strong> dans l&apos;app qui tourne sur{' '}
+                      <code>localhost:5173</code>
+                    </li>
+                  </ol>
+                  <a
+                    href="https://github.com/guthubrx/bigmind#plugin-development"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      marginTop: '8px',
+                      color: 'var(--accent-color)',
+                      textDecoration: 'underline',
+                      fontSize: '11px',
+                    }}
+                  >
+                    📖 Guide complet de développement de plugins
+                    <ExternalLink size={12} />
+                  </a>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

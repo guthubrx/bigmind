@@ -36,6 +36,12 @@ export interface PluginCardProps {
   onCloneForDev?: () => void; // NEW: Clone plugin for development
   onPublish?: () => void; // NEW: Publish plugin to registry
   onOpenInVSCode?: () => void; // NEW: Open plugin in VSCode
+  // Selection mode
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  hasSelection?: boolean; // NEW: At least one card is selected
+  onEnterSelectionMode?: () => void;
+  onToggleSelection?: () => void;
 }
 
 export function PluginCard({
@@ -51,9 +57,15 @@ export function PluginCard({
   onCloneForDev,
   onPublish,
   onOpenInVSCode,
+  selectionMode = false,
+  isSelected = false,
+  hasSelection = false,
+  onEnterSelectionMode,
+  onToggleSelection,
 }: PluginCardProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [ratingAggregate, setRatingAggregate] = useState<PluginRatingsAggregate | null>(null);
+  const [isHovered, setIsHovered] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Fetch rating aggregate from Supabase
@@ -109,11 +121,66 @@ export function PluginCard({
     onUninstall?.();
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't trigger selection if clicking on buttons or interactive elements
+    const target = e.target as HTMLElement;
+    if (
+      target.closest('button') ||
+      target.closest('.plugin-card__state-dropdown') ||
+      target.closest('.plugin-card__config-btn')
+    ) {
+      return;
+    }
+
+    if (selectionMode) {
+      onToggleSelection?.();
+    }
+  };
+
+  const handleSelectionCircleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (selectionMode) {
+      onToggleSelection?.();
+    } else {
+      onEnterSelectionMode?.();
+    }
+  };
+
   return (
     <div
-      className={`plugin-card ${isActive ? 'plugin-card--active' : ''}`}
+      className={`plugin-card ${isActive ? 'plugin-card--active' : ''} ${
+        selectionMode ? 'plugin-card--selection-mode' : ''
+      } ${isSelected ? 'plugin-card--selected' : ''}`}
       style={{ '--plugin-color': manifest.color || '#6B7280' } as React.CSSProperties}
+      onClick={handleCardClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Selection circle */}
+      {(isHovered || hasSelection) && (
+        <div
+          className={`plugin-card__selection-circle ${
+            isSelected ? 'plugin-card__selection-circle--selected' : ''
+          }`}
+          onClick={handleSelectionCircleClick}
+          role="checkbox"
+          aria-checked={isSelected}
+          tabIndex={0}
+        >
+          {isSelected && (
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M13 4L6 11L3 8"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
+        </div>
+      )}
+
       {/* Header avec logo et titre */}
       <div className="plugin-card__header">
         <div className="plugin-card__logo-wrapper">

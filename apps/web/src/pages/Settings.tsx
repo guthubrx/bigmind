@@ -56,7 +56,7 @@ function SettingsPage() {
   const setShortcut = useShortcuts(s => s.setShortcut);
   const resetShortcuts = useShortcuts(s => s.resetDefaults);
   const [searchParams] = useSearchParams();
-  const [section, setSection] = useState<'appearance' | 'shortcuts' | 'plugins' | 'developer'>(
+  const [section, setSection] = useState<'appearance' | 'shortcuts' | 'plugins'>(
     'appearance'
   );
   const platform = usePlatform();
@@ -85,8 +85,7 @@ function SettingsPage() {
     if (
       sectionParam === 'plugins' ||
       sectionParam === 'appearance' ||
-      sectionParam === 'shortcuts' ||
-      sectionParam === 'developer'
+      sectionParam === 'shortcuts'
     ) {
       setSection(sectionParam);
     }
@@ -182,38 +181,28 @@ function SettingsPage() {
   };
 
   const handleInstall = async (pluginId: string) => {
-    try {
-      // eslint-disable-next-line no-console
-      console.log(`[Settings] Installing plugin: ${pluginId}`);
+    // eslint-disable-next-line no-console
+    console.log(`[Settings] Installing plugin: ${pluginId}`);
 
-      // Import the installer service dynamically
-      const { installPlugin } = await import('../services/PluginInstaller');
+    // Import the installer service dynamically
+    const { installPlugin } = await import('../services/PluginInstaller');
 
-      // Download and install the plugin
-      const plugin = await installPlugin(pluginId);
-      // eslint-disable-next-line no-console
-      console.log(`[Settings] Plugin downloaded successfully: ${pluginId}`);
+    // Download and install the plugin (errors will propagate to PluginManager)
+    const plugin = await installPlugin(pluginId);
+    // eslint-disable-next-line no-console
+    console.log(`[Settings] Plugin downloaded successfully: ${pluginId}`);
 
-      // Register the plugin in the registry
-      await registry.register(plugin, false); // Don't auto-activate
-      // eslint-disable-next-line no-console
-      console.log(`[Settings] Plugin registered successfully: ${pluginId}`);
+    // Register the plugin in the registry
+    await registry.register(plugin, false); // Don't auto-activate
+    // eslint-disable-next-line no-console
+    console.log(`[Settings] Plugin registered successfully: ${pluginId}`);
 
-      // Activate the plugin
-      await handleActivate(pluginId);
-      // eslint-disable-next-line no-console
-      console.log(`[Settings] Plugin activated successfully: ${pluginId}`);
+    // Activate the plugin
+    await handleActivate(pluginId);
+    // eslint-disable-next-line no-console
+    console.log(`[Settings] Plugin activated successfully: ${pluginId}`);
 
-      // eslint-disable-next-line no-alert
-      alert(`Plugin ${plugin.manifest.name} installé et activé avec succès!`);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(`[Settings] Failed to install plugin ${pluginId}:`, error);
-      // eslint-disable-next-line no-alert
-      alert(
-        `Échec de l'installation: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
-      );
-    }
+    // Success notification will be handled by PluginManager
   };
 
   const handleViewPermissions = (pluginId: string) => {
@@ -290,13 +279,13 @@ function SettingsPage() {
                 >
                   🔌 Plugins
                 </button>
-                <button
+                {/* <button
                   type="button"
                   className={`btn settings-nav-btn ${section === 'developer' ? 'active' : ''}`}
                   onClick={() => setSection('developer')}
                 >
                   👨‍💻 Développeur
-                </button>
+                </button> */}
               </nav>
             </aside>
 
@@ -524,20 +513,18 @@ function SettingsPage() {
                 </div>
               )}
 
-              {section === 'developer' && (
+              {/* {section === 'developer' && (
                 <div className="settings-section">
                   <h2 className="settings-section-title">Mode Développeur</h2>
                   <p style={{ color: 'var(--fg-secondary)', marginBottom: '24px' }}>
                     Outils pour développer et publier des plugins community
                   </p>
 
-                  {/* Developer Mode Toggle */}
                   <div style={{ marginBottom: '24px' }}>
                     <h3 className="settings-subsection-title">Activer le mode développeur</h3>
                     <DeveloperModeToggle />
                   </div>
 
-                  {/* GitHub Authentication */}
                   <div style={{ marginBottom: '24px' }}>
                     <h3 className="settings-subsection-title">Authentification GitHub</h3>
                     <p
@@ -552,7 +539,6 @@ function SettingsPage() {
                     <GitHubLoginButton />
                   </div>
 
-                  {/* Instructions */}
                   <div
                     style={{
                       padding: '16px',
@@ -590,7 +576,7 @@ function SettingsPage() {
                     </ol>
                   </div>
                 </div>
-              )}
+              )} */}
 
               {section === 'plugins' &&
                 (() => {

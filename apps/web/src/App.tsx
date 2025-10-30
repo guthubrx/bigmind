@@ -15,6 +15,7 @@ import { useColumnCollapse } from './hooks/useColumnCollapse';
 import { useCanvasOptions } from './hooks/useCanvasOptions';
 import { clearTagsLocalStorage } from './utils/clearTagsLocalStorage';
 import { initializePlugins } from './utils/pluginManager';
+import { OAuthCallbackHandler } from './components/plugins/OAuthCallbackHandler';
 import './App.css';
 
 function App() {
@@ -68,6 +69,9 @@ function App() {
 
   return (
     <div className="app">
+      {/* Handle GitHub OAuth callback globally */}
+      <OAuthCallbackHandler />
+
       <Routes>
         <Route path="/" element={<DockableLayout />} />
         <Route path="/map/:id" element={<DockableLayout />} />

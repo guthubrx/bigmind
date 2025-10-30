@@ -121,7 +121,10 @@ export class GitHubPluginRegistry {
     }
 
     console.log(`[GitHubPluginRegistry] Downloading plugin: ${plugin.name}`);
-    const response = await this.fetchWithRetry(plugin.downloadUrl, 3);
+    // Add cache-busting parameter to force fresh download
+    const url = new URL(plugin.downloadUrl);
+    url.searchParams.set('_t', Date.now().toString());
+    const response = await this.fetchWithRetry(url.toString(), 3);
     return await response.blob();
   }
 
@@ -168,7 +171,10 @@ export class GitHubPluginRegistry {
     }
 
     console.log(`[GitHubPluginRegistry] Fetching manifest for: ${plugin.name}`);
-    const response = await this.fetchWithRetry(plugin.manifestUrl, 3);
+    // Add cache-busting parameter to force fresh download
+    const url = new URL(plugin.manifestUrl);
+    url.searchParams.set('_t', Date.now().toString());
+    const response = await this.fetchWithRetry(url.toString(), 3);
     return await response.json();
   }
 

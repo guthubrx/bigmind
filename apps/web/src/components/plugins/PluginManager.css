@@ -282,3 +282,13 @@
     width: 100%;
   }
 }
+
+/* Filter Bar Wrapper - ensures consistent height when switching between filters and bulk actions */
+.plugin-manager__filter-bar-wrapper {
+  min-height: 80px;
+  margin-bottom: 24px;
+}
+
+.plugin-manager__filter-bar-wrapper > * {
+  margin-bottom: 0 !important;
+}
