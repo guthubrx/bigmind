@@ -29,3 +29,8 @@ export type { PluginDetailModalProps } from './PluginDetailModal';
 
 export { PluginFilters } from './PluginFilters';
 export type { PluginFiltersProps, PluginStatus, PluginCategory } from './PluginFilters';
+
+// Developer mode components
+export { GitHubLoginButton } from './GitHubLoginButton';
+export { DeveloperModeToggle, useDeveloperMode } from './DeveloperModeToggle';
+export type { DeveloperModeToggleProps } from './DeveloperModeToggle';

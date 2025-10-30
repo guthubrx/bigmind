@@ -14,6 +14,8 @@ import {
   type PluginRegistryEntry,
 } from '../../services/GitHubPluginRegistry';
 import { installPlugin } from '../../services/PluginInstaller';
+import { pluginDevService } from '../../services/PluginDevService';
+import { useDeveloperMode } from './DeveloperModeToggle';
 import type { PluginManifest } from '@bigmind/plugin-system';
 import './PluginManager.css';
 
@@ -49,6 +51,9 @@ export function PluginManager({
     core: false,
     optional: false,
   });
+
+  // Developer mode state
+  const developerMode = useDeveloperMode();
 
   // Detect screen size with breakpoints
   useEffect(() => {
@@ -239,6 +244,7 @@ export function PluginManager({
     try {
       await action();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Plugin action failed:', error);
     } finally {
       setLoading(null);
@@ -293,6 +299,58 @@ export function PluginManager({
     }
   };
 
+  // Developer mode handlers
+  const handleCloneForDev = async (pluginId: string) => {
+    try {
+      const result = await pluginDevService.clonePlugin(pluginId);
+      if (result.success) {
+        // Show instructions in alert
+        const instructions = sessionStorage.getItem(`clone-instructions-${pluginId}`);
+        if (instructions) {
+          const data = JSON.parse(instructions);
+          // eslint-disable-next-line no-alert
+          alert(
+            `Instructions pour cloner ${pluginId}:\n\n${data.instructions.join(
+              '\n\n'
+            )}\n\nLes fichiers sont disponibles dans sessionStorage.`
+          );
+        }
+      } else {
+        // eslint-disable-next-line no-alert
+        alert(`Erreur: ${result.message}`);
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('[PluginManager] Clone failed:', error);
+      // eslint-disable-next-line no-alert
+      alert(`Échec du clonage: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
+  };
+
+  const handlePublish = async (pluginId: string, manifest: PluginManifest) => {
+    try {
+      const result = await pluginDevService.publishPlugin(pluginId, manifest);
+      if (result.success && result.instructions) {
+        // eslint-disable-next-line no-alert
+        alert(result.instructions.join('\n'));
+      } else {
+        // eslint-disable-next-line no-alert
+        alert(`Erreur: ${result.message}`);
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('[PluginManager] Publish failed:', error);
+      // eslint-disable-next-line no-alert
+      alert(
+        `Échec de la publication: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+      );
+    }
+  };
+
+  const handleOpenInVSCode = (pluginId: string) => {
+    pluginDevService.openInVSCode(pluginId);
+  };
+
   // Render plugin section
   const renderSection = (
     sectionId: string,
@@ -329,7 +387,8 @@ export function PluginManager({
               {title}
             </h3>
             <p className="plugin-manager__section-subtitle">
-              {subtitle} ({items.length} plugin{items.length > 1 ? 's' : ''})
+              {subtitle} ({items.length} plugin
+              {items.length > 1 ? 's' : ''})
             </p>
           </div>
         </div>
@@ -346,6 +405,7 @@ export function PluginManager({
                 const isActive = item.isActive ?? false;
                 const isCore = item.manifest.source === 'core';
                 const { isInstalled } = item;
+                const isCommunity = item.manifest.source === 'community';
 
                 return (
                   <PluginCard
@@ -366,6 +426,22 @@ export function PluginManager({
                     onViewDetails={() => handleViewDetails(item.manifest.id)}
                     onUninstall={() =>
                       handleAction(() => onUninstall(item.manifest.id), item.manifest.id)
+                    }
+                    developerMode={developerMode && isCommunity}
+                    onCloneForDev={
+                      developerMode && isCommunity
+                        ? () => handleCloneForDev(item.manifest.id)
+                        : undefined
+                    }
+                    onPublish={
+                      developerMode && isCommunity
+                        ? () => handlePublish(item.manifest.id, item.manifest)
+                        : undefined
+                    }
+                    onOpenInVSCode={
+                      developerMode && isCommunity
+                        ? () => handleOpenInVSCode(item.manifest.id)
+                        : undefined
                     }
                   />
                 );

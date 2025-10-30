@@ -6,7 +6,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { PluginManifest } from '@bigmind/plugin-system';
 import { PluginBadges } from './PluginBadges';
-import { Download, Settings, ChevronDown, Trash2, Power } from 'lucide-react';
+import {
+  Download,
+  Settings,
+  ChevronDown,
+  Trash2,
+  Power,
+  GitBranch,
+  Upload,
+  Code,
+} from 'lucide-react';
 import { StarRating } from './StarRating';
 import {
   getPluginRatingsAggregate,
@@ -23,6 +32,10 @@ export interface PluginCardProps {
   onConfigure?: () => void;
   onViewDetails?: () => void;
   onUninstall?: () => void;
+  developerMode?: boolean; // NEW: Developer mode enabled
+  onCloneForDev?: () => void; // NEW: Clone plugin for development
+  onPublish?: () => void; // NEW: Publish plugin to registry
+  onOpenInVSCode?: () => void; // NEW: Open plugin in VSCode
 }
 
 export function PluginCard({
@@ -34,6 +47,10 @@ export function PluginCard({
   onConfigure,
   onViewDetails,
   onUninstall,
+  developerMode = false,
+  onCloneForDev,
+  onPublish,
+  onOpenInVSCode,
 }: PluginCardProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [ratingAggregate, setRatingAggregate] = useState<PluginRatingsAggregate | null>(null);
@@ -225,6 +242,96 @@ export function PluginCard({
           )}
         </div>
       </div>
+
+      {/* Developer Mode Buttons - Only for community plugins when developer mode is active */}
+      {developerMode && source === 'community' && (
+        <div
+          style={{
+            marginTop: '12px',
+            paddingTop: '12px',
+            borderTop: '1px solid var(--border-color)',
+            display: 'flex',
+            gap: '8px',
+            flexWrap: 'wrap',
+          }}
+        >
+          {onCloneForDev && (
+            <button
+              type="button"
+              onClick={onCloneForDev}
+              style={{
+                flex: '1 1 auto',
+                padding: '8px 12px',
+                border: '1px solid var(--accent-color)',
+                borderRadius: '4px',
+                backgroundColor: 'transparent',
+                color: 'var(--accent-color)',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                transition: 'all 0.2s',
+              }}
+              title="Cloner le plugin pour développement local"
+            >
+              <GitBranch size={14} />
+              Clone for Dev
+            </button>
+          )}
+          {onPublish && (
+            <button
+              type="button"
+              onClick={onPublish}
+              style={{
+                flex: '1 1 auto',
+                padding: '8px 12px',
+                border: '1px solid var(--accent-color)',
+                borderRadius: '4px',
+                backgroundColor: 'var(--accent-color)',
+                color: 'white',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                transition: 'all 0.2s',
+              }}
+              title="Publier vers le registry GitHub"
+            >
+              <Upload size={14} />
+              Publish
+            </button>
+          )}
+          {onOpenInVSCode && (
+            <button
+              type="button"
+              onClick={onOpenInVSCode}
+              style={{
+                padding: '8px 12px',
+                border: '1px solid var(--border-color)',
+                borderRadius: '4px',
+                backgroundColor: 'transparent',
+                color: 'var(--fg-secondary)',
+                fontSize: '12px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                transition: 'all 0.2s',
+              }}
+              title="Ouvrir dans VSCode"
+            >
+              <Code size={14} />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

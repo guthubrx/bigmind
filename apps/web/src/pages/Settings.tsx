@@ -20,6 +20,8 @@ import {
   PluginDetailPage,
 } from '../components/plugins';
 import { EventMonitorPanel } from '../components/plugins/EventMonitorPanel';
+import { GitHubLoginButton } from '../components/plugins/GitHubLoginButton';
+import { DeveloperModeToggle } from '../components/plugins/DeveloperModeToggle';
 import { pluginSystem, saveActivatedPlugins } from '../utils/pluginManager';
 import type {
   PluginInfo,
@@ -54,7 +56,9 @@ function SettingsPage() {
   const setShortcut = useShortcuts(s => s.setShortcut);
   const resetShortcuts = useShortcuts(s => s.resetDefaults);
   const [searchParams] = useSearchParams();
-  const [section, setSection] = useState<'appearance' | 'shortcuts' | 'plugins'>('appearance');
+  const [section, setSection] = useState<'appearance' | 'shortcuts' | 'plugins' | 'developer'>(
+    'appearance'
+  );
   const platform = usePlatform();
 
   // Plugin management state
@@ -81,7 +85,8 @@ function SettingsPage() {
     if (
       sectionParam === 'plugins' ||
       sectionParam === 'appearance' ||
-      sectionParam === 'shortcuts'
+      sectionParam === 'shortcuts' ||
+      sectionParam === 'developer'
     ) {
       setSection(sectionParam);
     }
@@ -111,12 +116,14 @@ function SettingsPage() {
 
   // Listen to settings registry changes
   useEffect(() => {
+    // eslint-disable-next-line no-console
     console.log('[Settings] Subscribing to settings registry changes');
 
     // Force initial render to pick up any sections already registered
     setSettingsVersion(v => v + 1);
 
     const unsubscribe = onSettingsRegistryChange(() => {
+      // eslint-disable-next-line no-console
       console.log('[Settings] Settings registry changed, forcing re-render');
       setSettingsVersion(v => v + 1);
     });
@@ -155,6 +162,7 @@ function SettingsPage() {
       await auditLogger.logPluginActivated(pluginId);
       saveActivationState();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to activate plugin:', error);
       await auditLogger.logSecurityAlert(
         pluginId,
@@ -210,6 +218,7 @@ function SettingsPage() {
 
   const handleViewPermissions = (pluginId: string) => {
     const summary = permissionManager.getSecuritySummary(pluginId);
+    // eslint-disable-next-line no-alert
     alert(`Permissions pour ${pluginId}:\n\n${JSON.stringify(summary, null, 2)}`);
   };
 
@@ -219,6 +228,7 @@ function SettingsPage() {
   const handleSavePolicy = async (pluginId: string, policy: Policy) => {
     policyEngine.registerPolicy(pluginId, policy);
     setPolicyEditing(null);
+    // eslint-disable-next-line no-alert
     alert('Politique sauvegardée avec succès!');
   };
 
@@ -280,6 +290,13 @@ function SettingsPage() {
                 >
                   🔌 Plugins
                 </button>
+                <button
+                  type="button"
+                  className={`btn settings-nav-btn ${section === 'developer' ? 'active' : ''}`}
+                  onClick={() => setSection('developer')}
+                >
+                  👨‍💻 Développeur
+                </button>
               </nav>
             </aside>
 
@@ -290,6 +307,7 @@ function SettingsPage() {
                   <h2 className="settings-section-title">Apparence</h2>
                   {(() => {
                     const sections = getSettingsSections('appearance');
+                    // eslint-disable-next-line no-console
                     console.log(
                       '[Settings Render] Appearance sections:',
                       sections.length,
@@ -506,6 +524,74 @@ function SettingsPage() {
                 </div>
               )}
 
+              {section === 'developer' && (
+                <div className="settings-section">
+                  <h2 className="settings-section-title">Mode Développeur</h2>
+                  <p style={{ color: 'var(--fg-secondary)', marginBottom: '24px' }}>
+                    Outils pour développer et publier des plugins community
+                  </p>
+
+                  {/* Developer Mode Toggle */}
+                  <div style={{ marginBottom: '24px' }}>
+                    <h3 className="settings-subsection-title">Activer le mode développeur</h3>
+                    <DeveloperModeToggle />
+                  </div>
+
+                  {/* GitHub Authentication */}
+                  <div style={{ marginBottom: '24px' }}>
+                    <h3 className="settings-subsection-title">Authentification GitHub</h3>
+                    <p
+                      style={{
+                        fontSize: '13px',
+                        color: 'var(--fg-secondary)',
+                        marginBottom: '12px',
+                      }}
+                    >
+                      Connectez-vous avec votre compte GitHub pour publier des plugins
+                    </p>
+                    <GitHubLoginButton />
+                  </div>
+
+                  {/* Instructions */}
+                  <div
+                    style={{
+                      padding: '16px',
+                      backgroundColor: 'var(--bg-secondary)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '6px',
+                    }}
+                  >
+                    <h3 style={{ marginTop: 0, marginBottom: '12px' }}>
+                      Comment développer un plugin
+                    </h3>
+                    <ol
+                      style={{
+                        fontSize: '13px',
+                        lineHeight: '1.6',
+                        color: 'var(--fg-secondary)',
+                        paddingLeft: '20px',
+                      }}
+                    >
+                      <li>Activez le mode développeur ci-dessus</li>
+                      <li>Connectez-vous avec votre compte GitHub</li>
+                      <li>
+                        Dans la section Plugins, les boutons de développement apparaîtront sur les
+                        plugins community
+                      </li>
+                      <li>
+                        Cliquez sur &quot;Clone for Dev&quot; pour télécharger un plugin dans votre
+                        environnement local
+                      </li>
+                      <li>Modifiez le code du plugin selon vos besoins</li>
+                      <li>
+                        Cliquez sur &quot;Publish to Registry&quot; pour publier vos modifications
+                        (nécessite d&apos;être l&apos;auteur)
+                      </li>
+                    </ol>
+                  </div>
+                </div>
+              )}
+
               {section === 'plugins' &&
                 (() => {
                   // Calculate card width based on selected preset
@@ -645,7 +731,6 @@ function SettingsPage() {
                               onDeactivate={handleDeactivate}
                               onUninstall={handleUninstall}
                               onViewPermissions={handleViewPermissions}
-                              onViewDetails={pluginId => setSelectedPlugin(pluginId)}
                               onInstall={handleInstall}
                             />
                           ))}
@@ -654,7 +739,12 @@ function SettingsPage() {
                           <div>
                             <div style={{ marginBottom: '16px' }}>
                               <h3>Panneaux des Plugins</h3>
-                              <p style={{ color: 'var(--fg-secondary)', fontSize: '14px' }}>
+                              <p
+                                style={{
+                                  color: 'var(--fg-secondary)',
+                                  fontSize: '14px',
+                                }}
+                              >
                                 Interface créée par les plugins actifs
                               </p>
                             </div>
@@ -668,7 +758,12 @@ function SettingsPage() {
                           <div>
                             <div style={{ marginBottom: '16px' }}>
                               <h3>Politiques ABAC</h3>
-                              <p style={{ color: 'var(--fg-secondary)', fontSize: '14px' }}>
+                              <p
+                                style={{
+                                  color: 'var(--fg-secondary)',
+                                  fontSize: '14px',
+                                }}
+                              >
                                 Définissez des règles d&apos;accès basées sur les attributs pour
                                 chaque plugin.
                               </p>
