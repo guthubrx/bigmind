@@ -15,12 +15,15 @@ import {
   GitBranch,
   Upload,
   Code,
+  AlertTriangle,
 } from 'lucide-react';
 import { StarRating } from './StarRating';
 import {
   getPluginRatingsAggregate,
   type PluginRatingsAggregate,
 } from '../../services/supabaseClient';
+import { ReportPluginModal } from './ReportPluginModal';
+import { getPendingReportCount } from '../../services/PluginReportService';
 import './PluginCard.css';
 
 export interface PluginCardProps {
@@ -66,6 +69,8 @@ export function PluginCard({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [ratingAggregate, setRatingAggregate] = useState<PluginRatingsAggregate | null>(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [pendingReportsCount, setPendingReportsCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Fetch rating aggregate from Supabase
@@ -79,6 +84,19 @@ export function PluginCard({
       }
     };
     fetchRating();
+  }, [manifest.id]);
+
+  // Fetch pending report count
+  useEffect(() => {
+    const fetchReportCount = async () => {
+      try {
+        const count = await getPendingReportCount(manifest.id);
+        setPendingReportsCount(count);
+      } catch (error) {
+        console.error('[PluginCard] Error fetching report count:', error);
+      }
+    };
+    fetchReportCount();
   }, [manifest.id]);
 
   // Determine plugin source
@@ -119,6 +137,21 @@ export function PluginCard({
   const handleUninstall = () => {
     setDropdownOpen(false);
     onUninstall?.();
+  };
+
+  const handleReport = () => {
+    setDropdownOpen(false);
+    setShowReportModal(true);
+  };
+
+  const handleReportSuccess = async () => {
+    // Reload pending report count
+    try {
+      const count = await getPendingReportCount(manifest.id);
+      setPendingReportsCount(count);
+    } catch (error) {
+      console.error('[PluginCard] Error reloading report count:', error);
+    }
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -198,6 +231,14 @@ export function PluginCard({
             )}
           </div>
           {manifest.featured && <span className="plugin-card__featured-tag">VEDETTE</span>}
+          {pendingReportsCount >= 5 && (
+            <span
+              className="plugin-card__warning-badge"
+              title={`${pendingReportsCount} signalements en attente`}
+            >
+              ⚠️ SIGNALÉ
+            </span>
+          )}
         </div>
 
         <div className="plugin-card__header-content">
@@ -260,6 +301,14 @@ export function PluginCard({
                 >
                   <Trash2 size={14} />
                   <span>Supprimer</span>
+                </button>
+                <button
+                  type="button"
+                  className="plugin-card__dropdown-item plugin-card__dropdown-item--report"
+                  onClick={handleReport}
+                >
+                  <AlertTriangle size={14} />
+                  <span>Signaler</span>
                 </button>
               </div>
             )}
@@ -398,6 +447,16 @@ export function PluginCard({
             </button>
           )}
         </div>
+      )}
+
+      {/* Report Plugin Modal */}
+      {showReportModal && (
+        <ReportPluginModal
+          pluginId={manifest.id}
+          pluginName={manifest.name}
+          onClose={() => setShowReportModal(false)}
+          onSuccess={handleReportSuccess}
+        />
       )}
     </div>
   );
