@@ -219,7 +219,7 @@ export function PluginCard({
           <span className="plugin-card__version">v{manifest.version}</span>
           <PluginBadges
             source={source as 'core' | 'official' | 'community'}
-            state={null}
+            state={undefined}
             featured={false}
           />
         </div>

@@ -39,7 +39,7 @@ export interface PluginManifest {
   // Classification & Discovery
   category?: 'productivity' | 'integration' | 'theme' | 'developer' | 'export' | 'template';
   tags?: string[];
-  source?: 'core' | 'community' | 'enterprise'; // Source du plugin
+  source?: 'core' | 'official' | 'community' | 'enterprise'; // Source du plugin
   pricing?: 'free' | 'paid' | 'freemium'; // Modèle économique
   featured?: boolean; // Plugin mis en avant
   autoActivate?: boolean; // Auto-activer au premier lancement (défaut: false)

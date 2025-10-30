@@ -11,7 +11,6 @@ import {
   PermissionDialog,
   AuditDashboard,
   PolicyEditor,
-  PluginMarketplace,
 } from '../components/plugins';
 import { pluginSystem, saveActivatedPlugins } from '../utils/pluginManager';
 import type {
@@ -178,9 +177,7 @@ export function PluginsPage() {
 
       {/* Content */}
       <div>
-        {currentView === 'marketplace' && <PluginMarketplace />}
-
-        {currentView === 'manager' && (
+        {(currentView === 'marketplace' || currentView === 'manager') && (
           <PluginManager
             plugins={plugins}
             onActivate={handleActivate}

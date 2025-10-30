@@ -7,9 +7,6 @@
 
 import { createEnhancedPluginSystem } from '@bigmind/plugin-system';
 import { eventBus } from './eventBus';
-import examplePlugin from '../plugins/example';
-import analyticsPlugin from '../plugins/analytics';
-import * as eventMonitorPlugin from '../plugins/event-monitor';
 
 // Core plugins (essential, auto-activated)
 import * as xmindCompatibilityPlugin from '../plugins/core/xmind-compatibility';
@@ -123,17 +120,6 @@ export async function initializePlugins(): Promise<void> {
 
     await registry.register(themeManagerPlugin);
     // console.log('✅ Registered: Theme Manager');
-
-    // Register developer/utility plugins
-    await registry.register(eventMonitorPlugin);
-    // console.log('✅ Registered: Event Monitor');
-
-    // Register example plugins
-    await registry.register(examplePlugin);
-    // console.log('✅ Registered: Example Plugin');
-
-    await registry.register(analyticsPlugin);
-    // console.log('✅ Registered: Analytics Plugin');
 
     // Auto-activate previously activated plugins
     const activatedPlugins = getActivatedPlugins();

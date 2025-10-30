@@ -19,7 +19,7 @@ import {
   PolicyEditor,
   PluginDetailPage,
 } from '../components/plugins';
-import { EventMonitorPanel } from '../components/plugins/EventMonitorPanel';
+// EventMonitorPanel removed - now available as community plugin
 import { GitHubLoginButton } from '../components/plugins/GitHubLoginButton';
 import { DeveloperModeToggle } from '../components/plugins/DeveloperModeToggle';
 import { pluginSystem, saveActivatedPlugins } from '../utils/pluginManager';
@@ -747,8 +747,17 @@ function SettingsPage() {
                               >
                                 Interface créée par les plugins actifs
                               </p>
+                              <div
+                                style={{
+                                  padding: '20px',
+                                  textAlign: 'center',
+                                  color: 'var(--fg-secondary)',
+                                }}
+                              >
+                                Les panneaux des plugins apparaissent ici lorsque les plugins sont
+                                activés.
+                              </div>
                             </div>
-                            <EventMonitorPanel />
                           </div>
                         )}
 
