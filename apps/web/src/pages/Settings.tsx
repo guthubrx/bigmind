@@ -22,6 +22,7 @@ import {
 // EventMonitorPanel removed - now available as community plugin
 import { GitHubLoginButton } from '../components/plugins/GitHubLoginButton';
 import { DeveloperModeToggle } from '../components/plugins/DeveloperModeToggle';
+import { AdminPanel } from '../components/plugins/AdminPanel';
 import { pluginSystem, saveActivatedPlugins } from '../utils/pluginManager';
 import type {
   PluginInfo,
@@ -56,7 +57,7 @@ function SettingsPage() {
   const setShortcut = useShortcuts(s => s.setShortcut);
   const resetShortcuts = useShortcuts(s => s.resetDefaults);
   const [searchParams] = useSearchParams();
-  const [section, setSection] = useState<'appearance' | 'shortcuts' | 'plugins'>(
+  const [section, setSection] = useState<'appearance' | 'shortcuts' | 'plugins' | 'admin'>(
     'appearance'
   );
   const platform = usePlatform();
@@ -85,7 +86,8 @@ function SettingsPage() {
     if (
       sectionParam === 'plugins' ||
       sectionParam === 'appearance' ||
-      sectionParam === 'shortcuts'
+      sectionParam === 'shortcuts' ||
+      sectionParam === 'admin'
     ) {
       setSection(sectionParam);
     }
@@ -278,6 +280,13 @@ function SettingsPage() {
                   onClick={() => setSection('plugins')}
                 >
                   🔌 Plugins
+                </button>
+                <button
+                  type="button"
+                  className={`btn settings-nav-btn ${section === 'admin' ? 'active' : ''}`}
+                  onClick={() => setSection('admin')}
+                >
+                  🛡️ Administration
                 </button>
                 {/* <button
                   type="button"
@@ -822,6 +831,13 @@ function SettingsPage() {
                     </div>
                   );
                 })()}
+
+              {/* Administration Section */}
+              {section === 'admin' && (
+                <div className="settings-section">
+                  <AdminPanel />
+                </div>
+              )}
             </section>
           </div>
         </div>
