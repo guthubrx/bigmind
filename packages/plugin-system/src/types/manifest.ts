@@ -18,6 +18,7 @@ export interface PluginManifest {
         name: string;
         email?: string;
         url?: string;
+        github?: string; // GitHub username for publish rights verification
       };
 
   // Compatibility

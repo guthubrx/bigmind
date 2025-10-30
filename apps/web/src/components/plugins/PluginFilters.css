@@ -1,9 +1,10 @@
 .plugin-filters {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 24px;
-  padding: 20px;
+  padding: 16px 20px;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -15,6 +16,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 1 1 auto;
+  min-width: 250px;
+  max-width: 600px;
 }
 
 .plugin-filters__search-icon {
@@ -26,12 +30,12 @@
 
 .plugin-filters__search-input {
   flex: 1;
-  padding: 12px 48px 12px 48px;
+  padding: 10px 40px 10px 40px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
   background: var(--bg-secondary);
   color: var(--fg-primary);
-  font-size: 15px;
+  font-size: 14px;
   transition: all 0.2s ease;
 }
 
@@ -68,29 +72,32 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  flex: 1;
 }
 
 .plugin-filters__filter-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   color: var(--fg-tertiary);
+  flex-shrink: 0;
 }
 
 .plugin-filters__select {
-  padding: 8px 32px 8px 12px;
+  padding: 8px 28px 8px 10px;
   border: 1px solid var(--border-color);
   border-radius: 6px;
   background: var(--bg-secondary);
   color: var(--fg-primary);
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s ease;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%239CA3AF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 12px center;
+  background-position: right 8px center;
+  white-space: nowrap;
 }
 
 .plugin-filters__select:hover {
@@ -106,16 +113,34 @@
 
 .plugin-filters__count {
   margin-left: auto;
-  padding: 8px 16px;
+  padding: 8px 12px;
   background: var(--bg-tertiary);
   border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--fg-secondary);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Responsive */
+@media (max-width: 1200px) {
+  .plugin-filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .plugin-filters__search {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .plugin-filters__controls {
+    flex-wrap: wrap;
+  }
+}
+
 @media (max-width: 768px) {
   .plugin-filters {
     padding: 16px;

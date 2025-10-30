@@ -79,6 +79,7 @@ export function PluginCard({
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
+    return undefined;
   }, [dropdownOpen]);
 
   const handleDeactivate = () => {
@@ -116,66 +117,76 @@ export function PluginCard({
         </div>
 
         <div className="plugin-card__header-content">
-          <h3
+          <button
+            type="button"
             className="plugin-card__title plugin-card__title--clickable"
             onClick={onViewDetails}
-            role="button"
-            tabIndex={0}
-            onKeyPress={e => e.key === 'Enter' && onViewDetails?.()}
           >
             {manifest.name}
-          </h3>
+          </button>
 
           <div className="plugin-card__author">by {getAuthorName()}</div>
         </div>
 
         <div className="plugin-card__badges">
-          {canDisable && (
-            <div className="plugin-card__state-dropdown" ref={dropdownRef}>
-              <button
-                type="button"
-                className={`plugin-card__state-badge ${
-                  isActive
-                    ? 'plugin-card__state-badge--active'
-                    : 'plugin-card__state-badge--inactive'
-                }`}
-                onClick={() => {
-                  if (isActive && isInstalled) {
-                    setDropdownOpen(!dropdownOpen);
-                  } else {
-                    onToggle?.();
-                  }
-                }}
-                disabled={!canDisable}
-              >
-                {isActive ? 'ACTIF' : 'ACTIVER'}
-                {isActive && isInstalled && <ChevronDown size={12} style={{ marginLeft: '4px' }} />}
-              </button>
+          <div className="plugin-card__state-dropdown" ref={dropdownRef}>
+            <button
+              type="button"
+              className={`plugin-card__state-badge ${(() => {
+                if (!isInstalled) return 'plugin-card__state-badge--install';
+                if (isActive) return 'plugin-card__state-badge--active';
+                return 'plugin-card__state-badge--inactive';
+              })()}`}
+              onClick={() => {
+                if (!isInstalled) {
+                  // Install plugin
+                  onToggle?.();
+                } else if (isActive) {
+                  // Active: show dropdown menu
+                  setDropdownOpen(!dropdownOpen);
+                } else {
+                  // Installed but inactive: activate
+                  onToggle?.();
+                }
+              }}
+              disabled={!canDisable && isInstalled}
+            >
+              {(() => {
+                if (!isInstalled) return 'INSTALLER';
+                if (isActive) return 'ACTIF';
+                return 'ACTIVER';
+              })()}
+              {isActive && isInstalled && <ChevronDown size={12} style={{ marginLeft: '4px' }} />}
+            </button>
 
-              {dropdownOpen && isActive && isInstalled && (
-                <div className="plugin-card__dropdown-menu">
-                  <button
-                    type="button"
-                    className="plugin-card__dropdown-item plugin-card__dropdown-item--deactivate"
-                    onClick={handleDeactivate}
-                  >
-                    <Power size={14} />
-                    <span>Désactiver</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="plugin-card__dropdown-item plugin-card__dropdown-item--uninstall"
-                    onClick={handleUninstall}
-                  >
-                    <Trash2 size={14} />
-                    <span>Supprimer</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+            {dropdownOpen && isActive && isInstalled && (
+              <div className="plugin-card__dropdown-menu">
+                <button
+                  type="button"
+                  className="plugin-card__dropdown-item plugin-card__dropdown-item--deactivate"
+                  onClick={handleDeactivate}
+                >
+                  <Power size={14} />
+                  <span>Désactiver</span>
+                </button>
+                <button
+                  type="button"
+                  className="plugin-card__dropdown-item plugin-card__dropdown-item--uninstall"
+                  onClick={handleUninstall}
+                >
+                  <Trash2 size={14} />
+                  <span>Supprimer</span>
+                </button>
+              </div>
+            )}
+          </div>
           {isActive && manifest.uiContributions?.settings && (
-            <button type="button" className="plugin-card__config-btn" onClick={onConfigure} title="Configurer">
+            <button
+              type="button"
+              className="plugin-card__config-btn"
+              onClick={onConfigure}
+              title="Configurer"
+            >
               <Settings size={14} />
             </button>
           )}

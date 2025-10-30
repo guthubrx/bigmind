@@ -17,8 +17,8 @@
 }
 
 .plugin-card--active {
-  border-color: var(--plugin-color);
-  box-shadow: 0 0 0 1px var(--plugin-color);
+  border-color: #10b981;
+  box-shadow: 0 0 0 1px #10b981;
 }
 
 /* Header */
@@ -135,6 +135,12 @@
   background-color: #e0e7ff;
   color: #3730a3;
   border-color: #a5b4fc;
+}
+
+.plugin-card__state-badge--install {
+  background-color: #fef3c7;
+  color: #92400e;
+  border-color: #fbbf24;
 }
 
 .plugin-card__state-badge:hover {

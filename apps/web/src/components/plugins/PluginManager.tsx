@@ -45,6 +45,10 @@ export function PluginManager({
   const [itemsPerPage, setItemsPerPage] = useState(24);
   const [currentPage, setCurrentPage] = useState(1);
   const [screenSize, setScreenSize] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
+    core: false,
+    optional: false,
+  });
 
   // Detect screen size with breakpoints
   useEffect(() => {
@@ -187,22 +191,22 @@ export function PluginManager({
     [unifiedPlugins, searchQuery, statusFilter, categoryFilter]
   );
 
-  // Organize plugins into sections: Installés vs Disponibles
-  const { installedPlugins, availablePlugins } = useMemo(() => {
-    const installed: typeof filteredPlugins = [];
-    const available: typeof filteredPlugins = [];
+  // Organize plugins into sections: CORE, puis OFFICIAL/COMMUNITY
+  const { corePlugins, optionalPlugins } = useMemo(() => {
+    const core: typeof filteredPlugins = [];
+    const optional: typeof filteredPlugins = [];
 
     filteredPlugins.forEach(item => {
-      if (item.isInstalled) {
-        installed.push(item);
+      if (item.manifest.source === 'core') {
+        core.push(item);
       } else {
-        available.push(item);
+        optional.push(item);
       }
     });
 
     return {
-      installedPlugins: installed,
-      availablePlugins: available,
+      corePlugins: core,
+      optionalPlugins: optional,
     };
   }, [filteredPlugins]);
 
@@ -290,79 +294,115 @@ export function PluginManager({
   };
 
   // Render plugin section
-  const renderSection = (title: string, subtitle: string, items: typeof filteredPlugins) => {
+  const renderSection = (
+    sectionId: string,
+    title: string,
+    subtitle: string,
+    items: typeof filteredPlugins
+  ) => {
     if (items.length === 0) return null;
 
     const { items: paginatedItems, totalPages } = paginateItems(items);
+    const isCollapsed = collapsedSections[sectionId] ?? false;
+
+    const toggleSection = () => {
+      setCollapsedSections(prev => ({
+        ...prev,
+        [sectionId]: !prev[sectionId],
+      }));
+    };
 
     return (
       <section className="plugin-manager__section">
-        <div className="plugin-manager__section-header">
-          <h3 className="plugin-manager__section-title">{title}</h3>
-          <p className="plugin-manager__section-subtitle">
-            {subtitle} ({items.length} plugin{items.length > 1 ? 's' : ''})
-          </p>
-        </div>
-
         <div
-          className="plugin-manager__grid"
-          style={{
-            gridTemplateColumns: `repeat(${effectiveGridColumns}, minmax(0, 1fr))`,
-          }}
+          className="plugin-manager__section-header"
+          onClick={toggleSection}
+          onKeyDown={e => e.key === 'Enter' && toggleSection()}
+          role="button"
+          tabIndex={0}
         >
-          {paginatedItems.map(item => {
-            const isActive = item.isActive ?? false;
-            const isCore = item.manifest.source === 'core';
-            const { isInstalled } = item;
-
-            return (
-              <PluginCard
-                key={item.manifest.id}
-                manifest={item.manifest}
-                isActive={isActive}
-                canDisable={!isCore}
-                isInstalled={isInstalled}
-                onToggle={() => {
-                  if (isCore) return;
-                  if (!isInstalled) {
-                    handleInstall(item.manifest.id);
-                  } else {
-                    handleToggle(item.manifest.id, isActive);
-                  }
-                }}
-                onConfigure={() => onViewPermissions(item.manifest.id)}
-                onViewDetails={() => handleViewDetails(item.manifest.id)}
-                onUninstall={() =>
-                  handleAction(() => onUninstall(item.manifest.id), item.manifest.id)
-                }
-              />
-            );
-          })}
+          <div className="plugin-manager__section-header-content">
+            <h3 className="plugin-manager__section-title">
+              <span className="plugin-manager__section-collapse-icon">
+                {isCollapsed ? '▶' : '▼'}
+              </span>
+              {title}
+            </h3>
+            <p className="plugin-manager__section-subtitle">
+              {subtitle} ({items.length} plugin{items.length > 1 ? 's' : ''})
+            </p>
+          </div>
         </div>
 
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="plugin-manager__pagination">
-            <button
-              type="button"
-              className="plugin-manager__pagination-btn"
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
+        {!isCollapsed && (
+          <>
+            <div
+              className="plugin-manager__grid"
+              style={{
+                gridTemplateColumns: `repeat(${effectiveGridColumns}, minmax(0, 1fr))`,
+              }}
             >
-              ← Précédent
-            </button>
-            <span className="plugin-manager__pagination-info">
-              Page {currentPage} / {totalPages}
-            </span>
-            <button
-              type="button"
-              className="plugin-manager__pagination-btn"
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
-            >
-              Suivant →
-            </button>
-          </div>
+              {paginatedItems.map(item => {
+                const isActive = item.isActive ?? false;
+                const isCore = item.manifest.source === 'core';
+                const { isInstalled } = item;
+
+                return (
+                  <PluginCard
+                    key={item.manifest.id}
+                    manifest={item.manifest}
+                    isActive={isActive}
+                    canDisable={!isCore}
+                    isInstalled={isInstalled}
+                    onToggle={() => {
+                      if (isCore) return;
+                      if (!isInstalled) {
+                        handleInstall(item.manifest.id);
+                      } else {
+                        handleToggle(item.manifest.id, isActive);
+                      }
+                    }}
+                    onConfigure={() => onViewPermissions(item.manifest.id)}
+                    onViewDetails={() => handleViewDetails(item.manifest.id)}
+                    onUninstall={() =>
+                      handleAction(() => onUninstall(item.manifest.id), item.manifest.id)
+                    }
+                  />
+                );
+              })}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="plugin-manager__pagination">
+                <button
+                  type="button"
+                  className="plugin-manager__pagination-btn"
+                  onClick={e => {
+                    e.stopPropagation();
+                    setCurrentPage(prev => Math.max(1, prev - 1));
+                  }}
+                  disabled={currentPage === 1}
+                >
+                  ← Précédent
+                </button>
+                <span className="plugin-manager__pagination-info">
+                  Page {currentPage} / {totalPages}
+                </span>
+                <button
+                  type="button"
+                  className="plugin-manager__pagination-btn"
+                  onClick={e => {
+                    e.stopPropagation();
+                    setCurrentPage(prev => Math.min(totalPages, prev + 1));
+                  }}
+                  disabled={currentPage === totalPages}
+                >
+                  Suivant →
+                </button>
+              </div>
+            )}
+          </>
         )}
       </section>
     );
@@ -396,12 +436,18 @@ export function PluginManager({
       />
 
       {/* Plugin Sections */}
-      {renderSection('Plugins Installés', 'Plugins installés sur votre système', installedPlugins)}
+      {renderSection(
+        'core',
+        'Plugins Core',
+        'Plugins essentiels et non-désactivables',
+        corePlugins
+      )}
 
       {renderSection(
-        'Plugins Disponibles',
-        'Plugins disponibles pour installation',
-        availablePlugins
+        'optional',
+        'Plugins Optionnels',
+        'Plugins officiels et communautaires',
+        optionalPlugins
       )}
 
       {/* Empty State */}
