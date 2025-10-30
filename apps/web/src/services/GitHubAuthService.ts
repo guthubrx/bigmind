@@ -1,11 +1,14 @@
 /**
  * GitHub Authentication Service
- * Gère l'authentification GitHub via Personal Access Token (PAT)
- * Pour MVP: approche simple sans OAuth serveur
+ * Gère l'authentification GitHub via OAuth 2.0
+ * Supporte aussi le Personal Access Token (PAT) pour compatibilité
  */
+
+import { GITHUB_CONFIG } from '../config/github';
 
 const GITHUB_TOKEN_KEY = 'bigmind-github-token';
 const GITHUB_USER_KEY = 'bigmind-github-user';
+const OAUTH_STATE_KEY = 'bigmind-oauth-state';
 
 export interface GitHubUser {
   login: string; // GitHub username
@@ -124,6 +127,132 @@ export class GitHubAuthService {
       console.error('[GitHubAuth] Token validation failed:', error);
       return false;
     }
+  }
+
+  /**
+   * Démarre le flow OAuth en redirigeant vers GitHub
+   * Génère un state random pour prévenir CSRF
+   */
+  // eslint-disable-next-line class-methods-use-this
+  startOAuthFlow(): void {
+    if (!GITHUB_CONFIG.clientId) {
+      throw new Error('GitHub OAuth not configured. Set VITE_GITHUB_CLIENT_ID in .env.local');
+    }
+
+    // Générer un state random pour CSRF protection
+    const state = Math.random().toString(36).substring(2, 15);
+    localStorage.setItem(OAUTH_STATE_KEY, state);
+
+    // Construire l'URL d'autorisation GitHub
+    const params = new URLSearchParams({
+      client_id: GITHUB_CONFIG.clientId,
+      redirect_uri: window.location.origin,
+      scope: GITHUB_CONFIG.scopes.join(' '),
+      state,
+    });
+
+    const authUrl = `${GITHUB_CONFIG.authUrl}?${params.toString()}`;
+
+    // eslint-disable-next-line no-console
+    console.log('[GitHubAuth] Starting OAuth flow...');
+
+    // Rediriger vers GitHub
+    window.location.href = authUrl;
+  }
+
+  /**
+   * Gère le callback OAuth après redirection depuis GitHub
+   * Échange le code d'autorisation contre un token via Supabase Edge Function
+   */
+  // eslint-disable-next-line class-methods-use-this
+  async handleOAuthCallback(
+    code: string,
+    state: string
+  ): Promise<{ success: boolean; user?: GitHubUser; error?: string }> {
+    try {
+      // Vérifier le state pour CSRF protection
+      const savedState = localStorage.getItem(OAUTH_STATE_KEY);
+      if (!savedState || savedState !== state) {
+        throw new Error('Invalid state parameter - possible CSRF attack');
+      }
+
+      // Nettoyer le state
+      localStorage.removeItem(OAUTH_STATE_KEY);
+
+      // eslint-disable-next-line no-console
+      console.log('[GitHubAuth] Exchanging code for token via Edge Function...');
+
+      // Appeler la Supabase Edge Function pour échanger le code
+      const response = await fetch(GITHUB_CONFIG.oauthCallbackUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Edge Function error: ${error}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.success || !data.token || !data.user) {
+        throw new Error(data.error || 'Failed to get token from Edge Function');
+      }
+
+      const user: GitHubUser = {
+        login: data.user.login,
+        name: data.user.name || data.user.login,
+        email: data.user.email || '',
+        avatarUrl: data.user.avatar_url,
+      };
+
+      // Stocker le token et user info
+      localStorage.setItem(GITHUB_TOKEN_KEY, data.token);
+      localStorage.setItem(GITHUB_USER_KEY, JSON.stringify(user));
+
+      // eslint-disable-next-line no-console
+      console.log('[GitHubAuth] OAuth login successful:', user.login);
+
+      return { success: true, user };
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('[GitHubAuth] OAuth callback failed:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error during OAuth callback',
+      };
+    }
+  }
+
+  /**
+   * Vérifie si on revient d'un OAuth callback
+   * Retourne le code et state si présents dans l'URL
+   */
+  // eslint-disable-next-line class-methods-use-this
+  checkOAuthCallback(): { code: string; state: string } | null {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const state = params.get('state');
+
+    if (code && state) {
+      return { code, state };
+    }
+
+    return null;
+  }
+
+  /**
+   * Nettoie les paramètres OAuth de l'URL après traitement
+   */
+  // eslint-disable-next-line class-methods-use-this
+  cleanOAuthParams(): void {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('code');
+    url.searchParams.delete('state');
+    window.history.replaceState({}, document.title, url.toString());
   }
 }
 
