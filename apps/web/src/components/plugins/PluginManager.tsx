@@ -74,9 +74,16 @@ export function PluginManager({
 
   // Load remote plugins from GitHub
   useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log('[PluginManager] useEffect triggered - loading remote plugins...');
+
     const loadRemote = async () => {
       try {
+        // eslint-disable-next-line no-console
+        console.log('[PluginManager] Calling gitHubPluginRegistry.fetchRegistry()...');
         const registry = await gitHubPluginRegistry.fetchRegistry();
+        // eslint-disable-next-line no-console
+        console.log('[PluginManager] Remote plugins loaded:', registry.length);
         setRemotePlugins(registry);
       } catch (error) {
         // eslint-disable-next-line no-console
