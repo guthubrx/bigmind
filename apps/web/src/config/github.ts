@@ -23,8 +23,8 @@ export const GITHUB_CONFIG = {
     import.meta.env.VITE_SUPABASE_FUNCTIONS_URL ||
     'https://your-project.supabase.co/functions/v1/github-oauth',
 
-  // GitHub OAuth scopes
-  scopes: ['repo', 'read:user'],
+  // GitHub OAuth scopes (minimal privileges)
+  scopes: ['public_repo', 'read:user'],
 
   // GitHub authorization URL
   authUrl: 'https://github.com/login/oauth/authorize',
