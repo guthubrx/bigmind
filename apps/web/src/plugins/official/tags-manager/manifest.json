@@ -8,13 +8,20 @@
     "name": "BigMind Team",
     "email": "team@bigmind.com"
   },
-  "main": "index.js",
+  "main": "tags-manager-plugin.js",
   "icon": "🏷️",
   "logo": "/assets/plugin-logos/tags-manager.svg",
   "color": "#3B82F6",
   "category": "productivity",
-  "tags": ["tags", "organization", "filtering", "productivity", "workflow"],
+  "tags": [
+    "tags",
+    "organization",
+    "filtering",
+    "productivity",
+    "workflow"
+  ],
   "source": "official",
+  "autoActivate": true,
   "pricing": "free",
   "featured": true,
   "license": "MIT",
@@ -80,23 +87,9 @@
     "commands": [],
     "menus": [],
     "panels": [
-      {
-        "id": "tags-organization",
-        "title": "Organisation",
-        "location": "sidebar",
-        "webview": "webviews/tags-panel.html"
-      }
+      "tags-organization"
     ],
-    "nodePropertiesTabs": [
-      {
-        "id": "tags",
-        "label": "Tags",
-        "icon": "Tag",
-        "order": 30,
-        "webview": "webviews/node-tags-panel.html"
-      }
-    ],
-    "settings": []
+    "settings": false
   },
   "permissions": []
 }

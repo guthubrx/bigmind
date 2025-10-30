@@ -8,12 +8,18 @@
     "name": "BigMind Team",
     "email": "team@bigmind.com"
   },
-  "main": "index.js",
+  "main": "xmind-compatibility-plugin.js",
   "icon": "🔄",
   "logo": "/assets/plugin-logos/xmind-compatibility.svg",
   "color": "#FF6B35",
   "category": "integration",
-  "tags": ["xmind", "compatibility", "interoperability", "sync", "professional"],
+  "tags": [
+    "xmind",
+    "compatibility",
+    "interoperability",
+    "sync",
+    "professional"
+  ],
   "source": "core",
   "pricing": "free",
   "featured": true,
@@ -70,11 +76,15 @@
       "changes": [
         {
           "type": "added",
-          "description": "Synchronisation bidirectionnelle complète avec XMind"
+          "description": "Système de synchronisation bidirectionnelle complet"
         },
         {
           "type": "added",
-          "description": "Conversion automatique Rich Text ↔ Markdown"
+          "description": "Support des thèmes et palettes XMind"
+        },
+        {
+          "type": "added",
+          "description": "Conversion Rich Text ↔ Markdown"
         },
         {
           "type": "added",
@@ -82,20 +92,32 @@
         },
         {
           "type": "added",
-          "description": "Interprétation des thèmes et palettes XMind"
+          "description": "Préservation des extensions et métadonnées XMind"
         }
       ]
     }
   ],
   "hooks": {
-    "listens": ["file.opened", "file.beforeSave"],
-    "emits": ["xmind.themeApplied", "xmind.markersConverted"]
+    "listens": [
+      "file.loaded",
+      "file.beforeSave"
+    ],
+    "emits": [
+      "xmind.parsed",
+      "xmind.serialized"
+    ]
   },
   "uiContributions": {
-    "commands": [],
+    "commands": [
+      "xmind.parse",
+      "xmind.serialize",
+      "xmind.getTheme"
+    ],
     "menus": [],
     "panels": [],
-    "settings": []
+    "settings": true
   },
-  "permissions": []
+  "permissions": [
+    "storage"
+  ]
 }

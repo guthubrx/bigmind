@@ -8,13 +8,19 @@
     "name": "BigMind Team",
     "email": "team@bigmind.com"
   },
-  "main": "index.js",
+  "main": "palette-settings-plugin.js",
   "icon": "🎨",
   "logo": "/assets/plugin-logos/palette-settings.svg",
   "color": "#8B5CF6",
   "category": "theme",
-  "tags": ["settings", "palettes", "ui", "configuration", "productivity"],
-  "source": "official",
+  "tags": [
+    "settings",
+    "palettes",
+    "ui",
+    "configuration",
+    "productivity"
+  ],
+  "source": "core",
   "pricing": "free",
   "license": "MIT",
   "bigmindVersion": "1.0.0",
@@ -68,21 +74,7 @@
     "commands": [],
     "menus": [],
     "panels": [],
-    "settings": [
-      {
-        "id": "palette-defaults",
-        "label": "Palettes de couleurs",
-        "section": "appearance",
-        "webview": "webviews/palette-settings.html"
-      }
-    ],
-    "mapSettings": [
-      {
-        "id": "map-palette",
-        "label": "Palette de la carte",
-        "webview": "webviews/map-palette-settings.html"
-      }
-    ]
+    "settings": true
   },
   "permissions": []
 }

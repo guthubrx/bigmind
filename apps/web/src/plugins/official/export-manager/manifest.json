@@ -8,13 +8,20 @@
     "name": "BigMind Team",
     "email": "team@bigmind.com"
   },
-  "main": "index.js",
+  "main": "export-manager-plugin.js",
   "icon": "📤",
   "logo": "/assets/plugin-logos/export-manager.svg",
   "color": "#10B981",
   "category": "export",
-  "tags": ["export", "save", "xmind", "interoperability", "backup"],
+  "tags": [
+    "export",
+    "save",
+    "xmind",
+    "interoperability",
+    "backup"
+  ],
   "source": "official",
+  "autoActivate": true,
   "pricing": "free",
   "license": "MIT",
   "bigmindVersion": "1.0.0",
@@ -73,26 +80,22 @@
   ],
   "hooks": {
     "listens": [],
-    "emits": ["export.started", "export.completed", "export.failed"]
+    "emits": [
+      "export.started",
+      "export.completed",
+      "export.failed"
+    ]
   },
   "uiContributions": {
     "commands": [
-      {
-        "id": "export.xmind",
-        "title": "Export XMind",
-        "shortcut": "Cmd+Shift+E",
-        "category": "File"
-      }
+      "export.xmind"
     ],
     "menus": [
-      {
-        "id": "export-xmind-menu",
-        "label": "Export > XMind",
-        "command": "export.xmind"
-      }
+      "File > Export > XMind",
+      "Toolbar > Save"
     ],
     "panels": [],
-    "settings": []
+    "settings": false
   },
   "permissions": []
 }

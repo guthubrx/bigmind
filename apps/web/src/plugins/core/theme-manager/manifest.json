@@ -3,7 +3,7 @@
   "name": "Theme Manager",
   "version": "1.0.0",
   "description": "Gérez les thèmes d'interface Light et Dark pour personnaliser l'apparence globale",
-  "longDescription": "Adaptez BigMind à votre environnement de travail et à vos préférences visuelles. Theme Manager gère l'ensemble du système de thèmes de l'interface, appliquant automatiquement les variables CSS à tous les composants.\n\nUn confort visuel optimal\n\nTravaillez de jour avec le mode Light lumineux et passez au mode Dark le soir pour préserver vos yeux. Tous les éléments de l'interface s'adaptent instantanément : panneaux, boutons, menus, nœuds. Le thème sélectionné est sauvegardé et restauré automatiquement à chaque session.",
+  "longDescription": "Adaptez BigMind à votre environnement de travail et à vos préférences visuelles. Theme Manager gère l'ensemble du système de thèmes de l'interface, appliquant automatiquement les variables CSS à tous les composants.\n\n**Un confort visuel optimal**\n\nTravaillez de jour avec le mode Light lumineux et passez au mode Dark le soir pour préserver vos yeux. Tous les éléments de l'interface s'adaptent instantanément : panneaux, boutons, menus, nœuds. Le thème sélectionné est sauvegardé et restauré automatiquement à chaque session.",
   "author": {
     "name": "BigMind Team",
     "email": "team@bigmind.com"
@@ -13,7 +13,13 @@
   "logo": "/assets/plugin-logos/theme-manager.svg",
   "color": "#6366F1",
   "category": "theme",
-  "tags": ["theme", "dark-mode", "light-mode", "appearance", "ui"],
+  "tags": [
+    "theme",
+    "dark-mode",
+    "light-mode",
+    "appearance",
+    "ui"
+  ],
   "license": "MIT",
   "bigmindVersion": "1.0.0",
   "source": "core",
@@ -28,5 +34,71 @@
     "Variables CSS automatiques pour cohérence parfaite",
     "Persistance automatique du thème sélectionné",
     "Base extensible pour créer vos propres thèmes"
-  ]
+  ],
+  "useCases": [
+    "Travail de jour : utilisez le mode Light pour une interface claire",
+    "Travail de nuit : passez en mode Dark pour protéger vos yeux",
+    "Présentations : choisissez le thème adapté à votre écran",
+    "Personnalisation : créez votre propre thème avec les variables CSS"
+  ],
+  "features": [
+    {
+      "label": "Mode Light",
+      "description": "Interface claire et lumineuse pour un environnement bien éclairé",
+      "icon": "☀️"
+    },
+    {
+      "label": "Mode Dark",
+      "description": "Interface sombre pour réduire la fatigue oculaire en faible luminosité",
+      "icon": "🌙"
+    },
+    {
+      "label": "Variables CSS globales",
+      "description": "Tous les composants s'adaptent automatiquement au thème sélectionné",
+      "icon": "🎨"
+    }
+  ],
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2025-01-28",
+      "changes": [
+        {
+          "type": "added",
+          "description": "Thème Light avec palette claire"
+        },
+        {
+          "type": "added",
+          "description": "Thème Dark avec palette sombre"
+        },
+        {
+          "type": "added",
+          "description": "Application automatique des variables CSS"
+        },
+        {
+          "type": "added",
+          "description": "Persistance du thème sélectionné"
+        }
+      ]
+    }
+  ],
+  "hooks": {
+    "listens": [
+      "theme.changed"
+    ],
+    "emits": []
+  },
+  "uiContributions": {
+    "commands": [
+      "themes.list",
+      "themes.get",
+      "themes.apply"
+    ],
+    "menus": [
+      "Settings > Appearance > Theme"
+    ],
+    "panels": [],
+    "settings": true
+  },
+  "permissions": []
 }

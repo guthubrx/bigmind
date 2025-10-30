@@ -8,16 +8,22 @@
     "name": "BigMind Team",
     "email": "team@bigmind.com"
   },
-  "main": "index.js",
+  "main": "color-palettes-collection-plugin.js",
   "icon": "🎨",
   "logo": "/assets/plugin-logos/color-palettes-collection.svg",
   "color": "#8B5CF6",
   "category": "theme",
-  "tags": ["colors", "palettes", "theme", "design", "productivity"],
+  "tags": [
+    "colors",
+    "palettes",
+    "theme",
+    "design",
+    "productivity"
+  ],
   "source": "official",
   "pricing": "free",
   "featured": true,
-  "autoActivate": false,
+  "autoActivate": true,
   "license": "MIT",
   "bigmindVersion": "1.0.0",
   "tagline": "Des couleurs parfaites pour chaque contexte",
@@ -67,11 +73,11 @@
         },
         {
           "type": "added",
-          "description": "Thèmes de code populaires (Dracula, Nord, etc.)"
+          "description": "8 palettes essentielles (Vibrant, Pastel, Earth, Neon, Ocean, Rainbow, Monochrome, Material)"
         },
         {
           "type": "added",
-          "description": "Palettes vintage et rétro"
+          "description": "33 palettes étendues (thèmes de code, rétro, thématiques)"
         }
       ]
     }
@@ -84,7 +90,7 @@
     "commands": [],
     "menus": [],
     "panels": [],
-    "settings": []
+    "settings": false
   },
   "permissions": []
 }
