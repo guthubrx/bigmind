@@ -228,7 +228,7 @@
   color: var(--fg-primary);
   font-family: inherit;
   font-size: 0.875rem;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .form-input:focus {
@@ -237,10 +237,48 @@
   box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
 }
 
+/* FR: État de validation - Bordure verte pour email valide */
+/* EN: Validation state - Green border for valid email */
+.form-input--valid {
+  border-color: #10b981;
+}
+
+.form-input--valid:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* FR: État de validation - Bordure rouge pour email invalide */
+/* EN: Validation state - Red border for invalid email */
+.form-input--invalid {
+  border-color: #ef4444;
+}
+
+.form-input--invalid:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
 .form-hint {
   font-size: 0.75rem;
   color: var(--fg-tertiary);
   line-height: 1.4;
+  margin-top: 4px;
+  transition: color 0.2s;
+}
+
+/* FR: Message d'aide pour email valide */
+/* EN: Help message for valid email */
+.form-hint--success {
+  color: #10b981;
+  font-weight: 500;
+}
+
+/* FR: Message d'aide pour email invalide */
+/* EN: Help message for invalid email */
+.form-hint--error {
+  color: #ef4444;
+  font-weight: 500;
 }
 
 .form-error {

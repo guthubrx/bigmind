@@ -61,9 +61,61 @@ export function ReportPluginModal({
   const [category, setCategory] = useState<ReportCategory>('other');
   const [description, setDescription] = useState('');
   const [email, setEmail] = useState('');
+  const [emailTouched, setEmailTouched] = useState(false); // FR: Suivi si l'utilisateur a interagi avec le champ
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  // FR: Validation email améliorée (RFC 5322 simplifié)
+  // EN: Improved email validation (RFC 5322 simplified)
+  const isValidEmail = (emailValue: string): boolean => {
+    if (!emailValue) return true; // Empty is valid (optional field)
+
+    // FR: Détection d'erreurs courantes
+    // EN: Detect common errors
+    if (emailValue.includes(' ')) return false; // No spaces
+    if (emailValue.includes('..')) return false; // No consecutive dots
+    if (emailValue.startsWith('.') || emailValue.startsWith('@')) return false;
+    if (emailValue.endsWith('.') || emailValue.endsWith('@')) return false;
+
+    // FR: Regex stricte pour validation
+    // EN: Strict regex for validation
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(emailValue);
+  };
+
+  // FR: Retourne un message d'aide contextuel
+  // EN: Returns contextual help message
+  const getEmailHelpMessage = (): string | null => {
+    if (!emailTouched || !email) return null;
+
+    if (email.includes(' ')) return '❌ L\'email ne doit pas contenir d\'espaces';
+    if (email.includes('..')) return '❌ Points consécutifs non autorisés';
+    if (!email.includes('@')) return '❌ L\'email doit contenir un @';
+    if (email.split('@').length > 2) return '❌ Un seul @ autorisé';
+    if (email.includes('@') && !email.split('@')[1].includes('.')) {
+      return '❌ Domaine invalide (exemple: @gmail.com)';
+    }
+    if (isValidEmail(email)) return '✓ Email valide';
+
+    return '❌ Format email invalide';
+  };
+
+  // FR: Classe CSS pour feedback visuel
+  // EN: CSS class for visual feedback
+  const getEmailInputClass = (): string => {
+    let className = 'form-input';
+
+    if (emailTouched && email) {
+      if (isValidEmail(email)) {
+        className += ' form-input--valid';
+      } else {
+        className += ' form-input--invalid';
+      }
+    }
+
+    return className;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,8 +164,6 @@ export function ReportPluginModal({
       setIsSubmitting(false);
     }
   };
-
-  const isValidEmail = (email: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   if (showSuccess) {
     return (
@@ -203,14 +253,29 @@ export function ReportPluginModal({
             <input
               type="email"
               id="email"
-              className="form-input"
+              className={getEmailInputClass()}
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="Pour être informé du traitement de votre signalement"
+              onBlur={() => setEmailTouched(true)}
+              onFocus={() => setEmailTouched(true)}
+              placeholder="votre.email@exemple.com"
+              autoComplete="email"
+              spellCheck="false"
             />
-            <div className="form-hint">
-              Votre email ne sera utilisé que pour vous informer du traitement de ce signalement.
-            </div>
+            {getEmailHelpMessage() && (
+              <div
+                className={`form-hint ${
+                  isValidEmail(email) ? 'form-hint--success' : 'form-hint--error'
+                }`}
+              >
+                {getEmailHelpMessage()}
+              </div>
+            )}
+            {!getEmailHelpMessage() && (
+              <div className="form-hint">
+                Votre email ne sera utilisé que pour vous informer du traitement de ce signalement.
+              </div>
+            )}
           </div>
 
           {error && (

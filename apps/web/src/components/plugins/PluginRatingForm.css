@@ -112,6 +112,45 @@
   cursor: not-allowed;
 }
 
+/* FR: État de validation - Bordure verte pour email valide */
+/* EN: Validation state - Green border for valid email */
+.plugin-rating-form__input--valid {
+  border-color: #10b981;
+}
+
+.plugin-rating-form__input--valid:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* FR: État de validation - Bordure rouge pour email invalide */
+/* EN: Validation state - Red border for invalid email */
+.plugin-rating-form__input--invalid {
+  border-color: #ef4444;
+}
+
+.plugin-rating-form__input--invalid:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* FR: Message d'aide pour validation email */
+/* EN: Help message for email validation */
+.plugin-rating-form__hint {
+  font-size: 10px;
+  margin-top: 2px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.plugin-rating-form__hint--success {
+  color: #10b981;
+}
+
+.plugin-rating-form__hint--error {
+  color: #ef4444;
+}
+
 .plugin-rating-form__textarea {
   resize: vertical;
   min-height: 50px;

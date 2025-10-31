@@ -18,6 +18,7 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
   const [hoverRating, setHoverRating] = useState(0);
   const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
+  const [emailTouched, setEmailTouched] = useState(false);
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -89,6 +90,57 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
     }
   };
 
+  // FR: Validation email améliorée (RFC 5322 simplifié)
+  // EN: Improved email validation (RFC 5322 simplified)
+  const isValidEmail = (emailValue: string): boolean => {
+    if (!emailValue) return true; // Empty is valid (optional field)
+
+    // FR: Détection d'erreurs courantes
+    // EN: Detect common errors
+    if (emailValue.includes(' ')) return false;
+    if (emailValue.includes('..')) return false;
+    if (emailValue.startsWith('.') || emailValue.startsWith('@')) return false;
+    if (emailValue.endsWith('.') || emailValue.endsWith('@')) return false;
+
+    // FR: Regex stricte pour validation
+    // EN: Strict regex for validation
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(emailValue);
+  };
+
+  // FR: Retourne un message d'aide contextuel
+  // EN: Returns contextual help message
+  const getEmailHelpMessage = (): string | null => {
+    if (!emailTouched || !email) return null;
+
+    if (email.includes(' ')) return '❌ Pas d\'espaces';
+    if (email.includes('..')) return '❌ Points consécutifs';
+    if (!email.includes('@')) return '❌ Manque @';
+    if (email.split('@').length > 2) return '❌ Un seul @';
+    if (email.includes('@') && !email.split('@')[1].includes('.')) {
+      return '❌ Domaine invalide';
+    }
+    if (isValidEmail(email)) return '✓ Valide';
+
+    return '❌ Format invalide';
+  };
+
+  // FR: Classe CSS pour feedback visuel
+  // EN: CSS class for visual feedback
+  const getEmailInputClass = (): string => {
+    let className = 'plugin-rating-form__input';
+
+    if (emailTouched && email) {
+      if (isValidEmail(email)) {
+        className += ' plugin-rating-form__input--valid';
+      } else {
+        className += ' plugin-rating-form__input--invalid';
+      }
+    }
+
+    return className;
+  };
+
   return (
     <form className="plugin-rating-form" onSubmit={handleSubmit}>
       {/* Compact Header */}
@@ -141,12 +193,27 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
           <input
             type="email"
             id="email"
-            className="plugin-rating-form__input"
+            className={getEmailInputClass()}
             placeholder="alice@example.com"
             value={email}
             onChange={e => setEmail(e.target.value)}
+            onBlur={() => setEmailTouched(true)}
+            onFocus={() => setEmailTouched(true)}
             disabled={isSubmitting}
+            autoComplete="email"
+            spellCheck="false"
           />
+          {getEmailHelpMessage() && (
+            <span
+              className={`plugin-rating-form__hint ${
+                isValidEmail(email)
+                  ? 'plugin-rating-form__hint--success'
+                  : 'plugin-rating-form__hint--error'
+              }`}
+            >
+              {getEmailHelpMessage()}
+            </span>
+          )}
         </div>
       </div>
 
