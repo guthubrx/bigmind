@@ -20,6 +20,7 @@ export function emitNodeCreated(data: {
   node: any;
 }): void {
   pluginSystem.hookSystem.doAction('mindmap.nodeCreated', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering nodeCreated:', error);
   });
 }
@@ -29,6 +30,7 @@ export function emitNodeCreated(data: {
  */
 export function emitNodeUpdated(data: { nodeId: string; title: string; node: any }): void {
   pluginSystem.hookSystem.doAction('mindmap.nodeUpdated', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering nodeUpdated:', error);
   });
 }
@@ -38,6 +40,7 @@ export function emitNodeUpdated(data: { nodeId: string; title: string; node: any
  */
 export function emitNodeDeleted(data: { nodeId: string; node: any }): void {
   pluginSystem.hookSystem.doAction('mindmap.nodeDeleted', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering nodeDeleted:', error);
   });
 }
@@ -47,6 +50,7 @@ export function emitNodeDeleted(data: { nodeId: string; node: any }): void {
  */
 export function emitNodeSelected(data: { nodeId: string | null; nodeIds: string[] }): void {
   pluginSystem.hookSystem.doAction('mindmap.nodeSelected', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering nodeSelected:', error);
   });
 }
@@ -56,6 +60,7 @@ export function emitNodeSelected(data: { nodeId: string | null; nodeIds: string[
  */
 export function emitNodeStyleChanged(data: { nodeId: string; style: any }): void {
   pluginSystem.hookSystem.doAction('mindmap.nodeStyleChanged', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering nodeStyleChanged:', error);
   });
 }
@@ -69,6 +74,7 @@ export function emitNodeStyleChanged(data: { nodeId: string; style: any }): void
  */
 export function emitFileCreated(data: { fileId: string; name: string; type: string }): void {
   pluginSystem.hookSystem.doAction('file.created', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering file.created:', error);
   });
 }
@@ -83,6 +89,7 @@ export function emitFileOpened(data: {
   path?: string;
 }): void {
   pluginSystem.hookSystem.doAction('file.opened', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering file.opened:', error);
   });
 }
@@ -92,6 +99,7 @@ export function emitFileOpened(data: {
  */
 export function emitFileClosed(data: { fileId: string; name: string }): void {
   pluginSystem.hookSystem.doAction('file.closed', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering file.closed:', error);
   });
 }
@@ -101,6 +109,7 @@ export function emitFileClosed(data: { fileId: string; name: string }): void {
  */
 export function emitFileActivated(data: { fileId: string; name: string }): void {
   pluginSystem.hookSystem.doAction('file.activated', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering file.activated:', error);
   });
 }
@@ -114,6 +123,7 @@ export function emitSheetChanged(data: {
   sheetTitle: string;
 }): void {
   pluginSystem.hookSystem.doAction('file.sheetChanged', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering file.sheetChanged:', error);
   });
 }
@@ -127,6 +137,7 @@ export function emitSheetChanged(data: {
  */
 export function emitViewportChanged(data: { x: number; y: number; zoom: number }): void {
   pluginSystem.hookSystem.doAction('viewport.changed', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering viewport.changed:', error);
   });
 }
@@ -140,6 +151,7 @@ export function emitViewportChanged(data: { x: number; y: number; zoom: number }
  */
 export function emitPaletteChanged(data: { type: 'node' | 'tag'; paletteId: string }): void {
   pluginSystem.hookSystem.doAction('palette.changed', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering palette.changed:', error);
   });
 }
@@ -149,6 +161,7 @@ export function emitPaletteChanged(data: { type: 'node' | 'tag'; paletteId: stri
  */
 export function emitColorsApplied(data: { theme: any }): void {
   pluginSystem.hookSystem.doAction('colors.applied', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering colors.applied:', error);
   });
 }
@@ -158,6 +171,7 @@ export function emitColorsApplied(data: { theme: any }): void {
  */
 export function emitThemeChanged(data: { themeId: string }): void {
   pluginSystem.hookSystem.doAction('theme.changed', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering theme.changed:', error);
   });
 }
@@ -171,6 +185,7 @@ export function emitThemeChanged(data: { themeId: string }): void {
  */
 export function emitSettingsChanged(data: { setting: string; value: any }): void {
   pluginSystem.hookSystem.doAction('settings.changed', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering settings.changed:', error);
   });
 }
@@ -184,6 +199,7 @@ export function emitSettingsChanged(data: { setting: string; value: any }): void
  */
 export function emitCanvasOptionChanged(data: { option: string; value: any }): void {
   pluginSystem.hookSystem.doAction('canvas.optionChanged', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering canvas.optionChanged:', error);
   });
 }
@@ -197,6 +213,7 @@ export function emitCanvasOptionChanged(data: { option: string; value: any }): v
  */
 export function emitTagCreated(data: { tagId: string; label: string; color: string }): void {
   pluginSystem.hookSystem.doAction('tag.created', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering tag.created:', error);
   });
 }
@@ -206,6 +223,7 @@ export function emitTagCreated(data: { tagId: string; label: string; color: stri
  */
 export function emitTagDeleted(data: { tagId: string }): void {
   pluginSystem.hookSystem.doAction('tag.deleted', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering tag.deleted:', error);
   });
 }
@@ -215,6 +233,7 @@ export function emitTagDeleted(data: { tagId: string }): void {
  */
 export function emitTagVisibilityChanged(data: { tagId: string; hidden: boolean }): void {
   pluginSystem.hookSystem.doAction('tag.visibilityChanged', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering tag.visibilityChanged:', error);
   });
 }
@@ -224,6 +243,7 @@ export function emitTagVisibilityChanged(data: { tagId: string; hidden: boolean 
  */
 export function emitNodeTagged(data: { nodeId: string; tagId: string }): void {
   pluginSystem.hookSystem.doAction('tag.nodeTagged', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering tag.nodeTagged:', error);
   });
 }
@@ -233,6 +253,7 @@ export function emitNodeTagged(data: { nodeId: string; tagId: string }): void {
  */
 export function emitNodeUntagged(data: { nodeId: string; tagId: string }): void {
   pluginSystem.hookSystem.doAction('tag.nodeUntagged', data).catch(error => {
+    // eslint-disable-next-line no-console
     console.error('[events] Error triggering tag.nodeUntagged:', error);
   });
 }

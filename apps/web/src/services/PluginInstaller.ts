@@ -190,27 +190,23 @@ async function createPluginFromCode(code: string, manifest: PluginManifest): Pro
  */
 export async function installPlugin(pluginId: string): Promise<Plugin> {
   // eslint-disable-next-line no-console
-  console.log(`[PluginInstaller] Installing plugin: ${pluginId}`);
 
   try {
     // Check if already installed
     const existing = await getPluginFromDB(pluginId);
     if (existing) {
       // eslint-disable-next-line no-console
-      console.log('[PluginInstaller] Plugin already installed, loading from cache');
       return await createPluginFromCode(existing.code, existing.manifest);
     }
 
     // Download manifest
     const manifest = await gitHubPluginRegistry.getManifest(pluginId);
     // eslint-disable-next-line no-console
-    console.log('[PluginInstaller] Downloaded manifest:', manifest.name);
 
     // Download plugin code
     const blob = await gitHubPluginRegistry.downloadPlugin(pluginId);
     const code = await blob.text();
     // eslint-disable-next-line no-console
-    console.log('[PluginInstaller] Downloaded plugin code:', code.length, 'bytes');
 
     // Save to IndexedDB
     const pluginData: InstalledPluginData = {
@@ -223,7 +219,6 @@ export async function installPlugin(pluginId: string): Promise<Plugin> {
 
     await savePluginToDB(pluginData);
     // eslint-disable-next-line no-console
-    console.log('[PluginInstaller] Saved plugin to IndexedDB');
 
     // Record download in Supabase
     await recordPluginDownload(pluginId);
@@ -231,7 +226,6 @@ export async function installPlugin(pluginId: string): Promise<Plugin> {
     // Create plugin object
     const plugin = await createPluginFromCode(code, manifest as PluginManifest);
     // eslint-disable-next-line no-console
-    console.log(`[PluginInstaller] Successfully installed: ${pluginId}`);
 
     return plugin;
   } catch (error) {
@@ -246,12 +240,10 @@ export async function installPlugin(pluginId: string): Promise<Plugin> {
  */
 export async function uninstallPlugin(pluginId: string): Promise<void> {
   // eslint-disable-next-line no-console
-  console.log(`[PluginInstaller] Uninstalling plugin: ${pluginId}`);
 
   try {
     await removePluginFromDB(pluginId);
     // eslint-disable-next-line no-console
-    console.log(`[PluginInstaller] Successfully uninstalled: ${pluginId}`);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(`[PluginInstaller] Failed to uninstall plugin ${pluginId}:`, error);
@@ -276,7 +268,7 @@ export async function loadInstalledPlugin(pluginId: string): Promise<Plugin | nu
     return null;
   }
 
-  return await createPluginFromCode(data.code, data.manifest);
+  return createPluginFromCode(data.code, data.manifest);
 }
 
 /**
@@ -284,9 +276,10 @@ export async function loadInstalledPlugin(pluginId: string): Promise<Plugin | nu
  * @param githubUrl - GitHub repository URL (e.g., https://github.com/user/repo)
  * @param branch - Branch name (default: 'main')
  */
-export async function installPluginFromGitHub(githubUrl: string, branch: string = 'main'): Promise<Plugin> {
-  console.log(`[PluginInstaller] Installing plugin from GitHub: ${githubUrl}`);
-
+export async function installPluginFromGitHub(
+  githubUrl: string,
+  branch: string = 'main'
+): Promise<Plugin> {
   try {
     // Parse GitHub URL
     const url = new URL(githubUrl);
@@ -306,16 +299,14 @@ export async function installPluginFromGitHub(githubUrl: string, branch: string 
     const manifestUrl = `https://raw.githubusercontent.com/${user}/${repo}/${branch}/manifest.json`;
     const pluginJsUrl = `https://raw.githubusercontent.com/${user}/${repo}/${branch}/plugin.js`;
 
-    console.log(`[PluginInstaller] Fetching manifest from: ${manifestUrl}`);
-
     // Download manifest
     const manifestResponse = await fetch(manifestUrl);
     if (!manifestResponse.ok) {
-      throw new Error(`Failed to fetch manifest: ${manifestResponse.status} ${manifestResponse.statusText}`);
+      throw new Error(
+        `Failed to fetch manifest: ${manifestResponse.status} ${manifestResponse.statusText}`
+      );
     }
-    const manifest = await manifestResponse.json() as PluginManifest;
-
-    console.log(`[PluginInstaller] Downloaded manifest for: ${manifest.name}`);
+    const manifest = (await manifestResponse.json()) as PluginManifest;
 
     // Check if already installed
     const existing = await getPluginFromDB(manifest.id);
@@ -323,16 +314,14 @@ export async function installPluginFromGitHub(githubUrl: string, branch: string 
       throw new Error(`Plugin ${manifest.id} is already installed. Uninstall it first.`);
     }
 
-    console.log(`[PluginInstaller] Fetching plugin code from: ${pluginJsUrl}`);
-
     // Download plugin code
     const codeResponse = await fetch(pluginJsUrl);
     if (!codeResponse.ok) {
-      throw new Error(`Failed to fetch plugin code: ${codeResponse.status} ${codeResponse.statusText}`);
+      throw new Error(
+        `Failed to fetch plugin code: ${codeResponse.status} ${codeResponse.statusText}`
+      );
     }
     const code = await codeResponse.text();
-
-    console.log(`[PluginInstaller] Downloaded plugin code: ${code.length} bytes`);
 
     // Save to IndexedDB
     const pluginData: InstalledPluginData = {
@@ -344,14 +333,12 @@ export async function installPluginFromGitHub(githubUrl: string, branch: string 
     };
 
     await savePluginToDB(pluginData);
-    console.log('[PluginInstaller] Saved plugin to IndexedDB');
 
     // Record download in Supabase
     await recordPluginDownload(manifest.id);
 
     // Create plugin object
     const plugin = await createPluginFromCode(code, manifest);
-    console.log(`[PluginInstaller] Successfully installed from GitHub: ${manifest.id}`);
 
     return plugin;
   } catch (error) {
