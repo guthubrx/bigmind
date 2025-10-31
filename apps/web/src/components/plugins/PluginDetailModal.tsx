@@ -162,21 +162,24 @@ export function PluginDetailModal({
           <div className="plugin-detail-modal__rating-bar-left">
             <span className="plugin-detail-modal__rating-bar-label">Notez le plugin</span>
             <div className="plugin-detail-modal__quick-stars">
-              {[1, 2, 3, 4, 5].map(star => (
-                <button
-                  key={star}
-                  type="button"
-                  className={`plugin-detail-modal__quick-star ${
-                    quickRatingHover >= star ? 'plugin-detail-modal__quick-star--filled' : ''
-                  }`}
-                  onMouseEnter={() => setQuickRatingHover(star)}
-                  onMouseLeave={() => setQuickRatingHover(0)}
-                  onClick={() => handleQuickRating(star)}
-                  aria-label={`${star} étoiles`}
-                >
-                  <Star size={20} fill={quickRatingHover >= star ? 'currentColor' : 'none'} />
-                </button>
-              ))}
+              {[1, 2, 3, 4, 5].map(star => {
+                const isFilled = star <= quickRatingHover;
+                return (
+                  <button
+                    key={star}
+                    type="button"
+                    className={`plugin-detail-modal__quick-star ${
+                      isFilled ? 'plugin-detail-modal__quick-star--filled' : ''
+                    }`}
+                    onMouseEnter={() => setQuickRatingHover(star)}
+                    onMouseLeave={() => setQuickRatingHover(0)}
+                    onClick={() => handleQuickRating(star)}
+                    aria-label={`${star} étoiles`}
+                  >
+                    <Star size={20} fill={isFilled ? 'currentColor' : 'none'} />
+                  </button>
+                );
+              })}
             </div>
           </div>
           <button

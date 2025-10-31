@@ -182,21 +182,25 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
         <div className="plugin-rating-form__field">
           <label className="plugin-rating-form__label">Note</label>
           <div className="plugin-rating-form__stars">
-            {[1, 2, 3, 4, 5].map(star => (
-              <button
-                key={star}
-                type="button"
-                className={`plugin-rating-form__star ${
-                  (hoverRating || rating) >= star ? 'plugin-rating-form__star--filled' : ''
-                }`}
-                onMouseEnter={() => setHoverRating(star)}
-                onMouseLeave={() => setHoverRating(0)}
-                onClick={() => handleQuickRating(star)}
-                aria-label={`${star} étoiles`}
-              >
-                <Star size={20} fill="currentColor" />
-              </button>
-            ))}
+            {[1, 2, 3, 4, 5].map(star => {
+              const currentRating = hoverRating || rating;
+              const isFilled = star <= currentRating;
+              return (
+                <button
+                  key={star}
+                  type="button"
+                  className={`plugin-rating-form__star ${
+                    isFilled ? 'plugin-rating-form__star--filled' : ''
+                  }`}
+                  onMouseEnter={() => setHoverRating(star)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  onClick={() => handleQuickRating(star)}
+                  aria-label={`${star} étoiles`}
+                >
+                  <Star size={20} fill={isFilled ? 'currentColor' : 'none'} />
+                </button>
+              );
+            })}
           </div>
           {rating > 0 && (
             <span className="plugin-rating-form__rating-text-inline">{rating}/5</span>
