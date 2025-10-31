@@ -43,6 +43,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .plugin-repository-settings__add-btn:hover {
@@ -421,6 +423,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .plugin-repository-settings__install-btn:hover {
