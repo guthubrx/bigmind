@@ -317,8 +317,14 @@
 }
 
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
+  filter: grayscale(0.3);
+}
+
+.btn-danger:disabled {
+  background: #dc2626;
+  opacity: 0.35;
 }
 
 .btn-secondary {
@@ -337,10 +343,11 @@
   font-weight: 600;
 }
 
+/* FR: Pas de hover pour le bouton danger - reste rouge tout le temps */
+/* EN: No hover for danger button - stays red all the time */
 .btn-danger:hover:not(:disabled) {
-  background: #b91c1c;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+  background: #dc2626;
+  /* Pas de changement au hover */
 }
 
 .report-modal-footer {

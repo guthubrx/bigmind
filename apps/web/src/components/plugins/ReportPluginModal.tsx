@@ -117,6 +117,21 @@ export function ReportPluginModal({
     return className;
   };
 
+  // FR: Vérifie si le bouton doit être désactivé
+  // EN: Check if submit button should be disabled
+  const isSubmitDisabled = (): boolean => {
+    // Désactivé si en cours de soumission
+    if (isSubmitting) return true;
+
+    // Désactivé si description trop courte
+    if (description.trim().length < 10) return true;
+
+    // Désactivé si email rempli mais invalide
+    if (email && !isValidEmail(email)) return true;
+
+    return false;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -297,7 +312,14 @@ export function ReportPluginModal({
             <button
               type="submit"
               className="btn btn-danger"
-              disabled={isSubmitting || description.trim().length < 10}
+              disabled={isSubmitDisabled()}
+              title={
+                email && !isValidEmail(email)
+                  ? 'Email invalide - corrigez le format'
+                  : description.trim().length < 10
+                    ? 'Description trop courte (minimum 10 caractères)'
+                    : ''
+              }
             >
               {isSubmitting ? 'Envoi en cours...' : 'Envoyer le signalement'}
             </button>
