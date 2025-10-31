@@ -184,7 +184,7 @@ function MenuBar() {
       style={{ justifyContent: 'flex-start' }}
       onMouseLeave={handleMenuLeave}
     >
-      <div className="menu-logo" />
+      <img src="/logo-48.png" alt="Cartae" className="menu-logo" />
       {menuItems.map(menu => (
         <div
           key={menu.id}
@@ -197,36 +197,33 @@ function MenuBar() {
             <ChevronDown className="icon-small" />
           </button>
 
-          <div
-            className="menu-dropdown"
-            onMouseEnter={() => handleMenuEnter(menu.id)}
-          >
-              {menu.items.map(item => (
-                <button
-                  type="button"
-                  key={`${menu.id}-${item.label}`}
-                  className="menu-item-option"
-                  onClick={() => {
-                    if (closeTimeout) {
-                      clearTimeout(closeTimeout);
-                      setCloseTimeout(null);
-                    }
-                    if (menu.id === 'tools' && item.label.startsWith('Préférences')) {
-                      navigate('/settings');
-                      setActiveMenu(null);
-                    } else if (menu.id === 'tools' && item.label.startsWith('Plugins')) {
-                      navigate('/settings?section=plugins');
-                      setActiveMenu(null);
-                    } else {
-                      handleMenuAction(item.label);
-                    }
-                  }}
-                >
-                  <span className="menu-item-label">{item.label}</span>
-                  <span className="menu-item-shortcut">{item.shortcut}</span>
-                </button>
-              ))}
-            </div>
+          <div className="menu-dropdown" onMouseEnter={() => handleMenuEnter(menu.id)}>
+            {menu.items.map(item => (
+              <button
+                type="button"
+                key={`${menu.id}-${item.label}`}
+                className="menu-item-option"
+                onClick={() => {
+                  if (closeTimeout) {
+                    clearTimeout(closeTimeout);
+                    setCloseTimeout(null);
+                  }
+                  if (menu.id === 'tools' && item.label.startsWith('Préférences')) {
+                    navigate('/settings');
+                    setActiveMenu(null);
+                  } else if (menu.id === 'tools' && item.label.startsWith('Plugins')) {
+                    navigate('/settings?section=plugins');
+                    setActiveMenu(null);
+                  } else {
+                    handleMenuAction(item.label);
+                  }
+                }}
+              >
+                <span className="menu-item-label">{item.label}</span>
+                <span className="menu-item-shortcut">{item.shortcut}</span>
+              </button>
+            ))}
+          </div>
         </div>
       ))}
     </div>

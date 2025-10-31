@@ -19,10 +19,8 @@
     width: 24px;
     height: 24px;
     margin: 0 12px 0 4px;
-    -webkit-mask: url('/logo.svg') center/contain no-repeat;
-    mask: url('/logo.svg') center/contain no-repeat;
-    background-color: var(--accent-color);
     flex-shrink: 0;
+    object-fit: contain;
   }
 
   .menu-item {
