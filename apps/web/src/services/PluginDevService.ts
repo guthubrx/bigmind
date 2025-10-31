@@ -8,7 +8,7 @@ import type { PluginManifest } from '@cartae/plugin-system';
 import { gitHubPluginRegistry } from './GitHubPluginRegistry';
 
 const GITHUB_REPO_OWNER = 'guthubrx';
-const GITHUB_REPO_NAME = 'bigmind-plugins';
+const GITHUB_REPO_NAME = 'cartae-plugins';
 const GITHUB_BRANCH = 'main';
 
 export interface CloneResult {
@@ -232,7 +232,7 @@ export class PluginDevService {
         '',
         '2. Testez le plugin localement avant de publier',
         '',
-        '3. Créez une Pull Request sur le repo bigmind-plugins:',
+        '3. Créez une Pull Request sur le repo cartae-plugins:',
         `   - Fork: https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}`,
         `   - Branche: ${GITHUB_BRANCH}`,
         `   - Ajoutez/modifiez: ${pluginPath}/`,
@@ -303,7 +303,7 @@ export class PluginDevService {
   // eslint-disable-next-line class-methods-use-this
   private generatePackageJson(pluginId: string, manifest: PluginManifest) {
     return {
-      name: `@bigmind/plugin-${pluginId}`,
+      name: `@cartae/plugin-${pluginId}`,
       version: manifest.version,
       description: manifest.description,
       main: 'dist/index.js',

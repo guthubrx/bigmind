@@ -23,7 +23,7 @@ const DEFAULT_REPO_ID = 'cartae-official';
 const DEFAULT_REPOSITORY: PluginRepository = {
   id: DEFAULT_REPO_ID,
   name: 'Cartae Official Plugins',
-  url: 'https://raw.githubusercontent.com/guthubrx/bigmind-plugins/main/registry.json',
+  url: 'https://raw.githubusercontent.com/guthubrx/cartae-plugins/main/registry.json',
   type: 'github',
   enabled: true,
   isDefault: true,

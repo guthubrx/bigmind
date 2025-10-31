@@ -147,13 +147,13 @@ export function PluginRepositorySettings() {
       // Match raw.githubusercontent.com URLs
       const rawMatch = repoUrl.match(/raw\.githubusercontent\.com\/([^/]+)/);
       if (rawMatch && rawMatch[1]) {
-        return `https://github.com/${rawMatch[1]}.png?size=40`;
+        return `https://github.com/${rawMatch[1]}.png?size=80`;
       }
 
       // Match github.com URLs
       const githubMatch = repoUrl.match(/github\.com\/([^/]+)/);
       if (githubMatch && githubMatch[1]) {
-        return `https://github.com/${githubMatch[1]}.png?size=40`;
+        return `https://github.com/${githubMatch[1]}.png?size=80`;
       }
 
       return null;
