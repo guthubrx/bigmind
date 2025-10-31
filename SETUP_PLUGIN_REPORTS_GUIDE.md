@@ -17,10 +17,14 @@ Ce guide vous aide à créer les tables `plugin_reports` et `report_submissions`
 
 ## 📝 Étape 2: Exécuter la migration
 
+**⚠️ IMPORTANT:** Utilisez la migration corrigée, pas l'ancienne !
+
 1. Cliquez sur **New query** (en haut à gauche)
-2. Copiez le contenu du fichier `supabase/migrations/20251031_plugin_reports_setup.sql`
+2. Copiez le contenu du fichier `supabase/migrations/20251031_fix_plugin_reports_schema.sql`
 3. Collez-le dans l'éditeur SQL
 4. Cliquez sur **Run** (ou Ctrl+Enter)
+
+**Note:** Cette migration corrigée remplace `20251031_plugin_reports_setup.sql` qui avait des incohérences de schéma.
 
 ## ✅ Étape 3: Vérifier que tout fonctionne
 
@@ -151,6 +155,23 @@ Testez le système de signalement dans l'application:
 
 ## 📚 Référence
 
-- Fichier de migration: `supabase/migrations/20251031_plugin_reports_setup.sql`
-- Code du service: `apps/web/src/services/PluginReportService.ts`
-- Composant UI: `apps/web/src/components/plugins/ReportPluginModal.tsx`
+- **Fichier de migration:** `supabase/migrations/20251031_fix_plugin_reports_schema.sql` (corrigé)
+- ~~Ancien fichier:~~ `20251031_plugin_reports_setup.sql` (ne pas utiliser)
+- **Code du service:** `apps/web/src/services/PluginReportService.ts`
+- **Composant UI:** `apps/web/src/components/plugins/ReportPluginModal.tsx`
+
+## 🔒 Rate Limiting
+
+Le système de signalement inclut un **rate limiting automatique** :
+
+- **Limite:** 3 signalements par plugin par IP toutes les 24h
+- **Mécanisme:** Table `report_submissions` enregistre chaque tentative
+- **Détection IP:** Service externe (api.ipify.org) avec fallback anonyme
+- **Nettoyage:** Fonction `cleanup_old_report_submissions()` pour supprimer les anciennes entrées
+
+**Implémentation:**
+
+- Vérifie le nombre de signalements dans les dernières 24h
+- Bloque si limite atteinte (message d'erreur à l'utilisateur)
+- Enregistre chaque soumission réussie
+- Nettoyage automatique optionnel via cron job
