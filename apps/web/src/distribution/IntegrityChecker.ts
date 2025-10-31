@@ -33,7 +33,7 @@ export class IntegrityChecker {
    * Calculate SHA-256 hash of content
    */
   async calculateHash(content: Uint8Array | ArrayBuffer): Promise<string> {
-    const buffer = content instanceof Uint8Array ? content.buffer : content;
+    const buffer = content instanceof Uint8Array ? content : content;
     const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -132,7 +132,7 @@ export class IntegrityChecker {
     const algorithm = `SHA-${bits}`;
 
     try {
-      const buffer = content instanceof Uint8Array ? content.buffer : content;
+      const buffer = content instanceof Uint8Array ? content : content;
       const hashBuffer = await crypto.subtle.digest(algorithm, buffer);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
 
@@ -152,7 +152,7 @@ export class IntegrityChecker {
     content: Uint8Array | ArrayBuffer,
     algorithm: 'SHA-256' | 'SHA-384' | 'SHA-512' = 'SHA-384'
   ): Promise<string> {
-    const buffer = content instanceof Uint8Array ? content.buffer : content;
+    const buffer = content instanceof Uint8Array ? content : content;
     const hashBuffer = await crypto.subtle.digest(algorithm, buffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const base64 = btoa(String.fromCharCode(...hashArray));
