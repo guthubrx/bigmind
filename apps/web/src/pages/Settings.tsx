@@ -20,11 +20,12 @@ import {
   PluginRepositorySettings,
 } from '../components/plugins';
 // EventMonitorPanel removed - now available as community plugin
+// AdminPanel removed - now available as private plugin in cartae-private repo
+// The admin section should be provided by the com.cartae.admin-panel plugin
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { GitHubLoginButton } from '../components/plugins/GitHubLoginButton';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { DeveloperModeToggle } from '../components/plugins/DeveloperModeToggle';
-import { AdminPanel } from '../components/plugins/AdminPanel';
 import { pluginSystem, saveActivatedPlugins } from '../utils/pluginManager';
 import type {
   PluginInfo,
@@ -59,9 +60,9 @@ function SettingsPage() {
   const setShortcut = useShortcuts(s => s.setShortcut);
   const resetShortcuts = useShortcuts(s => s.resetDefaults);
   const [searchParams] = useSearchParams();
-  const [section, setSection] = useState<
-    'appearance' | 'shortcuts' | 'plugins' | 'sources' | 'admin'
-  >('appearance');
+  const [section, setSection] = useState<'appearance' | 'shortcuts' | 'plugins' | 'sources'>(
+    'appearance'
+  );
   const platform = usePlatform();
   const { info: showInfo, success: showSuccess } = useToast();
 
@@ -90,8 +91,7 @@ function SettingsPage() {
       sectionParam === 'plugins' ||
       sectionParam === 'appearance' ||
       sectionParam === 'shortcuts' ||
-      sectionParam === 'sources' ||
-      sectionParam === 'admin'
+      sectionParam === 'sources'
     ) {
       setSection(sectionParam);
     }
@@ -292,13 +292,7 @@ function SettingsPage() {
                 >
                   📦 Sources de Plugins
                 </button>
-                <button
-                  type="button"
-                  className={`btn settings-nav-btn ${section === 'admin' ? 'active' : ''}`}
-                  onClick={() => setSection('admin')}
-                >
-                  🛡️ Administration
-                </button>
+                {/* Administration button removed - provided by com.cartae.admin-panel private plugin */}
                 {/* <button
                   type="button"
                   className={`btn settings-nav-btn ${section === 'developer' ? 'active' : ''}`}
@@ -850,12 +844,7 @@ function SettingsPage() {
                 </div>
               )}
 
-              {/* Administration Section */}
-              {section === 'admin' && (
-                <div className="settings-section">
-                  <AdminPanel />
-                </div>
-              )}
+              {/* Administration Section removed - provided by com.cartae.admin-panel private plugin */}
             </section>
           </div>
         </div>
