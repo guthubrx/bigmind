@@ -1817,7 +1817,7 @@ git show 7ec3dd6:apps/web/src/hooks/useFileOperations.ts
 
 ---
 
-## 59. 6809738 - feat: implement comprehensive data persistence for BigMind
+## 59. 6809738 - feat: implement comprehensive data persistence for Cartae
 
 **Date:** 2025-10-23
 **Hash:** 6809738c85211658165c35698dac94675513b0d9
@@ -1847,7 +1847,7 @@ git show 6809738:apps/web/src/hooks/useFileOperations.ts
 
 ---
 
-## 60. 04b9e13 - fix: correct store access in file export - fix bigmind.json save issue
+## 60. 04b9e13 - fix: correct store access in file export - fix cartae.json save issue
 
 **Date:** 2025-10-23
 **Hash:** 04b9e13895aa80f6599ec4d8c514d154fc1b200d
@@ -1879,7 +1879,7 @@ git show 04b9e13:apps/web/src/hooks/useAssets.ts
 
 ---
 
-## 61. af2a230 - fix: properly save and restore node tags in bigmind.json
+## 61. af2a230 - fix: properly save and restore node tags in cartae.json
 
 **Date:** 2025-10-23
 **Hash:** af2a230182e8738b9a8e3ceb82b997964816fb31

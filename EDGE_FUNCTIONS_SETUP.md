@@ -37,7 +37,7 @@ supabase login
 3. **Link to your project**:
 
 ```bash
-cd /Users/moi/Nextcloud/10.Scripts/bigmind/bigmind
+cd /Users/moi/Nextcloud/10.Scripts/cartae/cartae
 supabase projects list  # pour voir ton projet ID
 supabase link --project-id rfnvtosfwvxoysmncrzz
 ```
@@ -52,7 +52,7 @@ supabase functions deploy check-rate-limit
 
 ### Option 2: Déploiement via Dashboard Supabase (Plus simple)
 
-1. Va à: https://supabase.com/dashboard → BigMind → Edge Functions
+1. Va à: https://supabase.com/dashboard → Cartae → Edge Functions
 2. Clique **"Create a new function"**
 3. Nomme-la: `check-rate-limit`
 4. Copie le contenu de `supabase/functions/check-rate-limit/index.ts`

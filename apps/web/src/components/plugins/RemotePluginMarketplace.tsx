@@ -5,7 +5,7 @@
  */
 
 import React, { useState } from 'react';
-import { PluginList } from '@bigmind/plugin-marketplace';
+import { PluginList } from '@cartae/plugin-marketplace';
 import { pluginSystem } from '../../utils/pluginManager';
 
 const { registry } = pluginSystem;

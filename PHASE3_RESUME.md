@@ -6,16 +6,16 @@
 **Sprints terminés:** 3 sur 7
 **Fichiers créés:** 52+
 **Lignes de code:** ~4500+
-**Packages créés:** 1 nouveau (@bigmind/plugin-sdk)
+**Packages créés:** 1 nouveau (@cartae/plugin-sdk)
 
 ---
 
 ## ✅ Sprint 1-2: Foundations (100% COMPLÉTÉ)
 
-### 1. Package @bigmind/plugin-sdk
+### 1. Package @cartae/plugin-sdk
 
 #### 📦 `bridge.ts` - Communication MessageChannel sécurisée
-Implémente la couche de communication entre les plugins et BigMind via l'API MessageChannel du navigateur.
+Implémente la couche de communication entre les plugins et Cartae via l'API MessageChannel du navigateur.
 Gère l'envoi de requêtes avec timeout (30s), le tracking des réponses, et l'isolation totale entre plugin et host.
 
 #### 📦 `types.ts` - Interfaces TypeScript complètes
@@ -23,16 +23,16 @@ Définit tous les types pour la communication plugin/host : BridgeMessage, Theme
 Fournit un typage strict pour garantir la cohérence des données échangées et faciliter l'autocomplétion IDE.
 
 #### 📦 Hooks React (4 fichiers)
-**`useBigMindBridge`**: Donne accès direct au bridge de communication depuis n'importe quel composant React du plugin.
+**`useCartaeBridge`**: Donne accès direct au bridge de communication depuis n'importe quel composant React du plugin.
 Gère automatiquement l'initialisation asynchrone et attend que le bridge soit prêt avant de renvoyer l'API.
 
-**`useBigMindUI`**: Fournit les méthodes pour enregistrer des panels, commandes, et afficher des notifications.
+**`useCartaeUI`**: Fournit les méthodes pour enregistrer des panels, commandes, et afficher des notifications.
 Retourne des fonctions avec cleanup automatique (unregister) pour éviter les fuites mémoire au démontage.
 
 **`useTheme`**: Hook pour accéder au thème actuel (light/dark) et réagir aux changements en temps réel.
 Inclut une fonction `variant()` pour générer des CSS custom properties et un thème par défaut si non chargé.
 
-**`useBigMindData`**: Gère le fetching de données avec état de loading/error et souscription aux changements.
+**`useCartaeData`**: Gère le fetching de données avec état de loading/error et souscription aux changements.
 Se reconnecte automatiquement aux updates via `data.changed:${path}` pour du live data binding.
 
 #### 📦 Build system avec tsup
@@ -41,7 +41,7 @@ Permet l'import du SDK aussi bien en `import` qu'en `require` avec support TypeS
 
 #### 📦 `index.ts` - Exports organisés
 Point d'entrée unique qui réexporte tous les hooks, types et le bridge de manière structurée.
-Facilite l'import côté plugin avec des chemins propres : `import { useBigMindBridge } from '@bigmind/plugin-sdk'`.
+Facilite l'import côté plugin avec des chemins propres : `import { useCartaeBridge } from '@cartae/plugin-sdk'`.
 
 **📍 Localisation:** `packages/plugin-sdk/`
 
@@ -214,7 +214,7 @@ Le ThemeManager parcourt récursivement l'objet theme et génère une variable C
 Conversion automatique camelCase → kebab-case : `accentHover` devient `--color-accent-hover`.
 
 #### 🎨 localStorage persistence
-Sauvegarde le thème choisi dans localStorage à chaque changement avec clé `bigmind-theme`.
+Sauvegarde le thème choisi dans localStorage à chaque changement avec clé `cartae-theme`.
 Restaure automatiquement le thème au chargement de l'app ou utilise le thème système si aucune préférence.
 
 #### 🎨 System theme detection (prefers-color-scheme)
@@ -232,17 +232,17 @@ Positionné avant SlotFillProvider et BrowserRouter dans la hiérarchie des Prov
 ## 📁 Structure des fichiers créés
 
 ```
-bigmind/
+cartae/
 ├── packages/
 │   └── plugin-sdk/                    ← Nouveau package NPM
 │       ├── src/
 │       │   ├── bridge.ts              (Communication MessageChannel)
 │       │   ├── types.ts               (Interfaces TypeScript)
 │       │   ├── hooks/
-│       │   │   ├── useBigMindBridge.ts   (Hook bridge)
-│       │   │   ├── useBigMindUI.ts       (Hook UI)
+│       │   │   ├── useCartaeBridge.ts   (Hook bridge)
+│       │   │   ├── useCartaeUI.ts       (Hook UI)
 │       │   │   ├── useTheme.ts           (Hook theme)
-│       │   │   └── useBigMindData.ts     (Hook data)
+│       │   │   └── useCartaeData.ts     (Hook data)
 │       │   └── index.ts               (Exports centralisés)
 │       ├── package.json               (Manifeste NPM)
 │       ├── tsconfig.json              (Config TypeScript)
@@ -300,7 +300,7 @@ bigmind/
 
 #### Sandboxing iframe strict
 Attribut `sandbox="allow-scripts"` sur les iframes (pas de `allow-same-origin` par défaut).
-Les plugins ne peuvent pas accéder au DOM de BigMind, aux cookies, ou au localStorage de l'host.
+Les plugins ne peuvent pas accéder au DOM de Cartae, aux cookies, ou au localStorage de l'host.
 
 #### CSP headers
 Content-Security-Policy généré dynamiquement : `default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'`.
@@ -392,7 +392,7 @@ Période de transition de 6 mois avant dépréciation complète en v2.0.0, laiss
 
 ### Tests unitaires (0/50)
 Tests Jest/Vitest pour chaque fonction pure : fuzzyScore(), sanitizePayload(), normalizeShortcut().
-Tests des hooks avec @testing-library/react-hooks : useCommandPalette, useTheme, useBigMindBridge.
+Tests des hooks avec @testing-library/react-hooks : useCommandPalette, useTheme, useCartaeBridge.
 
 ### Tests intégration (0/20)
 Tests end-to-end du flow complet : enregistrer commande → ouvrir palette → rechercher → exécuter.

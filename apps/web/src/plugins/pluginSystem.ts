@@ -2,7 +2,7 @@
  * Plugin System Integration for BigMind Web App
  */
 
-import { createPluginSystem, PermissionStorage, Permission } from '@bigmind/plugin-system';
+import { createPluginSystem, PermissionStorage, Permission } from '@cartae/plugin-system';
 import { eventBus } from '../utils/eventBus';
 
 /**

@@ -479,7 +479,7 @@ R: f9390bc, 2cc5bd7, 1fd9740, af2a230, ea71f6e
 ## STRUCTURE DES FICHIERS (RÉSUMÉ)
 
 ```
-bigmind/
+cartae/
 ├── INDEX_ANALYSE_TAGS.md              (ce fichier - 🗺️ carte)
 ├── README_ANALYSE_TAGS.md             (⭐ guide principal)
 ├── PLAN_ACTION_TAGS.md                (🎯 roadmap)

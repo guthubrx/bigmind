@@ -38,7 +38,7 @@ export const SHARED_EXTERNALS = [
   'react',
   'react-dom',
   'react/jsx-runtime',
-  '@bigmind/plugin-sdk',
+  '@cartae/plugin-sdk',
   'zustand',
   'zod',
 ] as const;
@@ -50,7 +50,7 @@ export const UMD_GLOBALS: Record<string, string> = {
   'react': 'React',
   'react-dom': 'ReactDOM',
   'react/jsx-runtime': 'jsxRuntime',
-  '@bigmind/plugin-sdk': 'PluginSDK',
+  '@cartae/plugin-sdk': 'PluginSDK',
   'zustand': 'zustand',
   'zod': 'Zod',
 };

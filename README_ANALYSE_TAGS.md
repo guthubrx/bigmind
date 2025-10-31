@@ -399,7 +399,7 @@ apps/web/src/data/
 
 - [ ] Sauvegarder fichier avec tags
 - [ ] Recharger fichier → tags restaurés
-- [ ] Export/import bigmind.json
+- [ ] Export/import cartae.json
 - [ ] Tags sur nœuds correctement sauvegardés
 
 ---
@@ -532,7 +532,7 @@ useEffect(() => {
 ### Jour 8: Persistence
 
 1. Save/load
-2. bigmind.json format
+2. cartae.json format
 3. Tests Phase 9
 
 ### Jour 9: Menus et Interactions
@@ -584,7 +584,7 @@ useEffect(() => {
 
 1. Vérifier persistence (Phase 9)
 2. localStorage fonctionne?
-3. Format bigmind.json correct?
+3. Format cartae.json correct?
 
 ---
 

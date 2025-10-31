@@ -12,10 +12,10 @@
     "generate:manifests": "tsx scripts/generate-manifests.ts"
   },
   "dependencies": {
-    "@bigmind/core": "workspace:*",
-    "@bigmind/design": "workspace:*",
-    "@bigmind/plugin-system": "workspace:*",
-    "@bigmind/ui": "workspace:*",
+    "@cartae/core": "workspace:*",
+    "@cartae/design": "workspace:*",
+    "@cartae/plugin-system": "workspace:*",
+    "@cartae/ui": "workspace:*",
     "@bytemd/plugin-breaks": "^1.22.0",
     "@bytemd/plugin-gfm": "^1.22.0",
     "@bytemd/plugin-highlight": "^1.22.0",

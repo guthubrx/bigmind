@@ -1,12 +1,12 @@
-🎨 Phase 3 — Infrastructure UI & UX pour le système de plugins BigMind
+🎨 Phase 3 — Infrastructure UI & UX pour le système de plugins Cartae
 🧭 Objectif général
 
-Créer une infrastructure UI et UX extensible permettant aux plugins BigMind de s’intégrer visuellement et ergonomiquement sans compromettre la cohérence, la performance ni la sécurité.
+Créer une infrastructure UI et UX extensible permettant aux plugins Cartae de s’intégrer visuellement et ergonomiquement sans compromettre la cohérence, la performance ni la sécurité.
 Ce document sert de prompt instructif pour un agent développeur UI chargé d’implémenter cette phase.
 
-🧩 CONTEXTE GLOBAL — Projet BigMind
+🧩 CONTEXTE GLOBAL — Projet Cartae
 
-BigMind est une application de mind‑mapping avancée, modulaire et professionnelle.
+Cartae est une application de mind‑mapping avancée, modulaire et professionnelle.
 Son écosystème de plugins (Phases 1 & 2) offre déjà :
 
 🔐 une sécurité de niveau applicatif (permissions RBAC/ABAC, sandbox, rate limiting)
@@ -123,23 +123,23 @@ Exemple de manifeste UI
   }
 }
 Hook API côté plugin
-import { useBigMindUI } from 'bigmind-plugin-sdk'
+import { useCartaeUI } from 'cartae-plugin-sdk'
 
 
-const { registerCommand, registerPanel, useTheme } = useBigMindUI()
+const { registerCommand, registerPanel, useTheme } = useCartaeUI()
 
 
 registerCommand({ id: 'analyze', title: 'Run Analysis', icon: 'sparkles' })
 registerPanel({ id: 'inspector', title: 'Inspector', component: InspectorView })
-🎨 5. Design System Extensible — BigMind Theme Bridge
+🎨 5. Design System Extensible — Cartae Theme Bridge
 Objectif
 
 Fournir un Design System headless inspiré de Radix + Shadcn, exposé via tokens et hooks, pour que les plugins restent visuellement cohérents.
 
 Stack recommandée
-Radix primitives → Tailwind tokens → Shadcn UI → BigMind Theme Bridge
+Radix primitives → Tailwind tokens → Shadcn UI → Cartae Theme Bridge
 Exemple d’usage côté plugin
-import { useTheme, Button } from 'bigmind-ui'
+import { useTheme, Button } from 'cartae-ui'
 
 
 function MyPluginButton() {
@@ -234,7 +234,7 @@ Sprint 4 — UX Enhancements
 
 🧠 ROLE: UI‑INFRA‑ENGINEER
 
-Mission : implémenter l’architecture UI extensible décrite ci‑dessus pour BigMind.
+Mission : implémenter l’architecture UI extensible décrite ci‑dessus pour Cartae.
 Tu es responsable de :
 
 Créer les APIs d’intégration visuelle des plugins (commandes, panels, slots)

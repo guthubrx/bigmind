@@ -4,7 +4,7 @@
  * Phase 4 - Sprint 3 - CORE
  */
 
-import type { PluginManifest } from '@bigmind/plugin-system';
+import type { PluginManifest } from '@cartae/plugin-system';
 import { DependencyGraph } from './DependencyGraph';
 import { VersionResolver } from './VersionResolver';
 

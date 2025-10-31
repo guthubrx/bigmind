@@ -331,7 +331,7 @@ Bouton de test pour événements directs + logs améliorés.
 - apps/web/src/hooks/useFileOperations.ts (25 insertions)
 
 **Description:**
-Export tags et links depuis useTagGraph vers bigmind.json.
+Export tags et links depuis useTagGraph vers cartae.json.
 Import tags et links lors de l'ouverture de fichiers.
 Restaure structure DAG complète après load.
 Retrocompatible avec format XMind.
@@ -339,17 +339,17 @@ Retrocompatible avec format XMind.
 **Save flow:**
 
 1. exportActiveXMind() appelle useTagGraph.getState().exportTags()
-2. Tags et links incluent dans bigmind.json
+2. Tags et links incluent dans cartae.json
 
 **Load flow:**
 
-1. openXMindFile() lit tags et links de bigmind.json
+1. openXMindFile() lit tags et links de cartae.json
 2. Appelle useTagGraph.importTags() pour restauration DAG
 3. Tags disponibles immédiatement après ouverture
 
 ---
 
-### 6809738 - Comprehensive data persistence for BigMind
+### 6809738 - Comprehensive data persistence for Cartae
 
 **Date:** Thu Oct 23 19:23:30 2025
 **Hash:** 6809738c85211658165c35698dac94675513b0d9
@@ -360,7 +360,7 @@ Retrocompatible avec format XMind.
 - apps/web/src/hooks/useFileOperations.ts (187 insertions)
 
 **Description:**
-Ajoute tag layers (visibility, opacity, colors) à bigmind.json.
+Ajoute tag layers (visibility, opacity, colors) à cartae.json.
 Ajoute assets library per-map.
 Ajoute all canvas options (nodesConnectable, elementsSelectable, followSelection).
 Restaure states avec Zustand setState lors du load.
@@ -368,7 +368,7 @@ Implémente pour standard ET fallback XMind parsers.
 
 ---
 
-### af2a230 - Properly save and restore node tags in bigmind.json
+### af2a230 - Properly save and restore node tags in cartae.json
 
 **Date:** Thu Oct 23 19:42:13 2025
 **Hash:** af2a230182e8738b9a8e3ceb82b997964816fb31
@@ -392,7 +392,7 @@ Assure que tags sur nœuds sont persistés et restaurés correctement.
 **Hash:** 04b9e13
 **Type:** [Persistence] [Fix]
 
-Corrige l'accès au store lors de l'export bigmind.json.
+Corrige l'accès au store lors de l'export cartae.json.
 
 ---
 
@@ -960,7 +960,7 @@ fc270d6, 5123b7e, 6d9a969
    - 69abee4: Final positioning (right edge)
 
 4. **PHASE 4 - PERSISTANCE**
-   - 7ec3dd6: Save/load tags in bigmind.json
+   - 7ec3dd6: Save/load tags in cartae.json
    - 6809738: Comprehensive data persistence
    - af2a230: Node tags persistence
 

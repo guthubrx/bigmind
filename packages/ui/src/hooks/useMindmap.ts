@@ -19,7 +19,7 @@ import {
   MoveNodeCommand,
   ReparentNodeCommand,
   NodeFactory,
-} from '@bigmind/core';
+} from '@cartae/core';
 
 // FR: État global de l'application
 // EN: Global application state

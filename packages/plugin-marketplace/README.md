@@ -1,6 +1,6 @@
-# @bigmind/plugin-marketplace
+# @cartae/plugin-marketplace
 
-Plugin marketplace client for BigMind - browse, install and manage plugins from the remote registry.
+Plugin marketplace client for Cartae - browse, install and manage plugins from the remote registry.
 
 ## Features
 
@@ -13,7 +13,7 @@ Plugin marketplace client for BigMind - browse, install and manage plugins from 
 ## Installation
 
 ```bash
-pnpm add @bigmind/plugin-marketplace
+pnpm add @cartae/plugin-marketplace
 ```
 
 ## Usage
@@ -21,9 +21,9 @@ pnpm add @bigmind/plugin-marketplace
 ### Fetch plugins from marketplace
 
 ```typescript
-import { PluginStore } from '@bigmind/plugin-marketplace';
+import { PluginStore } from '@cartae/plugin-marketplace';
 
-const store = new PluginStore('https://bigmind-registry.workers.dev');
+const store = new PluginStore('https://cartae-registry.workers.dev');
 
 // List all plugins
 const plugins = await store.fetchPlugins();
@@ -32,10 +32,10 @@ const plugins = await store.fetchPlugins();
 const results = await store.searchPlugins('collaboration');
 
 // Get plugin details
-const plugin = await store.getPlugin('com.bigmind.teams');
+const plugin = await store.getPlugin('com.cartae.teams');
 
 // Install a plugin
-await store.installPlugin('com.bigmind.teams');
+await store.installPlugin('com.cartae.teams');
 
 // Check for updates
 const updates = await store.checkUpdates();
@@ -44,13 +44,13 @@ const updates = await store.checkUpdates();
 ### React Components
 
 ```tsx
-import { PluginList, PluginCard, InstallButton } from '@bigmind/plugin-marketplace';
+import { PluginList, PluginCard, InstallButton } from '@cartae/plugin-marketplace';
 
 function MarketplacePage() {
   return (
     <div>
       <h1>Plugin Marketplace</h1>
-      <PluginList registryUrl="https://bigmind-registry.workers.dev" />
+      <PluginList registryUrl="https://cartae-registry.workers.dev" />
     </div>
   );
 }

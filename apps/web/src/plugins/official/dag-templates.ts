@@ -3,7 +3,7 @@
  * Provides predefined DAG structure templates
  */
 
-import type { IPluginContext, PluginManifest } from '@bigmind/plugin-system';
+import type { IPluginContext, PluginManifest } from '@cartae/plugin-system';
 import {
   getAllTemplates,
   getFavoriteTemplates,

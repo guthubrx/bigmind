@@ -1,11 +1,11 @@
-# 🏪 BigMind Marketplace - Architecture & Hébergement
+# 🏪 Cartae Marketplace - Architecture & Hébergement
 
 ## 📋 Table des matières
 
 1. [Votre Question](#votre-question)
 2. [Comparaison des Modèles](#comparaison-des-modèles)
 3. [Options d'Hébergement & Coûts](#options-dhébergement--coûts)
-4. [Architecture Recommandée pour BigMind](#architecture-recommandée-pour-bigmind)
+4. [Architecture Recommandée pour Cartae](#architecture-recommandée-pour-cartae)
 5. [Implémentation Technique](#implémentation-technique)
 6. [Modèle de Contrôle](#modèle-de-contrôle)
 7. [Roadmap de Migration](#roadmap-de-migration)
@@ -111,7 +111,7 @@
 
 ### 🏆 Solution Recommandée : Cloudflare R2
 
-**Pourquoi R2 est parfait pour BigMind :**
+**Pourquoi R2 est parfait pour Cartae :**
 
 | Métrique | Projection An 1 | Projection An 3 | Coût R2 | Coût S3 (comparaison) |
 |----------|-----------------|-----------------|---------|------------------------|
@@ -148,7 +148,7 @@
 
 ---
 
-## 🏗️ Architecture Recommandée pour BigMind
+## 🏗️ Architecture Recommandée pour Cartae
 
 ### Vue d'Ensemble
 
@@ -158,7 +158,7 @@
 ├─────────────────────────────────────────────────────────┤
 │                                                          │
 │  ┌──────────────────┐     ┌─────────────────┐          │
-│  │  bigmind (mono)  │     │  bigmind-plugins│          │
+│  │  cartae (mono)  │     │  cartae-plugins│          │
 │  │  github.com      │     │  (separate repo)│          │
 │  ├──────────────────┤     ├─────────────────┤          │
 │  │ • Core app       │     │ • Plugin sources│          │
@@ -169,7 +169,7 @@
 │           │                        │                    │
 │  ┌────────▼────────────────────────▼────────┐          │
 │  │     Plugin Registry API (Cloudflare)     │          │
-│  │  workers.cloudflare.com/bigmind-registry │          │
+│  │  workers.cloudflare.com/cartae-registry │          │
 │  ├───────────────────────────────────────────┤          │
 │  │  • Search & discovery                     │          │
 │  │  • Version management                     │          │
@@ -183,11 +183,11 @@
 │  │  (Plugin .zip files)                  │             │
 │  ├────────────────────────────────────────┤             │
 │  │  plugins/                              │             │
-│  │  ├── com.bigmind.teams/                │             │
+│  │  ├── com.cartae.teams/                │             │
 │  │  │   ├── 1.0.0.zip                     │             │
 │  │  │   ├── 1.0.1.zip                     │             │
 │  │  │   └── manifest.json                 │             │
-│  │  ├── com.bigmind.anki/                 │             │
+│  │  ├── com.cartae.anki/                 │             │
 │  │  │   └── 2.0.0.zip                     │             │
 │  │  └── community/                        │             │
 │  │      └── com.user.plugin/             │             │
@@ -195,7 +195,7 @@
 │                                                          │
 │  ┌────────────────────────────────────┐                 │
 │  │  jsDelivr CDN (Mirror)             │                 │
-│  │  cdn.jsdelivr.net/gh/bigmind-plugins │                │
+│  │  cdn.jsdelivr.net/gh/cartae-plugins │                │
 │  │  (Fallback + Fast global delivery) │                 │
 │  └─────────────────────────────────────┘                 │
 │                                                          │
@@ -204,10 +204,10 @@
 
 ### Structure des Repositories
 
-#### 📁 Repository Principal : `bigmind`
+#### 📁 Repository Principal : `cartae`
 
 ```
-bigmind/
+cartae/
 ├── apps/
 │   ├── web/
 │   └── desktop/
@@ -223,18 +223,18 @@ bigmind/
 ```
 
 **Ce qui reste dans le monorepo :**
-- ✅ SDK de développement (`@bigmind/plugin-sdk`)
+- ✅ SDK de développement (`@cartae/plugin-sdk`)
 - ✅ Plugin system runtime
 - ✅ UI du marketplace (client)
 - ✅ 1-2 plugins d'exemple pour les développeurs
 
 ---
 
-#### 📁 Repository Séparé : `bigmind-plugins`
+#### 📁 Repository Séparé : `cartae-plugins`
 
 ```
-bigmind-plugins/
-├── official/                 ← Plugins officiels BigMind
+cartae-plugins/
+├── official/                 ← Plugins officiels Cartae
 │   ├── teams-collaboration/
 │   │   ├── src/
 │   │   ├── package.json
@@ -260,9 +260,9 @@ bigmind-plugins/
 
 **Workflow de publication :**
 
-1. Développeur commit dans `bigmind-plugins/official/teams-collaboration/`
+1. Développeur commit dans `cartae-plugins/official/teams-collaboration/`
 2. GitHub Actions déclenché sur push
-3. Build automatique → génère `com.bigmind.teams-1.0.0.zip`
+3. Build automatique → génère `com.cartae.teams-1.0.0.zip`
 4. Validation (manifest, sécurité, tests)
 5. Upload vers Cloudflare R2
 6. Mise à jour du registry (JSON)
@@ -277,8 +277,8 @@ bigmind-plugins/
 | Endpoint | Méthode | Description | Exemple |
 |----------|---------|-------------|---------|
 | `/api/plugins` | GET | Liste tous les plugins | `?category=productivity` |
-| `/api/plugins/:id` | GET | Détails d'un plugin | `/api/plugins/com.bigmind.teams` |
-| `/api/plugins/:id/versions` | GET | Versions disponibles | `/api/plugins/com.bigmind.teams/versions` |
+| `/api/plugins/:id` | GET | Détails d'un plugin | `/api/plugins/com.cartae.teams` |
+| `/api/plugins/:id/versions` | GET | Versions disponibles | `/api/plugins/com.cartae.teams/versions` |
 | `/api/plugins/:id/download` | GET | Télécharger plugin | `?version=1.0.0` |
 | `/api/plugins/search` | GET | Recherche | `?q=anki&category=productivity` |
 | `/api/plugins/featured` | GET | Plugins mis en avant | - |
@@ -293,19 +293,19 @@ bigmind-plugins/
   "total": 150,
   "plugins": [
     {
-      "id": "com.bigmind.teams",
+      "id": "com.cartae.teams",
       "name": "Teams Collaboration",
       "version": "1.0.2",
       "description": "Real-time collaboration for teams",
-      "author": "BigMind Team",
+      "author": "Cartae Team",
       "pricing": "freemium",
       "category": "productivity",
       "downloads": 12450,
       "rating": 4.8,
-      "icon": "https://r2.bigmind.dev/icons/teams.svg",
+      "icon": "https://r2.cartae.dev/icons/teams.svg",
       "verified": true,
       "updatedAt": "2025-10-15T10:00:00Z",
-      "downloadUrl": "https://r2.bigmind.dev/plugins/com.bigmind.teams/1.0.2.zip",
+      "downloadUrl": "https://r2.cartae.dev/plugins/com.cartae.teams/1.0.2.zip",
       "size": 5242880
     }
   ]
@@ -319,12 +319,12 @@ bigmind-plugins/
 **Structure des fichiers :**
 
 ```
-r2://bigmind-plugins/
+r2://cartae-plugins/
 ├── registry.json              ← Index de tous les plugins
 ├── featured.json              ← Plugins mis en avant
 ├── categories.json            ← Catégories disponibles
 ├── plugins/
-│   ├── com.bigmind.teams/
+│   ├── com.cartae.teams/
 │   │   ├── manifest.json      ← Metadata
 │   │   ├── 1.0.0.zip
 │   │   ├── 1.0.1.zip
@@ -348,7 +348,7 @@ r2://bigmind-plugins/
   "version": "1.0",
   "updatedAt": "2025-10-29T12:00:00Z",
   "plugins": {
-    "com.bigmind.teams": {
+    "com.cartae.teams": {
       "latest": "1.0.2",
       "versions": ["1.0.0", "1.0.1", "1.0.2"],
       "category": "productivity",
@@ -504,13 +504,13 @@ async function trackDownload(
 
 ```bash
 # wrangler.toml
-name = "bigmind-registry"
+name = "cartae-registry"
 main = "src/index.ts"
 compatibility_date = "2025-10-29"
 
 [[r2_buckets]]
 binding = "R2"
-bucket_name = "bigmind-plugins"
+bucket_name = "cartae-plugins"
 
 [[analytics_engine_datasets]]
 binding = "ANALYTICS"
@@ -520,7 +520,7 @@ binding = "ANALYTICS"
 npm install -g wrangler
 wrangler login
 wrangler publish
-# URL: https://bigmind-registry.workers.dev
+# URL: https://cartae-registry.workers.dev
 ```
 
 **Coût Cloudflare Workers :**
@@ -536,7 +536,7 @@ Modifiez `packages/plugin-marketplace/src/PluginStore.ts` :
 ```typescript
 // packages/plugin-marketplace/src/PluginStore.ts
 export class PluginStore {
-  private registryUrl = 'https://bigmind-registry.workers.dev/api';
+  private registryUrl = 'https://cartae-registry.workers.dev/api';
 
   /**
    * Fetch all plugins from registry
@@ -640,10 +640,10 @@ Créez `packages/plugin-cli/` :
 
 ```bash
 # Usage
-npx @bigmind/plugin-cli publish
+npx @cartae/plugin-cli publish
 
 # Ou
-bigmind-plugin publish --plugin ./my-plugin
+cartae-plugin publish --plugin ./my-plugin
 ```
 
 ```typescript
@@ -688,11 +688,11 @@ export async function publishPlugin(pluginPath: string) {
   });
 
   const key = `plugins/${manifest.id}/${manifest.version}.zip`;
-  await r2.putObject('bigmind-plugins', key, zipBuffer);
+  await r2.putObject('cartae-plugins', key, zipBuffer);
 
   // 5. Update manifest in R2
   await r2.putObject(
-    'bigmind-plugins',
+    'cartae-plugins',
     `plugins/${manifest.id}/manifest.json`,
     JSON.stringify(manifest)
   );
@@ -701,7 +701,7 @@ export async function publishPlugin(pluginPath: string) {
   await updateRegistry(manifest);
 
   console.log(`✅ Published ${manifest.id} v${manifest.version}`);
-  console.log(`📥 Download: https://r2.bigmind.dev/plugins/${manifest.id}/${manifest.version}.zip`);
+  console.log(`📥 Download: https://r2.cartae.dev/plugins/${manifest.id}/${manifest.version}.zip`);
 }
 ```
 
@@ -730,7 +730,7 @@ export async function publishPlugin(pluginPath: string) {
 ├─────────────────────────────────────────────┤
 │                                             │
 │  🟢 VERIFIED (Official + Top Community)     │
-│  ├── Plugins BigMind officiels              │
+│  ├── Plugins Cartae officiels              │
 │  ├── Top contributeurs (>10 PRs)            │
 │  ├── Review manuelle initiale               │
 │  └── Badge ✓ "Verified"                     │
@@ -755,7 +755,7 @@ export async function publishPlugin(pluginPath: string) {
 
 #### A) Plugins VERIFIED (officiels)
 
-1. Développeur commit dans `bigmind-plugins/official/`
+1. Développeur commit dans `cartae-plugins/official/`
 2. GitHub Actions → build automatique
 3. Tests automatiques (unit, security scan)
 4. **Review manuelle** par core team (1-2 jours)
@@ -768,13 +768,13 @@ export async function publishPlugin(pluginPath: string) {
 - ✅ Documentation complète
 - ✅ Maintenu activement (updates <3 mois)
 - ✅ Pas de télémétrie non-divulguée
-- ✅ Compatible dernière version BigMind
+- ✅ Compatible dernière version Cartae
 
 ---
 
 #### B) Plugins COMMUNITY
 
-1. Développeur fork `bigmind-plugins`
+1. Développeur fork `cartae-plugins`
 2. Crée plugin dans `community/`
 3. Submit PR
 4. **GitHub Actions automatique :**
@@ -797,7 +797,7 @@ export async function publishPlugin(pluginPath: string) {
 1. Développeur héberge sur son serveur
 2. Utilisateurs installent via URL :
    ```
-   bigmind-plugin install https://monsite.com/plugin.zip
+   cartae-plugin install https://monsite.com/plugin.zip
    ```
 3. Pas de validation (⚠️ warning utilisateur)
 4. Utile pour :
@@ -871,9 +871,9 @@ jobs:
 #### **Semaine 1-2 : Infrastructure**
 
 - [ ] Créer compte Cloudflare (gratuit)
-- [ ] Setup R2 bucket `bigmind-plugins`
+- [ ] Setup R2 bucket `cartae-plugins`
 - [ ] Développer Registry API (Cloudflare Worker)
-- [ ] Déployer API sur `bigmind-registry.workers.dev`
+- [ ] Déployer API sur `cartae-registry.workers.dev`
 - [ ] Tester upload/download manuel
 
 **Livrable :** API fonctionnelle pour list/download plugins
@@ -894,11 +894,11 @@ jobs:
 
 #### **Semaine 4 : Repository Séparé**
 
-- [ ] Créer repo `bigmind-plugins` (public)
+- [ ] Créer repo `cartae-plugins` (public)
 - [ ] Migrer exemple plugins vers `official/`
 - [ ] Setup GitHub Actions (build, security, publish)
 - [ ] Documentation pour contributeurs
-- [ ] Template plugin avec CLI `create-bigmind-plugin`
+- [ ] Template plugin avec CLI `create-cartae-plugin`
 
 **Livrable :** Développeurs peuvent publier facilement
 
@@ -922,7 +922,7 @@ jobs:
 - [ ] Search amélioré (Algolia ou MeiliSearch)
 - [ ] Featured plugins (curation)
 - [ ] Email notifications (nouveaux plugins)
-- [ ] Blog post "Introducing BigMind Marketplace"
+- [ ] Blog post "Introducing Cartae Marketplace"
 - [ ] Submit to Product Hunt
 
 **Livrable :** Marketplace public lancé 🚀
@@ -939,7 +939,7 @@ jobs:
 | **Cloudflare Workers** | 500k requêtes/mois | Gratuit | $0 |
 | **GitHub** | Public repos | Gratuit | $0 |
 | **jsDelivr CDN** | Bandwidth illimité | Gratuit | $0 |
-| **Domain** | bigmind.dev | $12/an | $12 |
+| **Domain** | cartae.dev | $12/an | $12 |
 | **Total** | - | **$10/mois** | **$132/an** |
 
 ### An 3 (500k users, 300 plugins)
@@ -967,7 +967,7 @@ jobs:
 
 ### Production (6 semaines)
 
-- [ ] Repository `bigmind-plugins` public
+- [ ] Repository `cartae-plugins` public
 - [ ] GitHub Actions (build + publish)
 - [ ] Security scans automatiques
 - [ ] Licensing intégré
@@ -982,7 +982,7 @@ jobs:
 
 | Question | Réponse |
 |----------|---------|
-| **Faut-il un autre repo ?** | ✅ Oui, `bigmind-plugins` séparé |
+| **Faut-il un autre repo ?** | ✅ Oui, `cartae-plugins` séparé |
 | **Comment héberger ?** | ⭐ Cloudflare R2 (0$ egress, $10/mois) |
 | **Est-ce payant ?** | 💰 $10-50/mois (quasi-gratuit) |
 | **App Store ou WordPress ?** | 🏆 Hybride : Verified (officiel) + Community (ouvert) |
@@ -992,12 +992,12 @@ jobs:
 
 ```
 ┌─────────────────────────────────────────────┐
-│  Repository: bigmind (monorepo)             │
+│  Repository: cartae (monorepo)             │
 │  → Plugin SDK + Marketplace UI              │
 └─────────────────┬───────────────────────────┘
                   │
 ┌─────────────────▼───────────────────────────┐
-│  Repository: bigmind-plugins (séparé)       │
+│  Repository: cartae-plugins (séparé)       │
 │  → Plugin sources + GitHub Actions          │
 └─────────────────┬───────────────────────────┘
                   │
@@ -1020,7 +1020,7 @@ jobs:
 Voulez-vous que je :
 1. **Implémente le Registry API** (Cloudflare Worker) ?
 2. **Crée le client Marketplace** (UI React) ?
-3. **Setup le repo `bigmind-plugins`** avec GitHub Actions ?
+3. **Setup le repo `cartae-plugins`** avec GitHub Actions ?
 4. **Développe le CLI de publication** pour développeurs ?
 
 **Créé le :** 2025-10-29

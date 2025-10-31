@@ -1,5 +1,5 @@
 {
-  "id": "com.bigmind.dag-templates",
+  "id": "com.cartae.dag-templates",
   "name": "DAG Templates Manager",
   "version": "1.0.0",
   "description": "Gérez et appliquez des structures DAG prédéfinies pour démarrer vos projets",

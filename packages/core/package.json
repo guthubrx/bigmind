@@ -1,5 +1,5 @@
 {
-  "name": "@bigmind/core",
+  "name": "@cartae/core",
   "version": "0.1.0",
   "description": "Logique métier et modèles pour BigMind",
   "main": "dist/index.js",

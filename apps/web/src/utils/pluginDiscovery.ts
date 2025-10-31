@@ -5,7 +5,7 @@
  */
 
 import { getAllAvailableManifests, type LoadedManifest } from '../core/plugins';
-import type { PluginManifest } from '@bigmind/plugin-system';
+import type { PluginManifest } from '@cartae/plugin-system';
 
 /**
  * Get all discovered plugin manifests

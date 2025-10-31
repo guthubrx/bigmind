@@ -1,17 +1,17 @@
-# 🚀 Guide de Déploiement - BigMind Plugins Marketplace
+# 🚀 Guide de Déploiement - Cartae Plugins Marketplace
 
 ## 📦 Étape 1: Déployer le Repository GitHub
 
 ### Exécuter le script de déploiement
 
 ```bash
-cd /home/user/bigmind
-./deploy-bigmind-plugins.sh
+cd /home/user/cartae
+./deploy-cartae-plugins.sh
 ```
 
 Ce script va:
-1. ✅ Cloner `https://github.com/guthubrx/bigmind-plugins`
-2. ✅ Copier tous les fichiers depuis `/tmp/bigmind-plugins`
+1. ✅ Cloner `https://github.com/guthubrx/cartae-plugins`
+2. ✅ Copier tous les fichiers depuis `/tmp/cartae-plugins`
 3. ✅ Commit et push vers GitHub
 4. ✅ Vérifier que tout est déployé correctement
 
@@ -25,7 +25,7 @@ Ce script va:
 2. Sélectionner votre compte
 3. Aller dans **R2 Object Storage**
 4. Cliquer **Create bucket**
-   - Name: `bigmind-plugins`
+   - Name: `cartae-plugins`
    - Location: Automatic
    - Storage class: Standard
 5. Cliquer **Create bucket**
@@ -34,20 +34,20 @@ Ce script va:
 
 1. Dans R2, aller dans **Settings** → **R2 API tokens**
 2. Cliquer **Create API token**
-   - Token name: `bigmind-plugins-ci`
+   - Token name: `cartae-plugins-ci`
    - Permissions: **Object Read & Write**
-   - Bucket: `bigmind-plugins`
+   - Bucket: `cartae-plugins`
 3. **IMPORTANT**: Copier et sauvegarder:
    - Access Key ID
    - Secret Access Key
-   - Bucket name: `bigmind-plugins`
+   - Bucket name: `cartae-plugins`
    - Account ID (visible dans l'URL du dashboard)
 
 ### 2.3 Configurer Public Access (optionnel)
 
 Pour permettre le téléchargement public des plugins:
 
-1. Dans le bucket `bigmind-plugins`
+1. Dans le bucket `cartae-plugins`
 2. Aller dans **Settings** → **Public access**
 3. Activer **Allow public access**
 4. Copier l'URL publique: `https://pub-xxxxx.r2.dev`
@@ -56,7 +56,7 @@ Pour permettre le téléchargement public des plugins:
 
 ## 🔐 Étape 3: Configurer GitHub Secrets
 
-Aller sur https://github.com/guthubrx/bigmind-plugins/settings/secrets/actions
+Aller sur https://github.com/guthubrx/cartae-plugins/settings/secrets/actions
 
 Ajouter ces secrets:
 
@@ -66,7 +66,7 @@ Ajouter ces secrets:
 | `CLOUDFLARE_API_TOKEN` | Token API R2 | Créé à l'étape 2.2 |
 | `R2_ACCESS_KEY_ID` | R2 Access Key | Créé à l'étape 2.2 |
 | `R2_SECRET_ACCESS_KEY` | R2 Secret Key | Créé à l'étape 2.2 |
-| `R2_BUCKET_NAME` | Nom du bucket | `bigmind-plugins` |
+| `R2_BUCKET_NAME` | Nom du bucket | `cartae-plugins` |
 
 ### Comment ajouter un secret:
 
@@ -203,13 +203,13 @@ export default {
 ### 4.2 Créer `wrangler.toml`:
 
 ```toml
-name = "bigmind-registry"
+name = "cartae-registry"
 main = "worker.js"
 compatibility_date = "2024-01-01"
 
 [[r2_buckets]]
 binding = "R2_BUCKET"
-bucket_name = "bigmind-plugins"
+bucket_name = "cartae-plugins"
 ```
 
 ### 4.3 Déployer le Worker:
@@ -225,25 +225,25 @@ wrangler login
 wrangler deploy
 ```
 
-Copier l'URL du Worker déployé (ex: `https://bigmind-registry.xxx.workers.dev`)
+Copier l'URL du Worker déployé (ex: `https://cartae-registry.xxx.workers.dev`)
 
 ---
 
-## 🔗 Étape 5: Connecter BigMind App au Registry
+## 🔗 Étape 5: Connecter Cartae App au Registry
 
 ### 5.1 Mettre à jour la configuration
 
-Dans le monorepo `bigmind`, créer/modifier `.env`:
+Dans le monorepo `cartae`, créer/modifier `.env`:
 
 ```bash
 # .env
-VITE_MARKETPLACE_URL=https://bigmind-registry.xxx.workers.dev
+VITE_MARKETPLACE_URL=https://cartae-registry.xxx.workers.dev
 ```
 
 ### 5.2 Tester l'intégration
 
 ```bash
-cd /home/user/bigmind
+cd /home/user/cartae
 pnpm install
 pnpm dev
 ```
@@ -257,7 +257,7 @@ Ouvrir http://localhost:3000 → Plugins → Remote tab
 ### 6.1 Créer un nouveau plugin
 
 ```bash
-cd ~/bigmind-plugins-deploy
+cd ~/cartae-plugins-deploy
 mkdir -p official/test-plugin
 cd official/test-plugin
 ```
@@ -266,19 +266,19 @@ Créer `manifest.json`:
 
 ```json
 {
-  "id": "com.bigmind.test",
+  "id": "com.cartae.test",
   "name": "Test Plugin",
   "version": "1.0.0",
   "description": "Plugin de test",
   "author": {
-    "name": "BigMind Team",
-    "email": "team@bigmind.com"
+    "name": "Cartae Team",
+    "email": "team@cartae.com"
   },
   "main": "./index.js",
   "permissions": ["mindmap:read"],
   "category": "developer",
   "pricing": "free",
-  "bigmind": "^1.0.0"
+  "cartae": "^1.0.0"
 }
 ```
 
@@ -310,11 +310,11 @@ Sur GitHub:
 2. Vérifier que le workflow **Validate Plugin** s'exécute ✅
 3. Si validé, merger vers `main`
 4. Vérifier que le workflow **Publish Plugin** s'exécute ✅
-5. Vérifier dans R2 que le fichier `plugins/com.bigmind.test/com.bigmind.test-1.0.0.zip` existe
+5. Vérifier dans R2 que le fichier `plugins/com.cartae.test/com.cartae.test-1.0.0.zip` existe
 
-### 6.3 Installer depuis BigMind App
+### 6.3 Installer depuis Cartae App
 
-1. Ouvrir BigMind → Plugins → Remote tab
+1. Ouvrir Cartae → Plugins → Remote tab
 2. Chercher "Test Plugin"
 3. Cliquer **Install**
 4. Vérifier qu'il apparaît dans Local tab
@@ -367,8 +367,8 @@ Sur GitHub:
 
 ## 📚 Documentation Complète
 
-- **Repository Plugins**: https://github.com/guthubrx/bigmind-plugins
-- **Repository Main**: https://github.com/guthubrx/bigmind
+- **Repository Plugins**: https://github.com/guthubrx/cartae-plugins
+- **Repository Main**: https://github.com/guthubrx/cartae
 - **Cloudflare R2 Docs**: https://developers.cloudflare.com/r2/
 - **Cloudflare Workers Docs**: https://developers.cloudflare.com/workers/
 
@@ -376,4 +376,4 @@ Sur GitHub:
 
 **Questions? Besoin d'aide?**
 
-Créer une issue sur: https://github.com/guthubrx/bigmind-plugins/issues
+Créer une issue sur: https://github.com/guthubrx/cartae-plugins/issues

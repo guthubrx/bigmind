@@ -14,7 +14,7 @@ import {
   formatValidationMessages,
   validateManifests,
 } from '../ManifestValidator';
-import type { PluginManifest } from '@bigmind/plugin-system';
+import type { PluginManifest } from '@cartae/plugin-system';
 
 describe('ManifestValidator', () => {
   const validManifest: PluginManifest = {

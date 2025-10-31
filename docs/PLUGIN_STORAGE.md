@@ -1,13 +1,13 @@
-# Système de Storage pour Plugins BigMind
+# Système de Storage pour Plugins Cartae
 
 ## 🎯 Concept : "Cartes Porteuses d'Extensions"
 
-Les cartes mentales BigMind sont maintenant des **documents auto-suffisants** qui transportent leurs propres extensions et données de plugins.
+Les cartes mentales Cartae sont maintenant des **documents auto-suffisants** qui transportent leurs propres extensions et données de plugins.
 
 ### Avant
 
 ```
-Ma_Carte.bigmind
+Ma_Carte.cartae
 ├─ Contenu de la carte
 └─ nodePaletteId: "vibrant"  ❌ Difficile à étendre
 ```
@@ -15,7 +15,7 @@ Ma_Carte.bigmind
 ### Maintenant
 
 ```
-Ma_Carte.bigmind
+Ma_Carte.cartae
 ├─ Contenu de la carte
 ├─ Plugins requis: [palette-manager, education]
 └─ Données des plugins:
@@ -69,7 +69,7 @@ Ma_Carte.bigmind
 ```json
 {
   "pluginData": {
-    "com.bigmind.palette-manager": {
+    "com.cartae.palette-manager": {
       "_meta": {
         "pluginVersion": "1.0.0",
         "schemaVersion": "1"
@@ -222,7 +222,7 @@ storage.registerMigration('1', '3', directMigration1to3);
 
 ```typescript
 const storage = pluginDataManager.getStorage(
-  'com.bigmind.education',
+  'com.cartae.education',
   '1.0.0',
   '1'
 );
@@ -247,7 +247,7 @@ storage.markAsRequired('1.0.0');
 ### Plugin Gestion de Projet
 
 ```typescript
-const storage = pluginDataManager.getStorage('com.bigmind.project-management', '1.0.0', '1');
+const storage = pluginDataManager.getStorage('com.cartae.project-management', '1.0.0', '1');
 
 await storage.set('project', {
   name: 'Refonte Site Web',
@@ -274,7 +274,7 @@ await storage.set('team', {
 
 ```typescript
 const storage = pluginDataManager.getStorage(
-  'com.bigmind.research',
+  'com.cartae.research',
   '1.0.0',
   '1'
 );
@@ -305,14 +305,14 @@ await storage.set('paper', {
   "plugins": {
     "required": [
       {
-        "id": "com.bigmind.palette-manager",
+        "id": "com.cartae.palette-manager",
         "minVersion": "1.0.0",
         "dataSchemaVersion": "1"
       }
     ],
     "recommended": [
       {
-        "id": "com.bigmind.education",
+        "id": "com.cartae.education",
         "minVersion": "1.0.0",
         "dataSchemaVersion": "1"
       }
@@ -320,7 +320,7 @@ await storage.set('paper', {
   },
 
   "pluginData": {
-    "com.bigmind.palette-manager": {
+    "com.cartae.palette-manager": {
       "_meta": {
         "pluginVersion": "1.0.0",
         "schemaVersion": "1",
@@ -332,7 +332,7 @@ await storage.set('paper', {
         "tagPaletteId": "pastel"
       }
     },
-    "com.bigmind.education": {
+    "com.cartae.education": {
       "_meta": {...},
       "data": {
         "course": {...},
@@ -352,7 +352,7 @@ await storage.set('paper', {
 
 ```typescript
 // Dans votre plugin
-const storage = pluginDataManager.getStorage('com.bigmind.mon-plugin', '1.0.0', '1');
+const storage = pluginDataManager.getStorage('com.cartae.mon-plugin', '1.0.0', '1');
 ```
 
 ### Étape 2 : Remplacer les Accès Directs
@@ -392,10 +392,10 @@ Chaque plugin a son propre namespace :
 
 ```
 pluginData/
-├─ com.bigmind.palette-manager/
+├─ com.cartae.palette-manager/
 │  ├─ _meta/
 │  └─ data/
-├─ com.bigmind.education/
+├─ com.cartae.education/
 │  ├─ _meta/
 │  └─ data/
 └─ com.votre-plugin/
@@ -447,7 +447,7 @@ Utilisez un identifiant unique et descriptif :
 
 ```typescript
 // ✅ Bon
-'com.bigmind.palette-manager';
+'com.cartae.palette-manager';
 'com.votrecompagnie.education';
 'org.votre-org.project-tools';
 
@@ -504,7 +504,7 @@ const config = await storage.get<MyPluginData['config']>('config');
 
 ## 🎉 Conclusion
 
-Le système de Plugin Storage transforme BigMind en une **plateforme extensible** où les cartes mentales deviennent de véritables documents riches et auto-suffisants.
+Le système de Plugin Storage transforme Cartae en une **plateforme extensible** où les cartes mentales deviennent de véritables documents riches et auto-suffisants.
 
 **Pour les utilisateurs :** Partage simplifié, pas de configuration.
 **Pour les développeurs :** API puissante, migrations automatiques, isolation garantie.

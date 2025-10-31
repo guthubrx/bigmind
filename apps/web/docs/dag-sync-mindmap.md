@@ -28,7 +28,7 @@ The DAG-MindMap synchronization system creates a bidirectional link between the 
 ├─────────────────────────────────────────┤
 │ useTagGraph (DAG structure)             │
 │ useNodeTags (Associations - TRUTH)      │
-│ node.tags (XMind/bigmind.json)          │
+│ node.tags (XMind/cartae.json)          │
 └─────────────────────────────────────────┘
 ```
 
@@ -210,7 +210,7 @@ const nodeTagsData = {
   nodeTagMap: state.nodeTagMap,
   tagNodeMap: state.tagNodeMap,
 };
-// Save to bigmind.json
+// Save to cartae.json
 ```
 
 When loading a file:

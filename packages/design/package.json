@@ -1,5 +1,5 @@
 {
-  "name": "@bigmind/design",
+  "name": "@cartae/design",
   "version": "0.1.0",
   "description": "Design tokens et thèmes pour BigMind",
   "main": "dist/index.js",

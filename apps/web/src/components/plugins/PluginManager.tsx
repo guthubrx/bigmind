@@ -4,8 +4,8 @@
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
-import type { PluginInfo } from '@bigmind/plugin-system';
-import { PluginState } from '@bigmind/plugin-system';
+import type { PluginInfo } from '@cartae/plugin-system';
+import { PluginState } from '@cartae/plugin-system';
 import { PluginCard } from './PluginCard';
 import { PluginFilters, type PluginStatus, type PluginCategory } from './PluginFilters';
 import { PluginDetailModal } from './PluginDetailModal';
@@ -19,7 +19,7 @@ import {
 import { installPlugin } from '../../services/PluginInstaller';
 import { pluginDevService } from '../../services/PluginDevService';
 import { useDeveloperMode } from './DeveloperModeToggle';
-import type { PluginManifest } from '@bigmind/plugin-system';
+import type { PluginManifest } from '@cartae/plugin-system';
 import { Toast, type ToastType } from '../ui/Toast';
 import './PluginManager.css';
 

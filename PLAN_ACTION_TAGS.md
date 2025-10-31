@@ -651,7 +651,7 @@ Positionner précisément les tags sur les nœuds (border, centered, etc.)
 
 **Implémentation:**
 
-- Sauvegarder tags dans bigmind.json
+- Sauvegarder tags dans cartae.json
 - Restaurer tags au chargement
 - Format de fichier
 

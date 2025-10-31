@@ -4,7 +4,7 @@
  * Phase 4 - Sprint 1
  */
 
-import type { PluginManifest } from '@bigmind/plugin-system';
+import type { PluginManifest } from '@cartae/plugin-system';
 import {
   validateManifestWithDistribution,
   validateDistribution,

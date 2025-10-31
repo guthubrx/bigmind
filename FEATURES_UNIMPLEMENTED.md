@@ -1,4 +1,4 @@
-# Fonctionnalités Non Implémentées - BigMind
+# Fonctionnalités Non Implémentées - Cartae
 
 **Date d'analyse :** 29 octobre 2025
 **Branche :** feat/tags-clean
@@ -67,7 +67,7 @@
 
 #### PLUGIN (41 features)
 
-**@bigmind/plugin-marketplace-ui**
+**@cartae/plugin-marketplace-ui**
 
 - Marketplace UI discovery
 - Plugin cards & filters
@@ -119,14 +119,14 @@
 
 #### PLUGIN (30 features)
 
-**@bigmind/plugin-update-notifications**
+**@cartae/plugin-update-notifications**
 
 - Update notifications UI
 - Release notes viewer
 - Progress bars
 - 10 tests
 
-**@bigmind/plugin-installer-ui**
+**@cartae/plugin-installer-ui**
 
 - Installation UI
 - Dependency tree viz
@@ -152,12 +152,12 @@
 
 **CLI Tools**
 
-- `packages/cli/` - BigMind CLI
-  - `bigmind plugin create` - Scaffolding
-  - `bigmind plugin dev` - Dev mode + HMR
-  - `bigmind plugin build` - Build
-  - `bigmind plugin publish` - Registry publication
-  - `bigmind plugin validate` - Manifest validation
+- `packages/cli/` - Cartae CLI
+  - `cartae plugin create` - Scaffolding
+  - `cartae plugin dev` - Dev mode + HMR
+  - `cartae plugin build` - Build
+  - `cartae plugin publish` - Registry publication
+  - `cartae plugin validate` - Manifest validation
 
 **Dev Experience**
 
@@ -279,7 +279,7 @@
 
 #### PLUGIN (13 features)
 
-**@bigmind/plugin-export-workers**
+**@cartae/plugin-export-workers**
 
 - Export/Import workers background
 - Search indexing worker
@@ -326,7 +326,7 @@
 
 ### PLUGIN (4 features)
 
-**@bigmind/plugin-tags-advanced**
+**@cartae/plugin-tags-advanced**
 
 - Export tags (JSON/CSV/YAML)
 - Tag search & filtering
@@ -372,7 +372,7 @@
 
 ### PLUGIN (6 features)
 
-**@bigmind/plugin-storage-manager**
+**@cartae/plugin-storage-manager**
 
 - Export/import sélectif data
 - API nettoyage orphelines
@@ -387,7 +387,7 @@
 
 ### PLUGIN (10 features)
 
-**@bigmind/plugin-onboarding**
+**@cartae/plugin-onboarding**
 
 - Tour system (driver.js)
 - First-run experience
@@ -487,7 +487,7 @@
 
 ### PLUGIN (37 features)
 
-**@bigmind/plugin-collaboration**
+**@cartae/plugin-collaboration**
 
 - Collaboration temps réel (CRDT)
 - Multi-user editing
@@ -495,42 +495,42 @@
 - Presence awareness
 - Cursors synchronisés
 
-**@bigmind/plugin-cloud-sync**
+**@cartae/plugin-cloud-sync**
 
 - Cloud synchronization
 - Conflict resolution
 - Offline-first
 - Delta sync
 
-**@bigmind/plugin-ai-assistant**
+**@cartae/plugin-ai-assistant**
 
 - Smart suggestions
 - Auto-completion
 - Content generation
 - Semantic analysis
 
-**@bigmind/plugin-advanced-export**
+**@cartae/plugin-advanced-export**
 
 - PowerPoint export
 - Word export
 - Markdown export
 - HTML export
 
-**@bigmind/plugin-templates**
+**@cartae/plugin-templates**
 
 - Pre-built templates
 - Template marketplace
 - Custom templates
 - Categories
 
-**@bigmind/plugin-presentation-mode**
+**@cartae/plugin-presentation-mode**
 
 - Full-screen presentation
 - Navigation controls
 - Presenter notes
 - Timer & progress
 
-**@bigmind/plugin-mobile-app**
+**@cartae/plugin-mobile-app**
 
 - iOS app (React Native)
 - Android app (React Native)

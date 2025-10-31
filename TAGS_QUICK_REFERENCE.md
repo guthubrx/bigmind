@@ -23,7 +23,7 @@ Je veux...                                Document à lire
 ├─────────────────────────────────────┤
 │   useNodeTags (NODE-TAG MAPPING)    │  ← SINGLE SOURCE OF TRUTH ⭐
 ├─────────────────────────────────────┤
-│   node.tags (XMind/bigmind.json)    │  ← Persisted data
+│   node.tags (XMind/cartae.json)    │  ← Persisted data
 └─────────────────────────────────────┘
 ```
 
@@ -100,7 +100,7 @@ useNodeTagsStore.getState().getNodeTags(nodeId);
 useTagGraphStore.getState().tags;
 
 // 3. Persisted data
-localStorage.getItem('bigmind-data');
+localStorage.getItem('cartae-data');
 ```
 
 ## Les 5 Patterns à Mémoriser
@@ -244,7 +244,7 @@ Phase 9: Cleanup & fixes (1cc53da, fdc3512, ...)
 A: C'est la SEULE source de vérité pour nœud-tag mappings. Tout le reste lit d'ici.
 
 **Q: Pourquoi pas node.tags directly?**
-A: node.tags vient du fichier XMind/bigmind.json. Ça change lentement. Store est réactif.
+A: node.tags vient du fichier XMind/cartae.json. Ça change lentement. Store est réactif.
 
 **Q: Comment je sais si sync est cassé?**
 A: Un tag que tu ajoutes n'apparaît pas dans DAG panel ou nœud? Check eventBus.emit().

@@ -5,7 +5,7 @@
 
 /* eslint-disable no-console */
 
-import { createEnhancedPluginSystem } from '@bigmind/plugin-system';
+import { createEnhancedPluginSystem } from '@cartae/plugin-system';
 import { eventBus } from './eventBus';
 
 // Core plugins (essential, auto-activated)

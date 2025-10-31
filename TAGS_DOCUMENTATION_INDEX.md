@@ -191,7 +191,7 @@ Graphe des dépendances avec:
 
 **Réponse dans:** TAGS_ROADMAP_COMPLETE.md (Section 5. PERSISTANCE)
 
-- importTags/exportTags dans bigmind.json
+- importTags/exportTags dans cartae.json
 
 ### Q: Pourquoi MindMapNode lit du store et pas des props?
 
@@ -278,13 +278,13 @@ eventBus.emit('tag:created', { tagId: tag.id, label: tag.label });
 ```typescript
 // Level 1: DAG structure
 const dagData = useTagGraphStore.getState().exportTags();
-bigmindData.tags = dagData;
+cartaeData.tags = dagData;
 
 // Level 2: Node associations
-bigmindData.nodes[nodeId].tags = node.tags;
+cartaeData.nodes[nodeId].tags = node.tags;
 
 // Level 3: UI state (visibility, colors, etc.)
-bigmindData.tagLayers = useTagGraphStore.getState().getLayers();
+cartaeData.tagLayers = useTagGraphStore.getState().getLayers();
 ```
 
 ---

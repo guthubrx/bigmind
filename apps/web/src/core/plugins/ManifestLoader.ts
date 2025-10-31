@@ -4,7 +4,7 @@
  * Phase 3 - Sprint 4
  */
 
-import type { PluginManifest } from '@bigmind/plugin-system';
+import type { PluginManifest } from '@cartae/plugin-system';
 
 export interface LoadedManifest {
   manifest: PluginManifest;

@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { PluginDevService } from '../PluginDevService';
 import { gitHubAuthService } from '../GitHubAuthService';
 import { gitHubPluginRegistry } from '../GitHubPluginRegistry';
-import type { PluginManifest } from '@bigmind/plugin-system';
+import type { PluginManifest } from '@cartae/plugin-system';
 
 describe('PluginDevService', () => {
   let service: PluginDevService;
@@ -325,7 +325,7 @@ describe('PluginDevService', () => {
       expect(viteConfig).toContain('defineConfig');
       expect(viteConfig).toContain('vite-plugin-dts');
       expect(viteConfig).toContain(mockPluginId);
-      expect(viteConfig).toContain('@bigmind/plugin-system');
+      expect(viteConfig).toContain('@cartae/plugin-system');
     });
   });
 });

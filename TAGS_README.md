@@ -2,7 +2,7 @@
 
 ## Pour Commencer
 
-Vous avez entre les mains la **documentation la plus exhaustive jamais générée pour le système de tags** de BigMind.
+Vous avez entre les mains la **documentation la plus exhaustive jamais générée pour le système de tags** de Cartae.
 
 **5 documents Markdown**, **1882 lignes**, **65+ commits documentés**, **architecture complète expliquée**.
 
@@ -248,7 +248,7 @@ ea71f6e - Affichage des tags sur les nœuds
           MenuBar et NodeTagPanel utiliser la MÊME fonction
 
 7ec3dd6 - Tag Persistence
-          Sauvegarde complete DAG dans bigmind.json
+          Sauvegarde complete DAG dans cartae.json
 
 1cc53da - Deletion Fix
           Tags disparaissent des nœuds quand supprimés en hiérarchie

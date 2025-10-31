@@ -2,7 +2,7 @@
 
 ## Résumé
 
-Cette implémentation ajoute un mode développeur complet au système de plugins BigMind, permettant aux développeurs de cloner, modifier et publier des plugins community via GitHub.
+Cette implémentation ajoute un mode développeur complet au système de plugins Cartae, permettant aux développeurs de cloner, modifier et publier des plugins community via GitHub.
 
 ## Fichiers créés
 
@@ -118,14 +118,14 @@ Les boutons apparaissent uniquement si :
 
 1. Allez sur GitHub : https://github.com/settings/tokens/new
 2. Remplissez le formulaire :
-   - **Note** : "BigMind Plugin Development"
+   - **Note** : "Cartae Plugin Development"
    - **Expiration** : Choisissez la durée souhaitée (90 jours recommandé)
    - **Scopes requis** :
      - `repo` : Accès complet aux repositories
      - `read:user` : Lire les informations de profil
 3. Cliquez sur "Generate token"
 4. **Important** : Copiez le token immédiatement (vous ne pourrez pas le revoir)
-5. Dans BigMind, allez dans Settings > Développeur
+5. Dans Cartae, allez dans Settings > Développeur
 6. Collez le token dans le champ "GitHub Personal Access Token"
 7. Cliquez sur "Se connecter"
 
@@ -213,8 +213,8 @@ Les boutons apparaissent uniquement si :
 User → GitHubLoginButton
   → GitHubAuthService.login(token)
     → fetch('https://api.github.com/user')
-      → localStorage.setItem('bigmind-github-token')
-      → localStorage.setItem('bigmind-github-user')
+      → localStorage.setItem('cartae-github-token')
+      → localStorage.setItem('cartae-github-user')
 ```
 
 ### Flow de clonage

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Giscus is integrated into BigMind marketplace for plugin reviews and community discussions. It uses GitHub Discussions as the backend for storing comments and reviews.
+Giscus is integrated into Cartae marketplace for plugin reviews and community discussions. It uses GitHub Discussions as the backend for storing comments and reviews.
 
 ## Setup Instructions
 
@@ -10,12 +10,12 @@ Giscus is integrated into BigMind marketplace for plugin reviews and community d
 
 1. Go to https://github.com/apps/giscus
 2. Click "Install"
-3. Select the `guthubrx/bigmind-plugins` repository
+3. Select the `guthubrx/cartae-plugins` repository
 4. Grant necessary permissions
 
-### 2. Enable Discussions on bigmind-plugins Repository
+### 2. Enable Discussions on cartae-plugins Repository
 
-1. Go to https://github.com/guthubrx/bigmind-plugins
+1. Go to https://github.com/guthubrx/cartae-plugins
 2. Navigate to **Settings**
 3. Scroll down to **Features**
 4. Enable **Discussions** checkbox
@@ -24,7 +24,7 @@ Giscus is integrated into BigMind marketplace for plugin reviews and community d
 ### 3. Get Repository Configuration
 
 1. Visit https://giscus.app
-2. Enter repository info: `guthubrx/bigmind-plugins`
+2. Enter repository info: `guthubrx/cartae-plugins`
 3. Select discussion category: **Plugin Reviews**
 4. Choose mapping: **Specific term** (for per-plugin discussions)
 5. Copy the generated configuration
@@ -36,7 +36,7 @@ Edit `apps/web/src/components/plugins/PluginReviews.tsx`:
 ```tsx
 <Giscus
   id={`plugin-${pluginId}`}
-  repo="guthubrx/bigmind-plugins"
+  repo="guthubrx/cartae-plugins"
   repoId="R_kgDON7lJBA"           // ← Update with actual ID from giscus.app
   category="Plugin Reviews"
   categoryId="DIC_kwDON7lJBM4Cy_gP" // ← Update with actual ID from giscus.app
@@ -89,7 +89,7 @@ No additional environment variables needed. Giscus uses GitHub OAuth automatical
 
 ## Future Enhancements
 
-- [ ] Custom styling to match BigMind theme
+- [ ] Custom styling to match Cartae theme
 - [ ] Aggregate rating calculation from discussions
 - [ ] Moderation tools for reviews
 - [ ] Auto-archive discussions for deprecated plugins

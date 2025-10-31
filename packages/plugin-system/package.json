@@ -1,5 +1,5 @@
 {
-  "name": "@bigmind/plugin-system",
+  "name": "@cartae/plugin-system",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",

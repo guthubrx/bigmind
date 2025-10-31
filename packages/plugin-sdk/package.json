@@ -1,5 +1,5 @@
 {
-  "name": "@bigmind/plugin-sdk",
+  "name": "@cartae/plugin-sdk",
   "version": "0.1.0",
   "description": "SDK for building BigMind plugins with Phase 3 UI infrastructure",
   "main": "./dist/index.js",
@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
-    "bigmind",
+    "cartae",
     "plugin",
     "sdk",
     "webview",

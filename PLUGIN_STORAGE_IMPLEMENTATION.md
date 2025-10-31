@@ -2,7 +2,7 @@
 
 ## ✅ Statut : IMPLÉMENTÉ
 
-L'architecture "Cartes Porteuses d'Extensions" est maintenant complètement opérationnelle dans BigMind.
+L'architecture "Cartes Porteuses d'Extensions" est maintenant complètement opérationnelle dans Cartae.
 
 ## Architecture Implémentée
 
@@ -65,12 +65,12 @@ const data = await storage.get('myKey'); // Migre automatiquement 1→2→3
 **Fonctionnalités:**
 
 - Détection automatique des champs legacy (`nodePaletteId`, `tagPaletteId`)
-- Migration transparente vers `pluginData['com.bigmind.palette-manager']`
+- Migration transparente vers `pluginData['com.cartae.palette-manager']`
 - Marquage automatique du plugin comme `recommended`
 - Exécution en arrière-plan sans bloquer l'UI
 - Intégration dans `useOpenFiles.openFile()`
 
-## Structure d'un Fichier BigMind Étendu
+## Structure d'un Fichier Cartae Étendu
 
 ```json
 {
@@ -81,7 +81,7 @@ const data = await storage.get('myKey'); // Migre automatiquement 1→2→3
   "plugins": {
     "required": [
       {
-        "id": "com.bigmind.palette-manager",
+        "id": "com.cartae.palette-manager",
         "minVersion": "1.0.0",
         "dataSchemaVersion": "2"
       }
@@ -90,7 +90,7 @@ const data = await storage.get('myKey'); // Migre automatiquement 1→2→3
   },
 
   "pluginData": {
-    "com.bigmind.palette-manager": {
+    "com.cartae.palette-manager": {
       "_meta": {
         "pluginVersion": "1.0.0",
         "schemaVersion": "2",
@@ -103,7 +103,7 @@ const data = await storage.get('myKey'); // Migre automatiquement 1→2→3
         "customSettings": {...}
       }
     },
-    "com.bigmind.education": {
+    "com.cartae.education": {
       "_meta": {...},
       "data": {
         "courseInfo": {...},
@@ -203,7 +203,7 @@ Suggestion automatique d'installation des plugins manquants.
 ### Plugin Éducation
 
 ```typescript
-const storage = pluginDataManager.getStorage('com.bigmind.education', '1.0.0', '1');
+const storage = pluginDataManager.getStorage('com.cartae.education', '1.0.0', '1');
 
 await storage.set('course', {
   title: 'Math 101',
@@ -217,7 +217,7 @@ storage.markAsRequired('1.0.0');
 ### Plugin Gestion de Projet
 
 ```typescript
-const storage = pluginDataManager.getStorage('com.bigmind.project', '1.0.0', '1');
+const storage = pluginDataManager.getStorage('com.cartae.project', '1.0.0', '1');
 
 await storage.set('project', {
   phases: [...],
@@ -234,7 +234,7 @@ await storage.set('team', {
 ### Plugin Recherche Scientifique
 
 ```typescript
-const storage = pluginDataManager.getStorage('com.bigmind.research', '1.0.0', '1');
+const storage = pluginDataManager.getStorage('com.cartae.research', '1.0.0', '1');
 
 await storage.set('paper', {
   references: [...],
@@ -250,7 +250,7 @@ Pour migrer un plugin existant qui utilise des champs legacy:
 1. **Créer le storage:**
 
    ```typescript
-   const storage = pluginDataManager.getStorage('com.bigmind.monplugin', '1.0.0', '1');
+   const storage = pluginDataManager.getStorage('com.cartae.monplugin', '1.0.0', '1');
    ```
 
 2. **Lire les données migrées:**
@@ -301,9 +301,9 @@ Pour migrer un plugin existant qui utilise des champs legacy:
 
 Le système "Cartes Porteuses d'Extensions" est **entièrement implémenté et fonctionnel**. Les plugins peuvent maintenant:
 
-- ✅ Stocker leurs données dans les fichiers BigMind
+- ✅ Stocker leurs données dans les fichiers Cartae
 - ✅ Déclarer leurs dépendances
 - ✅ Migrer automatiquement leurs données
 - ✅ Évoluer leurs schémas sans casser la rétrocompatibilité
 
-Les cartes BigMind sont maintenant de véritables documents auto-suffisants qui déclarent et transportent leurs extensions!
+Les cartes Cartae sont maintenant de véritables documents auto-suffisants qui déclarent et transportent leurs extensions!

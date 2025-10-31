@@ -3,7 +3,7 @@
  * Handles file export in various formats
  */
 
-import type { IPluginContext, PluginManifest } from '@bigmind/plugin-system';
+import type { IPluginContext, PluginManifest } from '@cartae/plugin-system';
 import { useOpenFiles } from '../../../hooks/useOpenFiles';
 import { useViewport } from '../../../hooks/useViewport';
 import { useCanvasOptions } from '../../../hooks/useCanvasOptions';

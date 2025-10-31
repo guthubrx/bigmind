@@ -1,6 +1,6 @@
-# 📦 BigMind — Phase 4: Storage & Distribution (Prompt instructif pour LLM développeur)
+# 📦 Cartae — Phase 4: Storage & Distribution (Prompt instructif pour LLM développeur)
 
-> Objectif: Concevoir et implémenter une **infrastructure de distribution de plugins** robuste, sécurisée, scalable et performante pour l’écosystème BigMind.  
+> Objectif: Concevoir et implémenter une **infrastructure de distribution de plugins** robuste, sécurisée, scalable et performante pour l’écosystème Cartae.  
 > Axes: **Registry**, **CDN**, **résolution de dépendances**, **mises à jour delta**, **signature & intégrité**, **marketplace**, **search & discovery**, **monorepo DX**, **modération & qualité**, **supply-chain security**.
 
 ---
@@ -17,7 +17,7 @@
 ## 1) Registry & Publication
 
 ### 1.1. npm (standard) + Private Registry
-- **Scoped packages** `@bigmind/plugin-foo` pour éviter *dependency confusion*.
+- **Scoped packages** `@cartae/plugin-foo` pour éviter *dependency confusion*.
 - **SemVer strict** `MAJOR.MINOR.PATCH[-pre]` + `dist-tags` (`latest`, `beta`).
 - **Private registry** (MVP: Verdaccio; Enterprise: Nexus/Artifactory).
 
@@ -31,7 +31,7 @@ uplinks:
   npmjs:
     url: https://registry.npmjs.org/
 packages:
-  '@bigmind/*':
+  '@cartae/*':
     access: $authenticated
     publish: $authenticated
 ```
@@ -39,14 +39,14 @@ packages:
 ### 1.2. Manifeste plugin (extraits pertinents distribution)
 ```json
 {
-  "id": "com.bigmind.pdf-export",
+  "id": "com.cartae.pdf-export",
   "name": "PDF Export Pro",
   "version": "1.2.0",
   "main": "dist/index.js",
-  "bigmind": { "minVersion": "0.2.0" },
+  "cartae": { "minVersion": "0.2.0" },
   "distribution": {
-    "registry": "https://registry.bigmind.app",
-    "cdn": "https://cdn.bigmind.app/plugins",
+    "registry": "https://registry.cartae.app",
+    "cdn": "https://cdn.cartae.app/plugins",
     "integrity": {
       "sig": "base64-edsig",
       "pubKeyId": "dev:john@example.com"
@@ -68,8 +68,8 @@ packages:
 
 ### 2.1. Adresses
 ```
-https://cdn.bigmind.app/plugins/@bigmind/pdf-export/1.2.0/index.js
-https://cdn.bigmind.app/plugins/manifest.json
+https://cdn.cartae.app/plugins/@cartae/pdf-export/1.2.0/index.js
+https://cdn.cartae.app/plugins/manifest.json
 ```
 
 ### 2.2. Cache headers
@@ -94,7 +94,7 @@ https://cdn.bigmind.app/plugins/manifest.json
 externals: {
   react: 'React',
   'react-dom': 'ReactDOM',
-  '@bigmind/plugin-sdk': 'BigMindPluginSDK'
+  '@cartae/plugin-sdk': 'CartaePluginSDK'
 }
 ```
 
@@ -201,7 +201,7 @@ interface UpdateManager {
 ---
 
 ## ROLE: STORAGE-DISTRO-ENGINEER
-**Mission**: Implémenter la **chaîne complète de distribution** BigMind.  
+**Mission**: Implémenter la **chaîne complète de distribution** Cartae.  
 **Règles**:
 1. npm + Verdaccio (MVP).  
 2. CDN performant, delta updates, fallback chain.  

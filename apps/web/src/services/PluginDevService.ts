@@ -4,7 +4,7 @@
  */
 
 import { gitHubAuthService } from './GitHubAuthService';
-import type { PluginManifest } from '@bigmind/plugin-system';
+import type { PluginManifest } from '@cartae/plugin-system';
 import { gitHubPluginRegistry } from './GitHubPluginRegistry';
 
 const GITHUB_REPO_OWNER = 'guthubrx';
@@ -314,7 +314,7 @@ export class PluginDevService {
         typecheck: 'tsc --noEmit',
       },
       devDependencies: {
-        '@bigmind/plugin-system': 'workspace:*',
+        '@cartae/plugin-system': 'workspace:*',
         typescript: '^5.0.0',
         vite: '^5.0.0',
         'vite-plugin-dts': '^3.0.0',
@@ -359,7 +359,7 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['@bigmind/plugin-system'],
+      external: ['@cartae/plugin-system'],
     },
   },
 });

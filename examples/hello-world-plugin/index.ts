@@ -5,7 +5,7 @@
 
 /* eslint-disable no-console */
 
-import type { Plugin, IPluginContext, PluginManifest } from '@bigmind/plugin-system';
+import type { Plugin, IPluginContext, PluginManifest } from '@cartae/plugin-system';
 
 const manifest: PluginManifest = {
   id: 'com.bigmind.hello-world',

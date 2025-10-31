@@ -2,7 +2,7 @@
 
 ## 🎯 Objectif
 
-Transformer BigMind en plateforme extensible où les plugins peuvent stocker leurs propres données dans les fichiers `.bigmind`, avec gestion complète du versioning et des migrations automatiques.
+Transformer Cartae en plateforme extensible où les plugins peuvent stocker leurs propres données dans les fichiers `.cartae`, avec gestion complète du versioning et des migrations automatiques.
 
 ## 📋 Vision Globale
 
@@ -26,18 +26,18 @@ Transformer BigMind en plateforme extensible où les plugins peuvent stocker leu
 
 ### Philosophie
 
-**Les cartes BigMind deviennent autonomes et auto-descriptives.** Chaque fichier `.bigmind` est un conteneur qui :
+**Les cartes Cartae deviennent autonomes et auto-descriptives.** Chaque fichier `.cartae` est un conteneur qui :
 
 1. **Porte ses propres extensions** : La carte déclare explicitement les plugins qu'elle utilise
 2. **Étend le schéma de données** : Les plugins ajoutent de nouveaux champs sans modifier le core
 3. **Est auto-suffisante** : Toutes les informations pour interpréter la carte sont dans le fichier
-4. **Reste interopérable** : Le core BigMind peut toujours lire la structure de base
+4. **Reste interopérable** : Le core Cartae peut toujours lire la structure de base
 
 ### Schéma Extensible
 
 ```typescript
 // ✅ Schéma Core (stable, versionné)
-interface BigMindCoreSchema {
+interface CartaeCoreSchema {
   version: '2.0.0';
   nodes: Record<string, MindMapNode>;
   edges: Record<string, MindMapEdge>;
@@ -45,20 +45,20 @@ interface BigMindCoreSchema {
 }
 
 // ✅ Extensions par plugins (dynamique, évolutif)
-interface BigMindExtendedSchema extends BigMindCoreSchema {
+interface CartaeExtendedSchema extends CartaeCoreSchema {
   plugins: PluginMetadata;
 
   // Chaque plugin peut ajouter ses propres données
   pluginData: {
-    'com.bigmind.palette-manager': {
+    'com.cartae.palette-manager': {
       palettes: { nodes: string; tags: string };
       customColors: Color[];
     };
-    'com.bigmind.advanced-layout': {
+    'com.cartae.advanced-layout': {
       algorithm: 'force-directed' | 'hierarchical';
       options: LayoutOptions;
     };
-    'com.bigmind.collaboration': {
+    'com.cartae.collaboration': {
       comments: Comment[];
       annotations: Annotation[];
       permissions: Permission[];
@@ -78,10 +78,10 @@ Alice crée une carte avec :
   - Plugin "Custom Palettes" (sunset theme)
   - Plugin "Analytics" (tracking)
 
-Elle partage "projet.bigmind" avec Bob.
+Elle partage "projet.cartae" avec Bob.
 
 Bob ouvre la carte →
-  ✓ BigMind détecte automatiquement les plugins nécessaires
+  ✓ Cartae détecte automatiquement les plugins nécessaires
   ✓ Propose d'installer "Advanced Layout" et "Custom Palettes"
   ✓ Ignore "Analytics" (marqué comme optionnel)
   ✓ La carte s'affiche correctement avec le bon layout et les bonnes couleurs
@@ -92,14 +92,14 @@ Bob ouvre la carte →
 ```typescript
 // Version 1.0 du plugin Layout
 pluginData: {
-  "com.bigmind.layout": {
+  "com.cartae.layout": {
     type: "force"  // Simple string
   }
 }
 
 // Version 2.0 du plugin (nouveau schéma)
 pluginData: {
-  "com.bigmind.layout": {
+  "com.cartae.layout": {
     algorithm: "force-directed",  // Nouveau format
     options: { strength: 0.8 }
   }
@@ -118,7 +118,7 @@ Les plugins peuvent créer des **extensions de domaine** :
 
 ```typescript
 pluginData: {
-  "com.bigmind.education": {
+  "com.cartae.education": {
     learningObjectives: [
       { id: "lo1", description: "Comprendre X", nodeIds: ["n1", "n2"] }
     ],
@@ -134,7 +134,7 @@ pluginData: {
 
 ```typescript
 pluginData: {
-  "com.bigmind.project-mgmt": {
+  "com.cartae.project-mgmt": {
     tasks: [
       { id: "t1", nodeId: "n1", assignee: "Alice", dueDate: "2025-02-01", status: "in-progress" }
     ],
@@ -152,7 +152,7 @@ pluginData: {
 
 ```typescript
 pluginData: {
-  "com.bigmind.research": {
+  "com.cartae.research": {
     citations: [
       { nodeId: "n1", source: "Smith et al. 2024", url: "...", doi: "..." }
     ],
@@ -170,7 +170,7 @@ pluginData: {
 
 ```typescript
 export const manifest: PluginManifest = {
-  id: 'com.bigmind.collaboration',
+  id: 'com.cartae.collaboration',
   version: '1.0.0',
 
   // Déclaration du schéma étendu
@@ -260,7 +260,7 @@ export async function activate(context: IPluginContext): Promise<void> {
   - Plugin "Code Generator" ✓
   - Plugin "API Documentation" ✓
 
-Carte partagée : "app-architecture.bigmind"
+Carte partagée : "app-architecture.cartae"
   plugins.required:
     - Color Palettes (pour designers)
     - API Documentation (pour devs)
@@ -275,15 +275,15 @@ Carte partagée : "app-architecture.bigmind"
 #### Scénario 2 : Export/Import Entre Systèmes
 
 ```
-BigMind Desktop → Export .bigmind
+Cartae Desktop → Export .cartae
   pluginData conservé intégralement
 
-BigMind Web → Import .bigmind
+Cartae Web → Import .cartae
   ✓ Propose d'installer les plugins manquants
   ✓ Affiche une preview même sans plugins
   ✓ Préserve toutes les données pour réexport
 
-BigMind Mobile → Lecture seule
+Cartae Mobile → Lecture seule
   ✓ Affiche le core (nodes + edges)
   ✓ Indique "Certaines fonctionnalités requièrent plugins"
   ✓ Données préservées, non modifiées
@@ -291,7 +291,7 @@ BigMind Mobile → Lecture seule
 
 ### Self-Contained & Future-Proof
 
-**Une carte BigMind est un document complet qui :**
+**Une carte Cartae est un document complet qui :**
 
 ✅ Contient ses données core (toujours lisibles)
 ✅ Contient ses extensions (dans pluginData)
@@ -332,8 +332,8 @@ Le document est lisible en plain text, mais **richesse maximale** avec les plugi
 ### 1. Format de Fichier Étendu
 
 ```typescript
-interface BigMindFile {
-  // Version du format de fichier BigMind
+interface CartaeFile {
+  // Version du format de fichier Cartae
   version: "2.0.0";
 
   // Métadonnées des plugins
@@ -358,7 +358,7 @@ interface BigMindFile {
 }
 
 interface PluginDependency {
-  id: string;                    // "com.bigmind.palette-manager"
+  id: string;                    // "com.cartae.palette-manager"
   minVersion: string;            // "2.0.0"
   maxVersion?: string;           // "3.0.0" (optionnel)
   dataSchemaVersion: string;     // "2" (version du schéma de données)
@@ -433,7 +433,7 @@ type MigrationFunction = (oldData: any) => any | Promise<any>;
 
 ```typescript
 export const manifest: PluginManifest = {
-  id: 'com.bigmind.palette-manager',
+  id: 'com.cartae.palette-manager',
   version: '2.1.0',
 
   // Nouveau : Schéma de données
@@ -495,7 +495,7 @@ export const migrations: Record<string, MigrationFunction> = {
 class PluginStorage implements IPluginStorage {
   constructor(
     private pluginId: string,
-    private fileData: BigMindFile
+    private fileData: CartaeFile
   ) {}
 
   async get<T>(key: string): Promise<T | undefined> {
@@ -677,7 +677,7 @@ async get<T>(key: string): Promise<T | undefined> {
 // apps/web/src/plugins/palette-manager-plugin.ts
 
 export const manifest: PluginManifest = {
-  id: 'com.bigmind.palette-manager',
+  id: 'com.cartae.palette-manager',
   version: '2.0.0',
   dataSchema: {
     version: '2',
@@ -732,7 +732,7 @@ interface CompatibilityCheck {
   message: string;
 }
 
-function checkFileCompatibility(file: BigMindFile, registry: PluginRegistry): CompatibilityCheck[] {
+function checkFileCompatibility(file: CartaeFile, registry: PluginRegistry): CompatibilityCheck[] {
   const checks: CompatibilityCheck[] = [];
 
   for (const required of file.plugins?.required || []) {
@@ -865,9 +865,9 @@ const PluginCompatibilityDialog: React.FC<PluginCompatibilityDialogProps> = ({
 ```typescript
 // apps/web/src/migrations/migrateToPluginStorage.ts
 
-async function migratePaletteData(file: BigMindFile): Promise<void> {
+async function migratePaletteData(file: CartaeFile): Promise<void> {
   // Si déjà migré, skip
-  if (file.pluginData?.['com.bigmind.palette-manager']) {
+  if (file.pluginData?.['com.cartae.palette-manager']) {
     return;
   }
 
@@ -877,7 +877,7 @@ async function migratePaletteData(file: BigMindFile): Promise<void> {
   }
 
   // Migrer les données
-  file.pluginData['com.bigmind.palette-manager'] = {
+  file.pluginData['com.cartae.palette-manager'] = {
     _meta: {
       pluginVersion: '2.0.0',
       schemaVersion: '2',
@@ -898,7 +898,7 @@ async function migratePaletteData(file: BigMindFile): Promise<void> {
   }
 
   file.plugins.required.push({
-    id: 'com.bigmind.palette-manager',
+    id: 'com.cartae.palette-manager',
     minVersion: '2.0.0',
     dataSchemaVersion: '2',
   });
@@ -994,7 +994,7 @@ async function openFile(filePath: string): Promise<void> {
 // Plugin qui compte les ouvertures de carte
 
 export const manifest: PluginManifest = {
-  id: 'com.bigmind.analytics',
+  id: 'com.cartae.analytics',
   version: '1.0.0',
   dataSchema: {
     version: '1',
@@ -1027,7 +1027,7 @@ export async function activate(context: IPluginContext): Promise<void> {
 // Plugin de layout personnalisé
 
 export const manifest: PluginManifest = {
-  id: 'com.bigmind.advanced-layout',
+  id: 'com.cartae.advanced-layout',
   version: '2.0.0',
   dataSchema: {
     version: '2',

@@ -3,7 +3,7 @@
  * EN: Tailwind CSS configuration for BigMind
  */
 
-import { bigmindPreset } from '@bigmind/design';
+import { bigmindPreset } from '@cartae/design';
 
 /** @type {import('tailwindcss').Config} */
 export default {

@@ -4,8 +4,8 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import type { AuditEvent, AuditQueryFilters } from '@bigmind/plugin-system';
-import { AuditEventType, AuditSeverity } from '@bigmind/plugin-system';
+import type { AuditEvent, AuditQueryFilters } from '@cartae/plugin-system';
+import { AuditEventType, AuditSeverity } from '@cartae/plugin-system';
 
 export interface AuditDashboardProps {
   onQuery: (filters: AuditQueryFilters) => Promise<AuditEvent[]>;

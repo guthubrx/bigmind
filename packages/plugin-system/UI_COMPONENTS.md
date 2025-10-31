@@ -1,6 +1,6 @@
 # UI Components - Plugin System
 
-React components for managing the BigMind Plugin System with Phase 2 security features.
+React components for managing the Cartae Plugin System with Phase 2 security features.
 
 ## Components Overview
 
@@ -154,7 +154,7 @@ import {
   AuditDashboard,
   PolicyEditor,
 } from './components/plugins';
-import { createEnhancedPluginSystem } from '@bigmind/plugin-system';
+import { createEnhancedPluginSystem } from '@cartae/plugin-system';
 
 export const PluginsPage: React.FC = () => {
   const [view, setView] = useState('manager');

@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 import { Star, TrendingUp } from 'lucide-react';
 import { getTopRatedPlugins, type TopRatedPlugin } from '../../services/supabaseClient';
-import type { PluginManifest } from '@bigmind/plugin-system';
+import type { PluginManifest } from '@cartae/plugin-system';
 import './TopRatedPlugins.css';
 
 export interface TopRatedPluginsProps {

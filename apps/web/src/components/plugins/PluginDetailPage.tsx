@@ -3,7 +3,7 @@
  */
 
 import React, { useState } from 'react';
-import type { PluginInfo } from '@bigmind/plugin-system';
+import type { PluginInfo } from '@cartae/plugin-system';
 
 interface PluginDetailPageProps {
   plugin: PluginInfo;

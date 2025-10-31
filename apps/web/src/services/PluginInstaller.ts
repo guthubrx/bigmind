@@ -4,7 +4,7 @@
  */
 
 import { gitHubPluginRegistry } from './GitHubPluginRegistry';
-import type { Plugin, PluginManifest } from '@bigmind/plugin-system';
+import type { Plugin, PluginManifest } from '@cartae/plugin-system';
 
 // IndexedDB configuration
 const DB_NAME = 'bigmind-plugins';

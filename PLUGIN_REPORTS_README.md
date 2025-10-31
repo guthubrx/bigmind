@@ -9,7 +9,7 @@ This system allows users to report problematic plugins for moderation.
 ### Option 1: Via Supabase Dashboard (Recommended)
 
 1. Go to https://supabase.com/dashboard
-2. Select project: **BigMind** (rfnvtosfwvxoysmncrzz)
+2. Select project: **Cartae** (rfnvtosfwvxoysmncrzz)
 3. Navigate to **SQL Editor**
 4. Copy the content of `supabase/migrations/20251030_plugin_reports.sql`
 5. Paste and execute

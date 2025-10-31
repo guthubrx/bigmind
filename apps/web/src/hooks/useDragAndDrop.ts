@@ -14,7 +14,7 @@ import {
   ReparentNodeCommand,
   MoveNodeWithSubtreeCommand,
   ReorderSiblingCommand,
-} from '@bigmind/core';
+} from '@cartae/core';
 
 /**
  * FR: Valide si on peut reparenter un nœud sur un autre

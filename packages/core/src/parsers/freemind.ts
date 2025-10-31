@@ -13,7 +13,7 @@ function getXMLParser(): {
   // FR: Environnement navigateur
   // EN: Browser environment
   if (typeof DOMParser !== 'undefined') {
-    return new DOMParser();
+    return new DOMParser() as any;
   }
 
   // FR: Environnement Node.js - utiliser xmldom si disponible

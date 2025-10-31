@@ -3,7 +3,7 @@
  * Provides 41 color palettes for nodes and tags
  */
 
-import type { IPluginContext, PluginManifest } from '@bigmind/plugin-system';
+import type { IPluginContext, PluginManifest } from '@cartae/plugin-system';
 import {
   registerPalettes,
   unregisterPalette,

@@ -147,7 +147,7 @@ Suivi détaillé de l'implémentation de la Phase 4 : Storage, Distribution & Ad
   - Service nginx avec volumes
   - Service verdaccio (liaison Sprint 1)
   - Service origin (placeholder)
-  - Network bigmind_network
+  - Network cartae_network
   - Healthchecks
 
 - ✅ `infrastructure/cdn/README.md` (87 lignes)
@@ -387,7 +387,7 @@ const SHARED_EXTERNALS = [
   'react',
   'react-dom',
   'react/jsx-runtime',
-  '@bigmind/plugin-sdk',
+  '@cartae/plugin-sdk',
   'zustand',
   'zod',
 ] as const;

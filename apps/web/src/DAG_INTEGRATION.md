@@ -1,8 +1,8 @@
-# BigMind DAG (Directed Acyclic Graph) System Integration
+# Cartae DAG (Directed Acyclic Graph) System Integration
 
 ## Overview
 
-The DAG system provides a comprehensive tag and relationship management system for BigMind. It supports multi-parent relationships, multiple relation types, and advanced analytics.
+The DAG system provides a comprehensive tag and relationship management system for Cartae. It supports multi-parent relationships, multiple relation types, and advanced analytics.
 
 ## Architecture
 
@@ -222,8 +222,8 @@ interface DagLink {
 
 All data is automatically persisted to localStorage:
 
-- Tags and links → `bigmind-tags` (v3)
-- Node-tag associations → `bigmind-node-tags` (v1)
+- Tags and links → `cartae-tags` (v3)
+- Node-tag associations → `cartae-node-tags` (v1)
 - App settings, history, etc. → respective stores
 
 Auto-migration from v1/v2 to v3 for schema changes.
@@ -288,7 +288,7 @@ The DAG system is integrated into:
 ### Tags not showing
 
 - Check `useTagGraph` state in DevTools
-- Verify localStorage `bigmind-tags` exists
+- Verify localStorage `cartae-tags` exists
 - Clear cache and refresh
 
 ### Infinite loops/performance issues

@@ -23,7 +23,7 @@
 
 ## 🎯 Sprint 1-2: Foundations (Week 1-4)
 
-### Package: @bigmind/plugin-sdk
+### Package: @cartae/plugin-sdk
 
 #### Setup
 - [x] Create `packages/plugin-sdk/` directory
@@ -44,11 +44,11 @@
   - [x] UIContribution types
 
 #### Hooks
-- [x] `src/hooks/useBigMindBridge.ts`
+- [x] `src/hooks/useCartaeBridge.ts`
   - [x] useEffect for initialization
   - [x] Request wrapper
   - [x] Subscribe method
-- [x] `src/hooks/useBigMindUI.ts`
+- [x] `src/hooks/useCartaeUI.ts`
   - [x] registerPanel
   - [x] showPanel
   - [x] registerCommand
@@ -56,7 +56,7 @@
 - [x] `src/hooks/useTheme.ts`
   - [x] Theme context consumer
   - [x] CSS variables accessor
-- [x] `src/hooks/useBigMindData.ts`
+- [x] `src/hooks/useCartaeData.ts`
   - [x] getData
   - [x] setData
   - [x] subscribe to changes
@@ -631,7 +631,7 @@
 
 ## 📦 Package Creation Checklist
 
-### @bigmind/plugin-sdk
+### @cartae/plugin-sdk
 - [ ] package.json with correct metadata
 - [ ] TypeScript config
 - [ ] Build script (tsup)
@@ -641,7 +641,7 @@
 - [ ] License
 - [ ] Publish to npm (or private registry)
 
-### @bigmind/theme-tokens
+### @cartae/theme-tokens
 - [ ] tokens.json
 - [ ] Build script (Style Dictionary)
 - [ ] CSS variables output
@@ -649,7 +649,7 @@
 - [ ] README
 - [ ] Publish
 
-### @bigmind/ui-kit (optional)
+### @cartae/ui-kit (optional)
 - [ ] Component library
 - [ ] Storybook
 - [ ] Documentation

@@ -1,6 +1,6 @@
 # Security & Permissions System - Phase 2
 
-Complete security implementation for the BigMind Plugin System with RBAC, ABAC, rate limiting, audit logging, and multi-layer sandboxing.
+Complete security implementation for the Cartae Plugin System with RBAC, ABAC, rate limiting, audit logging, and multi-layer sandboxing.
 
 ## Table of Contents
 
@@ -30,7 +30,7 @@ The Phase 2 security system implements defense-in-depth with multiple layers:
 ### Standard Roles
 
 ```typescript
-import { PluginRole, RoleManager } from '@bigmind/plugin-system';
+import { PluginRole, RoleManager } from '@cartae/plugin-system';
 
 const roleManager = new RoleManager();
 
@@ -88,7 +88,7 @@ roleManager.registerRole(role);
 AWS IAM-style policies with conditions:
 
 ```typescript
-import { PolicyEngine, PolicyEffect, type Policy } from '@bigmind/plugin-system';
+import { PolicyEngine, PolicyEffect, type Policy } from '@cartae/plugin-system';
 
 const policyEngine = new PolicyEngine();
 
@@ -161,7 +161,7 @@ const policy: Policy = {
 Token Bucket algorithm to prevent abuse:
 
 ```typescript
-import { RateLimiterManager } from '@bigmind/plugin-system';
+import { RateLimiterManager } from '@cartae/plugin-system';
 
 const rateLimiter = new RateLimiterManager();
 
@@ -188,7 +188,7 @@ console.log(`${remaining} requests remaining`);
 GDPR-compliant audit logging with encryption support:
 
 ```typescript
-import { AuditLogger, AuditEventType, AuditSeverity } from '@bigmind/plugin-system';
+import { AuditLogger, AuditEventType, AuditSeverity } from '@cartae/plugin-system';
 
 const auditLogger = new AuditLogger(undefined, {
   retentionDays: 90, // Keep logs for 90 days
@@ -225,7 +225,7 @@ console.log(`Found ${logs.length} API calls`);
 Manage CSP for plugin isolation:
 
 ```typescript
-import { CSPManager } from '@bigmind/plugin-system';
+import { CSPManager } from '@cartae/plugin-system';
 
 const cspManager = new CSPManager();
 
@@ -252,7 +252,7 @@ const allowed = cspManager.validateCompliance('network-plugin', 'https://api.exa
 Level 2 isolation using Web Workers:
 
 ```typescript
-import { WebWorkerSandbox } from '@bigmind/plugin-system';
+import { WebWorkerSandbox } from '@cartae/plugin-system';
 
 // Check support
 if (WebWorkerSandbox.isSupported()) {
@@ -280,11 +280,11 @@ if (WebWorkerSandbox.isSupported()) {
 ### Complete Enhanced System
 
 ```typescript
-import { createEnhancedPluginSystem, PluginRole, PolicyEffect } from '@bigmind/plugin-system';
+import { createEnhancedPluginSystem, PluginRole, PolicyEffect } from '@cartae/plugin-system';
 
 // Create system with Phase 2 security
 const system = createEnhancedPluginSystem({
-  bigmindVersion: '1.0.0',
+  cartaeVersion: '1.0.0',
   permissionStorage: myStorage,
   eventBus: eventEmitter,
   enablePhase2Security: true,

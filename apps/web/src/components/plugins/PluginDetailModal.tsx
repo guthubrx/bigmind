@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import type { PluginManifest } from '@bigmind/plugin-system';
+import type { PluginManifest } from '@cartae/plugin-system';
 import { PluginBadge, type BadgeType } from './PluginBadge';
 import { X, Check, Star, Download, Calendar, Tag, ExternalLink } from 'lucide-react';
 import { PluginRatingForm } from './PluginRatingForm';

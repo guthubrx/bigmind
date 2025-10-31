@@ -1,6 +1,6 @@
-# 🔌 BigMind Plugin System
+# 🔌 Cartae Plugin System
 
-A robust, extensible, and secure plugin system for BigMind inspired by VS Code, Obsidian, Figma, and Chrome Extensions.
+A robust, extensible, and secure plugin system for Cartae inspired by VS Code, Obsidian, Figma, and Chrome Extensions.
 
 ## Features
 
@@ -16,7 +16,7 @@ A robust, extensible, and secure plugin system for BigMind inspired by VS Code, 
 ### 1. Create a Plugin
 
 ```typescript
-import type { Plugin, IPluginContext } from '@bigmind/plugin-system';
+import type { Plugin, IPluginContext } from '@cartae/plugin-system';
 
 class MyPlugin implements Plugin {
   readonly manifest = {
@@ -90,7 +90,7 @@ Plugins can request the following permissions:
 ## Architecture
 
 ```
-@bigmind/plugin-system/
+@cartae/plugin-system/
 ├── types/           # TypeScript interfaces
 ├── core/            # PluginRegistry, HookSystem
 ├── permissions/     # Permission management

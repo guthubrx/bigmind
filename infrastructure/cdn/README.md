@@ -1,4 +1,4 @@
-# BigMind CDN Infrastructure
+# Cartae CDN Infrastructure
 
 Phase 4 - Sprint 2 - CDN & Caching Strategy
 
@@ -73,10 +73,10 @@ curl http://localhost/health
 
 ```bash
 # Purge specific package
-curl -X PURGE http://localhost/purge/?key=/@bigmind/my-plugin/-/my-plugin-1.0.0.tgz
+curl -X PURGE http://localhost/purge/?key=/@cartae/my-plugin/-/my-plugin-1.0.0.tgz
 
 # Purge metadata
-curl -X PURGE http://localhost/purge/?key=/@bigmind/my-plugin/
+curl -X PURGE http://localhost/purge/?key=/@cartae/my-plugin/
 ```
 
 ## Security

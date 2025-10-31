@@ -15,7 +15,7 @@ import { SHARED_EXTERNALS, UMD_GLOBALS } from './apps/web/src/distribution/Bundl
  * Usage in plugin project:
  * ```typescript
  * import { defineConfig } from 'vite';
- * import pluginConfig from '@bigmind/vite-config-plugin';
+ * import pluginConfig from '@cartae/vite-config-plugin';
  *
  * export default pluginConfig({
  *   entry: './src/index.ts',
@@ -194,7 +194,7 @@ export const presets = {
  *
  * @example
  * // vite.config.ts in plugin project
- * import pluginConfig from '@bigmind/vite-config-plugin';
+ * import pluginConfig from '@cartae/vite-config-plugin';
  *
  * export default pluginConfig({
  *   entry: './src/index.ts',
@@ -204,7 +204,7 @@ export const presets = {
  *
  * @example
  * // Using presets
- * import { presets } from '@bigmind/vite-config-plugin';
+ * import { presets } from '@cartae/vite-config-plugin';
  *
  * export default presets.esm('./src/index.ts', 'TagsManager');
  */

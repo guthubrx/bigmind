@@ -1,4 +1,4 @@
-# BigMind Core Systems - Phase 3
+# Cartae Core Systems - Phase 3
 
 Infrastructure de base pour l'extensibilité des plugins avec isolation et sécurité.
 
@@ -258,4 +258,4 @@ registerPanel({
 
 - [Plan d'implémentation Phase 3](../../../PHASE3_IMPLEMENTATION_PLAN.md)
 - [Plugin SDK](../../../packages/plugin-sdk/)
-- [Documentation plugins](https://docs.bigmind.dev/plugins)
+- [Documentation plugins](https://docs.cartae.dev/plugins)

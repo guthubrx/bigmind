@@ -10,7 +10,7 @@
 
 ## 📊 Vue d'ensemble
 
-Phase 3 a transformé BigMind avec une infrastructure UI moderne basée sur React et TypeScript, permettant l'extensibilité via plugins, la personnalisation via thèmes, et l'accessibilité conforme WCAG 2.1.
+Phase 3 a transformé Cartae avec une infrastructure UI moderne basée sur React et TypeScript, permettant l'extensibilité via plugins, la personnalisation via thèmes, et l'accessibilité conforme WCAG 2.1.
 
 ## 🎯 Sprints réalisés
 
@@ -18,9 +18,9 @@ Phase 3 a transformé BigMind avec une infrastructure UI moderne basée sur Reac
 **Status:** 100% complété
 
 **Réalisations:**
-- Package `@bigmind/plugin-sdk` créé
+- Package `@cartae/plugin-sdk` créé
   - Bridge PostMessage pour communication sécurisée
-  - Hooks React (useBigMindBridge, useBigMindUI, useTheme, useBigMindData)
+  - Hooks React (useCartaeBridge, useCartaeUI, useTheme, useCartaeData)
   - Types TypeScript complets
 - Système Slot/Fill pour UI extensible
   - SlotFillProvider avec Context API
@@ -137,20 +137,20 @@ Phase 3 a transformé BigMind avec une infrastructure UI moderne basée sur Reac
 
 ## 📦 Packages créés
 
-### @bigmind/plugin-sdk
+### @cartae/plugin-sdk
 **Location:** `packages/plugin-sdk/`
 **Version:** 1.0.0
 **Exports:**
 - `bridge` - Communication bridge
-- `useBigMindBridge()` - React hook
-- `useBigMindUI()` - UI operations hook
+- `useCartaeBridge()` - React hook
+- `useCartaeUI()` - UI operations hook
 - `useTheme()` - Theme access hook
-- `useBigMindData()` - Data access hook
+- `useCartaeData()` - Data access hook
 - Types complets
 
 **Usage:**
 ```typescript
-import { useBigMindBridge, useTheme } from '@bigmind/plugin-sdk';
+import { useCartaeBridge, useTheme } from '@cartae/plugin-sdk';
 ```
 
 ---
@@ -217,10 +217,10 @@ packages/
     ├── src/
     │   ├── bridge.ts
     │   ├── hooks/
-    │   │   ├── useBigMindBridge.ts
-    │   │   ├── useBigMindUI.ts
+    │   │   ├── useCartaeBridge.ts
+    │   │   ├── useCartaeUI.ts
     │   │   ├── useTheme.ts
-    │   │   └── useBigMindData.ts
+    │   │   └── useCartaeData.ts
     │   ├── types.ts
     │   └── index.ts
     └── package.json
@@ -234,7 +234,7 @@ packages/
 ```
 Fichiers créés: ~60
 Lignes ajoutées: ~8,000
-Packages: 1 (@bigmind/plugin-sdk)
+Packages: 1 (@cartae/plugin-sdk)
 Modules core: 5 (commands, theme, ui, webviews, plugins, a11y)
 ```
 
@@ -377,10 +377,10 @@ Total: 5 commits Phase 3
 ### Utiliser les hooks dans un plugin
 
 ```typescript
-import { useBigMindBridge, useTheme } from '@bigmind/plugin-sdk';
+import { useCartaeBridge, useTheme } from '@cartae/plugin-sdk';
 
 export function MyPluginPanel() {
-  const bridge = useBigMindBridge();
+  const bridge = useCartaeBridge();
   const { theme, variant } = useTheme();
 
   const handleClick = async () => {
@@ -527,7 +527,7 @@ function App() {
 
 **Phase 3 est un succès** avec 70% de progression (Sprints 1-5 complétés). L'infrastructure UI est solide, extensible, accessible et bien testée. Le système de plugins manifest.json permet une découverte automatique et une configuration déclarative. Le module d'accessibilité assure la conformité WCAG 2.1.
 
-**BigMind dispose désormais d'une base technique moderne** pour supporter la croissance future, l'ajout de plugins community, et une expérience utilisateur de qualité.
+**Cartae dispose désormais d'une base technique moderne** pour supporter la croissance future, l'ajout de plugins community, et une expérience utilisateur de qualité.
 
 **Prochaine priorité:** Phase 4 ou amélioration continue selon les besoins du projet.
 

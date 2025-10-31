@@ -639,8 +639,8 @@ git show f9390bc
  apps/web/tsconfig.json                     |   10 +
  apps/web/vite.config.ts                    |   36 +
  check-icons.js                             |  113 +
- debug-bigmind-quick.js                     |   80 +
- debug-bigmind.js                           |   69 +
+ debug-cartae-quick.js                     |   80 +
+ debug-cartae.js                           |   69 +
  package.json                               |   64 +
  packages/core/package.json                 |   23 +
  packages/core/src/commands.ts              |  336 ++
@@ -662,8 +662,8 @@ git show f9390bc
  pnpm-lock.yaml                             | 6425 ++++++++++++++++++++++++++++
  pnpm-workspace.yaml                        |    3 +
  test-map.mm                                |   13 +
- tests/bigmind-debug-firefox.spec.ts        |  177 +
- tests/bigmind-debug.spec.ts                |  164 +
+ tests/cartae-debug-firefox.spec.ts        |  177 +
+ tests/cartae-debug.spec.ts                |  164 +
  tsconfig.base.json                         |   31 +
  tsconfig.json                              |   19 +
  turbo.json                                 |   23 +
@@ -1703,7 +1703,7 @@ git show 1fdaffb
 
 ---
 
-### 20. af2a230 - fix: properly save and restore node tags in bigmind.json
+### 20. af2a230 - fix: properly save and restore node tags in cartae.json
 
 **Hash complet:** `af2a230182e8738b9a8e3ceb82b997964816fb31`
 
@@ -1716,10 +1716,10 @@ git show 1fdaffb
 **Description:**
 
 ```
-- Add tags property to saved node data in bigmind.json
+- Add tags property to saved node data in cartae.json
 - Restore node-tag associations by calling syncFromDAG after importing tags
 - Ensures tags on individual nodes are persisted and restored correctly
-- Fixes issue where tags would be visible in bigmind.json but not displayed after reopening file
+- Fixes issue where tags would be visible in cartae.json but not displayed after reopening file
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
@@ -3639,7 +3639,7 @@ git show 58c89fe
 
 ---
 
-### 9. 6809738 - feat: implement comprehensive data persistence for BigMind
+### 9. 6809738 - feat: implement comprehensive data persistence for Cartae
 
 **Hash complet:** `6809738c85211658165c35698dac94675513b0d9`
 
@@ -3652,14 +3652,14 @@ git show 58c89fe
 **Description:**
 
 ```
-- Add tag layers (visibility, opacity, colors) to bigmind.json persistence
-- Add assets library per-map to bigmind.json persistence
-- Add all canvas options to bigmind.json (nodesConnectable, elementsSelectable, followSelection)
+- Add tag layers (visibility, opacity, colors) to cartae.json persistence
+- Add assets library per-map to cartae.json persistence
+- Add all canvas options to cartae.json (nodesConnectable, elementsSelectable, followSelection)
 - Restore tag layers state on file load with proper Zustand setState
 - Restore assets library on file load for shared maps
 - Restore complete canvas options state on file load
 - Implement for both standard and fallback XMind parsers
-- Ensures all BigMind-specific data survives save/load cycle
+- Ensures all Cartae-specific data survives save/load cycle
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
@@ -3751,17 +3751,17 @@ git show 564fae0
 **Description:**
 
 ```
-- Added tag and link export from useTagGraph to bigmind.json
+- Added tag and link export from useTagGraph to cartae.json
 - Added tag and link import when opening files
 - Tags are now fully saved and restored with complete DAG structure
 
 Save flow:
 - exportActiveXMind() now calls useTagGraph.getState().exportTags()
-- Tags and links are included in bigmind.json alongside node data
+- Tags and links are included in cartae.json alongside node data
 - Fully retrocompatible with XMind format
 
 Load flow:
-- openXMindFile() reads tags and links from bigmind.json
+- openXMindFile() reads tags and links from cartae.json
 - Calls useTagGraph.importTags() to restore complete DAG structure
 - Tags are available immediately after file opens
 
@@ -3900,7 +3900,7 @@ git show d9c251d
 
 ---
 
-### 2. 04b9e13 - fix: correct store access in file export - fix bigmind.json save issue
+### 2. 04b9e13 - fix: correct store access in file export - fix cartae.json save issue
 
 **Hash complet:** `04b9e13895aa80f6599ec4d8c514d154fc1b200d`
 
@@ -3919,7 +3919,7 @@ git show d9c251d
 - Replace useAssets.getState() and useAssets.setState() with useAssetStore equivalents
 - Remove unused imports (useTagGraph hook and useAssets hook)
 - Fixes TypeError where hooks were being called as if they were Zustand stores
-- Fixes missing bigmind.json file in saved archive
+- Fixes missing cartae.json file in saved archive
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 

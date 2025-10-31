@@ -1,4 +1,4 @@
-# 🚀 BigMind Plugin Roadmap - Stratégie de Monétisation
+# 🚀 Cartae Plugin Roadmap - Stratégie de Monétisation
 
 ## 📊 Vue d'ensemble des 9 Plugins Stratégiques
 
@@ -54,7 +54,7 @@
 
 | Aspect | Détails |
 |--------|---------|
-| **Pitch** | "BigMind natif dans votre environnement Microsoft" |
+| **Pitch** | "Cartae natif dans votre environnement Microsoft" |
 | **Prix** | • Pro : $20/mois<br>• Enterprise : Sur devis |
 | **Features Killer** | ✅ Sync bidirectionnel Teams + Planner<br>✅ Stockage SharePoint/OneDrive<br>✅ Email Outlook → Mindmap<br>✅ Réunions Outlook → Agenda mindmap |
 | **Développement** | 10 semaines (API Microsoft) |
@@ -135,7 +135,7 @@
 |--------|---------|
 | **Pitch** | "Anti-procrastination pour ADHD" |
 | **Prix** | • Free : Pomodoro + gamification basique<br>• Pro : $4/mois (achievements + voice) |
-| **Features Killer** | ✅ Décomposition auto tasks (Goblin Tools-style)<br>✅ Gamification (XP, levels, achievements)<br>✅ Timer Pomodoro intégré<br>✅ Bloqueur de distractions<br>✅ Voice commands ("Hey BigMind...") |
+| **Features Killer** | ✅ Décomposition auto tasks (Goblin Tools-style)<br>✅ Gamification (XP, levels, achievements)<br>✅ Timer Pomodoro intégré<br>✅ Bloqueur de distractions<br>✅ Voice commands ("Hey Cartae...") |
 | **Développement** | 3 semaines |
 | **Compétiteurs** | Goblin Tools, Habitica, Forest |
 | **Distribution** | TikTok ADHD community, Reddit r/ADHD |
@@ -314,7 +314,7 @@
 
 ---
 
-## 🎁 BONUS : Plugin #10 - BigMind Sync
+## 🎁 BONUS : Plugin #10 - Cartae Sync
 
 ### Le Obsidian Sync Killer
 
@@ -331,7 +331,7 @@
 
 ## 📊 Comparaison avec la Concurrence
 
-### BigMind vs Marché
+### Cartae vs Marché
 
 | Concurrent | Prix | Users | Revenus (estimés) | Notre Avantage |
 |------------|------|-------|-------------------|----------------|

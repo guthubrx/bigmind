@@ -1,6 +1,6 @@
-# 🧠 BigMind
+# 🧠 Cartae
 
-**BigMind** est un logiciel de cartographie mentale (mind mapping) open source, cross-platform et performant, avec support des formats standards incluant XMind et FreeMind.
+**Cartae** est un logiciel de cartographie mentale (mind mapping) open source, cross-platform et performant, avec support des formats standards incluant XMind et FreeMind.
 
 ## ✨ Fonctionnalités
 
@@ -28,9 +28,9 @@
 
 - **pnpm** workspaces + **Turbo** pour la performance
 - **Packages** :
-  - `@bigmind/core` : Logique métier, modèles, parsers
-  - `@bigmind/ui` : Composants React réutilisables
-  - `@bigmind/design` : Design tokens, thèmes Tailwind
+  - `@cartae/core` : Logique métier, modèles, parsers
+  - `@cartae/ui` : Composants React réutilisables
+  - `@cartae/design` : Design tokens, thèmes Tailwind
   - `apps/web` : Application web (Vite + React)
   - `apps/desktop` : Application desktop (Tauri)
 
@@ -55,8 +55,8 @@
 
 ```bash
 # Cloner le repository
-git clone https://github.com/guthubrx/bigmind.git
-cd bigmind
+git clone https://github.com/guthubrx/cartae.git
+cd cartae
 
 # Installer les dépendances
 pnpm install
@@ -110,7 +110,7 @@ pnpm build:desktop
 
 ## 🎨 Design System
 
-BigMind utilise un design system flat moderne avec :
+Cartae utilise un design system flat moderne avec :
 
 - **Palette neutre** : Gris sobres et contrastes optimisés
 - **Accent color unique** : Bleu moderne (#3b82f6)
@@ -175,4 +175,4 @@ pnpm build:desktop
 
 ---
 
-**BigMind** - Cartographie mentale moderne et intuitive 🧠✨
+**Cartae** - Cartographie mentale moderne et intuitive 🧠✨

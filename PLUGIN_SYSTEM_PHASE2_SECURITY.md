@@ -1,14 +1,14 @@
-# 🔐 Phase 2 — Système de Permissions et Sécurité pour BigMind
+# 🔐 Phase 2 — Système de Permissions et Sécurité pour Cartae
 
 ## 🎯 Objectif
 
 Mettre en place un système de permissions et sécurité robuste, inspiré des meilleures pratiques 2024–2025 (RBAC, ABAC, Chrome Manifest V3, Android, AWS IAM, Capability-based Security).
 
-Ce document décrit le prompt d'implémentation pour concevoir et coder la couche de sécurité du futur écosystème de plugins BigMind.
+Ce document décrit le prompt d'implémentation pour concevoir et coder la couche de sécurité du futur écosystème de plugins Cartae.
 
 ## 🧩 Objectifs techniques
 
-- Sécuriser l'accès des plugins à l'API Core BigMind.
+- Sécuriser l'accès des plugins à l'API Core Cartae.
 - Appliquer le principe du moindre privilège (Zero Trust).
 - Offrir un modèle hybride RBAC + ABAC extensible.
 - Gérer la demande, la révocation et la délégation de permissions.
@@ -21,7 +21,7 @@ Ce document décrit le prompt d'implémentation pour concevoir et coder la couch
 
 ```
 ┌──────────────────────────────────────────────┐
-│             BigMind Core (Trusted)           │
+│             Cartae Core (Trusted)           │
 ├──────────────────────────────────────────────┤
 │     Permission Manager  + Policy Engine      │
 │     • RBAC + ABAC + Scopes                  │

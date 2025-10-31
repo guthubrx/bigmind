@@ -1,4 +1,4 @@
-# 🚀 BigMind Releases
+# 🚀 Cartae Releases
 
 ## Comment créer une release
 
@@ -40,16 +40,16 @@ pnpm build
 pnpm build:desktop
 
 # Créer une release locale
-gh release create v0.1.0 --title "BigMind v0.1.0" --notes "Release notes ici"
+gh release create v0.1.0 --title "Cartae v0.1.0" --notes "Release notes ici"
 ```
 
 ## 📦 Assets inclus dans chaque release
 
-- **macOS** : `BigMind.app.zip` (Apple Silicon + Intel)
-- **Windows** : `BigMind_0.1.0_x64_en-US.msi`
+- **macOS** : `Cartae.app.zip` (Apple Silicon + Intel)
+- **Windows** : `Cartae_0.1.0_x64_en-US.msi`
 - **Linux** :
-  - `BigMind_0.1.0_amd64.deb` (Debian/Ubuntu)
-  - `BigMind-0.1.0-x86_64.AppImage` (Portable)
+  - `Cartae_0.1.0_amd64.deb` (Debian/Ubuntu)
+  - `Cartae-0.1.0-x86_64.AppImage` (Portable)
 
 ## 🔧 Configuration
 
@@ -68,7 +68,7 @@ gh release create v0.1.0 --title "BigMind v0.1.0" --notes "Release notes ici"
 ### Tauri
 
 - Configuration : `apps/desktop/src-tauri/tauri.conf.json`
-- Identifiant : `com.bigmind.app`
+- Identifiant : `com.cartae.app`
 - Icônes : `apps/desktop/src-tauri/icons/`
 
 ## 📋 Checklist avant release

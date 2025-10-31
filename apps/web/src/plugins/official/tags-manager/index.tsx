@@ -3,7 +3,7 @@
  * Provides tagging functionality for nodes including UI integration
  */
 
-import type { IPluginContext, PluginManifest } from '@bigmind/plugin-system';
+import type { IPluginContext, PluginManifest } from '@cartae/plugin-system';
 import {
   registerNodePropertiesTab,
   unregisterNodePropertiesTab,

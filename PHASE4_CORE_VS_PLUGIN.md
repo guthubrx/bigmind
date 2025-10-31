@@ -178,7 +178,7 @@
 
 ### PLUGIN ✅ → Marketplace Frontend UI
 
-#### Plugin: `@bigmind/plugin-marketplace-ui`
+#### Plugin: `@cartae/plugin-marketplace-ui`
 
 **Fichiers à migrer vers plugin:**
 - `src/components/plugins/PluginMarketplace.tsx` → Plugin
@@ -207,7 +207,7 @@ export interface MarketplaceAPI {
 **Plugin utilise l'API:**
 ```typescript
 // Dans plugin-marketplace-ui
-import { useMarketplaceAPI } from '@bigmind/core';
+import { useMarketplaceAPI } from '@cartae/core';
 
 function PluginMarketplace() {
   const api = useMarketplaceAPI();
@@ -267,7 +267,7 @@ function PluginMarketplace() {
 
 ### PLUGIN ✅ → UI Components
 
-#### Plugin: `@bigmind/plugin-update-notifications`
+#### Plugin: `@cartae/plugin-update-notifications`
 
 **Fichiers à migrer vers plugin:**
 - `src/components/distribution/UpdateNotification.tsx` → Plugin
@@ -281,7 +281,7 @@ function PluginMarketplace() {
 
 **Décision:** PLUGIN ✅
 
-#### Plugin: `@bigmind/plugin-installer-ui`
+#### Plugin: `@cartae/plugin-installer-ui`
 
 **Fichiers:**
 - `src/components/distribution/PluginInstaller.tsx` → Plugin
@@ -311,7 +311,7 @@ function PluginMarketplace() {
 
 #### 2. CLI Tools
 **Fichiers:**
-- `packages/cli/` (bigmind plugin create/build/publish)
+- `packages/cli/` (cartae plugin create/build/publish)
 
 **Justification:**
 - **Infrastructure de base** ✅ : Outils dev pour tous plugins
@@ -421,7 +421,7 @@ function PluginMarketplace() {
 
 ### PLUGIN ✅ → Export/Import Workers
 
-#### Plugin: `@bigmind/plugin-export-workers`
+#### Plugin: `@cartae/plugin-export-workers`
 
 **Fichiers:**
 - `apps/web/src/workers/exportWorker.ts` → Plugin
@@ -487,7 +487,7 @@ export interface WorkerPoolAPI {
 
 ## 🔌 Plugins à Créer (Phase 4)
 
-### 1. `@bigmind/plugin-marketplace-ui`
+### 1. `@cartae/plugin-marketplace-ui`
 **Description:** Interface utilisateur pour le marketplace
 **Dépendances:** Core Marketplace API
 **Features:**
@@ -496,7 +496,7 @@ export interface WorkerPoolAPI {
 - Plugin details modal
 - Installation wizard
 
-### 2. `@bigmind/plugin-update-notifications`
+### 2. `@cartae/plugin-update-notifications`
 **Description:** Notifications de mises à jour
 **Dépendances:** Core UpdateManager API
 **Features:**
@@ -505,7 +505,7 @@ export interface WorkerPoolAPI {
 - Progress tracking
 - Auto-update settings
 
-### 3. `@bigmind/plugin-installer-ui`
+### 3. `@cartae/plugin-installer-ui`
 **Description:** UI pour installation de plugins
 **Dépendances:** Core PluginInstaller API
 **Features:**
@@ -514,7 +514,7 @@ export interface WorkerPoolAPI {
 - Error handling UI
 - Rollback interface
 
-### 4. `@bigmind/plugin-export-workers`
+### 4. `@cartae/plugin-export-workers`
 **Description:** Workers pour export/import formats
 **Dépendances:** Core WorkerPool API
 **Features:**

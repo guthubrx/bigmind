@@ -21,7 +21,7 @@ COUCHE 1: STOCKAGE (Données)
 │   └── Tags + links avec localStorage
 ├── useNodeTags (Associations nœud-tag - UNIQUE SOURCE)
 │   └── node ↔ tag mappings
-└── node.tags (Fichier XMind/bigmind.json)
+└── node.tags (Fichier XMind/cartae.json)
     └── Persisted data
 
 COUCHE 2: SYNCHRONISATION (Flux)
@@ -87,7 +87,7 @@ COUCHE 3: AFFICHAGE (Interface)
 
 **Durée:** 3+ commits
 
-- Sauvegarde DAG dans bigmind.json
+- Sauvegarde DAG dans cartae.json
 - Restauration tags + links lors du load
 - Persistance tag layers (visibility, opacity, colors)
 - Persistance canvas options
@@ -200,7 +200,7 @@ Complète l'unification: context menu also uses sync.tagNode().
 
 ### 7. 7ec3dd6 - Tag Persistence
 
-Sauvegarde DAG complet dans bigmind.json.
+Sauvegarde DAG complet dans cartae.json.
 
 - **À retenir:** importTags/exportTags + syncFromDAG
 
@@ -255,13 +255,13 @@ eventBus.on('tag:created', () => {
 
 ```typescript
 // Level 1: DAG structure
-useTagGraph.exportTags() → bigmind.json
+useTagGraph.exportTags() → cartae.json
 
 // Level 2: Node associations
-node.tags array → bigmind.json
+node.tags array → cartae.json
 
 // Level 3: UI state
-visibility, colors, opacity → bigmind.json
+visibility, colors, opacity → cartae.json
 ```
 
 ## FICHIERS CLÉS
@@ -348,8 +348,8 @@ useTagGraphStore.getState().tags;
 // Check event bus
 eventBus.on('*', console.log);
 
-// Check bigmind.json
-JSON.parse(localStorage.getItem('bigmind-data'));
+// Check cartae.json
+JSON.parse(localStorage.getItem('cartae-data'));
 ```
 
 ## PROCHAINES ÉTAPES

@@ -4,8 +4,8 @@
  */
 
 import React, { useState } from 'react';
-import type { Permission } from '@bigmind/plugin-system';
-import { PermissionMetadataMap } from '@bigmind/plugin-system';
+import type { Permission } from '@cartae/plugin-system';
+import { PermissionMetadataMap } from '@cartae/plugin-system';
 
 export interface PermissionDialogProps {
   pluginId: string;

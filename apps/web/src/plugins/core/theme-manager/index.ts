@@ -3,7 +3,7 @@
  * Provides interface themes (Light/Dark)
  */
 
-import type { IPluginContext, PluginManifest } from '@bigmind/plugin-system';
+import type { IPluginContext, PluginManifest } from '@cartae/plugin-system';
 import { getAllInterfaceThemes, getTheme, applyThemeToDocument } from '../../../themes/colorThemes';
 
 export const manifest: PluginManifest = {

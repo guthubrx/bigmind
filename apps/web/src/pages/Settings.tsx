@@ -30,7 +30,7 @@ import type {
   AuditEvent,
   AuditQueryFilters,
   Policy,
-} from '@bigmind/plugin-system';
+} from '@cartae/plugin-system';
 
 const { registry, permissionManager, auditLogger, policyEngine } = pluginSystem;
 

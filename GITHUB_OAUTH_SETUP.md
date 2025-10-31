@@ -1,6 +1,6 @@
 # GitHub OAuth Setup Guide
 
-Ce guide explique comment configurer l'authentification GitHub OAuth pour BigMind.
+Ce guide explique comment configurer l'authentification GitHub OAuth pour Cartae.
 
 ## Pourquoi OAuth plutôt que PAT ?
 
@@ -19,7 +19,7 @@ Ce guide explique comment configurer l'authentification GitHub OAuth pour BigMin
 2. Cliquez sur **"New OAuth App"**
 3. Remplissez le formulaire :
    ```
-   Application name: BigMind Plugin Development
+   Application name: Cartae Plugin Development
    Homepage URL: http://localhost:5173 (développement)
                  https://your-domain.com (production)
    Authorization callback URL: http://localhost:5173 (même que Homepage URL pour SPA)
@@ -36,7 +36,7 @@ Ce guide explique comment configurer l'authentification GitHub OAuth pour BigMin
 Créez un fichier `.env.local` à la racine du projet :
 
 ```bash
-# À la racine du projet bigmind/
+# À la racine du projet cartae/
 touch .env.local
 ```
 
@@ -120,11 +120,11 @@ Créez une **deuxième OAuth App** sur GitHub pour la production :
 
 ## Étape 4 : Tester le flow OAuth
 
-1. Allez dans **Settings > Développeur** dans BigMind
+1. Allez dans **Settings > Développeur** dans Cartae
 2. Cliquez sur **"Se connecter avec GitHub"**
 3. Vous êtes redirigé vers GitHub
 4. Autorisez l'application
-5. Vous êtes redirigé vers BigMind, connecté automatiquement
+5. Vous êtes redirigé vers Cartae, connecté automatiquement
 
 ## Architecture technique
 
@@ -137,9 +137,9 @@ Créez une **deuxième OAuth App** sur GitHub pour la production :
        └─> Redirect vers github.com/login/oauth/authorize
 
 2. User autorise l'app sur GitHub
-   └─> GitHub redirect vers BigMind avec code + state
+   └─> GitHub redirect vers Cartae avec code + state
 
-3. BigMind détecte le callback (useEffect)
+3. Cartae détecte le callback (useEffect)
    └─> GitHubAuthService.handleOAuthCallback(code, state)
        └─> Vérifie le state (CSRF protection)
        └─> Appelle Supabase Edge Function /github-oauth
@@ -233,4 +233,4 @@ Si OAuth n'est pas configuré, l'app bascule automatiquement sur le PAT :
 
 - Documentation GitHub OAuth : https://docs.github.com/en/apps/oauth-apps/building-oauth-apps
 - Documentation Supabase Edge Functions : https://supabase.com/docs/guides/functions
-- Issues BigMind : https://github.com/guthubrx/bigmind/issues
+- Issues Cartae : https://github.com/guthubrx/cartae/issues

@@ -4,7 +4,17 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { LogOut, CheckCircle, XCircle, AlertTriangle, Clock, Flag, Shield, Star, MessageSquare, User } from 'lucide-react';
+import {
+  LogOut,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Clock,
+  Flag,
+  Shield,
+  Star,
+  MessageSquare,
+} from 'lucide-react';
 import {
   getUnapprovedRatings,
   approveRating,
@@ -82,7 +92,7 @@ export function AdminPanel() {
       setMessage({ type: 'success', text: 'Avis approuvé!' });
       setRefreshTrigger(prev => prev + 1);
     } else {
-      setMessage({ type: 'error', text: 'Erreur lors de l\'approbation' });
+      setMessage({ type: 'error', text: "Erreur lors de l'approbation" });
     }
   };
 
@@ -146,9 +156,9 @@ export function AdminPanel() {
     return (
       <div className="admin-panel">
         <div className="admin-panel__login">
-          <h2>Panneau d'Administration</h2>
+          <h2>Panneau d&apos;Administration</h2>
           <p style={{ marginBottom: '20px', color: 'var(--fg-secondary)', fontSize: '14px' }}>
-            Connectez-vous avec votre compte GitHub pour accéder au panneau d'administration.
+            Connectez-vous avec votre compte GitHub pour accéder au panneau d&apos;administration.
           </p>
           <GitHubLoginButton />
         </div>
@@ -163,7 +173,7 @@ export function AdminPanel() {
         <div className="admin-panel__header-content">
           <Shield size={24} />
           <div>
-            <h2>Panneau d'Administration</h2>
+            <h2>Panneau d&apos;Administration</h2>
             <p className="admin-panel__subtitle">Modération des avis et gestion des signalements</p>
           </div>
         </div>
@@ -201,7 +211,9 @@ export function AdminPanel() {
       <div className="admin-panel__tabs">
         <button
           type="button"
-          className={`admin-panel__tab ${activeTab === 'approvals' ? 'admin-panel__tab--active' : ''}`}
+          className={`admin-panel__tab ${
+            activeTab === 'approvals' ? 'admin-panel__tab--active' : ''
+          }`}
           onClick={() => setActiveTab('approvals')}
         >
           <CheckCircle size={18} />
@@ -212,7 +224,9 @@ export function AdminPanel() {
         </button>
         <button
           type="button"
-          className={`admin-panel__tab ${activeTab === 'reports' ? 'admin-panel__tab--active' : ''}`}
+          className={`admin-panel__tab ${
+            activeTab === 'reports' ? 'admin-panel__tab--active' : ''
+          }`}
           onClick={() => setActiveTab('reports')}
         >
           <Flag size={18} />
@@ -235,18 +249,18 @@ export function AdminPanel() {
       {activeTab === 'approvals' && (
         <div className="admin-panel__content">
           <div className="admin-panel__section-header">
-            <h3>Avis en attente d'approbation</h3>
+            <h3>Avis en attente d&apos;approbation</h3>
             <span className="admin-panel__count">{unapprovedRatings.length} avis</span>
           </div>
 
           {unapprovedRatings.length === 0 ? (
             <div className="admin-panel__empty">
               <CheckCircle size={48} />
-              <p>Aucun avis en attente d'approbation</p>
+              <p>Aucun avis en attente d&apos;approbation</p>
             </div>
           ) : (
             <div className="admin-panel__list">
-              {unapprovedRatings.map((rating) => (
+              {unapprovedRatings.map(rating => (
                 <div key={rating.id} className="admin-panel__item">
                   <div className="admin-panel__item-header">
                     <div className="admin-panel__item-info">
@@ -254,7 +268,7 @@ export function AdminPanel() {
                       <div className="admin-panel__rating">
                         {[...Array(5)].map((_, i) => (
                           <Star
-                            key={i}
+                            key={`${rating.id}-star-${i}`}
                             size={14}
                             fill={i < rating.rating ? '#fbbf24' : 'none'}
                             stroke={i < rating.rating ? '#fbbf24' : '#d1d5db'}
@@ -267,7 +281,9 @@ export function AdminPanel() {
 
                   <div className="admin-panel__meta">
                     <MessageSquare size={12} />
-                    <span>Par <strong>{rating.userName}</strong></span>
+                    <span>
+                      Par <strong>{rating.userName}</strong>
+                    </span>
                     {rating.email && <span className="admin-panel__email">({rating.email})</span>}
                     <span className="admin-panel__date">
                       <Clock size={12} />

@@ -21,9 +21,9 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@bigmind/core": ["./packages/core/dist/index.d.ts"],
-      "@bigmind/ui": ["./packages/ui/dist/index.d.ts"],
-      "@bigmind/design": ["./packages/design/dist/index.d.ts"]
+      "@cartae/core": ["./packages/core/dist/index.d.ts"],
+      "@cartae/ui": ["./packages/ui/dist/index.d.ts"],
+      "@cartae/design": ["./packages/design/dist/index.d.ts"]
     }
   },
   "exclude": ["node_modules", "dist", "build"]

@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import type { IPluginContext, PluginManifest } from '@bigmind/plugin-system';
+import type { IPluginContext, PluginManifest } from '@cartae/plugin-system';
 import { registerSettingsSection, unregisterSettingsSection } from '../../../utils/settingsRegistry';
 import {
   registerMapSettingsSection,

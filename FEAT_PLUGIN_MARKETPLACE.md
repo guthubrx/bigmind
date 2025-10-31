@@ -1,10 +1,10 @@
 # Plugin Marketplace Implementation
 
-This branch implements the remote plugin marketplace infrastructure for BigMind, enabling users to browse and install plugins from a remote registry instead of having them all bundled in the monorepo.
+This branch implements the remote plugin marketplace infrastructure for Cartae, enabling users to browse and install plugins from a remote registry instead of having them all bundled in the monorepo.
 
 ## What's New
 
-### 1. **New Package: `@bigmind/plugin-marketplace`**
+### 1. **New Package: `@cartae/plugin-marketplace`**
 
 Location: `packages/plugin-marketplace/`
 
@@ -48,7 +48,7 @@ Location: `packages/plugin-system/`
 Location: `apps/web/`
 
 **New Component: `RemotePluginMarketplace`** (`src/components/plugins/RemotePluginMarketplace.tsx`)
-- Uses `@bigmind/plugin-marketplace` package
+- Uses `@cartae/plugin-marketplace` package
 - Displays plugins from remote registry
 - Handles installation/uninstallation
 - Error handling and loading states
@@ -60,7 +60,7 @@ Location: `apps/web/`
 - Maintains backward compatibility
 
 **Dependencies Added**:
-- `@bigmind/plugin-marketplace@workspace:*`
+- `@cartae/plugin-marketplace@workspace:*`
 
 ## Architecture
 
@@ -74,13 +74,13 @@ Location: `apps/web/`
 └───────────────────┬───────────────────────────┘
                     │
 ┌───────────────────▼───────────────────────────┐
-│ @bigmind/plugin-marketplace                   │
+│ @cartae/plugin-marketplace                   │
 │ ├── PluginStore (API client)                  │
 │ └── UI Components (PluginList, Card, etc.)    │
 └───────────────────┬───────────────────────────┘
                     │
 ┌───────────────────▼───────────────────────────┐
-│ @bigmind/plugin-system                        │
+│ @cartae/plugin-system                        │
 │ ├── PluginLoader (download & extract)         │
 │ └── PluginRegistry (register & activate)      │
 └───────────────────┬───────────────────────────┘
@@ -109,10 +109,10 @@ Location: `apps/web/`
 import { pluginSystem } from './utils/pluginManager';
 
 // Install latest version
-await pluginSystem.registry.installFromMarketplace('com.bigmind.teams');
+await pluginSystem.registry.installFromMarketplace('com.cartae.teams');
 
 // Install specific version
-await pluginSystem.registry.installFromMarketplace('com.bigmind.teams', '1.0.2');
+await pluginSystem.registry.installFromMarketplace('com.cartae.teams', '1.0.2');
 
 // Install from local file
 const file = document.querySelector('input[type="file"]').files[0];
@@ -122,9 +122,9 @@ await pluginSystem.registry.installFromFile(file);
 **Use PluginStore directly:**
 
 ```typescript
-import { PluginStore } from '@bigmind/plugin-marketplace';
+import { PluginStore } from '@cartae/plugin-marketplace';
 
-const store = new PluginStore('https://bigmind-registry.workers.dev');
+const store = new PluginStore('https://cartae-registry.workers.dev');
 
 // List all plugins
 const plugins = await store.fetchPlugins();
@@ -133,7 +133,7 @@ const plugins = await store.fetchPlugins();
 const results = await store.searchPlugins('collaboration');
 
 // Get details
-const plugin = await store.getPlugin('com.bigmind.teams');
+const plugin = await store.getPlugin('com.cartae.teams');
 
 // Check for updates
 const updates = await store.checkUpdates();
@@ -147,12 +147,12 @@ Create `.env` file in `apps/web/`:
 
 ```bash
 # Remote marketplace URL
-VITE_MARKETPLACE_URL=https://bigmind-registry.workers.dev
+VITE_MARKETPLACE_URL=https://cartae-registry.workers.dev
 ```
 
 ### Registry URL
 
-Default registry URL is `https://bigmind-registry.workers.dev`. Can be customized:
+Default registry URL is `https://cartae-registry.workers.dev`. Can be customized:
 
 ```typescript
 // In utils/pluginManager.ts
@@ -173,7 +173,7 @@ const registry = new PluginRegistry(
 - Setup Cloudflare R2 storage for plugin .zip files
 
 ### Phase 2: Plugin Repository (Separate Task)
-- Create `bigmind-plugins` repository
+- Create `cartae-plugins` repository
 - Setup GitHub Actions for automatic publishing
 - Add plugin templates and documentation
 
@@ -222,7 +222,7 @@ pnpm test
 - `packages/plugin-system/package.json` (added jszip dependency)
 - `apps/web/src/pages/PluginsPage.tsx` (added Remote tab)
 - `apps/web/src/components/plugins/index.ts` (export RemotePluginMarketplace)
-- `apps/web/package.json` (added @bigmind/plugin-marketplace dependency)
+- `apps/web/package.json` (added @cartae/plugin-marketplace dependency)
 
 ## Backward Compatibility
 
@@ -270,7 +270,7 @@ PluginLoader performs several security checks:
 ## Contributors
 
 - Claude (AI Assistant)
-- BigMind Team
+- Cartae Team
 
 ## License
 

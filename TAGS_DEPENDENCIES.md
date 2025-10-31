@@ -104,7 +104,7 @@ ea71f6e (Initial Display)
 ├── Depends on: useTagGraph, useOpenFiles
 ├── Exports tags: useTagGraph.getState().exportTags()
 ├── Imports tags: useTagGraph.importTags(data)
-└── Storage: bigmind.json alongside node data
+└── Storage: cartae.json alongside node data
 
     ↓
 
@@ -118,7 +118,7 @@ ea71f6e (Initial Display)
     ↓
 
 af2a230 (Node-Level Tags)
-├── Saves: node.tags in bigmind.json
+├── Saves: node.tags in cartae.json
 ├── Restores: via syncFromDAG()
 └── Ensures: Individual node tags persist
 ```
@@ -371,7 +371,7 @@ All node tags update automatically ✨
 
 5. **Persistence: 3 niveaux**
    - DAG structure: useTagGraph.exportTags/importTags
-   - Node associations: node.tags in bigmind.json
+   - Node associations: node.tags in cartae.json
    - UI state: visibility, colors, opacity, canvas options
 
 ## VALIDATION CHECKLIST

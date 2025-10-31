@@ -1,4 +1,4 @@
-# 📦 Assets de Déploiement - BigMind Plugin Marketplace
+# 📦 Assets de Déploiement - Cartae Plugin Marketplace
 
 Tous les fichiers nécessaires pour déployer le marketplace de plugins sont prêts!
 
@@ -8,7 +8,7 @@ Tous les fichiers nécessaires pour déployer le marketplace de plugins sont pr�
 
 | Fichier | Description | Commande |
 |---------|-------------|----------|
-| `deploy-bigmind-plugins.sh` | Déploie le repository bigmind-plugins sur GitHub | `./deploy-bigmind-plugins.sh` |
+| `deploy-cartae-plugins.sh` | Déploie le repository cartae-plugins sur GitHub | `./deploy-cartae-plugins.sh` |
 | `deploy-cloudflare-worker.sh` | Déploie le Worker Cloudflare (Registry API) | `./deploy-cloudflare-worker.sh` |
 
 ### 📖 Documentation
@@ -34,8 +34,8 @@ Tous les fichiers nécessaires pour déployer le marketplace de plugins sont pr�
 
 ```bash
 # Étape 1: Déployer le repository GitHub
-cd /home/user/bigmind
-./deploy-bigmind-plugins.sh
+cd /home/user/cartae
+./deploy-cartae-plugins.sh
 
 # Étape 2: Configurer Cloudflare R2 (via interface web)
 # Voir QUICK_START.md section "Étape 2"
@@ -46,8 +46,8 @@ cd /home/user/bigmind
 # Étape 4: Déployer le Worker Cloudflare
 ./deploy-cloudflare-worker.sh
 
-# Étape 5: Configurer BigMind app
-echo 'VITE_MARKETPLACE_URL=https://bigmind-registry.xxx.workers.dev' >> .env
+# Étape 5: Configurer Cartae app
+echo 'VITE_MARKETPLACE_URL=https://cartae-registry.xxx.workers.dev' >> .env
 
 # Étape 6: Tester
 pnpm dev
@@ -64,14 +64,14 @@ Suivre le guide complet dans `DEPLOYMENT_GUIDE.md`
 
 ### ✅ Repository GitHub
 
-- [ ] Exécuter `./deploy-bigmind-plugins.sh`
-- [ ] Vérifier sur https://github.com/guthubrx/bigmind-plugins
+- [ ] Exécuter `./deploy-cartae-plugins.sh`
+- [ ] Vérifier sur https://github.com/guthubrx/cartae-plugins
 - [ ] Vérifier que tous les fichiers sont présents
 
 ### ✅ Cloudflare R2
 
 - [ ] Créer un compte Cloudflare (si nécessaire)
-- [ ] Créer le bucket `bigmind-plugins`
+- [ ] Créer le bucket `cartae-plugins`
 - [ ] Créer un API token R2
 - [ ] Noter l'Account ID
 
@@ -90,7 +90,7 @@ Suivre le guide complet dans `DEPLOYMENT_GUIDE.md`
 - [ ] Noter l'URL du Worker déployé
 - [ ] Tester: `curl https://your-worker.workers.dev/api/health`
 
-### ✅ BigMind App
+### ✅ Cartae App
 
 - [ ] Ajouter `VITE_MARKETPLACE_URL` dans `.env`
 - [ ] Exécuter `pnpm install` (si nécessaire)
@@ -104,17 +104,17 @@ Suivre le guide complet dans `DEPLOYMENT_GUIDE.md`
 - [ ] Merger la PR
 - [ ] Vérifier que le workflow de publication s'exécute
 - [ ] Vérifier dans R2 que le ZIP est créé
-- [ ] Installer le plugin depuis BigMind app
+- [ ] Installer le plugin depuis Cartae app
 - [ ] Activer le plugin et vérifier qu'il fonctionne
 
 ---
 
 ## 🗂️ Structure des Repositories
 
-### Repository: guthubrx/bigmind (Monorepo)
+### Repository: guthubrx/cartae (Monorepo)
 
 ```
-bigmind/
+cartae/
 ├── packages/
 │   ├── plugin-system/          # Système de plugins (modifié)
 │   │   ├── src/core/
@@ -148,10 +148,10 @@ bigmind/
 
 **Branch**: `claude/plugin-marketplace-011CUaubVGwgEVkVE3XSPFPx`
 
-### Repository: guthubrx/bigmind-plugins (Nouveau)
+### Repository: guthubrx/cartae-plugins (Nouveau)
 
 ```
-bigmind-plugins/
+cartae-plugins/
 ├── .github/workflows/
 │   ├── validate-plugin.yml      # Validation automatique sur PR
 │   └── publish-plugin.yml       # Publication automatique sur merge
@@ -177,7 +177,7 @@ bigmind-plugins/
 └── package.json                 # Métadonnées du repository
 ```
 
-**Location**: `/tmp/bigmind-plugins` (prêt à être déployé)
+**Location**: `/tmp/cartae-plugins` (prêt à être déployé)
 
 ---
 
@@ -205,8 +205,8 @@ bigmind-plugins/
 └─────────────────────────────────────────────────────────────┘
                               ↑
 ┌─────────────────────────────────────────────────────────────┐
-│                  BigMind App (Client)                       │
-│  • @bigmind/plugin-marketplace package                      │
+│                  Cartae App (Client)                       │
+│  • @cartae/plugin-marketplace package                      │
 │  • Remote tab dans UI Plugins                               │
 │  • Download & install à la demande                          │
 └─────────────────────────────────────────────────────────────┘
@@ -255,8 +255,8 @@ bigmind-plugins/
 - **Ce Fichier**: Liste tous les assets
 
 ### Repositories
-- **Monorepo**: https://github.com/guthubrx/bigmind
-- **Plugins**: https://github.com/guthubrx/bigmind-plugins
+- **Monorepo**: https://github.com/guthubrx/cartae
+- **Plugins**: https://github.com/guthubrx/cartae-plugins
 
 ### Issues & Questions
 - Créer une issue sur le repository concerné
@@ -268,4 +268,4 @@ bigmind-plugins/
 
 Vous avez maintenant tous les assets nécessaires pour déployer un marketplace de plugins complet, scalable et économique!
 
-**Prochaine action**: Exécuter `./deploy-bigmind-plugins.sh` 🚀
+**Prochaine action**: Exécuter `./deploy-cartae-plugins.sh` 🚀

@@ -9,7 +9,7 @@
  * - Synchronize: XMind rich text ↔ Markdown, Markers ↔ Tags, etc.
  */
 
-import type { IPluginContext, PluginManifest } from '@bigmind/plugin-system';
+import type { IPluginContext, PluginManifest } from '@cartae/plugin-system';
 import { nodeStyleRegistry } from '../../../utils/nodeStyleRegistry';
 import type { NodeStyleContext } from '../../../utils/nodeStyleRegistry';
 

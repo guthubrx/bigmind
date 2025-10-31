@@ -4,7 +4,7 @@
 
 import JSZip from 'jszip';
 import type { PluginListing, PluginSearchFilters, UpdateInfo, InstallProgress, InstalledPlugin } from './types';
-import type { Plugin, PluginManifest } from '@bigmind/plugin-system';
+import type { Plugin, PluginManifest } from '@cartae/plugin-system';
 
 export class PluginStore {
   private registryUrl: string;

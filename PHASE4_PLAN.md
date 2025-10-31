@@ -8,7 +8,7 @@
 
 ## 🎯 Vision Phase 4
 
-Phase 4 transforme BigMind en une **plateforme extensible et distribuée** avec :
+Phase 4 transforme Cartae en une **plateforme extensible et distribuée** avec :
 
 1. **Infrastructure de distribution** robuste et sécurisée (npm + CDN)
 2. **Marketplace backend** avec API, search, reviews, analytics
@@ -33,7 +33,7 @@ Phase 4 transforme BigMind en une **plateforme extensible et distribuée** avec 
 - [ ] Créer `infrastructure/verdaccio/config.yaml` - Configuration
 - [ ] Créer `infrastructure/verdaccio/htpasswd` - Auth file
 - [ ] Créer `infrastructure/verdaccio/Dockerfile` - Container setup
-- [ ] Configurer scoped packages `@bigmind/*`
+- [ ] Configurer scoped packages `@cartae/*`
 - [ ] Configurer uplinks vers npmjs.org
 - [ ] Configurer auth policies
 - [ ] Docker compose pour dev local
@@ -140,7 +140,7 @@ Phase 4 transforme BigMind en une **plateforme extensible et distribuée** avec 
 - [ ] Créer `src/distribution/DependencyGraph.ts` - Graph
 - [ ] Créer `src/distribution/VersionResolver.ts` - SemVer resolution
 - [ ] Implémenter shared externals strategy
-- [ ] Configurer externals: React, react-dom, @bigmind/plugin-sdk
+- [ ] Configurer externals: React, react-dom, @cartae/plugin-sdk
 - [ ] Implémenter lockfile generation
 - [ ] Créer `src/distribution/IntegrityChecker.ts` - Hash validation
 
@@ -336,11 +336,11 @@ Phase 4 transforme BigMind en une **plateforme extensible et distribuée** avec 
 #### CLI Tools
 
 - [ ] Créer `packages/cli/` - CLI package
-- [ ] `bigmind plugin create` - Create plugin
-- [ ] `bigmind plugin dev` - Dev mode
-- [ ] `bigmind plugin build` - Build plugin
-- [ ] `bigmind plugin publish` - Publish to registry
-- [ ] `bigmind plugin validate` - Validate manifest
+- [ ] `cartae plugin create` - Create plugin
+- [ ] `cartae plugin dev` - Dev mode
+- [ ] `cartae plugin build` - Build plugin
+- [ ] `cartae plugin publish` - Publish to registry
+- [ ] `cartae plugin validate` - Validate manifest
 
 #### Tests Sprint 6
 
@@ -569,18 +569,18 @@ import { useOpenFiles } from '@/hooks/useOpenFiles'; // Still works
 ```typescript
 // Ancien manifest (toujours valide)
 {
-  "id": "com.bigmind.tags-manager",
+  "id": "com.cartae.tags-manager",
   "version": "1.0.0"
   // ... autres champs
 }
 
 // Nouveau manifest (avec distribution)
 {
-  "id": "com.bigmind.tags-manager",
+  "id": "com.cartae.tags-manager",
   "version": "1.0.0",
   "distribution": {
-    "registry": "https://registry.bigmind.app",
-    "cdn": "https://cdn.bigmind.app/plugins",
+    "registry": "https://registry.cartae.app",
+    "cdn": "https://cdn.cartae.app/plugins",
     "integrity": { "sig": "..." },
     "sbom": "sbom.json"
   }
@@ -667,7 +667,7 @@ TOTAL:    715 tests
 ### Directory Structure Complète
 
 ```
-bigmind/
+cartae/
 ├── apps/
 │   ├── web/                          # Application principale
 │   │   ├── src/

@@ -99,9 +99,9 @@
 
 - `dad1af9` (2025-10-23) - feat: enhance tag display and drag-drop on mind map
 - `7ec3dd6` (2025-10-23) - fix: persist and restore tags in file save/load
-- `6809738` (2025-10-23) - feat: implement comprehensive data persistence for BigMind
-- `04b9e13` (2025-10-23) - fix: correct store access in file export - fix bigmind.json save issue
-- `af2a230` (2025-10-23) - fix: properly save and restore node tags in bigmind.json
+- `6809738` (2025-10-23) - feat: implement comprehensive data persistence for Cartae
+- `04b9e13` (2025-10-23) - fix: correct store access in file export - fix cartae.json save issue
+- `af2a230` (2025-10-23) - fix: properly save and restore node tags in cartae.json
 
 ### apps/web/src/components/TagLayersPanel.tsx
 
@@ -536,7 +536,7 @@ git log --oneline -- apps/web/src/components/TagLayersPanelDAG.tsx
 12. `f39ccd7` - 2025-10-23
     debug: add comprehensive logging for tag creation in DAG panel
 13. `04b9e13` - 2025-10-23
-    fix: correct store access in file export - fix bigmind.json save issue
+    fix: correct store access in file export - fix cartae.json save issue
 14. `1cc53da` - 2025-10-23
     fix: remove tag from node when deleted in tag hierarchy
 15. `7d08e5e` - 2025-10-23
@@ -700,11 +700,11 @@ git log --oneline -- apps/web/src/components/MenuBar.tsx
 34. `7ec3dd6` - 2025-10-23
     fix: persist and restore tags in file save/load
 35. `6809738` - 2025-10-23
-    feat: implement comprehensive data persistence for BigMind
+    feat: implement comprehensive data persistence for Cartae
 36. `04b9e13` - 2025-10-23
-    fix: correct store access in file export - fix bigmind.json save issue
+    fix: correct store access in file export - fix cartae.json save issue
 37. `af2a230` - 2025-10-23
-    fix: properly save and restore node tags in bigmind.json
+    fix: properly save and restore node tags in cartae.json
 
 **Voir tous les changements:**
 
@@ -1018,7 +1018,7 @@ git log --oneline -- apps/web/src/components/TagLayersPanelDAG.css
 3. `dad1af9` - 2025-10-23
    feat: enhance tag display and drag-drop on mind map
 4. `04b9e13` - 2025-10-23
-   fix: correct store access in file export - fix bigmind.json save issue
+   fix: correct store access in file export - fix cartae.json save issue
 
 **Voir tous les changements:**
 

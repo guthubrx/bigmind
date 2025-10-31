@@ -5,7 +5,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { DependencyResolver, createDependencyResolver } from '../DependencyResolver';
-import type { PluginManifest } from '@bigmind/plugin-system';
+import type { PluginManifest } from '@cartae/plugin-system';
 
 describe('DependencyResolver', () => {
   // Helper to create manifest

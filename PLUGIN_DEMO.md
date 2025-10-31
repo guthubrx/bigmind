@@ -1,4 +1,4 @@
-# 🔌 Guide de Démonstration - Système de Plugins BigMind
+# 🔌 Guide de Démonstration - Système de Plugins Cartae
 
 Ce guide vous montre comment tester et utiliser le système de plugins Phase 2 avec interface utilisateur complète.
 
@@ -107,7 +107,7 @@ L'interface comprend 3 onglets principaux :
 
 1. Allez dans l'onglet **Politiques**
 2. Cliquez **+ Nouvelle Politique**
-3. Entrez l'ID d'un plugin (ex: `com.bigmind.example`)
+3. Entrez l'ID d'un plugin (ex: `com.cartae.example`)
 4. Ajoutez une règle :
    - **Effet** : Allow (Autoriser)
    - **Action** : `mindmap:*` (toutes les actions mindmap)
@@ -180,7 +180,7 @@ const mindmap = await context.api.mindmap.getActive();
 Créez `/apps/web/src/plugins/mon-plugin.ts` :
 
 ```typescript
-import type { Plugin, PluginManifest, PluginContext } from '@bigmind/plugin-system';
+import type { Plugin, PluginManifest, PluginContext } from '@cartae/plugin-system';
 
 const manifest: PluginManifest = {
   id: 'com.monentreprise.monplugin',
@@ -288,7 +288,7 @@ R: Ouvrez la console navigateur (F12) et surveillez les logs préfixés par ✅ 
 R: Oui ! Désactivez-les puis cliquez Désinstaller. Ils sont rechargés au redémarrage.
 
 **Q: Les permissions persistent-elles ?**
-R: Oui, dans `localStorage` sous `bigmind-plugin-permissions`
+R: Oui, dans `localStorage` sous `cartae-plugin-permissions`
 
 **Q: Comment réinitialiser tout le système ?**
 R: Supprimez les clés localStorage et rechargez l'application.
@@ -305,4 +305,4 @@ R: Supprimez les clés localStorage et rechargez l'application.
 
 **Version:** 1.0.0
 **Dernière mise à jour:** 2025-10-27
-**Système:** BigMind Plugin System Phase 2
+**Système:** Cartae Plugin System Phase 2

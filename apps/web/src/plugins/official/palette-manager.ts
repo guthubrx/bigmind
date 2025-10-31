@@ -3,7 +3,7 @@
  * Provides color palettes for nodes and tags
  */
 
-import type { IPluginContext, PluginManifest } from '@bigmind/plugin-system';
+import type { IPluginContext, PluginManifest } from '@cartae/plugin-system';
 import { getAllPalettes, getPalette } from '../../themes/colorPalettes';
 import { nodeStyleRegistry } from '../../utils/nodeStyleRegistry';
 import { getNodeColor } from '../../utils/nodeColors';

@@ -1,6 +1,6 @@
-# BigMind Verdaccio Registry
+# Cartae Verdaccio Registry
 
-Private npm registry for BigMind scoped packages (`@bigmind/*`).
+Private npm registry for Cartae scoped packages (`@cartae/*`).
 
 ## Quick Start
 
@@ -42,7 +42,7 @@ Main configuration file for Verdaccio. See inline comments for details.
 Key sections:
 - **auth**: htpasswd-based authentication
 - **uplinks**: Proxy to public npm registry
-- **packages**: Access control for @bigmind/* packages
+- **packages**: Access control for @cartae/* packages
 - **security**: JWT configuration
 
 ### htpasswd
@@ -75,15 +75,15 @@ npm set registry http://localhost:4873/
 echo "registry=http://localhost:4873/" > .npmrc
 
 # Install
-npm install @bigmind/plugin-sdk
+npm install @cartae/plugin-sdk
 ```
 
 ### Scoped Configuration
 
-To use Verdaccio only for @bigmind scope:
+To use Verdaccio only for @cartae scope:
 
 ```bash
-npm config set @bigmind:registry http://localhost:4873/
+npm config set @cartae:registry http://localhost:4873/
 ```
 
 ## URLs

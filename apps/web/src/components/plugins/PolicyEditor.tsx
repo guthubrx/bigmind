@@ -4,8 +4,8 @@
  */
 
 import React, { useState } from 'react';
-import type { Policy, PolicyStatement } from '@bigmind/plugin-system';
-import { PolicyEffect } from '@bigmind/plugin-system';
+import type { Policy, PolicyStatement } from '@cartae/plugin-system';
+import { PolicyEffect } from '@cartae/plugin-system';
 
 export interface PolicyEditorProps {
   pluginId: string;

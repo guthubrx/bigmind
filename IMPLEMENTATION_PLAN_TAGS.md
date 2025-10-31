@@ -21,7 +21,7 @@
 
 ### Objectif
 
-Redévelopper l'ensemble du système de tags de BigMind (70+ commits) en partant de v0.1.3 (`feat/tags-clean` current).
+Redévelopper l'ensemble du système de tags de Cartae (70+ commits) en partant de v0.1.3 (`feat/tags-clean` current).
 
 ### Résumé des phases
 
@@ -90,7 +90,7 @@ All other commits (Display polish, interactions, etc)
 ├─────────────────────────────────────────────┤
 │ useTagGraph (DAG store - Zustand)           │
 │ useNodeTags (Associations - SINGLE SOURCE)  │
-│ node.tags (XMind/bigmind.json)              │
+│ node.tags (XMind/cartae.json)              │
 └─────────────────────────────────────────────┘
 ```
 
@@ -130,7 +130,7 @@ apps/web/src/components/TagLayersPanelDAG.tsx
 2. **hooks/useTagGraph.ts** - Store Zustand
    - State: tags (Record<string, DagTag>), links (DagLink[])
    - Actions: addTag, removeTag, addLink, removeLink, updateTag
-   - Persistence: localStorage avec key 'bigmind-tags'
+   - Persistence: localStorage avec key 'cartae-tags'
    - Methods: getTag, getAllTags, getChildren, getParents, validateDAG
 
 3. **components/TagGraph.tsx** - Visualisation D3.js
@@ -377,8 +377,8 @@ packages/core/src/xmind-parser.ts (si nécessaire)
 
 **Description:**
 
-- Export useTagGraph state → bigmind.json
-- Export useNodeTags state → bigmind.json
+- Export useTagGraph state → cartae.json
+- Export useNodeTags state → cartae.json
 - Import on file load
 - Restore structure complète
 
@@ -387,8 +387,8 @@ packages/core/src/xmind-parser.ts (si nécessaire)
 ```
 fix: persist and restore tags in file save/load
 
-- Export DAG structure vers bigmind.json
-- Export associations vers bigmind.json
+- Export DAG structure vers cartae.json
+- Export associations vers cartae.json
 - Import et restore on load
 - Full structure restoration
 ```

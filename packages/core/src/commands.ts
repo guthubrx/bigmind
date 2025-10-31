@@ -141,7 +141,7 @@ export class DeleteNodeCommand implements Command {
     return produce(state, draft => {
       // FR: Restaurer le nœud principal avec copie profonde via JSON
       // EN: Restore main node with deep copy via JSON
-      draft.nodes[this.deletedNode.id] = JSON.parse(JSON.stringify(this.deletedNode));
+      draft.nodes[this.deletedNode!.id] = JSON.parse(JSON.stringify(this.deletedNode!));
 
       // FR: Restaurer tous les descendants avec copie profonde via JSON
       // EN: Restore all descendants with deep copy via JSON
