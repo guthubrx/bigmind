@@ -17,6 +17,7 @@
 ## 1️⃣ Supabase Project (2 min)
 
 ### **Pourquoi ?**
+
 - Nom affiché dans le dashboard Supabase
 - Cosmétique seulement, **aucun impact fonctionnel**
 
@@ -60,6 +61,7 @@
 ## 2️⃣ GitHub OAuth App (2 min)
 
 ### **Pourquoi ?**
+
 - Nom affiché lors du login GitHub
 - Cosmétique, mais visible par les utilisateurs
 
@@ -99,7 +101,7 @@
 ### **Test de l'application :**
 
 ```bash
-cd /Users/moi/Nextcloud/10.Scripts/bigmind/bigmind
+cd /Users/moi/Nextcloud/10.Scripts/02.Cartae/cartae
 pnpm dev
 ```
 
@@ -120,6 +122,7 @@ pnpm dev
 ### **Supabase Dashboard - Avant/Après**
 
 **Avant :**
+
 ```
 Project Name: BigMind
 Project ID: rfnvtosfwvxoysmncrzz
@@ -127,6 +130,7 @@ API URL: https://rfnvtosfwvxoysmncrzz.supabase.co
 ```
 
 **Après :**
+
 ```
 Project Name: Cartae  ← SEUL CHANGEMENT
 Project ID: rfnvtosfwvxoysmncrzz
@@ -136,6 +140,7 @@ API URL: https://rfnvtosfwvxoysmncrzz.supabase.co
 ### **GitHub OAuth App - Avant/Après**
 
 **Avant :**
+
 ```
 Application name: BigMind OAuth
 Client ID: xxx...
@@ -143,6 +148,7 @@ Homepage URL: (optionnel)
 ```
 
 **Après :**
+
 ```
 Application name: Cartae OAuth  ← SEUL CHANGEMENT
 Client ID: xxx... (identique)
@@ -154,10 +160,12 @@ Homepage URL: (optionnel - cartae.com si disponible)
 ## ✅ Checklist Finale
 
 ### Services Externes
+
 - [ ] Supabase Project renommé "BigMind" → "Cartae"
 - [ ] GitHub OAuth App renommé "BigMind OAuth" → "Cartae OAuth"
 
 ### Vérifications
+
 - [ ] URLs Supabase identiques (aucun changement .env)
 - [ ] Client ID/Secret GitHub identiques (aucun changement .env)
 - [ ] Application démarre correctement
@@ -191,6 +199,7 @@ Homepage URL: (optionnel - cartae.com si disponible)
 **Rien ne casse** : Tu n'as changé que des **noms d'affichage**, pas des clés/IDs !
 
 Si tu veux revenir en arrière :
+
 - Supabase : Re-renomme "Cartae" → "BigMind"
 - GitHub OAuth : Re-renomme "Cartae OAuth" → "BigMind OAuth"
 
@@ -209,16 +218,16 @@ Une fois ces 2 renommages faits :
 
 ## 📊 Récapitulatif Complet de la Migration
 
-| Élément | Ancien | Nouveau | Status |
-|---------|--------|---------|--------|
-| **Repos GitHub** | bigmind | cartae | ✅ |
-| | bigmind-plugins | cartae-plugins | ✅ |
-| | bigmind-private | cartae-private | ✅ |
-| **Packages NPM** | @bigmind/* | @cartae/* | ✅ |
-| **Plugin IDs** | com.bigmind.* | com.cartae.* | ✅ |
-| **Fichiers** | 246 modifiés | | ✅ |
-| **Supabase Project** | BigMind | Cartae | ⏳ |
-| **GitHub OAuth** | BigMind OAuth | Cartae OAuth | ⏳ |
+| Élément              | Ancien          | Nouveau        | Status |
+| -------------------- | --------------- | -------------- | ------ |
+| **Repos GitHub**     | bigmind         | cartae         | ✅     |
+|                      | bigmind-plugins | cartae-plugins | ✅     |
+|                      | bigmind-private | cartae-private | ✅     |
+| **Packages NPM**     | @bigmind/\*     | @cartae/\*     | ✅     |
+| **Plugin IDs**       | com.bigmind.\*  | com.cartae.\*  | ✅     |
+| **Fichiers**         | 246 modifiés    |                | ✅     |
+| **Supabase Project** | BigMind         | Cartae         | ⏳     |
+| **GitHub OAuth**     | BigMind OAuth   | Cartae OAuth   | ⏳     |
 
 **Total :** 99% fait, 1% à faire (5 min)
 
@@ -233,6 +242,7 @@ Une fois ces 2 renommages faits :
 ### **Edge Functions Supabase**
 
 Tes Edge Functions actuelles :
+
 - `verify-admin`
 - `admin-approve-rating`
 - `admin-reject-rating`
@@ -243,6 +253,7 @@ Tes Edge Functions actuelles :
 **Aucune ne contient "BigMind" dans le nom** → Rien à modifier ! ✅
 
 Si tu veux vérifier :
+
 1. Supabase Dashboard → Edge Functions
 2. Regarde la liste des fonctions
 3. Vérifie qu'aucune n'a "bigmind" dans le nom
@@ -250,6 +261,7 @@ Si tu veux vérifier :
 ### **Variables d'Environnement**
 
 Fichiers `.env` **ne changent PAS** :
+
 ```bash
 # RESTE IDENTIQUE
 VITE_SUPABASE_URL=https://rfnvtosfwvxoysmncrzz.supabase.co
@@ -260,6 +272,7 @@ VITE_GITHUB_CLIENT_ID=Ov...
 ### **Domaine (Futur)**
 
 Si tu achètes `cartae.com` plus tard :
+
 1. Configure les DNS
 2. Mets à jour **Homepage URL** dans GitHub OAuth App
 3. (Optionnel) Ajoute un domaine custom dans Supabase

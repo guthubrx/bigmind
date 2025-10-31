@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import { X, Copy, Check, FolderDown } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { useToast } from '../../hooks/useToast';
 import './CloneInstructionsModal.css';
 
 export interface CloneInstructionsModalProps {
@@ -27,6 +28,7 @@ export function CloneInstructionsModal({
 }: CloneInstructionsModalProps) {
   const [copiedFile, setCopiedFile] = useState<string | null>(null);
   const [copiedPath, setCopiedPath] = useState(false);
+  const { info: showInfo } = useToast();
 
   const handleCopy = async (fileName: string, content: string) => {
     try {
@@ -56,13 +58,15 @@ export function CloneInstructionsModal({
           mode: 'readwrite',
           startIn: 'documents',
         });
-        alert(
-          `Dossier sélectionné: ${dirHandle.name}\nCréez maintenant le sous-dossier "${pluginName}"`
+        showInfo(
+          `Dossier sélectionné: ${dirHandle.name}. ` +
+            `Créez maintenant le sous-dossier "${pluginName}"`,
+          5000
         );
       }
     } catch (error) {
       // L'utilisateur a annulé ou le navigateur ne supporte pas
-      console.log('Folder selection cancelled or not supported');
+      // Silent fail is intentional
     }
   };
 
@@ -76,8 +80,15 @@ export function CloneInstructionsModal({
   };
 
   return (
-    <div className="clone-instructions-modal-overlay" onClick={onClose}>
-      <div className="clone-instructions-modal" onClick={e => e.stopPropagation()}>
+    <div
+      className="clone-instructions-modal-overlay"
+      onClick={onClose}
+      onKeyDown={e => e.key === 'Escape' && onClose()}
+      role="button"
+      tabIndex={0}
+      aria-label="Close modal"
+    >
+      <div className="clone-instructions-modal" role="dialog" aria-modal="true">
         {/* Header */}
         <div className="clone-instructions-modal__header">
           <div className="clone-instructions-modal__header-icon">
@@ -168,11 +179,11 @@ export function CloneInstructionsModal({
         {/* Footer */}
         <div className="clone-instructions-modal__footer">
           <p className="clone-instructions-modal__footer-note">
-            💡 <strong>Astuce:</strong> Cliquez sur "Copier" pour chaque fichier, puis créez-les
-            dans votre éditeur de code.
+            💡 <strong>Astuce:</strong> Cliquez sur &ldquo;Copier&rdquo; pour chaque fichier, puis
+            créez-les dans votre éditeur de code.
           </p>
           <button type="button" className="clone-instructions-modal__done-btn" onClick={onClose}>
-            J'ai compris
+            J&apos;ai compris
           </button>
         </div>
       </div>

@@ -17,6 +17,7 @@
 ## 🎯 Objectif
 
 Renommer les 3 repositories GitHub :
+
 1. `guthubrx/bigmind` → `guthubrx/cartae`
 2. `guthubrx/bigmind-plugins` → `guthubrx/cartae-plugins`
 3. `guthubrx/bigmind-private` → `guthubrx/cartae-private`
@@ -33,6 +34,7 @@ Renommer les 3 repositories GitHub :
 ✅ **Aucune donnée n'est perdue**
 
 ### Exemple :
+
 ```
 Ancienne URL : https://github.com/guthubrx/bigmind
                          ↓ (redirection automatique)
@@ -46,12 +48,15 @@ Nouvelle URL : https://github.com/guthubrx/cartae
 ### **Repo 1/3 : bigmind → cartae**
 
 #### 1. Ouvrir GitHub
+
 - Va sur : https://github.com/guthubrx/bigmind
 
 #### 2. Accéder aux Settings
+
 - Clique sur **Settings** (onglet en haut à droite)
 
 #### 3. Renommer
+
 - Scroll vers le bas jusqu'à la section **"Danger Zone"** (en rouge)
 - Clique sur **"Rename repository"**
 - Entre le nouveau nom : `cartae`
@@ -59,6 +64,7 @@ Nouvelle URL : https://github.com/guthubrx/cartae
 - Clique sur **"I understand, rename this repository"**
 
 #### 4. Vérification
+
 - ✅ Tu es automatiquement redirigé vers la nouvelle URL
 - ✅ L'ancienne URL https://github.com/guthubrx/bigmind redirige vers la nouvelle
 
@@ -67,9 +73,11 @@ Nouvelle URL : https://github.com/guthubrx/cartae
 ### **Repo 2/3 : bigmind-plugins → cartae-plugins**
 
 #### 1. Ouvrir GitHub
+
 - Va sur : https://github.com/guthubrx/bigmind-plugins
 
 #### 2. Settings → Rename
+
 - **Settings** → **Danger Zone** → **"Rename repository"**
 - Nouveau nom : `cartae-plugins`
 - Confirme : `guthubrx/cartae-plugins`
@@ -79,9 +87,11 @@ Nouvelle URL : https://github.com/guthubrx/cartae
 ### **Repo 3/3 : bigmind-private → cartae-private**
 
 #### 1. Ouvrir GitHub
+
 - Va sur : https://github.com/guthubrx/bigmind-private
 
 #### 2. Settings → Rename
+
 - **Settings** → **Danger Zone** → **"Rename repository"**
 - Nouveau nom : `cartae-private`
 - Confirme : `guthubrx/cartae-private`
@@ -94,17 +104,17 @@ Nouvelle URL : https://github.com/guthubrx/cartae
 
 ```bash
 # Repo 1 : cartae (principal)
-cd /Users/moi/Nextcloud/10.Scripts/bigmind/bigmind
+cd /Users/moi/Nextcloud/10.Scripts/02.Cartae/cartae
 git remote set-url origin https://github.com/guthubrx/cartae.git
 git remote -v  # Vérifier
 
 # Repo 2 : cartae-plugins
-cd /Users/moi/Nextcloud/10.Scripts/bigmind/bigmind-plugins
+cd /Users/moi/Nextcloud/10.Scripts/02.Cartae/cartae-plugins
 git remote set-url origin https://github.com/guthubrx/cartae-plugins.git
 git remote -v  # Vérifier
 
 # Repo 3 : cartae-private
-cd /Users/moi/Nextcloud/10.Scripts/bigmind/bigmind-private
+cd /Users/moi/Nextcloud/10.Scripts/02.Cartae/cartae-private
 git remote set-url origin https://github.com/guthubrx/cartae-private.git
 git remote -v  # Vérifier
 ```
@@ -117,7 +127,7 @@ git remote -v  # Vérifier
 
 ```bash
 # Test 1 : Vérifier que les remotes pointent vers les nouvelles URLs
-cd /Users/moi/Nextcloud/10.Scripts/bigmind/bigmind
+cd /Users/moi/Nextcloud/10.Scripts/02.Cartae/cartae
 git remote -v
 # Devrait afficher : origin  https://github.com/guthubrx/cartae.git
 
@@ -134,11 +144,13 @@ git ls-remote https://github.com/guthubrx/bigmind.git
 ## 📊 Ce qui Change / Ce qui NE Change PAS
 
 ### ✅ Ce qui CHANGE
+
 - URLs des repos GitHub
 - Noms des repos dans l'interface GitHub
 - URLs dans `git remote -v` (après `set-url`)
 
 ### ✅ Ce qui NE CHANGE PAS
+
 - Historique Git (commits, branches, tags)
 - Issues et Pull Requests
 - GitHub Actions / Workflows
@@ -150,11 +162,15 @@ git ls-remote https://github.com/guthubrx/bigmind.git
 ## ⚠️ Notes Importantes
 
 ### 1. Les Anciennes URLs Fonctionnent TOUJOURS
+
 GitHub maintient une **redirection permanente** :
+
 - `https://github.com/guthubrx/bigmind` → `https://github.com/guthubrx/cartae`
 
 ### 2. Les Clones Existants Fonctionnent
+
 Si tu as cloné le repo ailleurs sur ton système, il continuera de fonctionner :
+
 ```bash
 # Même avec l'ancienne URL, ça marche !
 git fetch origin
@@ -162,6 +178,7 @@ git pull origin main
 ```
 
 ### 3. Mise à Jour des URLs (Recommandé mais pas Obligatoire)
+
 Pour "propretté", il est recommandé de mettre à jour les remotes avec `git remote set-url`, mais ce n'est **pas bloquant**.
 
 ---
@@ -177,6 +194,7 @@ Pour "propretté", il est recommandé de mettre à jour les remotes avec `git re
 ## 🆘 En Cas de Problème
 
 ### Si une URL ne fonctionne pas :
+
 ```bash
 # Vérifier la remote actuelle
 git remote -v
@@ -187,6 +205,7 @@ git remote add origin https://github.com/guthubrx/cartae.git
 ```
 
 ### Si tu as besoin de rollback :
+
 **Impossible** : Une fois renommé sur GitHub, tu ne peux pas "annuler" facilement (il faudrait renommer à nouveau).
 
 **Mais** : Aucune donnée n'est perdue, c'est juste un renommage.
@@ -210,6 +229,7 @@ Après avoir tout fait :
 ## 🎉 Une Fois Terminé
 
 Tu pourras :
+
 1. ✅ Push tes branches `migration/bigmind-to-cartae` vers les nouveaux repos
 2. ✅ Créer des Pull Requests
 3. ✅ Merger dans `main`

@@ -7,6 +7,7 @@
 import React, { useState, useMemo } from 'react';
 import { Settings } from 'lucide-react';
 import { getAllAvailableManifests } from '../../core/plugins';
+import { useToast } from '../../hooks/useToast';
 import { PluginCard } from './PluginCard';
 import { PluginFilters, type PluginCategory } from './PluginFilters';
 import { PluginDetailModal } from './PluginDetailModal';
@@ -18,6 +19,7 @@ import './PluginManager.css';
 export function PluginMarketplace() {
   // Load all available manifests
   const manifests = getAllAvailableManifests();
+  const { info: showInfo } = useToast();
 
   // State
   const [searchQuery, setSearchQuery] = useState('');
@@ -208,8 +210,7 @@ export function PluginMarketplace() {
                   state="inactive" // Show as available for install
                   onActivate={async () => {
                     // TODO: Implement installation
-                    // eslint-disable-next-line no-alert
-                    alert(`Installation de ${loaded.manifest.name} à implémenter`);
+                    showInfo(`Installation de ${loaded.manifest.name} à implémenter`);
                   }}
                   onDeactivate={async () => {}}
                   onViewDetails={() => setSelectedPluginId(loaded.manifest.id)}
@@ -300,8 +301,7 @@ export function PluginMarketplace() {
           state="inactive"
           onClose={() => setSelectedPluginId(null)}
           onActivate={async () => {
-            // eslint-disable-next-line no-alert
-            alert(`Installation de ${selectedManifest.name} à implémenter`);
+            showInfo(`Installation de ${selectedManifest.name} à implémenter`);
           }}
           onDeactivate={async () => {}}
         />

@@ -1,5 +1,3 @@
-/* eslint-disable no-alert */
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import MenuBar from '../components/MenuBar';
@@ -8,6 +6,7 @@ import '../layouts/MainLayout.css';
 import './Settings.css';
 import { useShortcuts, ShortcutAction } from '../hooks/useShortcuts';
 import { usePlatform } from '../hooks/usePlatform';
+import { useToast } from '../hooks/useToast';
 import { X } from 'lucide-react';
 import { useAppSettings } from '../hooks/useAppSettings';
 import { getAllInterfaceThemes } from '../themes/colorThemes';
@@ -21,7 +20,9 @@ import {
   PluginRepositorySettings,
 } from '../components/plugins';
 // EventMonitorPanel removed - now available as community plugin
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { GitHubLoginButton } from '../components/plugins/GitHubLoginButton';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { DeveloperModeToggle } from '../components/plugins/DeveloperModeToggle';
 import { AdminPanel } from '../components/plugins/AdminPanel';
 import { pluginSystem, saveActivatedPlugins } from '../utils/pluginManager';
@@ -58,10 +59,11 @@ function SettingsPage() {
   const setShortcut = useShortcuts(s => s.setShortcut);
   const resetShortcuts = useShortcuts(s => s.resetDefaults);
   const [searchParams] = useSearchParams();
-  const [section, setSection] = useState<'appearance' | 'shortcuts' | 'plugins' | 'sources' | 'admin'>(
-    'appearance'
-  );
+  const [section, setSection] = useState<
+    'appearance' | 'shortcuts' | 'plugins' | 'sources' | 'admin'
+  >('appearance');
   const platform = usePlatform();
+  const { info: showInfo, success: showSuccess } = useToast();
 
   // Plugin management state
   const [pluginView, setPluginView] = useState<'plugins' | 'audit' | 'policy' | 'panels'>(
@@ -211,8 +213,9 @@ function SettingsPage() {
 
   const handleViewPermissions = (pluginId: string) => {
     const summary = permissionManager.getSecuritySummary(pluginId);
-    // eslint-disable-next-line no-alert
-    alert(`Permissions pour ${pluginId}:\n\n${JSON.stringify(summary, null, 2)}`);
+    showInfo(`Permissions pour ${pluginId} : voir la console pour les détails`);
+    // eslint-disable-next-line no-console
+    console.info('Security Summary:', summary);
   };
 
   const handleQueryAudit = async (filters: AuditQueryFilters): Promise<AuditEvent[]> =>
@@ -221,8 +224,7 @@ function SettingsPage() {
   const handleSavePolicy = async (pluginId: string, policy: Policy) => {
     policyEngine.registerPolicy(pluginId, policy);
     setPolicyEditing(null);
-    // eslint-disable-next-line no-alert
-    alert('Politique sauvegardée avec succès!');
+    showSuccess('Politique sauvegardée avec succès!');
   };
 
   const toAccelerator = (e: React.KeyboardEvent<HTMLInputElement>): string => {

@@ -3,8 +3,6 @@
  * Main page for plugin management with enhanced security
  */
 
-/* eslint-disable no-alert */
-
 import React, { useState, useEffect } from 'react';
 import {
   PluginManager,
@@ -13,6 +11,7 @@ import {
   PolicyEditor,
 } from '../components/plugins';
 import { pluginSystem, saveActivatedPlugins } from '../utils/pluginManager';
+import { useToast } from '../hooks/useToast';
 import type {
   PluginInfo,
   Permission,
@@ -35,6 +34,7 @@ export function PluginsPage() {
     resolve: (approved: boolean) => void;
   } | null>(null);
   const [policyEditing, setPolicyEditing] = useState<string | null>(null);
+  const { info: showInfo, success: showSuccess } = useToast();
 
   // Load plugins
   useEffect(() => {
@@ -125,7 +125,9 @@ export function PluginsPage() {
 
   const handleViewPermissions = (pluginId: string) => {
     const summary = permissionManager.getSecuritySummary(pluginId);
-    alert(`Permissions pour ${pluginId}:\n\n${JSON.stringify(summary, null, 2)}`);
+    showInfo(`Permissions pour ${pluginId} : voir la console pour les détails`);
+    // eslint-disable-next-line no-console
+    console.info('Security Summary:', summary);
   };
 
   const handleQueryAudit = async (filters: AuditQueryFilters): Promise<AuditEvent[]> =>
@@ -134,7 +136,7 @@ export function PluginsPage() {
   const handleSavePolicy = async (pluginId: string, policy: Policy) => {
     policyEngine.registerPolicy(pluginId, policy);
     setPolicyEditing(null);
-    alert('Politique sauvegardée avec succès!');
+    showSuccess('Politique sauvegardée avec succès!');
   };
 
   return (
@@ -213,6 +215,7 @@ export function PluginsPage() {
                   <button
                     type="button"
                     onClick={() => {
+                      // eslint-disable-next-line no-alert
                       const pluginId = prompt('ID du plugin:');
                       if (pluginId) setPolicyEditing(pluginId);
                     }}

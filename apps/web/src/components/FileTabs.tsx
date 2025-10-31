@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useOpenFiles } from '../hooks/useOpenFiles';
 import { usePlatform } from '../hooks/usePlatform';
+import { useToast } from '../hooks/useToast';
 import ContextMenu, { type ContextMenuItem } from './ContextMenu';
 import './FileTabs.css';
 
@@ -30,6 +31,7 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
   const closeFile = useOpenFiles(state => state.closeFile);
   const activateFile = useOpenFiles(state => state.activateFile);
   const setActiveSheet = useOpenFiles(state => state.setActiveSheet);
+  const { info: showInfo } = useToast();
 
   // FR: États pour la barre d'onglets
   // EN: States for tab bar
@@ -183,11 +185,10 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
       if (file?.path) {
         // FR: Dans une application web pure, on ne peut pas ouvrir le gestionnaire de fichiers
         // EN: In a pure web app, we cannot open the file manager
-        // eslint-disable-next-line no-alert
-        alert(
-          `Cette fonctionnalité nécessite une application de bureau.\n\n` +
-            `Chemin du fichier :\n${file.path}\n\n` +
-            `Le chemin a été copié dans le presse-papiers.`
+        showInfo(
+          `Cette fonctionnalité nécessite une application de bureau. ` +
+            `Le chemin a été copié : ${file.path}`,
+          5000
         );
         // Copier le chemin comme alternative
         navigator.clipboard.writeText(file.path).catch(err => {
@@ -195,7 +196,7 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
         });
       }
     },
-    [openFiles]
+    [openFiles, showInfo]
   );
 
   // FR: Vérifier si le scroll est nécessaire
