@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { Download } from 'lucide-react';
 import { exportRatingsToCSV } from '../../services/supabaseClient';
+import { useToast } from '../../hooks/useToast';
 import './ExportRatingsButton.css';
 
 export interface ExportRatingsButtonProps {
@@ -15,6 +16,7 @@ export interface ExportRatingsButtonProps {
 
 export function ExportRatingsButton({ pluginId, pluginName }: ExportRatingsButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
+  const { error: showError } = useToast();
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -35,7 +37,7 @@ export function ExportRatingsButton({ pluginId, pluginName }: ExportRatingsButto
       document.body.removeChild(link);
     } catch (error) {
       console.error('[ExportRatingsButton] Error:', error);
-      alert("Erreur lors de l'export");
+      showError("Erreur lors de l'export");
     } finally {
       setIsExporting(false);
     }

@@ -6,6 +6,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useTagStore } from '../hooks/useTagStore';
 import { useDagExportImport } from '../hooks/useDagExportImport';
+import { useToast } from '../hooks/useToast';
 import { eventBus } from '../utils/eventBus';
 import TagGraph from './TagGraph';
 import TagLayersPanel from './TagLayersPanel';
@@ -29,6 +30,7 @@ function TagLayersPanelDAG({ onClose }: TagLayersPanelDAGProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { downloadDag, importDag } = useDagExportImport();
+  const { success: showSuccess, error: showError } = useToast();
 
   const generateColor = (): string => {
     const colors = [
@@ -91,9 +93,9 @@ function TagLayersPanelDAG({ onClose }: TagLayersPanelDAGProps) {
         const content = event.target?.result as string;
         const success = importDag(content);
         if (success) {
-          alert('DAG imported successfully!');
+          showSuccess('DAG importé avec succès !');
         } else {
-          alert('Failed to import DAG. Check console for errors.');
+          showError("Échec de l'import du DAG. Vérifiez la console pour les erreurs.");
         }
       };
       reader.readAsText(file);
@@ -103,7 +105,7 @@ function TagLayersPanelDAG({ onClose }: TagLayersPanelDAGProps) {
         fileInputRef.current.value = '';
       }
     },
-    [importDag]
+    [importDag, showSuccess, showError]
   );
 
   const tagCount = tags.length;

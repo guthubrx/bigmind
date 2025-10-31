@@ -16,6 +16,7 @@ import { useCanvasOptions } from './hooks/useCanvasOptions';
 import { clearTagsLocalStorage } from './utils/clearTagsLocalStorage';
 import { initializePlugins } from './utils/pluginManager';
 import { OAuthCallbackHandler } from './components/plugins/OAuthCallbackHandler';
+import { ToastContainer } from './components/ui/ToastContainer';
 import './App.css';
 
 function App() {
@@ -71,6 +72,9 @@ function App() {
     <div className="app">
       {/* Handle GitHub OAuth callback globally */}
       <OAuthCallbackHandler />
+
+      {/* Global toast notifications */}
+      <ToastContainer />
 
       <Routes>
         <Route path="/" element={<DockableLayout />} />

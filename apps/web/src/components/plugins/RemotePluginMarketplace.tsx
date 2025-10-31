@@ -7,12 +7,14 @@
 import React, { useState } from 'react';
 import { PluginList } from '@cartae/plugin-marketplace';
 import { pluginSystem } from '../../utils/pluginManager';
+import { useToast } from '../../hooks/useToast';
 
 const { registry } = pluginSystem;
 
 export function RemotePluginMarketplace() {
   const [installing, setInstalling] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { error: showError, success: showSuccess } = useToast();
 
   const handleInstall = async (pluginId: string) => {
     setInstalling(pluginId);
@@ -25,15 +27,11 @@ export function RemotePluginMarketplace() {
       // Auto-activate after installation
       await registry.activate(pluginId);
 
-      // eslint-disable-next-line no-console
-      console.log(`✅ Successfully installed and activated ${pluginId}`);
+      showSuccess(`Plugin ${pluginId} installé et activé avec succès`);
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error(`Failed to install ${pluginId}:`, err);
       setError((err as Error).message);
-      // TODO: Replace with proper toast/notification system
-      // eslint-disable-next-line no-alert
-      alert(`Installation failed: ${(err as Error).message}`);
+      showError(`Installation échouée: ${(err as Error).message}`);
     } finally {
       setInstalling(null);
     }
@@ -49,14 +47,10 @@ export function RemotePluginMarketplace() {
       // Unregister
       await registry.unregister(pluginId);
 
-      // eslint-disable-next-line no-console
-      console.log(`✅ Successfully uninstalled ${pluginId}`);
+      showSuccess(`Plugin ${pluginId} désinstallé avec succès`);
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error(`Failed to uninstall ${pluginId}:`, err);
-      // TODO: Replace with proper toast/notification system
-      // eslint-disable-next-line no-alert
-      alert(`Uninstall failed: ${(err as Error).message}`);
+      showError(`Désinstallation échouée: ${(err as Error).message}`);
     }
   };
 
