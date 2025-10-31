@@ -152,9 +152,18 @@
 }
 
 .plugin-rating-form__textarea {
-  resize: vertical;
-  min-height: 50px;
-  max-height: 80px;
+  resize: none;
+  min-height: 36px;
+  max-height: 120px;
+  transition: min-height 0.3s ease, max-height 0.3s ease;
+  overflow: hidden;
+}
+
+/* FR: Textarea s'étend au focus */
+/* EN: Textarea expands on focus */
+.plugin-rating-form__textarea:focus {
+  min-height: 80px;
+  overflow-y: auto;
 }
 
 /* Message */

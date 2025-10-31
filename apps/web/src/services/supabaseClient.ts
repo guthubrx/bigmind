@@ -74,6 +74,59 @@ export async function getPluginRatings(pluginId: string): Promise<PluginRating[]
 /**
  * Submit a new rating
  */
+/**
+ * Submit a quick rating (just stars, no comment required)
+ * FR: Soumission rapide d'une note (juste les étoiles, pas de commentaire requis)
+ */
+export async function submitQuickRating(
+  pluginId: string,
+  rating: number,
+  userName?: string,
+  email?: string
+): Promise<boolean> {
+  // Validation
+  if (!pluginId || rating < 1 || rating > 5) {
+    console.error('[Supabase] Invalid quick rating data');
+    return false;
+  }
+
+  const finalUserName = userName?.trim() || 'Utilisateur anonyme';
+
+  console.log('[Supabase] Submitting quick rating:', {
+    pluginId,
+    rating,
+    userName: finalUserName,
+    is_approved: false,
+  });
+
+  const { data, error } = await supabase
+    .from('plugin_ratings')
+    .insert([
+      {
+        pluginId,
+        userName: finalUserName,
+        email: email || null,
+        rating,
+        comment: '', // Empty comment for quick ratings
+        is_approved: false,
+        created_at: new Date().toISOString(),
+      },
+    ])
+    .select();
+
+  if (error) {
+    console.error('[Supabase] ❌ Error submitting quick rating:', error);
+    return false;
+  }
+
+  console.log('[Supabase] ✅ Quick rating submitted successfully:', data);
+  return true;
+}
+
+/**
+ * Submit a full rating with comment
+ * FR: Soumission complète d'un avis avec commentaire
+ */
 export async function submitPluginRating(
   pluginId: string,
   userName: string,

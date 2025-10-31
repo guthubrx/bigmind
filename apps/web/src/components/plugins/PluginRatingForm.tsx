@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { Star, Send } from 'lucide-react';
-import { submitPluginRating } from '../../services/supabaseClient';
+import { submitPluginRating, submitQuickRating } from '../../services/supabaseClient';
 import './PluginRatingForm.css';
 
 export interface PluginRatingFormProps {
@@ -21,7 +21,35 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
   const [emailTouched, setEmailTouched] = useState(false);
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSubmittedQuickRating, setHasSubmittedQuickRating] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // FR: Soumission rapide de la note au clic sur une étoile
+  // EN: Quick rating submission on star click
+  const handleQuickRating = async (newRating: number) => {
+    setRating(newRating);
+    setHasSubmittedQuickRating(false);
+    setMessage(null);
+
+    // Submit quick rating immediately
+    try {
+      const success = await submitQuickRating(pluginId, newRating, userName || undefined, email || undefined);
+
+      if (success) {
+        setHasSubmittedQuickRating(true);
+        setMessage({
+          type: 'success',
+          text: `✓ Note de ${newRating}/5 enregistrée ! ${comment ? '' : 'Ajoutez un commentaire pour partager votre expérience.'}`,
+        });
+        onSuccess?.();
+      } else {
+        setMessage({ type: 'error', text: "Erreur lors de l'enregistrement de la note" });
+      }
+    } catch (error) {
+      console.error('[PluginRatingForm] Error submitting quick rating:', error);
+      setMessage({ type: 'error', text: 'Erreur de connexion' });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +58,11 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
     // Validation
     if (!rating || !userName.trim()) {
       setMessage({ type: 'error', text: 'Veuillez donner une note et votre nom' });
+      return;
+    }
+
+    if (!comment.trim()) {
+      setMessage({ type: 'error', text: 'Veuillez ajouter un commentaire pour soumettre un avis complet' });
       return;
     }
 
@@ -143,12 +176,11 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
 
   return (
     <form className="plugin-rating-form" onSubmit={handleSubmit}>
-      {/* Compact Header */}
-      <div className="plugin-rating-form__compact-header">
-        <div>
-          <div className="plugin-rating-form__label" role="heading" aria-level={3}>
-            Note
-          </div>
+      {/* Single Row: Note + Name + Email */}
+      <div className="plugin-rating-form__single-row">
+        {/* Note */}
+        <div className="plugin-rating-form__field">
+          <label className="plugin-rating-form__label">Note</label>
           <div className="plugin-rating-form__stars">
             {[1, 2, 3, 4, 5].map(star => (
               <button
@@ -159,19 +191,20 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
                 }`}
                 onMouseEnter={() => setHoverRating(star)}
                 onMouseLeave={() => setHoverRating(0)}
-                onClick={() => setRating(star)}
+                onClick={() => handleQuickRating(star)}
+                aria-label={`${star} étoiles`}
               >
-                <Star size={24} fill="currentColor" />
+                <Star size={20} fill="currentColor" />
               </button>
             ))}
           </div>
+          {rating > 0 && (
+            <span className="plugin-rating-form__rating-text-inline">{rating}/5</span>
+          )}
         </div>
-        {rating > 0 && <span className="plugin-rating-form__rating-text">{rating}/5</span>}
-      </div>
 
-      {/* Compact Fields Row */}
-      <div className="plugin-rating-form__compact-row">
-        <div className="plugin-rating-form__field plugin-rating-form__field--inline">
+        {/* Name */}
+        <div className="plugin-rating-form__field">
           <label htmlFor="userName" className="plugin-rating-form__label">
             Votre nom
           </label>
@@ -186,7 +219,8 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
           />
         </div>
 
-        <div className="plugin-rating-form__field plugin-rating-form__field--inline">
+        {/* Email */}
+        <div className="plugin-rating-form__field">
           <label htmlFor="email" className="plugin-rating-form__label">
             Email (optionnel)
           </label>
