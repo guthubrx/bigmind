@@ -101,6 +101,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     try {
       await commandExecutor.execute(command.id);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to execute command:', error);
     }
   };

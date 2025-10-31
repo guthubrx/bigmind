@@ -110,6 +110,7 @@ class KeyboardManager {
     try {
       await commandExecutor.execute(commandId, context);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error(`Failed to execute command ${commandId}:`, error);
     }
   }
@@ -126,6 +127,7 @@ class KeyboardManager {
     // Check for conflicts
     const existing = this.shortcuts.get(normalized);
     if (existing && existing !== commandId) {
+      // eslint-disable-next-line no-console
       console.warn(
         `Shortcut conflict: ${normalized} already registered for ${existing}, overwriting with ${commandId}`
       );

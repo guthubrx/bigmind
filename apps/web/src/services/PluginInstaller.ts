@@ -143,6 +143,7 @@ async function createPluginFromCode(code: string, manifest: PluginManifest): Pro
     } catch (esmError) {
       // FR: Si ESM échoue, essayer le format UMD/CommonJS
       // EN: If ESM fails, try UMD/CommonJS format
+      // eslint-disable-next-line no-console
       console.warn(
         '[PluginInstaller] ESM import failed, trying UMD/CommonJS:',
         esmError instanceof Error ? esmError.message : 'Unknown error'
@@ -178,6 +179,7 @@ async function createPluginFromCode(code: string, manifest: PluginManifest): Pro
       };
     }
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('[PluginInstaller] Failed to create plugin from code:', error);
     throw new Error(
       `Failed to load plugin code: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -342,6 +344,7 @@ export async function installPluginFromGitHub(
 
     return plugin;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('[PluginInstaller] Failed to install plugin from GitHub:', error);
     throw error;
   }

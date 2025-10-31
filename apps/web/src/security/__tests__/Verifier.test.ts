@@ -277,7 +277,9 @@ describe('Verifier', () => {
       const results = await verifier.verifyMultiple(files, {});
 
       expect(results['index.js'].valid).toBe(false);
-      expect(results['index.js'].errors).toContainEqual(expect.stringContaining('No signature found'));
+      expect(results['index.js'].errors).toContainEqual(
+        expect.stringContaining('No signature found')
+      );
     });
   });
 

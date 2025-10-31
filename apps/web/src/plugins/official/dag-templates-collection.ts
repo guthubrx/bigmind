@@ -286,21 +286,13 @@ Que vous documentiez une taxonomie biologique, conceviez une architecture logici
 };
 
 export async function activate(_context: IPluginContext): Promise<void> {
-  // console.log('📋 [DAG Templates Collection] Plugin activé');
-
   // Register all DAG templates
   registerTemplates(DAG_TEMPLATES);
-
-  // console.log(`📋 [DAG Templates Collection] ${DAG_TEMPLATES.length} templates enregistrés`);
 }
 
 export async function deactivate(): Promise<void> {
-  // console.log('📋 [DAG Templates Collection] Plugin désactivé');
-
   // Unregister all templates
   DAG_TEMPLATES.forEach(template => {
     unregisterTemplate(template.id);
   });
-
-  // console.log('📋 [DAG Templates Collection] Templates désenregistrés');
 }

@@ -394,7 +394,7 @@ describe('ManifestValidator', () => {
       const result = validateManifest(manifest);
       const messages = formatValidationMessages(result);
 
-      expect(messages.some((msg) => msg.startsWith('❌'))).toBe(true);
+      expect(messages.some(msg => msg.startsWith('❌'))).toBe(true);
     });
 
     it('should format warnings with emoji', () => {
@@ -406,7 +406,7 @@ describe('ManifestValidator', () => {
       const result = validateManifest(manifest);
       const messages = formatValidationMessages(result);
 
-      expect(messages.some((msg) => msg.startsWith('⚠️'))).toBe(true);
+      expect(messages.some(msg => msg.startsWith('⚠️'))).toBe(true);
     });
 
     it('should include field names', () => {
@@ -414,16 +414,13 @@ describe('ManifestValidator', () => {
       const result = validateManifest(manifest);
       const messages = formatValidationMessages(result);
 
-      expect(messages.some((msg) => msg.includes('['))).toBe(true);
+      expect(messages.some(msg => msg.includes('['))).toBe(true);
     });
   });
 
   describe('validateManifests', () => {
     it('should validate multiple manifests', () => {
-      const manifests = [
-        validManifest,
-        { ...validManifest, id: 'com.example.plugin2' },
-      ];
+      const manifests = [validManifest, { ...validManifest, id: 'com.example.plugin2' }];
 
       const results = validateManifests(manifests);
 

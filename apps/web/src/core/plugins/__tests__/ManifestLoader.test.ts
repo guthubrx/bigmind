@@ -4,11 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  loadManifest,
-  getAllAvailableManifests,
-  validateManifest,
-} from '../ManifestLoader';
+import { loadManifest, getAllAvailableManifests, validateManifest } from '../ManifestLoader';
 
 describe('ManifestLoader', () => {
   describe('getAllAvailableManifests', () => {
@@ -19,7 +15,7 @@ describe('ManifestLoader', () => {
       expect(manifests.length).toBeGreaterThanOrEqual(5);
 
       // Check that all manifests have required fields
-      manifests.forEach((loaded) => {
+      manifests.forEach(loaded => {
         expect(loaded.manifest).toBeDefined();
         expect(loaded.manifest.id).toBeDefined();
         expect(loaded.manifest.name).toBeDefined();
@@ -30,9 +26,7 @@ describe('ManifestLoader', () => {
 
     it('should load tags-manager manifest', () => {
       const manifests = getAllAvailableManifests();
-      const tagsManager = manifests.find(
-        (m) => m.manifest.id === 'com.bigmind.tags-manager'
-      );
+      const tagsManager = manifests.find(m => m.manifest.id === 'com.bigmind.tags-manager');
 
       expect(tagsManager).toBeDefined();
       expect(tagsManager?.manifest.name).toBe('Tags Manager');
@@ -43,9 +37,7 @@ describe('ManifestLoader', () => {
 
     it('should load export-manager manifest', () => {
       const manifests = getAllAvailableManifests();
-      const exportManager = manifests.find(
-        (m) => m.manifest.id === 'com.bigmind.export-manager'
-      );
+      const exportManager = manifests.find(m => m.manifest.id === 'com.bigmind.export-manager');
 
       expect(exportManager).toBeDefined();
       expect(exportManager?.manifest.name).toBe('Export Manager');
@@ -54,9 +46,7 @@ describe('ManifestLoader', () => {
 
     it('should load palette-settings manifest', () => {
       const manifests = getAllAvailableManifests();
-      const paletteSettings = manifests.find(
-        (m) => m.manifest.id === 'com.bigmind.palette-settings'
-      );
+      const paletteSettings = manifests.find(m => m.manifest.id === 'com.bigmind.palette-settings');
 
       expect(paletteSettings).toBeDefined();
       expect(paletteSettings?.manifest.name).toBe('Palette Settings');
@@ -65,7 +55,7 @@ describe('ManifestLoader', () => {
     it('should load color-palettes-collection manifest', () => {
       const manifests = getAllAvailableManifests();
       const colorPalettes = manifests.find(
-        (m) => m.manifest.id === 'com.bigmind.color-palettes-collection'
+        m => m.manifest.id === 'com.bigmind.color-palettes-collection'
       );
 
       expect(colorPalettes).toBeDefined();
@@ -75,9 +65,7 @@ describe('ManifestLoader', () => {
 
     it('should load xmind-compatibility manifest', () => {
       const manifests = getAllAvailableManifests();
-      const xmindCompat = manifests.find(
-        (m) => m.manifest.id === 'com.xmind.compatibility'
-      );
+      const xmindCompat = manifests.find(m => m.manifest.id === 'com.xmind.compatibility');
 
       expect(xmindCompat).toBeDefined();
       expect(xmindCompat?.manifest.name).toBe('XMind Compatibility');
@@ -151,7 +139,7 @@ describe('ManifestLoader', () => {
     it('should accept valid semver versions', () => {
       const tests = ['1.0.0', '2.1.3', '10.20.30', '1.0.0-alpha', '1.0.0+build'];
 
-      tests.forEach((version) => {
+      tests.forEach(version => {
         const manifest = {
           id: 'com.test.plugin',
           name: 'Test Plugin',
@@ -168,9 +156,7 @@ describe('ManifestLoader', () => {
   describe('manifest structure', () => {
     it('should have uiContributions for tags-manager', () => {
       const manifests = getAllAvailableManifests();
-      const tagsManager = manifests.find(
-        (m) => m.manifest.id === 'com.bigmind.tags-manager'
-      );
+      const tagsManager = manifests.find(m => m.manifest.id === 'com.bigmind.tags-manager');
 
       expect(tagsManager?.manifest.uiContributions).toBeDefined();
       expect(tagsManager?.manifest.uiContributions?.panels).toBeDefined();
@@ -179,20 +165,16 @@ describe('ManifestLoader', () => {
 
     it('should have commands for export-manager', () => {
       const manifests = getAllAvailableManifests();
-      const exportManager = manifests.find(
-        (m) => m.manifest.id === 'com.bigmind.export-manager'
-      );
+      const exportManager = manifests.find(m => m.manifest.id === 'com.bigmind.export-manager');
 
       expect(exportManager?.manifest.uiContributions?.commands).toBeDefined();
-      expect(exportManager?.manifest.uiContributions?.commands?.length).toBeGreaterThan(
-        0
-      );
+      expect(exportManager?.manifest.uiContributions?.commands?.length).toBeGreaterThan(0);
     });
 
     it('should have marketing content', () => {
       const manifests = getAllAvailableManifests();
 
-      manifests.forEach((loaded) => {
+      manifests.forEach(loaded => {
         expect(loaded.manifest.tagline).toBeDefined();
         expect(loaded.manifest.benefits).toBeDefined();
         expect(loaded.manifest.useCases).toBeDefined();

@@ -319,6 +319,7 @@ export const useMindmap = () => {
       undo: () => {
         // FR: TODO: Implémenter l'historique
         // EN: TODO: Implement history
+        // eslint-disable-next-line no-console
         console.warn('Undo not implemented yet');
       },
 
@@ -327,6 +328,7 @@ export const useMindmap = () => {
       redo: () => {
         // FR: TODO: Implémenter l'historique
         // EN: TODO: Implement history
+        // eslint-disable-next-line no-console
         console.warn('Redo not implemented yet');
       },
 

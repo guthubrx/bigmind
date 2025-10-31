@@ -61,6 +61,7 @@ export const useDagExportImport = () => {
 
       return true;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to import DAG:', error);
       return false;
     }

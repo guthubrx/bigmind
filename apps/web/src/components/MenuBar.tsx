@@ -56,33 +56,25 @@ function MenuBar() {
   // EN: Handler for menu actions
   const handleMenuAction = async (action: string) => {
     try {
-      // console.warn(`Action menu: ${action}`);
       switch (action) {
         case 'Nouveau':
-          // console.warn('Create new file');
           createNew();
           break;
         case 'Ouvrir...': {
-          // console.warn('Open file...');
           const file = await openFileDialog();
           if (file) {
-            // console.warn(`Selected file: ${file.name} (${file.size} bytes)`);
             await openFile(file);
-            // console.warn('File opened');
-          } else {
-            // console.warn('No file selected');
           }
           break;
         }
         case 'Sauvegarder':
         case 'Sauvegarder sous...':
-          // console.warn('Save file...');
           await exportActiveXMind();
           break;
         default:
-        // console.warn(`Action: ${action}`);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.warn(`❌ Erreur lors de l'action ${action}:`, error);
     }
     if (closeTimeout) {

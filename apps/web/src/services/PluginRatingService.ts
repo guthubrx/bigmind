@@ -48,9 +48,8 @@ export class PluginRatingService {
           errorData?.message || `Failed to submit rating: ${response.status} ${response.statusText}`
         );
       }
-
-      console.log('[PluginRatingService] Rating submitted successfully');
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('[PluginRatingService] Error submitting rating:', error);
       throw error;
     }

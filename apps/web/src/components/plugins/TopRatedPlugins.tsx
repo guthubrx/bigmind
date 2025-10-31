@@ -54,6 +54,7 @@ export function TopRatedPlugins({ allPlugins, onSelectPlugin }: TopRatedPluginsP
 
         setTopPlugins(withManifests);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('[TopRatedPlugins] Error:', error);
       } finally {
         setIsLoading(false);

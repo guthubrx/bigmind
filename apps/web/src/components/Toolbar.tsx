@@ -28,6 +28,7 @@ function Toolbar() {
     try {
       await exportActiveXMind();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.warn('Erreur lors de la sauvegarde:', error);
     }
   }, [exportActiveXMind]);
@@ -41,6 +42,7 @@ function Toolbar() {
         await openFile(file);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.warn("Erreur lors de l'ouverture:", error);
     }
   }, [openFileDialog, openFile]);
@@ -51,6 +53,7 @@ function Toolbar() {
     try {
       await exportActiveXMind();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.warn("Erreur lors de l'export:", error);
     }
   }, [exportActiveXMind]);

@@ -92,7 +92,9 @@ describe('CacheStrategy', () => {
     });
 
     it('should not revalidate twice for same key', async () => {
-      const callback = vi.fn().mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
+      const callback = vi
+        .fn()
+        .mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
       const strategy = new StaleWhileRevalidateStrategy(callback);
 
       // Start first revalidation

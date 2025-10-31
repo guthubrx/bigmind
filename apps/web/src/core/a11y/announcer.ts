@@ -45,6 +45,7 @@ class ScreenReaderAnnouncer {
     const region = politeness === 'assertive' ? this.liveRegionAssertive : this.liveRegionPolite;
 
     if (!region) {
+      // eslint-disable-next-line no-console
       console.warn('[Announcer] Live region not initialized');
       return;
     }

@@ -16,13 +16,10 @@ function MapSettings() {
 
   // Force re-render when map settings registry changes
   useEffect(() => {
-    console.log('[MapSettings] Subscribing to map settings registry changes');
-
     // Force initial render to pick up any sections already registered
     setSettingsVersion(v => v + 1);
 
     const unsubscribe = onMapSettingsRegistryChange(() => {
-      console.log('[MapSettings] Map settings registry changed, forcing re-render');
       setSettingsVersion(v => v + 1);
     });
 
@@ -44,7 +41,6 @@ function MapSettings() {
   }
 
   const mapSections = getMapSettingsSections();
-  console.log('[MapSettings Render] Sections:', mapSections.length, mapSections);
 
   return (
     <div className="map-settings">

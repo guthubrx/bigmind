@@ -56,6 +56,7 @@ export class FreeMindParser {
         },
       };
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Erreur lors du parsing du fichier .mm:', error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Impossible de parser le fichier .mm: ${message}`);

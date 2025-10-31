@@ -36,6 +36,7 @@ export function ExportRatingsButton({ pluginId, pluginName }: ExportRatingsButto
       link.click();
       document.body.removeChild(link);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('[ExportRatingsButton] Error:', error);
       showError("Erreur lors de l'export");
     } finally {

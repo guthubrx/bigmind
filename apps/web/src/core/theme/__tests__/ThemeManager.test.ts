@@ -88,9 +88,7 @@ describe('ThemeManager', () => {
 
       manager.setTheme('unknown');
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Unknown theme: unknown')
-      );
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Unknown theme: unknown'));
 
       // Should fall back to light theme
       expect(manager.getTheme().id).toBe('light');

@@ -50,9 +50,9 @@ describe('Signer', () => {
     });
 
     it('should throw error for non-existent key', async () => {
-      await expect(
-        signer.sign('test', { keyId: 'non-existent-key' })
-      ).rejects.toThrow('Key pair not found');
+      await expect(signer.sign('test', { keyId: 'non-existent-key' })).rejects.toThrow(
+        'Key pair not found'
+      );
     });
   });
 

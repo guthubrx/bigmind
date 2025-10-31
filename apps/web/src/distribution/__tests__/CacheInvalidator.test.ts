@@ -31,9 +31,7 @@ describe('CacheInvalidator', () => {
 
       await invalidator.purgeByPath('/test.txt');
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Purging path')
-      );
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Purging path'));
       consoleSpy.mockRestore();
     });
   });
@@ -60,9 +58,7 @@ describe('CacheInvalidator', () => {
 
       await invalidator.purgeByTag('test-tag');
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Purging tag')
-      );
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Purging tag'));
       consoleSpy.mockRestore();
     });
   });
@@ -117,9 +113,7 @@ describe('CacheInvalidator', () => {
       const result = await invalidator.purgeAll();
 
       expect(result.success).toBe(true);
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Purging ALL cache')
-      );
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Purging ALL cache'));
       consoleSpy.mockRestore();
     });
   });

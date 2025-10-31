@@ -115,8 +115,6 @@ Travaillez de jour avec le mode Light lumineux et passez au mode Dark le soir po
 };
 
 export async function activate(context: IPluginContext): Promise<void> {
-  // console.log('🌓 [Theme Manager] Plugin activé');
-
   // Register command to list all themes
   context.commands.registerCommand('themes.list', async () => getAllInterfaceThemes());
 
@@ -137,20 +135,14 @@ export async function activate(context: IPluginContext): Promise<void> {
     }
 
     applyThemeToDocument(theme);
-    // console.log(`🌓 [Theme Manager] Theme "${theme.name}" applied`);
 
     return theme;
   });
 
   // Listen to theme changes
-  context.hooks.registerAction('theme.changed', async (_data: any) => {
-    // console.log(`🌓 [Theme Manager] Theme changed:`, _data);
-  });
+  context.hooks.registerAction('theme.changed', async (_data: any) => {});
 
   // const themeCount = getAllInterfaceThemes().length;
-  // console.log(`🌓 [Theme Manager] ${themeCount} thèmes disponibles`);
 }
 
-export async function deactivate(): Promise<void> {
-  // console.log('🌓 [Theme Manager] Plugin désactivé');
-}
+export async function deactivate(): Promise<void> {}

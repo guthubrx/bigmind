@@ -34,6 +34,7 @@ export function PublishInstructionsModal({
       setCopiedItem(id);
       setTimeout(() => setCopiedItem(null), 2000);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to copy:', error);
     }
   };

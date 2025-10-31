@@ -117,7 +117,6 @@ export class PluginStorage implements IPluginStorage {
     if (storedVersion !== this.schemaVersion) {
       // const msg = `[PluginStorage] Schema version mismatch for ${this.pluginId}`;
       // eslint-disable-next-line no-console
-      // console.log(`${msg}: stored=${storedVersion}, current=${this.schemaVersion}`);
 
       // Attempt automatic migration
       await this.performMigration(storedVersion, this.schemaVersion);
@@ -250,12 +249,14 @@ export class PluginStorage implements IPluginStorage {
     const pluginData = getPluginData(this.fileData, this.pluginId);
 
     if (!pluginData) {
+      // eslint-disable-next-line no-console
       console.error(`[PluginStorage] Cannot migrate: no data for ${this.pluginId}`);
       return;
     }
 
     // Check if migration is possible
     if (!manager.canMigrate(fromVersion, toVersion)) {
+      // eslint-disable-next-line no-console
       console.warn(`[PluginStorage] No migration path from ${fromVersion} to ${toVersion}`);
       return;
     }
@@ -265,7 +266,6 @@ export class PluginStorage implements IPluginStorage {
 
     if (result.success) {
       // eslint-disable-next-line no-console
-      // console.log(
       //   `[PluginStorage] Migration successful for ${this.pluginId}:`,
       //   result.migrationHistory
       // );
@@ -285,6 +285,7 @@ export class PluginStorage implements IPluginStorage {
       // Trigger save
       await this.onSave();
     } else {
+      // eslint-disable-next-line no-console
       console.error(`[PluginStorage] Migration failed for ${this.pluginId}:`, result.error);
     }
   }

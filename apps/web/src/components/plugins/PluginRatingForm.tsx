@@ -51,6 +51,7 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
         setMessage({ type: 'error', text: "Erreur lors de l'enregistrement de la note" });
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('[PluginRatingForm] Error submitting quick rating:', error);
       setMessage({ type: 'error', text: 'Erreur de connexion' });
     }
@@ -61,7 +62,7 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
   const handleStarHover = (star: number, event: React.MouseEvent<HTMLButtonElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
-    const width = rect.width;
+    const { width } = rect;
     const isLeftHalf = x < width / 2;
 
     setHoverRating(isLeftHalf ? star - 0.5 : star);
@@ -72,7 +73,7 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
   const handleStarClick = (star: number, event: React.MouseEvent<HTMLButtonElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
-    const width = rect.width;
+    const { width } = rect;
     const isLeftHalf = x < width / 2;
 
     const newRating = isLeftHalf ? star - 0.5 : star;
@@ -90,7 +91,10 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
     }
 
     if (!comment.trim()) {
-      setMessage({ type: 'error', text: 'Veuillez ajouter un commentaire pour soumettre un avis complet' });
+      setMessage({
+        type: 'error',
+        text: 'Veuillez ajouter un commentaire pour soumettre un avis complet',
+      });
       return;
     }
 
@@ -144,6 +148,7 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
         setMessage({ type: 'error', text: "Erreur lors de l'envoi. Veuillez réessayer." });
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('[PluginRatingForm] Error:', error);
       setMessage({ type: 'error', text: 'Erreur de connexion. Veuillez réessayer.' });
     } finally {
@@ -174,7 +179,7 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
   const getEmailHelpMessage = (): string | null => {
     if (!emailTouched || !email) return null;
 
-    if (email.includes(' ')) return '❌ Pas d\'espaces';
+    if (email.includes(' ')) return "❌ Pas d'espaces";
     if (email.includes('..')) return '❌ Points consécutifs';
     if (!email.includes('@')) return '❌ Manque @';
     if (email.split('@').length > 2) return '❌ Un seul @';
@@ -243,9 +248,7 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
               );
             })}
           </div>
-          {rating > 0 && (
-            <span className="plugin-rating-form__rating-text-inline">{rating}/5</span>
-          )}
+          {rating > 0 && <span className="plugin-rating-form__rating-text-inline">{rating}/5</span>}
         </div>
 
         {/* Name */}

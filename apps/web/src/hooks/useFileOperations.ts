@@ -158,6 +158,7 @@ export const useFileOperations = () => {
           content: adaptedContent,
         });
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error("Erreur lors de l'ouverture du fichier .mm:", error);
         throw error;
       }
@@ -222,9 +223,7 @@ export const useFileOperations = () => {
             const metadataText = await metadataFile.async('text');
             xmindOriginalData.metadata = JSON.parse(metadataText);
           }
-        } catch (e) {
-          // console.warn("[XMind] Erreur lors de l'extraction des métadonnées:", e);
-        }
+        } catch (e) {}
 
         // FR: Essayer d'abord le parser standard
         // EN: Try standard parser first
@@ -241,10 +240,8 @@ export const useFileOperations = () => {
           if (xmindOriginalData.theme) {
             // Debug: afficher l'ordre des enfants
             // const rootNode = adaptedContent.nodes[adaptedContent.rootNode.id];
-            // console.log('[XMind] Ordre des branches principales:');
             // rootNode?.children?.forEach((childId: string, index: number) => {
             //   const child = adaptedContent.nodes[childId];
-            //   console.log(`  ${index}: ${child?.title}`);
             // });
 
             applyXMindColors(adaptedContent, xmindOriginalData.theme);
@@ -296,8 +293,8 @@ export const useFileOperations = () => {
               // const tagCount = Object.keys(loadedTags.tags || {}).length;
               // const assocCount = Object.keys(loadedTags.nodeTags || {}).length;
               // eslint-disable-next-line no-console
-              // console.log(`[FileOps] Chargé ${tagCount} tags et ${assocCount} associations`);
             } catch (err) {
+              // eslint-disable-next-line no-console
               console.error('[FileOps] Erreur lors du chargement des tags:', err);
             }
           }
@@ -306,7 +303,6 @@ export const useFileOperations = () => {
         } catch (standardError) {
           // const stdMsg =
           //   standardError instanceof Error ? standardError.message : String(standardError);
-          // console.warn('Parser standard échoué, tentative avec le parser simple:', stdMsg);
 
           // FR: Essayer le parser de fallback
           // EN: Try fallback parser
@@ -322,10 +318,8 @@ export const useFileOperations = () => {
           if (xmindOriginalData.theme) {
             // Debug: afficher l'ordre des enfants
             // const rootNode = adaptedContent.nodes[adaptedContent.rootNode.id];
-            // console.log('[XMind] Ordre des branches principales:');
             // rootNode?.children?.forEach((childId: string, index: number) => {
             //   const child = adaptedContent.nodes[childId];
-            //   console.log(`  ${index}: ${child?.title}`);
             // });
 
             applyXMindColors(adaptedContent, xmindOriginalData.theme);
@@ -370,8 +364,8 @@ export const useFileOperations = () => {
               });
               // const fbTagCount = Object.keys(loadedTagsFallback.tags || {}).length;
               // eslint-disable-next-line no-console
-              // console.log(`[FileOps] Chargé ${fbTagCount} tags (fallback)`);
             } catch (err) {
+              // eslint-disable-next-line no-console
               console.error('[FileOps] Erreur lors du chargement des tags (fallback):', err);
             }
           }
@@ -379,6 +373,7 @@ export const useFileOperations = () => {
           return fileIdFallback;
         }
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error("Erreur lors de l'ouverture du fichier .xmind:", error);
         throw error;
       }

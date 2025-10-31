@@ -4,12 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  getAllDescendants,
-  getAllAncestors,
-  isDescendant,
-  getNodeDepth,
-} from '../nodeUtils';
+import { getAllDescendants, getAllAncestors, isDescendant, getNodeDepth } from '../nodeUtils';
 
 describe('nodeUtils', () => {
   // FR: Arbre de test simple

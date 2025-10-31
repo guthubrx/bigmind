@@ -32,8 +32,6 @@ export async function loadManifest(pluginPath: string): Promise<LoadedManifest |
     const manifestModule = manifestGlob[manifestPath] || manifestGlob[`/src${manifestPath}`];
 
     if (!manifestModule) {
-      // console.warn(`[ManifestLoader] No manifest.json found at ${manifestPath}`);
-      // console.debug('[ManifestLoader] Available manifests:', Object.keys(manifestGlob));
       return null;
     }
 
@@ -42,17 +40,15 @@ export async function loadManifest(pluginPath: string): Promise<LoadedManifest |
 
     // Validate basic manifest structure
     if (!manifest.id || !manifest.name || !manifest.version) {
-      // console.error(`[ManifestLoader] Invalid manifest at ${manifestPath}:`, manifest);
       return null;
     }
-
-    // console.log(`[ManifestLoader] ✅ Loaded manifest for ${manifest.id} from ${manifestPath}`);
 
     return {
       manifest,
       pluginPath,
     };
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error(`[ManifestLoader] Failed to load manifest from ${pluginPath}:`, error);
     return null;
   }
@@ -76,12 +72,8 @@ export function getAllAvailableManifests(): LoadedManifest[] {
 
         manifests.push({ manifest, pluginPath });
       }
-    } catch (error) {
-      // console.error(`[ManifestLoader] Failed to parse manifest at ${path}:`, error);
-    }
+    } catch (error) {}
   });
-
-  // console.log(`[ManifestLoader] Found ${manifests.length} manifests via glob`);
 
   return manifests;
 }
@@ -106,11 +98,8 @@ export async function loadAllManifests(
     if (result.status === 'fulfilled' && result.value) {
       manifests.push(result.value);
     } else if (result.status === 'rejected') {
-      // console.error(`[ManifestLoader] Failed to load ${pluginIds[index]}:`, result.reason);
     }
   });
-
-  // console.log(`[ManifestLoader] Loaded ${manifests.length}/${pluginIds.length} manifests`);
 
   return manifests;
 }
@@ -128,19 +117,16 @@ export function validateManifest(manifest: PluginManifest): boolean {
   const missingField = requiredFields.find(field => !manifest[field as keyof PluginManifest]);
 
   if (missingField) {
-    // console.error(`[ManifestLoader] Missing required field: ${missingField}`);
     return false;
   }
 
   // Validate ID format
   if (!/^[a-z0-9-_.]+$/.test(manifest.id)) {
-    // console.error(`[ManifestLoader] Invalid plugin ID format: ${manifest.id}`);
     return false;
   }
 
   // Validate version format (semver)
   if (!/^\d+\.\d+\.\d+/.test(manifest.version)) {
-    // console.error(`[ManifestLoader] Invalid version format: ${manifest.version}`);
     return false;
   }
 
@@ -165,6 +151,5 @@ export function mergeManifestWithModule(loadedManifest: LoadedManifest, pluginMo
 export async function discoverPlugins(_directory: string): Promise<string[]> {
   // For now, return empty array
   // In the future, this could use filesystem APIs to scan for manifest.json files
-  // console.log(`[ManifestLoader] Plugin discovery in ${_directory} not yet implemented`);
   return [];
 }

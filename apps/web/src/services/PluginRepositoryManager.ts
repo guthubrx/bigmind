@@ -59,6 +59,7 @@ export class PluginRepositoryManager {
         this.saveRepositories();
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('[PluginRepositoryManager] Failed to load repositories:', error);
       this.repositories = [DEFAULT_REPOSITORY];
     }
@@ -70,8 +71,8 @@ export class PluginRepositoryManager {
   private saveRepositories(): void {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.repositories));
-      console.log('[PluginRepositoryManager] Saved repositories:', this.repositories.length);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('[PluginRepositoryManager] Failed to save repositories:', error);
     }
   }
@@ -123,7 +124,6 @@ export class PluginRepositoryManager {
     this.repositories.push(repository);
     this.saveRepositories();
 
-    console.log('[PluginRepositoryManager] Added repository:', repository.name);
     return repository;
   }
 
@@ -144,7 +144,6 @@ export class PluginRepositoryManager {
     this.repositories = this.repositories.filter(r => r.id !== id);
     this.saveRepositories();
 
-    console.log('[PluginRepositoryManager] Removed repository:', repo.name);
     return true;
   }
 
@@ -161,10 +160,6 @@ export class PluginRepositoryManager {
     repo.enabled = enabled;
     this.saveRepositories();
 
-    console.log(
-      `[PluginRepositoryManager] ${enabled ? 'Enabled' : 'Disabled'} repository:`,
-      repo.name
-    );
     return true;
   }
 
@@ -219,14 +214,10 @@ export class PluginRepositoryManager {
       if (!data.plugins || !Array.isArray(data.plugins)) {
         throw new Error('Invalid registry format: missing plugins array');
       }
-
-      console.log(
-        '[PluginRepositoryManager] Repository validated:',
-        data.plugins.length,
-        'plugins'
-      );
     } catch (error) {
-      throw new Error(`Failed to validate repository: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to validate repository: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 

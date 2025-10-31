@@ -24,6 +24,7 @@ const loadFromStorage = (): Set<string> => {
     const array = JSON.parse(raw);
     return new Set(array);
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.warn('[useColumnCollapse] Erreur lors du chargement:', e);
     return new Set();
   }
@@ -36,6 +37,7 @@ const saveToStorage = (collapsedColumns: Set<string>) => {
     const array = Array.from(collapsedColumns);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(array));
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.warn('[useColumnCollapse] Erreur lors de la sauvegarde:', e);
   }
 };

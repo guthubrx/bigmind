@@ -75,6 +75,7 @@ export function PluginCard({
         const count = await getPendingReportCount(manifest.id);
         setPendingReportsCount(count);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('[PluginCard] Error fetching report count:', error);
       }
     };
@@ -132,6 +133,7 @@ export function PluginCard({
       const count = await getPendingReportCount(manifest.id);
       setPendingReportsCount(count);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('[PluginCard] Error reloading report count:', error);
     }
   };
@@ -324,10 +326,7 @@ export function PluginCard({
             state={undefined}
             featured={false}
           />
-          <PluginRatingStats
-            pluginId={manifest.id}
-            size="small"
-          />
+          <PluginRatingStats pluginId={manifest.id} size="small" />
         </div>
         <div className="plugin-card__footer-right">
           <PluginDownloadStats

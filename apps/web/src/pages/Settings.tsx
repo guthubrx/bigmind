@@ -122,14 +122,12 @@ function SettingsPage() {
   // Listen to settings registry changes
   useEffect(() => {
     // eslint-disable-next-line no-console
-    console.log('[Settings] Subscribing to settings registry changes');
 
     // Force initial render to pick up any sections already registered
     setSettingsVersion(v => v + 1);
 
     const unsubscribe = onSettingsRegistryChange(() => {
       // eslint-disable-next-line no-console
-      console.log('[Settings] Settings registry changed, forcing re-render');
       setSettingsVersion(v => v + 1);
     });
 
@@ -188,7 +186,6 @@ function SettingsPage() {
 
   const handleInstall = async (pluginId: string) => {
     // eslint-disable-next-line no-console
-    console.log(`[Settings] Installing plugin: ${pluginId}`);
 
     // Import the installer service dynamically
     const { installPlugin } = await import('../services/PluginInstaller');
@@ -196,17 +193,14 @@ function SettingsPage() {
     // Download and install the plugin (errors will propagate to PluginManager)
     const plugin = await installPlugin(pluginId);
     // eslint-disable-next-line no-console
-    console.log(`[Settings] Plugin downloaded successfully: ${pluginId}`);
 
     // Register the plugin in the registry
     await registry.register(plugin, false); // Don't auto-activate
     // eslint-disable-next-line no-console
-    console.log(`[Settings] Plugin registered successfully: ${pluginId}`);
 
     // Activate the plugin
     await handleActivate(pluginId);
     // eslint-disable-next-line no-console
-    console.log(`[Settings] Plugin activated successfully: ${pluginId}`);
 
     // Success notification will be handled by PluginManager
   };
@@ -310,12 +304,6 @@ function SettingsPage() {
                   <h2 className="settings-section-title">Apparence</h2>
                   {(() => {
                     const sections = getSettingsSections('appearance');
-                    // eslint-disable-next-line no-console
-                    console.log(
-                      '[Settings Render] Appearance sections:',
-                      sections.length,
-                      sections
-                    );
                     return null;
                   })()}
 

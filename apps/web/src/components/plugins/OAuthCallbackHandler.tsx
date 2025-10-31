@@ -19,21 +19,16 @@ export function OAuthCallbackHandler() {
       // Prevent double execution in React Strict Mode (dev only)
       if (hasProcessedCallback.current) {
         // eslint-disable-next-line no-console
-        console.log('[OAuthCallbackHandler] Already processed, skipping duplicate call');
         return;
       }
       hasProcessedCallback.current = true;
 
       // eslint-disable-next-line no-console
-      console.log('[OAuthCallbackHandler] OAuth callback detected, processing...');
-      console.log('[OAuthCallbackHandler] Code:', `${callback.code.substring(0, 10)}...`);
-      console.log('[OAuthCallbackHandler] State:', callback.state);
 
       const result = await gitHubAuthService.handleOAuthCallback(callback.code, callback.state);
 
       if (result.success && result.user) {
         // eslint-disable-next-line no-console
-        console.log('[OAuthCallbackHandler] OAuth successful, user:', result.user.login);
 
         // Nettoyer les paramètres OAuth de l'URL
         gitHubAuthService.cleanOAuthParams();
@@ -46,7 +41,6 @@ export function OAuthCallbackHandler() {
           localStorage.removeItem('bigmind-oauth-return-url');
 
           // eslint-disable-next-line no-console
-          console.log('[OAuthCallbackHandler] Redirecting to:', returnUrl);
 
           // Redirect back to where user came from
           window.location.replace(returnUrl);

@@ -150,6 +150,7 @@ export const useOpenFiles = create<OpenFilesState>((set, get) => ({
           }
         })
         .catch(error => {
+          // eslint-disable-next-line no-console
           console.error('[useOpenFiles] Legacy migration failed:', error);
         });
     }

@@ -68,6 +68,7 @@ export function RatingReplyForm({ ratingId, pluginId, onSuccess }: RatingReplyFo
         setMessage({ type: 'error', text: "Erreur lors de l'envoi" });
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('[RatingReplyForm] Error:', error);
       setMessage({ type: 'error', text: 'Erreur de connexion' });
     } finally {

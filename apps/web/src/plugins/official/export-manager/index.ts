@@ -120,8 +120,6 @@ Travaillez en toute sérénité : vos cartes peuvent être exportées au format 
 };
 
 export async function activate(context: IPluginContext): Promise<void> {
-  // console.log('📤 [Export Manager] Plugin activé');
-
   // Register XMind export command
   context.commands.registerCommand('export.xmind', async () => {
     const active = useOpenFiles.getState().getActiveFile();
@@ -179,6 +177,7 @@ export async function activate(context: IPluginContext): Promise<void> {
 
         zip.file('bigmind.json', JSON.stringify(overlay, null, 2));
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.warn('[Export Manager] Error creating sidecar:', e);
       }
 
@@ -190,14 +189,13 @@ export async function activate(context: IPluginContext): Promise<void> {
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 0);
 
-      // console.log('📤 [Export Manager] Export XMind réussi');
-
       // Emit success event
       await context.hooks.doAction('export.completed', {
         format: 'xmind',
         filename: a.download,
       });
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('📤 [Export Manager] Export failed:', error);
 
       // Emit failure event
@@ -209,10 +207,6 @@ export async function activate(context: IPluginContext): Promise<void> {
       throw error;
     }
   });
-
-  // console.log('📤 [Export Manager] Commande export.xmind enregistrée');
 }
 
-export async function deactivate(): Promise<void> {
-  // console.log('📤 [Export Manager] Plugin désactivé');
-}
+export async function deactivate(): Promise<void> {}

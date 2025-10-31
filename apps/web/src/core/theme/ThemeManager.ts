@@ -58,6 +58,7 @@ export class ThemeManager {
         theme = this.getSystemTheme();
         break;
       default:
+        // eslint-disable-next-line no-console
         console.warn(`Unknown theme: ${themeId}, using light theme`);
         theme = lightTheme;
     }
@@ -192,6 +193,7 @@ export class ThemeManager {
       try {
         listener(theme);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Error in theme listener:', error);
       }
     });

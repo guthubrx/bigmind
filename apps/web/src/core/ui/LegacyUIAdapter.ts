@@ -194,6 +194,7 @@ class LegacyUIAdapter {
    * Log deprecation warning
    */
   private logDeprecation(method: string, replacement: string, docsUrl: string): void {
+    // eslint-disable-next-line no-console
     console.warn(
       `[DEPRECATED] ${method}() is deprecated and will be removed in v2.0.0.\n` +
         `${replacement}\n` +

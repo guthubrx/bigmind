@@ -40,6 +40,7 @@ export function PluginRatingsDisplay({ pluginId, refreshTrigger }: PluginRatings
       setAggregate(agg);
       setRatings(ratingsList);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('[PluginRatingsDisplay] Error loading ratings:', error);
     } finally {
       setIsLoading(false);

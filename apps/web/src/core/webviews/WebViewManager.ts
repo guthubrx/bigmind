@@ -90,6 +90,7 @@ export class WebViewManager {
   sendMessage(webviewId: string, type: string, payload?: any): void {
     const instance = this.webviews.get(webviewId);
     if (!instance) {
+      // eslint-disable-next-line no-console
       console.error(`WebView ${webviewId} not found`);
       return;
     }

@@ -74,19 +74,16 @@ export class XMindParser {
       }
 
       const fileContent = await contentFile.async('text');
-      // console.warn('Contenu lu, longueur:', fileContent.length);
 
       // FR: Détecter le format (XML ou JSON)
       // EN: Detect format (XML or JSON)
       if (contentFile.name.endsWith('.json') || fileContent.trim().startsWith('{')) {
-        // console.warn('Format JSON détecté');
         return this.parseJSON(fileContent);
       }
-      // console.warn('Format XML détecté');
       const result = this.parseXML(fileContent);
-      // console.warn('Parsing XML réussi');
       return result;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Erreur lors du parsing du fichier .xmind:', error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Impossible de parser le fichier .xmind: ${message}`);
@@ -98,10 +95,8 @@ export class XMindParser {
    * EN: Parse JSON content in .xmind file (recent versions)
    */
   private static parseJSON(jsonText: string): XMindMap {
-    // console.warn('XMindParser.parseJSON - start');
     try {
       const jsonData = JSON.parse(jsonText);
-      // console.warn('Structure JSON keys:', Object.keys(jsonData));
 
       // FR: Le JSON peut être un tableau de sheets ou un objet
       // EN: JSON can be an array of sheets or an object
@@ -109,7 +104,6 @@ export class XMindParser {
       let sheetsMeta: Array<{ id: string; title: string }> | undefined;
 
       if (Array.isArray(jsonData)) {
-        // console.warn('JSON array: taking first sheet');
         [sheetData] = jsonData;
         // FR: Conserver la liste des feuilles pour la barre d'onglets
         // EN: Keep list of sheets for tab bar
@@ -135,7 +129,6 @@ export class XMindParser {
         return x;
       }
       if (jsonData.root || jsonData.topic) {
-        // console.warn('JSON object with root/topic');
         sheetData = jsonData;
       } else {
         throw new Error('Structure JSON non reconnue');
@@ -149,8 +142,6 @@ export class XMindParser {
         throw new Error('Aucun rootTopic trouvé dans le JSON');
       }
 
-      // console.warn('RootTopic trouvé:', rootTopic.title);
-
       return {
         root: this.parseJSONTopic(rootTopic),
         metadata: {
@@ -161,6 +152,7 @@ export class XMindParser {
         sheetsMeta,
       };
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('❌ Erreur parsing JSON:', error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Erreur parsing JSON: ${message}`);
@@ -193,8 +185,6 @@ export class XMindParser {
    * EN: Parse a JSON topic recursively
    */
   private static parseJSONTopic(topicData: any): XMindNode {
-    // console.warn('parseJSONTopic data');
-
     const title = topicData.title || topicData.text || topicData.label || '';
     const id = topicData.id || `topic_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -237,6 +227,7 @@ export class XMindParser {
     // EN: Check for parsing errors
     const parseError = xmlDoc.querySelector('parsererror');
     if (parseError) {
+      // eslint-disable-next-line no-console
       console.error('❌ Erreur de parsing XML:', parseError.textContent);
       throw new Error(`Erreur de parsing XML : ${parseError.textContent}`);
     }
@@ -269,12 +260,14 @@ export class XMindParser {
       workbook.querySelector('*[local-name()="sheet"]');
 
     if (!sheet) {
+      // eslint-disable-next-line no-console
       console.error('❌ Aucun sheet/topic trouvé');
       throw new Error('Fichier .xmind invalide : élément sheet/topic manquant');
     }
 
     const topic = sheet.querySelector('topic') || sheet;
     if (!topic) {
+      // eslint-disable-next-line no-console
       console.error('❌ Aucun topic trouvé');
       throw new Error('Fichier .xmind invalide : élément topic manquant');
     }
@@ -380,6 +373,7 @@ export class XMindParser {
       const xmlText = await xmlFile.async('text');
       return this.parseXMLSimple(xmlText);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Erreur lors du parsing simple du fichier .xmind:', error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Impossible de parser le fichier .xmind (mode simple): ${message}`);

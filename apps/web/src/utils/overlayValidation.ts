@@ -213,6 +213,7 @@ export function loadOverlayFromStorage(key: string): MindMapOverlay {
   } catch (error) {
     // FR: En cas d'erreur de parsing, retourner un overlay vide
     // EN: In case of parsing error, return empty overlay
+    // eslint-disable-next-line no-console
     console.warn(`[overlayValidation] Erreur lors du chargement de l'overlay ${key}:`, error);
     return {};
   }
@@ -229,6 +230,7 @@ export function saveOverlayToStorage(key: string, overlay: MindMapOverlay): void
     const validOverlay = validateOverlay(overlay);
     localStorage.setItem(key, JSON.stringify(validOverlay));
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.warn(`[overlayValidation] Erreur lors de la sauvegarde de l'overlay ${key}:`, error);
   }
 }

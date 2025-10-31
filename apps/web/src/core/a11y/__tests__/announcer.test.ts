@@ -10,7 +10,7 @@ describe.skip('Screen Reader Announcer', () => {
   // TODO: Fix these tests - announcer initialization timing issues with jsdom
   beforeEach(() => {
     // Clear any existing live regions
-    document.querySelectorAll('[role="status"], [role="alert"]').forEach((el) => {
+    document.querySelectorAll('[role="status"], [role="alert"]').forEach(el => {
       el.remove();
     });
   });
@@ -53,7 +53,7 @@ describe.skip('Screen Reader Announcer', () => {
       announce('Test message');
 
       // Wait for timeout
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       const politeRegion = document.querySelector('[aria-live="polite"]');
       expect(politeRegion).not.toBeNull();
@@ -64,10 +64,10 @@ describe.skip('Screen Reader Announcer', () => {
 
     it('should replace previous message', async () => {
       announce('First message');
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       announce('Second message');
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       const politeRegion = document.querySelector('[aria-live="polite"]');
       expect(politeRegion).not.toBeNull();
@@ -78,7 +78,7 @@ describe.skip('Screen Reader Announcer', () => {
 
     it('should handle empty message', async () => {
       announce('');
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       const politeRegion = document.querySelector('[aria-live="polite"]');
       expect(politeRegion).not.toBeNull();
@@ -92,7 +92,7 @@ describe.skip('Screen Reader Announcer', () => {
       announce('Message 2');
       announce('Message 3');
 
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       const politeRegion = document.querySelector('[aria-live="polite"]');
       expect(politeRegion).not.toBeNull();
@@ -107,7 +107,7 @@ describe.skip('Screen Reader Announcer', () => {
     it('should announce message to assertive live region', async () => {
       announceAssertive('Urgent message');
 
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       const assertiveRegion = document.querySelector('[aria-live="assertive"]');
       expect(assertiveRegion).not.toBeNull();
@@ -118,10 +118,10 @@ describe.skip('Screen Reader Announcer', () => {
 
     it('should not affect polite region', async () => {
       announce('Polite message');
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       announceAssertive('Assertive message');
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       const politeRegion = document.querySelector('[aria-live="polite"]');
       const assertiveRegion = document.querySelector('[aria-live="assertive"]');
@@ -161,7 +161,7 @@ describe.skip('Screen Reader Announcer', () => {
     it('should handle special characters', async () => {
       announce('Message with <b>HTML</b> & symbols');
 
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       const politeRegion = document.querySelector('[aria-live="polite"]');
       expect(politeRegion).not.toBeNull();
@@ -174,7 +174,7 @@ describe.skip('Screen Reader Announcer', () => {
       const longMessage = 'A'.repeat(1000);
       announce(longMessage);
 
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       const politeRegion = document.querySelector('[aria-live="polite"]');
       expect(politeRegion).not.toBeNull();
@@ -186,7 +186,7 @@ describe.skip('Screen Reader Announcer', () => {
     it('should handle unicode characters', async () => {
       announce('Message avec émojis 🎉🚀✨');
 
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       const politeRegion = document.querySelector('[aria-live="polite"]');
       expect(politeRegion).not.toBeNull();

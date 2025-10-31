@@ -40,6 +40,7 @@ export function SkipLinks({ links = DEFAULT_LINKS }: SkipLinksProps) {
 
     const target = document.getElementById(targetId);
     if (!target) {
+      // eslint-disable-next-line no-console
       console.warn(`[SkipLinks] Target element #${targetId} not found`);
       return;
     }

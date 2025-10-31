@@ -58,9 +58,6 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
 
   // FR: Ajouter des logs de debug
   // EN: Add debug logs
-  // console.log('📁 FileTabs - openFiles:', openFiles.length);
-  // console.log('📁 FileTabs - activeFileId:', activeFileId);
-  // console.log('📁 FileTabs - type:', type);
 
   const handleCloseFile = (fileId: string, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -125,7 +122,6 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
         // FR: Mettre à jour l'ordre dans le store
         // EN: Update order in store
         // TODO: Implémenter la réorganisation dans useOpenFiles
-        // console.log('🔄 Reordering tabs:', { from: dragStartIndex, to: dropIndex });
       }
 
       handleDragEnd();
@@ -167,10 +163,10 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
           .writeText(file.path)
           .then(() => {
             // eslint-disable-next-line no-console
-            // console.log('📋 Path copied to clipboard:', file.path);
             // TODO: Afficher un toast de succès
           })
           .catch(err => {
+            // eslint-disable-next-line no-console
             console.error('Failed to copy path:', err);
             // TODO: Afficher un toast d'erreur
           });
@@ -192,6 +188,7 @@ function FileTabs({ type = 'file-column' }: FileTabsProps) {
         );
         // Copier le chemin comme alternative
         navigator.clipboard.writeText(file.path).catch(err => {
+          // eslint-disable-next-line no-console
           console.error('Failed to copy path:', err);
         });
       }

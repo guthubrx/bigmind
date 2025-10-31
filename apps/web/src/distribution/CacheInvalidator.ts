@@ -37,6 +37,7 @@ export class CacheInvalidator {
 
     try {
       // Simulate purge (replace with actual CDN API call)
+      // eslint-disable-next-line no-console
       console.info(`[CacheInvalidator] Purging path: ${path} (soft: ${softPurge})`);
 
       return {
@@ -57,6 +58,7 @@ export class CacheInvalidator {
    */
   async purgeByTag(tag: string, softPurge = false): Promise<PurgeResult> {
     try {
+      // eslint-disable-next-line no-console
       console.info(`[CacheInvalidator] Purging tag: ${tag} (soft: ${softPurge})`);
 
       return {
@@ -111,6 +113,7 @@ export class CacheInvalidator {
    */
   async purgeAll(): Promise<PurgeResult> {
     try {
+      // eslint-disable-next-line no-console
       console.warn('[CacheInvalidator] Purging ALL cache - this is expensive!');
 
       return {

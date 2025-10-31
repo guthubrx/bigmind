@@ -21,7 +21,6 @@ export function GitHubLoginButton() {
   useEffect(() => {
     const currentUser = gitHubAuthService.getUser();
     // eslint-disable-next-line no-console
-    console.log('[GitHubLoginButton] Loading user from localStorage:', currentUser);
     setUser(currentUser);
   }, []);
 

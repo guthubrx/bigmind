@@ -171,6 +171,7 @@ function DockableLayout() {
         return Model.fromJson(parsedLayout);
       }
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.warn('Failed to load layout config:', e);
     }
     return Model.fromJson(DEFAULT_LAYOUT);
@@ -265,6 +266,7 @@ function DockableLayout() {
         });
       }, 50);
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.warn('Failed to save layout config:', e);
     }
   }, []);

@@ -53,7 +53,6 @@ export class PluginDevService {
   async clonePlugin(pluginId: string): Promise<CloneResult> {
     try {
       // eslint-disable-next-line no-console
-      console.log(`[PluginDev] Cloning plugin: ${pluginId}`);
 
       // 1. Récupérer le manifest depuis GitHub
       const manifest = await gitHubPluginRegistry.getManifest(pluginId);
@@ -69,7 +68,6 @@ export class PluginDevService {
       // 3. Télécharger index.ts
       const indexUrl = `https://raw.githubusercontent.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/${GITHUB_BRANCH}/${pluginPath}/index.ts`;
       // eslint-disable-next-line no-console
-      console.log(`[PluginDev] Downloading from: ${indexUrl}`);
 
       const indexResponse = await fetch(indexUrl);
       if (!indexResponse.ok) {
@@ -121,7 +119,6 @@ export class PluginDevService {
           );
 
           // eslint-disable-next-line no-console
-          console.log(`✅ Plugin ${pluginName} cloné avec succès dans ${dirHandle.name}/`);
 
           return {
             success: true,
@@ -172,7 +169,6 @@ export class PluginDevService {
       );
 
       // eslint-disable-next-line no-console
-      console.log(`Instructions pour cloner ${pluginId}:`, { localPath, files });
 
       return {
         success: true,
@@ -199,7 +195,6 @@ export class PluginDevService {
   async publishPlugin(pluginId: string, manifest: PluginManifest): Promise<PublishResult> {
     try {
       // eslint-disable-next-line no-console
-      console.log(`[PluginDev] Publishing plugin: ${pluginId}`);
 
       // 1. Vérifier que l'utilisateur est connecté
       const user = gitHubAuthService.getUser();
@@ -283,7 +278,6 @@ export class PluginDevService {
     const vscodeUrl = `vscode://file${localPath}`;
     window.open(vscodeUrl, '_blank');
     // eslint-disable-next-line no-console
-    console.log(`[PluginDev] Opening in VSCode: ${localPath}`);
   }
 
   /**

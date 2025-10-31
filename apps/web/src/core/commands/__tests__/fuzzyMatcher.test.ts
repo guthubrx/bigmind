@@ -93,7 +93,7 @@ describe('fuzzySearch', () => {
   it('should return all commands for empty query', () => {
     const results = fuzzySearch(commands, '');
     expect(results).toHaveLength(4);
-    expect(results.every((r) => r.score === 1)).toBe(true);
+    expect(results.every(r => r.score === 1)).toBe(true);
   });
 
   it('should filter commands by title', () => {
@@ -115,14 +115,14 @@ describe('fuzzySearch', () => {
     const results = fuzzySearch(commands, 'edit');
     expect(results.length).toBeGreaterThan(0);
     // Should include copy and paste
-    const ids = results.map((r) => r.command.id);
+    const ids = results.map(r => r.command.id);
     expect(ids).toContain('edit.copy');
     expect(ids).toContain('edit.paste');
   });
 
   it('should handle partial matches', () => {
     const results = fuzzySearch(commands, 'cop');
-    expect(results.some((r) => r.command.id === 'edit.copy')).toBe(true);
+    expect(results.some(r => r.command.id === 'edit.copy')).toBe(true);
   });
 
   it('should return empty for no matches', () => {

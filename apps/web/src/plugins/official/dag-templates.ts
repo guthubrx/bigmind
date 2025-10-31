@@ -123,8 +123,6 @@ Gagnez des heures de configuration en partant de structures éprouvées. Ce plug
 };
 
 export async function activate(context: IPluginContext): Promise<void> {
-  // console.log('📋 [DAG Templates] Plugin activé');
-
   // Register command to list all templates
   context.commands.registerCommand('templates.list', async () => getAllTemplates());
 
@@ -139,7 +137,6 @@ export async function activate(context: IPluginContext): Promise<void> {
     }
 
     const result = applyTemplate(template);
-    // console.log(`📋 [DAG Templates] Applied template: ${template.name}`);
 
     // Emit event
     await context.hooks.doAction('template.applied', {
@@ -152,9 +149,6 @@ export async function activate(context: IPluginContext): Promise<void> {
   });
 
   // const templateCount = getAllTemplates().length;
-  // console.log(`📋 [DAG Templates] ${templateCount} templates disponibles`);
 }
 
-export async function deactivate(): Promise<void> {
-  // console.log('📋 [DAG Templates] Plugin désactivé');
-}
+export async function deactivate(): Promise<void> {}

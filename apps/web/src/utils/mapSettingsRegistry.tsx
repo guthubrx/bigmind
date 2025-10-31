@@ -46,16 +46,8 @@ export function onMapSettingsRegistryChange(listener: () => void): () => void {
  * EN: Register a MapSettings section (used by plugins)
  */
 export function registerMapSettingsSection(section: MapSettingsSection): void {
-  console.log(
-    '[MapSettingsRegistry] Registering section:',
-    section.id,
-    'for plugin:',
-    section.pluginId
-  );
   mapSettingsSectionsRegistry.set(section.id, section);
-  console.log('[MapSettingsRegistry] Total sections:', mapSettingsSectionsRegistry.size);
   notifyChange();
-  console.log('[MapSettingsRegistry] Notified', listeners.size, 'listeners');
 }
 
 /**

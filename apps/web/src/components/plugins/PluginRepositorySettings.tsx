@@ -4,7 +4,10 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { pluginRepositoryManager, type PluginRepository } from '../../services/PluginRepositoryManager';
+import {
+  pluginRepositoryManager,
+  type PluginRepository,
+} from '../../services/PluginRepositoryManager';
 import { Plus, Trash2, Github, AlertCircle, CheckCircle, Power, Download } from 'lucide-react';
 import { installPluginFromGitHub } from '../../services/PluginInstaller';
 import { pluginSystem } from '../../utils/pluginManager';
@@ -56,7 +59,11 @@ export function PluginRepositorySettings() {
         }
       }
 
-      await pluginRepositoryManager.addRepository(urlToAdd, newRepoName.trim(), newRepoDescription.trim() || undefined);
+      await pluginRepositoryManager.addRepository(
+        urlToAdd,
+        newRepoName.trim(),
+        newRepoDescription.trim() || undefined
+      );
 
       setMessage({
         type: 'success',
@@ -72,7 +79,7 @@ export function PluginRepositorySettings() {
     } catch (error) {
       setMessage({
         type: 'error',
-        text: error instanceof Error ? error.message : 'Erreur lors de l\'ajout du repository',
+        text: error instanceof Error ? error.message : "Erreur lors de l'ajout du repository",
       });
     } finally {
       setIsSubmitting(false);
@@ -114,7 +121,10 @@ export function PluginRepositorySettings() {
     setMessage(null);
 
     try {
-      const plugin = await installPluginFromGitHub(directInstallUrl.trim(), directInstallBranch.trim() || 'main');
+      const plugin = await installPluginFromGitHub(
+        directInstallUrl.trim(),
+        directInstallBranch.trim() || 'main'
+      );
 
       // Register the plugin
       await registry.register(plugin, false);
@@ -134,7 +144,7 @@ export function PluginRepositorySettings() {
     } catch (error) {
       setMessage({
         type: 'error',
-        text: error instanceof Error ? error.message : 'Erreur lors de l\'installation du plugin',
+        text: error instanceof Error ? error.message : "Erreur lors de l'installation du plugin",
       });
     } finally {
       setIsInstalling(false);
@@ -168,7 +178,8 @@ export function PluginRepositorySettings() {
         <div>
           <h2 className="plugin-repository-settings__title">Sources de Plugins</h2>
           <p className="plugin-repository-settings__description">
-            Gérez les repositories GitHub d'où proviennent vos plugins. Ajoutez le repository privé pour accéder au plugin Administration.
+            Gérez les repositories GitHub d'où proviennent vos plugins. Ajoutez le repository privé
+            pour accéder au plugin Administration.
           </p>
         </div>
         {!showAddForm && (
@@ -185,7 +196,9 @@ export function PluginRepositorySettings() {
 
       {/* Message */}
       {message && (
-        <div className={`plugin-repository-settings__message plugin-repository-settings__message--${message.type}`}>
+        <div
+          className={`plugin-repository-settings__message plugin-repository-settings__message--${message.type}`}
+        >
           {message.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
           {message.text}
         </div>
@@ -294,11 +307,20 @@ export function PluginRepositorySettings() {
                       className="plugin-repository-settings__avatar"
                       onError={e => {
                         (e.target as HTMLImageElement).style.display = 'none';
-                        (e.target as HTMLImageElement).nextElementSibling?.classList.remove('plugin-repository-settings__avatar-fallback--hidden');
+                        (e.target as HTMLImageElement).nextElementSibling?.classList.remove(
+                          'plugin-repository-settings__avatar-fallback--hidden'
+                        );
                       }}
                     />
                   ) : null}
-                  <Github size={18} className={getGitHubAvatar(repo.url) ? 'plugin-repository-settings__avatar-fallback--hidden' : ''} />
+                  <Github
+                    size={18}
+                    className={
+                      getGitHubAvatar(repo.url)
+                        ? 'plugin-repository-settings__avatar-fallback--hidden'
+                        : ''
+                    }
+                  />
                   {repo.name}
                   {repo.isDefault && (
                     <span className="plugin-repository-settings__badge">Par défaut</span>
@@ -366,7 +388,8 @@ export function PluginRepositorySettings() {
               Installer un plugin depuis GitHub
             </h3>
             <p className="plugin-repository-settings__section-description">
-              Installez un plugin directement depuis son repository GitHub sans l'ajouter aux sources
+              Installez un plugin directement depuis son repository GitHub sans l'ajouter aux
+              sources
             </p>
           </div>
           {!showDirectInstall && (

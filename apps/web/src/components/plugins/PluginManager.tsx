@@ -110,15 +110,12 @@ export function PluginManager({
   // Load remote plugins from GitHub
   useEffect(() => {
     // eslint-disable-next-line no-console
-    console.log('[PluginManager] useEffect triggered - loading remote plugins...');
 
     const loadRemote = async () => {
       try {
         // eslint-disable-next-line no-console
-        console.log('[PluginManager] Calling gitHubPluginRegistry.fetchRegistry()...');
         const registry = await gitHubPluginRegistry.fetchRegistry();
         // eslint-disable-next-line no-console
-        console.log('[PluginManager] Remote plugins loaded:', registry.length);
         setRemotePlugins(registry);
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -156,7 +153,11 @@ export function PluginManager({
     remotePlugins.forEach(entry => {
       if (!installed.has(entry.id)) {
         // Convert PluginRegistryEntry to PluginManifest with repository metadata
-        const manifest: PluginManifest & { repositoryId?: string; repositoryUrl?: string; repositoryName?: string } = {
+        const manifest: PluginManifest & {
+          repositoryId?: string;
+          repositoryUrl?: string;
+          repositoryName?: string;
+        } = {
           id: entry.id,
           name: entry.name,
           version: entry.version,
@@ -226,8 +227,12 @@ export function PluginManager({
   );
 
   // Helper function to check if plugin is from Cartae repository
-  const isCartaePlugin = (item: typeof filteredPlugins[0]): boolean => {
-    const manifest = item.manifest as PluginManifest & { repositoryId?: string; repositoryUrl?: string; repositoryName?: string };
+  const isCartaePlugin = (item: (typeof filteredPlugins)[0]): boolean => {
+    const manifest = item.manifest as PluginManifest & {
+      repositoryId?: string;
+      repositoryUrl?: string;
+      repositoryName?: string;
+    };
 
     // Check if repositoryId or repositoryName contains 'cartae'
     if (manifest.repositoryId?.toLowerCase().includes('cartae')) return true;
@@ -322,7 +327,6 @@ export function PluginManager({
 
     try {
       // eslint-disable-next-line no-console
-      console.log(`[PluginManager] Installing plugin: ${pluginId}`);
 
       // Get plugin name from remote plugins list
       const pluginEntry = remotePlugins.find(p => p.id === pluginId);
@@ -335,7 +339,6 @@ export function PluginManager({
         // Otherwise, use default installation logic
         await installPlugin(pluginId);
         // eslint-disable-next-line no-console
-        console.log(`[PluginManager] Plugin installed successfully: ${pluginId}`);
       }
 
       // Show success notification (for both cases)
@@ -349,7 +352,6 @@ export function PluginManager({
       setRemotePlugins(registry);
 
       // eslint-disable-next-line no-console
-      console.log(`[PluginManager] Successfully installed: ${pluginId}`);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(`[PluginManager] Failed to install plugin ${pluginId}:`, error);
@@ -470,6 +472,7 @@ export function PluginManager({
       try {
         await handleInstall(pluginId);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(`Failed to install ${pluginId}:`, error);
       }
     }
@@ -494,6 +497,7 @@ export function PluginManager({
       try {
         await onActivate(pluginId);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(`Failed to activate ${pluginId}:`, error);
       }
     }
@@ -519,6 +523,7 @@ export function PluginManager({
       try {
         await onDeactivate(pluginId);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(`Failed to deactivate ${pluginId}:`, error);
       }
     }
@@ -549,6 +554,7 @@ export function PluginManager({
       try {
         await onUninstall(pluginId);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(`Failed to uninstall ${pluginId}:`, error);
       }
     }
@@ -768,12 +774,7 @@ export function PluginManager({
         corePlugins
       )}
 
-      {renderSection(
-        'featured',
-        'En Vedette',
-        'Plugins recommandés',
-        featuredPlugins
-      )}
+      {renderSection('featured', 'En Vedette', 'Plugins recommandés', featuredPlugins)}
 
       {renderSection(
         'optional',

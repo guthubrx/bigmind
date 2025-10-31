@@ -6,7 +6,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { Star } from 'lucide-react';
-import { getPluginRatingsAggregate, type PluginRatingsAggregate } from '../../services/supabaseClient';
+import {
+  getPluginRatingsAggregate,
+  type PluginRatingsAggregate,
+} from '../../services/supabaseClient';
 import './PluginRatingStats.css';
 
 export interface PluginRatingStatsProps {
@@ -34,6 +37,7 @@ export function PluginRatingStats({
         const data = await getPluginRatingsAggregate(pluginId);
         setAggregate(data);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('[PluginRatingStats] Error fetching aggregate:', error);
       } finally {
         setIsLoading(false);

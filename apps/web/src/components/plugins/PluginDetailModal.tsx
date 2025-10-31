@@ -15,7 +15,11 @@ import { submitQuickRating } from '../../services/supabaseClient';
 import './PluginDetailModal.css';
 
 export interface PluginDetailModalProps {
-  manifest: PluginManifest & { repositoryId?: string; repositoryUrl?: string; repositoryName?: string };
+  manifest: PluginManifest & {
+    repositoryId?: string;
+    repositoryUrl?: string;
+    repositoryName?: string;
+  };
   isActive: boolean;
   canDisable?: boolean;
   onClose: () => void;
@@ -42,6 +46,7 @@ export function PluginDetailModal({
         setRatingsRefresh(prev => prev + 1);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('[PluginDetailModal] Error submitting quick rating:', error);
     }
   };
@@ -51,7 +56,7 @@ export function PluginDetailModal({
   const handleStarHover = (star: number, event: React.MouseEvent<HTMLButtonElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
-    const width = rect.width;
+    const { width } = rect;
     const isLeftHalf = x < width / 2;
 
     // If hovering left half, show half star (star - 0.5)
@@ -64,7 +69,7 @@ export function PluginDetailModal({
   const handleStarClick = (star: number, event: React.MouseEvent<HTMLButtonElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
-    const width = rect.width;
+    const { width } = rect;
     const isLeftHalf = x < width / 2;
 
     const rating = isLeftHalf ? star - 0.5 : star;
@@ -156,7 +161,10 @@ export function PluginDetailModal({
                 />
                 {manifest.repositoryName && manifest.repositoryUrl && (
                   <a
-                    href={manifest.repositoryUrl.replace(/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/.*/, 'https://github.com/$1/$2')}
+                    href={manifest.repositoryUrl.replace(
+                      /\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/.*/,
+                      'https://github.com/$1/$2'
+                    )}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="plugin-detail-modal__meta-repository"
@@ -317,17 +325,9 @@ export function PluginDetailModal({
           {/* Stats */}
           <section className="plugin-detail-modal__section">
             <div className="plugin-detail-modal__stats">
-              <PluginDownloadStats
-                pluginId={manifest.id}
-                size="large"
-                variant="stat-card"
-              />
+              <PluginDownloadStats pluginId={manifest.id} size="large" variant="stat-card" />
 
-              <PluginRatingStats
-                pluginId={manifest.id}
-                size="large"
-                variant="stat-card"
-              />
+              <PluginRatingStats pluginId={manifest.id} size="large" variant="stat-card" />
 
               {manifest.changelog && manifest.changelog.length > 0 && (
                 <div className="plugin-detail-modal__stat">

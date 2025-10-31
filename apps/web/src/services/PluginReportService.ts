@@ -93,13 +93,6 @@ export async function submitPluginReport(
     };
   }
 
-  console.log('[PluginReportService] Submitting report:', {
-    pluginId,
-    category,
-    description: `${description.substring(0, 50)}...`,
-    reporter_ip,
-  });
-
   try {
     // Insert report
     const { data, error } = await supabase
@@ -118,6 +111,7 @@ export async function submitPluginReport(
       .select();
 
     if (error) {
+      // eslint-disable-next-line no-console
       console.error('[PluginReportService] Error submitting report:', error);
       return { success: false, error: error.message };
     }
@@ -125,9 +119,9 @@ export async function submitPluginReport(
     // Record submission for rate limiting
     await recordReportSubmission(pluginId, reporter_ip);
 
-    console.log('[PluginReportService] ✅ Report submitted successfully:', data);
     return { success: true };
   } catch (error: any) {
+    // eslint-disable-next-line no-console
     console.error('[PluginReportService] Exception submitting report:', error);
     return { success: false, error: error.message };
   }
@@ -144,6 +138,7 @@ export async function getPluginReports(pluginId: string): Promise<PluginReport[]
     .order('created_at', { ascending: false });
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('[PluginReportService] Error fetching reports:', error);
     return [];
   }
@@ -162,6 +157,7 @@ export async function getPendingReportCount(pluginId: string): Promise<number> {
     .eq('status', 'pending');
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('[PluginReportService] Error counting reports:', error);
     return 0;
   }
@@ -197,6 +193,7 @@ export async function getAllReports(status?: ReportStatus): Promise<PluginReport
   const { data, error } = await query;
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('[PluginReportService] Error fetching all reports:', error);
     return [];
   }
@@ -212,8 +209,6 @@ export async function updateReportStatus(
   status: ReportStatus,
   admin_note?: string
 ): Promise<boolean> {
-  console.log('[PluginReportService] Updating report status:', { reportId, status });
-
   const updateData: any = {
     status,
     updated_at: new Date().toISOString(),
@@ -232,11 +227,11 @@ export async function updateReportStatus(
   const { error } = await supabase.from('plugin_reports').update(updateData).eq('id', reportId);
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('[PluginReportService] Error updating report:', error);
     return false;
   }
 
-  console.log('[PluginReportService] ✅ Report updated successfully');
   return true;
 }
 
@@ -244,16 +239,14 @@ export async function updateReportStatus(
  * Admin: Delete a report
  */
 export async function deleteReport(reportId: string): Promise<boolean> {
-  console.log('[PluginReportService] Deleting report:', reportId);
-
   const { error } = await supabase.from('plugin_reports').delete().eq('id', reportId);
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('[PluginReportService] Error deleting report:', error);
     return false;
   }
 
-  console.log('[PluginReportService] ✅ Report deleted successfully');
   return true;
 }
 
@@ -272,17 +265,12 @@ async function checkRateLimit(pluginId: string, ip: string): Promise<boolean> {
     .gte('created_at', oneDayAgo.toISOString());
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('[PluginReportService] Error checking rate limit:', error);
     return true; // Allow if error (fail open)
   }
 
   const submissionCount = count || 0;
-  console.log('[PluginReportService] Rate limit check:', {
-    pluginId,
-    ip: `${ip.substring(0, 10)}...`,
-    submissionCount,
-    limit: 3,
-  });
 
   return submissionCount < 3;
 }
@@ -312,6 +300,7 @@ async function getClientIP(): Promise<string> {
     const data = await response.json();
     return data.ip || 'unknown';
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.warn('[PluginReportService] Could not get IP, using fallback');
     // Fallback: use a hash of user agent + timestamp
     const ua = navigator.userAgent;
@@ -341,6 +330,7 @@ export async function getReportsNeedingAttention(): Promise<number> {
     .eq('status', 'pending');
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('[PluginReportService] Error counting pending reports:', error);
     return 0;
   }

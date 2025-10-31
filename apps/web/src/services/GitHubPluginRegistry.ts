@@ -66,7 +66,6 @@ export class GitHubPluginRegistry {
   async fetchRegistry(): Promise<PluginRegistryEntry[]> {
     // Check cache
     if (this.cache && Date.now() - this.cache.timestamp < CACHE_TTL) {
-      console.log('[GitHubPluginRegistry] Using cached registry');
       return this.cache.data;
     }
 
@@ -76,17 +75,16 @@ export class GitHubPluginRegistry {
       if (cached) {
         const cacheEntry: CacheEntry = JSON.parse(cached);
         if (Date.now() - cacheEntry.timestamp < CACHE_TTL) {
-          console.log('[GitHubPluginRegistry] Using localStorage cached registry');
           this.cache = cacheEntry;
           return cacheEntry.data;
         }
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.warn('[GitHubPluginRegistry] Failed to read cache:', error);
     }
 
     // Fetch from all enabled repositories
-    console.log('[GitHubPluginRegistry] Fetching registry from multiple repositories...');
 
     const enabledRepos = pluginRepositoryManager.getEnabledRepositories();
     const allPlugins: PluginRegistryEntry[] = [];
@@ -105,10 +103,8 @@ export class GitHubPluginRegistry {
         }));
 
         allPlugins.push(...pluginsWithRepoInfo);
-        console.log(
-          `[GitHubPluginRegistry] Fetched ${data.plugins.length} plugins from ${repo.name}`
-        );
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(`[GitHubPluginRegistry] Failed to fetch from ${repo.name}:`, error);
         // Continue with other repositories
       }
@@ -125,9 +121,6 @@ export class GitHubPluginRegistry {
     this.cache = cacheEntry;
     localStorage.setItem(CACHE_KEY, JSON.stringify(cacheEntry));
 
-    console.log(
-      `[GitHubPluginRegistry] Total plugins after deduplication: ${deduplicatedPlugins.length}`
-    );
     return deduplicatedPlugins;
   }
 
@@ -168,7 +161,6 @@ export class GitHubPluginRegistry {
       throw new Error(`Plugin not found: ${id}`);
     }
 
-    console.log(`[GitHubPluginRegistry] Downloading plugin: ${plugin.name}`);
     // Add cache-busting parameter to force fresh download
     const url = new URL(plugin.downloadUrl);
     url.searchParams.set('_t', Date.now().toString());
@@ -218,7 +210,6 @@ export class GitHubPluginRegistry {
       throw new Error(`Plugin not found: ${id}`);
     }
 
-    console.log(`[GitHubPluginRegistry] Fetching manifest for: ${plugin.name}`);
     // Add cache-busting parameter to force fresh download
     const url = new URL(plugin.manifestUrl);
     url.searchParams.set('_t', Date.now().toString());
@@ -251,6 +242,7 @@ export class GitHubPluginRegistry {
         if (i === retries - 1) throw error;
 
         const delay = backoff * 2 ** i; // Exponential backoff
+        // eslint-disable-next-line no-console
         console.warn(`[GitHubPluginRegistry] Retry ${i + 1}/${retries} after ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
@@ -265,7 +257,6 @@ export class GitHubPluginRegistry {
   clearCache(): void {
     this.cache = null;
     localStorage.removeItem(CACHE_KEY);
-    console.log('[GitHubPluginRegistry] Cache cleared');
   }
 }
 

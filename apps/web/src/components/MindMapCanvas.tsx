@@ -108,9 +108,7 @@ function MindMapCanvas() {
   // FR: Convertir les nœuds du fichier actif en nœuds ReactFlow
   // EN: Convert active file nodes to ReactFlow nodes
   const convertToReactFlowNodes = useCallback((): Node[] => {
-    // console.warn('convertToReactFlowNodes called');
     if (!activeFile || !activeFile.content || !activeFile.content.nodes) {
-      // console.warn('No nodes in activeFile.content');
       return [];
     }
 
@@ -125,7 +123,6 @@ function MindMapCanvas() {
     const rootNode = content.rootNode || content.nodes?.root;
 
     if (!rootNode) {
-      // console.warn('No root node');
       return [];
     }
 
@@ -401,7 +398,6 @@ function MindMapCanvas() {
 
     fixParentIds(rootNode);
 
-    // console.warn('ReactFlow nodes created:', nodes.length);
     return nodes;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFile, defaultNodeWidth, defaultNodeHeight]);
@@ -409,9 +405,7 @@ function MindMapCanvas() {
   // FR: Convertir les connexions en arêtes ReactFlow
   // EN: Convert connections to ReactFlow edges
   const convertToReactFlowEdges = useCallback((): Edge[] => {
-    // console.warn('convertToReactFlowEdges called');
     if (!activeFile || !activeFile.content || !activeFile.content.nodes) {
-      // console.warn('No nodes for edges');
       return [];
     }
 
@@ -528,7 +522,6 @@ function MindMapCanvas() {
     // EN: Start with root node
     createConnections(rootNode, 0, 0);
 
-    // console.warn('Edges created:', edges.length);
     return edges;
   }, [activeFile]);
 

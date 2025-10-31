@@ -68,12 +68,14 @@ export function WebView({
         setIsReady(true);
         onLoad?.();
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Failed to initialize webview:', error);
         onError?.(error instanceof Error ? error : new Error(String(error)));
       }
     };
 
     const handleError = (event: ErrorEvent) => {
+      // eslint-disable-next-line no-console
       console.error('WebView error:', event);
       onError?.(new Error(event.message));
     };
@@ -121,55 +123,51 @@ export function WebView({
  */
 function setupMessageHandlers(bridge: MessageBridge, pluginId: string): void {
   // Data operations
-  bridge.on('data.read', async ({ path }) => {
-    // TODO: Implement data read
-    console.log(`[${pluginId}] data.read:`, path);
-    return null;
-  });
+  bridge.on(
+    'data.read',
+    async ({ path }) =>
+      // TODO: Implement data read
+      null
+  );
 
   bridge.on('data.write', async ({ path, data }) => {
     // TODO: Implement data write
-    console.log(`[${pluginId}] data.write:`, path, data);
   });
 
   // UI operations
   bridge.on('ui.showPanel', async ({ panelId, options }) => {
     // TODO: Implement show panel
-    console.log(`[${pluginId}] ui.showPanel:`, panelId, options);
   });
 
   bridge.on('ui.showNotification', async ({ message, type }) => {
     // TODO: Implement notification
-    console.log(`[${pluginId}] ui.showNotification:`, message, type);
   });
 
   // Command operations
   bridge.on('command.execute', async ({ commandId, args }) => {
     // TODO: Implement command execution
-    console.log(`[${pluginId}] command.execute:`, commandId, args);
   });
 
   // Theme operations
-  bridge.on('theme.get', async () => {
+  bridge.on('theme.get', async () =>
     // TODO: Implement theme get
-    console.log(`[${pluginId}] theme.get`);
-    return {
+    ({
       id: 'default',
       name: 'Default',
       colors: {},
-    };
-  });
+    })
+  );
 
   // Storage operations
-  bridge.on('storage.get', async ({ key }) => {
-    // TODO: Implement storage get
-    console.log(`[${pluginId}] storage.get:`, key);
-    return null;
-  });
+  bridge.on(
+    'storage.get',
+    async ({ key }) =>
+      // TODO: Implement storage get
+      null
+  );
 
   bridge.on('storage.set', async ({ key, value }) => {
     // TODO: Implement storage set
-    console.log(`[${pluginId}] storage.set:`, key, value);
   });
 }
 

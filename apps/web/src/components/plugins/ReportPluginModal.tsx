@@ -89,9 +89,9 @@ export function ReportPluginModal({
   const getEmailHelpMessage = (): string | null => {
     if (!emailTouched || !email) return null;
 
-    if (email.includes(' ')) return '❌ L\'email ne doit pas contenir d\'espaces';
+    if (email.includes(' ')) return "❌ L'email ne doit pas contenir d'espaces";
     if (email.includes('..')) return '❌ Points consécutifs non autorisés';
-    if (!email.includes('@')) return '❌ L\'email doit contenir un @';
+    if (!email.includes('@')) return "❌ L'email doit contenir un @";
     if (email.split('@').length > 2) return '❌ Un seul @ autorisé';
     if (email.includes('@') && !email.split('@')[1].includes('.')) {
       return '❌ Domaine invalide (exemple: @gmail.com)';

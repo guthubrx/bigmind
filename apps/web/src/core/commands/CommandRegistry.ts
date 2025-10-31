@@ -26,6 +26,7 @@ export class CommandRegistry {
    */
   register(command: Command): () => void {
     if (this.commands.has(command.id)) {
+      // eslint-disable-next-line no-console
       console.warn(`Command ${command.id} already registered, overwriting`);
     }
 
@@ -100,6 +101,7 @@ export class CommandRegistry {
       try {
         listener();
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Error in command registry listener:', error);
       }
     });

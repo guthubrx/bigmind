@@ -168,6 +168,7 @@ export class KeyManager {
 
       return true;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('[KeyManager] Failed to import key pair:', error);
       return false;
     }

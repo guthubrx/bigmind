@@ -153,7 +153,6 @@ export class MigrationManager {
       for (const step of path) {
         const migrationKey = `${step.from}->${step.to}`;
         // eslint-disable-next-line no-console
-        // console.log(`[MigrationManager] Executing migration: ${migrationKey}`);
 
         // eslint-disable-next-line no-await-in-loop
         currentData = await step.migrator(currentData);
@@ -167,6 +166,7 @@ export class MigrationManager {
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
+      // eslint-disable-next-line no-console
       console.error('[MigrationManager] Migration failed:', errorMessage);
 
       return {

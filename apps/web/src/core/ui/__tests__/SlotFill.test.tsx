@@ -51,10 +51,10 @@ describe('Slot/Fill System', () => {
 
       await waitFor(() => {
         const divs = Array.from(container.querySelectorAll('div'));
-        const texts = divs.map((el) => el.textContent);
+        const texts = divs.map(el => el.textContent);
 
-        const firstIndex = texts.findIndex((t) => t === 'First');
-        const secondIndex = texts.findIndex((t) => t === 'Second');
+        const firstIndex = texts.findIndex(t => t === 'First');
+        const secondIndex = texts.findIndex(t => t === 'Second');
 
         expect(firstIndex).toBeGreaterThan(-1);
         expect(secondIndex).toBeGreaterThan(-1);

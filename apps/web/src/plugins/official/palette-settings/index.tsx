@@ -23,19 +23,14 @@ import { useOpenFiles } from '../../../hooks/useOpenFiles';
  * EN: Settings section component for palettes
  */
 function PaletteSettingsSection() {
-  console.log('[PaletteSettingsSection] Rendering');
   const allPalettes = getAllPalettes();
-  console.log('[PaletteSettingsSection] Palettes:', allPalettes.length);
   const defaultNodePaletteId = useAppSettings(s => s.defaultNodePaletteId);
   const setDefaultNodePalette = useAppSettings(s => s.setDefaultNodePalette);
   const defaultTagPaletteId = useAppSettings(s => s.defaultTagPaletteId);
   const setDefaultTagPalette = useAppSettings(s => s.setDefaultTagPalette);
 
-  console.log('[PaletteSettingsSection] Rendering with', allPalettes.length, 'palettes');
-
   // Si aucune palette n'est disponible, afficher un message
   if (allPalettes.length === 0) {
-    console.log('[PaletteSettingsSection] No palettes available, showing message');
     const messageJsx = (
       <>
         <hr className="settings-separator" />
@@ -48,11 +43,9 @@ function PaletteSettingsSection() {
         </div>
       </>
     );
-    console.log('[PaletteSettingsSection] Returning message JSX:', messageJsx);
     return messageJsx;
   }
 
-  console.log('[PaletteSettingsSection] Palettes available, showing selectors');
   return (
     <>
       {/* FR: Séparateur */}
@@ -172,13 +165,6 @@ function groupColorsByHue(colors: string[]): string[] {
     return groupData[0].hex;
   });
 
-  console.log(
-    '[groupColorsByHue] Grouped',
-    colors.length,
-    'colors into',
-    representative.length,
-    'groups'
-  );
   return representative;
 }
 
@@ -199,7 +185,6 @@ function extractMapColors(activeFile: any): string[] {
   });
 
   const uniqueColors = Array.from(colors);
-  console.log('[extractMapColors] Found', uniqueColors.length, 'unique colors');
 
   // Regrouper par teinte pour obtenir les couleurs de base
   return groupColorsByHue(uniqueColors);
@@ -214,9 +199,7 @@ interface PaletteMapSettingsSectionProps {
 }
 
 function PaletteMapSettingsSection({ activeFile }: PaletteMapSettingsSectionProps) {
-  console.log('[PaletteMapSettingsSection] Rendering for file:', activeFile?.name);
   const allPalettes = getAllPalettes();
-  console.log('[PaletteMapSettingsSection] Palettes:', allPalettes.length);
   const defaultNodePaletteId = useAppSettings(s => s.defaultNodePaletteId);
   const defaultTagPaletteId = useAppSettings(s => s.defaultTagPaletteId);
   const updateNodePalette = useOpenFiles(state => state.updateActiveFileNodePalette);
@@ -226,11 +209,8 @@ function PaletteMapSettingsSection({ activeFile }: PaletteMapSettingsSectionProp
   // EN: Extract and group map colors
   const mapColors = React.useMemo(() => {
     const colors = extractMapColors(activeFile);
-    console.log('[PaletteMapSettingsSection] Extracted palette:', colors.length, 'colors');
     return colors;
   }, [activeFile]);
-
-  console.log('[PaletteMapSettingsSection] Map colors:', mapColors.length);
 
   // FR: Créer une palette dynamique "Palette de la carte" si des couleurs existent
   // EN: Create dynamic "Map Palette" if colors exist
@@ -247,11 +227,8 @@ function PaletteMapSettingsSection({ activeFile }: PaletteMapSettingsSectionProp
     ];
   }
 
-  console.log('[PaletteMapSettingsSection] Rendering with', availablePalettes.length, 'palettes');
-
   // Si aucune palette n'est disponible (même pas de couleurs dans la carte), afficher un message
   if (availablePalettes.length === 0) {
-    console.log('[PaletteMapSettingsSection] No palettes available');
     return (
       <div className="map-settings-section">
         <h4 className="map-settings-section-title">Palettes de couleurs</h4>
@@ -403,8 +380,6 @@ Plus besoin de naviguer dans des menus complexes : définissez vos palettes par 
 };
 
 export async function activate(_context: IPluginContext): Promise<void> {
-  console.log('🎨 [Palette Settings] Plugin activé');
-
   // Register Settings section (global defaults)
   registerSettingsSection({
     id: 'palette-settings-section',
@@ -413,7 +388,6 @@ export async function activate(_context: IPluginContext): Promise<void> {
     position: 50, // After theme/minimap settings
     component: PaletteSettingsSection,
   });
-  console.log('🎨 [Palette Settings] Settings section registered');
 
   // Register MapSettings section (map-specific palettes)
   registerMapSettingsSection({
@@ -422,17 +396,10 @@ export async function activate(_context: IPluginContext): Promise<void> {
     position: 10, // Before node style settings
     component: PaletteMapSettingsSection,
   });
-  console.log('🎨 [Palette Settings] MapSettings section registered');
-
-  console.log('🎨 [Palette Settings] Sections injectées dans Settings et MapSettings');
 }
 
 export async function deactivate(): Promise<void> {
-  // console.log('🎨 [Palette Settings] Plugin désactivé');
-
   // Unregister settings sections
   unregisterSettingsSection('palette-settings-section');
   unregisterMapSettingsSection('palette-map-settings-section');
-
-  // console.log('🎨 [Palette Settings] Sections retirées de Settings et MapSettings');
 }

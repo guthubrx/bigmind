@@ -36,6 +36,7 @@ export function CloneInstructionsModal({
       setCopiedFile(fileName);
       setTimeout(() => setCopiedFile(null), 2000);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to copy:', error);
     }
   };
@@ -46,6 +47,7 @@ export function CloneInstructionsModal({
       setCopiedPath(true);
       setTimeout(() => setCopiedPath(false), 2000);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to copy path:', error);
     }
   };

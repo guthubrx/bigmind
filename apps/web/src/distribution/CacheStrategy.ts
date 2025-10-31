@@ -23,10 +23,12 @@ export class ImmutableCacheStrategy implements CacheStrategy {
 
   async onCacheDelete(key: string): Promise<void> {
     // Rarely deleted - log for monitoring
+    // eslint-disable-next-line no-console
     console.info(`[ImmutableCache] Deleted: ${key}`);
   }
 
   async onCacheClear(): Promise<void> {
+    // eslint-disable-next-line no-console
     console.warn('[ImmutableCache] Full cache clear - unexpected!');
   }
 
@@ -55,6 +57,7 @@ export class MetadataCacheStrategy implements CacheStrategy {
   }
 
   async onCacheClear(): Promise<void> {
+    // eslint-disable-next-line no-console
     console.info('[MetadataCache] Cache cleared');
   }
 
@@ -63,6 +66,7 @@ export class MetadataCacheStrategy implements CacheStrategy {
       try {
         await this.refreshCallback(key);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(`[MetadataCache] Revalidation failed for ${key}:`, error);
       }
     }
@@ -104,6 +108,7 @@ export class StaleWhileRevalidateStrategy implements CacheStrategy {
     try {
       await this.revalidationCallback(key);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error(`[SWR] Revalidation failed for ${key}:`, error);
     } finally {
       this.pendingRevalidations.delete(key);

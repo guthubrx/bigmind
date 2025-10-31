@@ -9,7 +9,11 @@ import type { PluginManifest } from '@cartae/plugin-system';
 
 describe('DependencyResolver', () => {
   // Helper to create manifest
-  const createManifest = (id: string, version: string, deps: Record<string, string> = {}): PluginManifest => ({
+  const createManifest = (
+    id: string,
+    version: string,
+    deps: Record<string, string> = {}
+  ): PluginManifest => ({
     id,
     name: id,
     version,
@@ -37,9 +41,7 @@ describe('DependencyResolver', () => {
       const manifest = createManifest('plugin-a', '1.0.0', { 'plugin-b': '1.0.0' });
 
       const depManifest = createManifest('plugin-b', '1.0.0');
-      const available = new Map([
-        ['plugin-b', [depManifest]],
-      ]);
+      const available = new Map([['plugin-b', [depManifest]]]);
 
       const result = await resolver.resolve(manifest, available);
 
@@ -79,11 +81,14 @@ describe('DependencyResolver', () => {
       const manifest = createManifest('plugin-a', '1.0.0', { 'plugin-b': '^1.0.0' });
 
       const available = new Map([
-        ['plugin-b', [
-          createManifest('plugin-b', '1.0.0'),
-          createManifest('plugin-b', '1.1.0'),
-          createManifest('plugin-b', '1.2.0'),
-        ]],
+        [
+          'plugin-b',
+          [
+            createManifest('plugin-b', '1.0.0'),
+            createManifest('plugin-b', '1.1.0'),
+            createManifest('plugin-b', '1.2.0'),
+          ],
+        ],
       ]);
 
       const result = await resolver.resolve(manifest, available);
@@ -100,10 +105,7 @@ describe('DependencyResolver', () => {
       const manifest = createManifest('plugin-a', '1.0.0', { 'plugin-b': '^1.0.0' });
 
       const available = new Map([
-        ['plugin-b', [
-          createManifest('plugin-b', '1.0.0'),
-          createManifest('plugin-b', '1.2.0'),
-        ]],
+        ['plugin-b', [createManifest('plugin-b', '1.0.0'), createManifest('plugin-b', '1.2.0')]],
       ]);
 
       const result = await resolver.resolve(manifest, available);
@@ -116,11 +118,14 @@ describe('DependencyResolver', () => {
       const manifest = createManifest('plugin-a', '1.0.0', { 'plugin-b': '^1.0.0' });
 
       const available = new Map([
-        ['plugin-b', [
-          createManifest('plugin-b', '1.0.0'),
-          createManifest('plugin-b', '1.1.0-alpha.1'),
-          createManifest('plugin-b', '1.0.5'),
-        ]],
+        [
+          'plugin-b',
+          [
+            createManifest('plugin-b', '1.0.0'),
+            createManifest('plugin-b', '1.1.0-alpha.1'),
+            createManifest('plugin-b', '1.0.5'),
+          ],
+        ],
       ]);
 
       const result = await resolver.resolve(manifest, available);
@@ -133,10 +138,10 @@ describe('DependencyResolver', () => {
       const manifest = createManifest('plugin-a', '1.0.0', { 'plugin-b': '^1.0.0' });
 
       const available = new Map([
-        ['plugin-b', [
-          createManifest('plugin-b', '1.0.0'),
-          createManifest('plugin-b', '1.1.0-alpha.1'),
-        ]],
+        [
+          'plugin-b',
+          [createManifest('plugin-b', '1.0.0'), createManifest('plugin-b', '1.1.0-alpha.1')],
+        ],
       ]);
 
       const result = await resolver.resolve(manifest, available);
@@ -229,9 +234,7 @@ describe('DependencyResolver', () => {
       const resolver = new DependencyResolver();
       const manifest = createManifest('plugin-a', '1.0.0', { 'plugin-b': '^2.0.0' });
 
-      const available = new Map([
-        ['plugin-b', [createManifest('plugin-b', '1.0.0')]],
-      ]);
+      const available = new Map([['plugin-b', [createManifest('plugin-b', '1.0.0')]]]);
 
       await expect(resolver.resolve(manifest, available)).rejects.toThrow('No compatible version');
     });
@@ -243,10 +246,7 @@ describe('DependencyResolver', () => {
       const manifest = createManifest('plugin-a', '1.0.0', { 'plugin-b': '^1.0.0' });
 
       const available = new Map([
-        ['plugin-b', [
-          createManifest('plugin-b', '1.0.0'),
-          createManifest('plugin-b', '1.2.0'),
-        ]],
+        ['plugin-b', [createManifest('plugin-b', '1.0.0'), createManifest('plugin-b', '1.2.0')]],
       ]);
 
       const result = await resolver.resolve(manifest, available);

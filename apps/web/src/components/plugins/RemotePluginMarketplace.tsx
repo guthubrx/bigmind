@@ -29,6 +29,7 @@ export function RemotePluginMarketplace() {
 
       showSuccess(`Plugin ${pluginId} installé et activé avec succès`);
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error(`Failed to install ${pluginId}:`, err);
       setError((err as Error).message);
       showError(`Installation échouée: ${(err as Error).message}`);
@@ -49,6 +50,7 @@ export function RemotePluginMarketplace() {
 
       showSuccess(`Plugin ${pluginId} désinstallé avec succès`);
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error(`Failed to uninstall ${pluginId}:`, err);
       showError(`Désinstallation échouée: ${(err as Error).message}`);
     }
@@ -57,7 +59,6 @@ export function RemotePluginMarketplace() {
   const handleViewDetails = (pluginId: string) => {
     // TODO: Open plugin detail modal
     // eslint-disable-next-line no-console
-    console.log(`View details for ${pluginId}`);
   };
 
   return (

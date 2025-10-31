@@ -24,6 +24,7 @@ export function RatingRepliesList({ ratingId, refreshTrigger }: RatingRepliesLis
         const data = await getRatingReplies(ratingId);
         setReplies(data);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('[RatingRepliesList] Error:', error);
       } finally {
         setIsLoading(false);

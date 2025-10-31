@@ -853,21 +853,13 @@ Chaque palette a été conçue pour maximiser la lisibilité et l'impact visuel 
 };
 
 export async function activate(_context: IPluginContext): Promise<void> {
-  // console.log('🎨 [Color Palettes Collection] Plugin activé');
-
   // Register all color palettes
   registerPalettes(COLOR_PALETTES_COLLECTION);
-
-  // console.log(`🎨 [Color Palettes Collection] ${COLOR_PALETTES_COLLECTION.length} palettes enregistrées`);
 }
 
 export async function deactivate(): Promise<void> {
-  // console.log('🎨 [Color Palettes Collection] Plugin désactivé');
-
   // Unregister all palettes
   COLOR_PALETTES_COLLECTION.forEach(palette => {
     unregisterPalette(palette.id);
   });
-
-  // console.log('🎨 [Color Palettes Collection] Palettes désenregistrées');
 }

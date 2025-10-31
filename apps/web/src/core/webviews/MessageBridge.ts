@@ -36,6 +36,7 @@ export class MessageBridge {
 
       // Validate message structure
       if (!validateMessage(message)) {
+        // eslint-disable-next-line no-console
         console.error('Invalid message received:', message);
         return;
       }

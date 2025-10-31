@@ -239,7 +239,6 @@ function TagLayersPanelRCT() {
         draggedTag.parentIds && draggedTag.parentIds.length > 0 ? draggedTag.parentIds[0] : null;
 
       // eslint-disable-next-line no-console
-      // console.log(
       //   '[Arborist] Move:',
       //   draggedTag.label,
       //   'from parent:',
@@ -254,14 +253,12 @@ function TagLayersPanelRCT() {
       // EN: If parent changes → create parent-child relationship
       if (currentParentId !== parentId) {
         // eslint-disable-next-line no-console
-        // console.log('[Arborist] Parent change detected, updating relations...');
 
         // FR: Enlever TOUS les anciens parents
         // EN: Remove ALL old parents
         if (draggedTag.parentIds && draggedTag.parentIds.length > 0) {
           draggedTag.parentIds.forEach(oldParentId => {
             // eslint-disable-next-line no-console
-            // console.log('[Arborist] Removing parent:', oldParentId);
             removeParent(draggedId, oldParentId);
           });
         }
@@ -270,17 +267,14 @@ function TagLayersPanelRCT() {
         // EN: Add to new parent (if not null = root)
         if (parentId) {
           // eslint-disable-next-line no-console
-          // console.log('[Arborist] Adding new parent:', parentId);
           addParent(draggedId, parentId);
         } else {
           // eslint-disable-next-line no-console
-          // console.log('[Arborist] Moving to root (no parent)');
         }
       } else {
         // FR: Même parent → réordonner les enfants
         // EN: Same parent → reorder children
         // eslint-disable-next-line no-console
-        // console.log('[Arborist] Same parent, reordering to index:', index);
         reorderChildren(parentId, draggedId, index);
       }
     },

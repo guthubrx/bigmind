@@ -204,10 +204,7 @@ describe('PluginDevService', () => {
         expect.stringContaining('vscode://file'),
         '_blank'
       );
-      expect(mockWindowOpen).toHaveBeenCalledWith(
-        expect.stringContaining(mockPluginId),
-        '_blank'
-      );
+      expect(mockWindowOpen).toHaveBeenCalledWith(expect.stringContaining(mockPluginId), '_blank');
     });
 
     it('should construct path with community folder', () => {
@@ -270,8 +267,8 @@ describe('PluginDevService', () => {
 
       expect(packageJsonStr).toBeTruthy();
       // Extract JSON from instructions (it's the next element after the "package.json" instruction)
-      const instructionIndex = data.instructions.findIndex((inst: string) =>
-        inst.includes('Créez') && inst.includes('package.json')
+      const instructionIndex = data.instructions.findIndex(
+        (inst: string) => inst.includes('Créez') && inst.includes('package.json')
       );
       const packageJson = JSON.parse(data.instructions[instructionIndex + 1]);
 
@@ -294,8 +291,8 @@ describe('PluginDevService', () => {
       const stored = sessionStorage.getItem(`clone-instructions-${mockPluginId}`);
       const data = JSON.parse(stored!);
 
-      const instructionIndex = data.instructions.findIndex((inst: string) =>
-        inst.includes('Créez') && inst.includes('tsconfig.json')
+      const instructionIndex = data.instructions.findIndex(
+        (inst: string) => inst.includes('Créez') && inst.includes('tsconfig.json')
       );
       const tsConfig = JSON.parse(data.instructions[instructionIndex + 1]);
 
@@ -317,8 +314,8 @@ describe('PluginDevService', () => {
       const stored = sessionStorage.getItem(`clone-instructions-${mockPluginId}`);
       const data = JSON.parse(stored!);
 
-      const instructionIndex = data.instructions.findIndex((inst: string) =>
-        inst.includes('Créez') && inst.includes('vite.config.ts')
+      const instructionIndex = data.instructions.findIndex(
+        (inst: string) => inst.includes('Créez') && inst.includes('vite.config.ts')
       );
       const viteConfig = data.instructions[instructionIndex + 1];
 

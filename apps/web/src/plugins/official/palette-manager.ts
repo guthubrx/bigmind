@@ -139,7 +139,6 @@ let unregisterStyleComputer: (() => void) | null = null;
 
 export async function activate(context: IPluginContext): Promise<void> {
   // eslint-disable-next-line no-console
-  // console.log('🎨 [Palette Manager] Plugin activé');
 
   // FR: Enregistrer le calculateur de styles pour les nœuds
   // EN: Register style computer for nodes
@@ -207,6 +206,7 @@ export async function activate(context: IPluginContext): Promise<void> {
           textColor: getOptimalTextColor(autoColor),
         };
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('[Palette Manager] Error computing node color:', error);
         return undefined;
       }
@@ -233,7 +233,6 @@ export async function activate(context: IPluginContext): Promise<void> {
       throw new Error(`Palette "${paletteId}" not found`);
     }
     // eslint-disable-next-line no-console
-    // console.log(`🎨 [Palette Manager] Palette "${palette.name}" selected`);
     // TODO: Save palette selection to plugin storage
     return palette;
   });
@@ -241,20 +240,16 @@ export async function activate(context: IPluginContext): Promise<void> {
   // Listen to palette changes
   context.hooks.registerAction('palette.changed', async (_data: any) => {
     // eslint-disable-next-line no-console
-    // console.log(`🎨 [Palette Manager] Palette changed:`, _data);
     // TODO: Update colors when palette changes
   });
 
   // const paletteCount = getAllPalettes().length;
   // eslint-disable-next-line no-console
-  // console.log(`🎨 [Palette Manager] ${paletteCount} palettes disponibles`);
   // eslint-disable-next-line no-console
-  // console.log('🎨 [Palette Manager] Style computer registered');
 }
 
 export async function deactivate(): Promise<void> {
   // eslint-disable-next-line no-console
-  // console.log('🎨 [Palette Manager] Plugin désactivé');
 
   // FR: Désenregistrer le calculateur de styles
   // EN: Unregister style computer

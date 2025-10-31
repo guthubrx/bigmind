@@ -55,6 +55,7 @@ export function loadOverlayFromLocalStorage(filename: string): {
       tags: overlay.tags || [],
     };
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.error('[overlayLoader] Error loading overlay:', e);
     return { overlay: null, tags: [] };
   }
@@ -101,6 +102,7 @@ export async function loadOverlayFromZip(
       tags: data.tags || [],
     };
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.error('[overlayLoader] Error loading overlay from ZIP:', e);
     return { overlay: null, tags: [] };
   }

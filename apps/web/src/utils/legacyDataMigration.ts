@@ -26,7 +26,6 @@ async function migratePalettesData(fileData: ExtendedMindMapData): Promise<boole
     if (hasNodePalette) {
       await storage.set('nodePaletteId', fileData.nodePaletteId);
       // eslint-disable-next-line no-console
-      // console.log(
       //   `[Migration] Migrated nodePaletteId: ${fileData.nodePaletteId} -> plugin storage`
       // );
       delete fileData.nodePaletteId;
@@ -36,7 +35,6 @@ async function migratePalettesData(fileData: ExtendedMindMapData): Promise<boole
     if (hasTagPalette) {
       await storage.set('tagPaletteId', fileData.tagPaletteId);
       // eslint-disable-next-line no-console
-      // console.log(`[Migration] Migrated tagPaletteId: ${fileData.tagPaletteId} -> plugin storage`);
       delete fileData.tagPaletteId;
     }
 
@@ -45,6 +43,7 @@ async function migratePalettesData(fileData: ExtendedMindMapData): Promise<boole
 
     return true;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('[Migration] Failed to migrate palette data:', error);
     return false;
   }
@@ -71,13 +70,13 @@ export async function migrateAllLegacyData(fileData: ExtendedMindMapData): Promi
         anyMigrated = true;
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('[Migration] Migration failed:', error);
     }
   }
 
   if (anyMigrated) {
     // eslint-disable-next-line no-console
-    // console.log('[Migration] Legacy data migration completed');
   }
 
   return anyMigrated;

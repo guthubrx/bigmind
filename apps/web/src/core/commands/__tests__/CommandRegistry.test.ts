@@ -154,7 +154,7 @@ describe('CommandRegistry', () => {
 
       const fileCommands = registry.getByCategory('File');
       expect(fileCommands).toHaveLength(2);
-      expect(fileCommands.every((c) => c.category === 'File')).toBe(true);
+      expect(fileCommands.every(c => c.category === 'File')).toBe(true);
     });
   });
 
@@ -183,7 +183,7 @@ describe('CommandRegistry', () => {
 
       const plugin1Commands = registry.getByPlugin('plugin1');
       expect(plugin1Commands).toHaveLength(2);
-      expect(plugin1Commands.every((c) => c.pluginId === 'plugin1')).toBe(true);
+      expect(plugin1Commands.every(c => c.pluginId === 'plugin1')).toBe(true);
     });
   });
 

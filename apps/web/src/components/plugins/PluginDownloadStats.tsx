@@ -5,7 +5,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { Download } from 'lucide-react';
-import { getPluginDownloadStats, type PluginDownloadStats as Stats } from '../../services/supabaseClient';
+import {
+  getPluginDownloadStats,
+  type PluginDownloadStats as Stats,
+} from '../../services/supabaseClient';
 import './PluginDownloadStats.css';
 
 export interface PluginDownloadStatsProps {
@@ -35,6 +38,7 @@ export function PluginDownloadStats({
         const data = await getPluginDownloadStats(pluginId);
         setStats(data);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('[PluginDownloadStats] Error fetching stats:', error);
       } finally {
         setIsLoading(false);
