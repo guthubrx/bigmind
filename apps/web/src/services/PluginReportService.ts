@@ -8,7 +8,13 @@ import { supabase } from './supabaseClient';
 /**
  * Report category types
  */
-export type ReportCategory = 'malware' | 'spam' | 'inappropriate' | 'broken' | 'copyright' | 'other';
+export type ReportCategory =
+  | 'malware'
+  | 'spam'
+  | 'inappropriate'
+  | 'broken'
+  | 'copyright'
+  | 'other';
 
 /**
  * Report status types
@@ -90,7 +96,7 @@ export async function submitPluginReport(
   console.log('[PluginReportService] Submitting report:', {
     pluginId,
     category,
-    description: description.substring(0, 50) + '...',
+    description: `${description.substring(0, 50)}...`,
     reporter_ip,
   });
 
@@ -182,10 +188,7 @@ export async function getReportCounts(pluginId: string): Promise<ReportCounts> {
  * Admin: Get all reports with optional status filter
  */
 export async function getAllReports(status?: ReportStatus): Promise<PluginReport[]> {
-  let query = supabase
-    .from('plugin_reports')
-    .select('*')
-    .order('created_at', { ascending: false });
+  let query = supabase.from('plugin_reports').select('*').order('created_at', { ascending: false });
 
   if (status) {
     query = query.eq('status', status);
@@ -226,10 +229,7 @@ export async function updateReportStatus(
     updateData.admin_note = admin_note;
   }
 
-  const { error } = await supabase
-    .from('plugin_reports')
-    .update(updateData)
-    .eq('id', reportId);
+  const { error } = await supabase.from('plugin_reports').update(updateData).eq('id', reportId);
 
   if (error) {
     console.error('[PluginReportService] Error updating report:', error);
@@ -246,10 +246,7 @@ export async function updateReportStatus(
 export async function deleteReport(reportId: string): Promise<boolean> {
   console.log('[PluginReportService] Deleting report:', reportId);
 
-  const { error } = await supabase
-    .from('plugin_reports')
-    .delete()
-    .eq('id', reportId);
+  const { error } = await supabase.from('plugin_reports').delete().eq('id', reportId);
 
   if (error) {
     console.error('[PluginReportService] Error deleting report:', error);
@@ -282,7 +279,7 @@ async function checkRateLimit(pluginId: string, ip: string): Promise<boolean> {
   const submissionCount = count || 0;
   console.log('[PluginReportService] Rate limit check:', {
     pluginId,
-    ip: ip.substring(0, 10) + '...',
+    ip: `${ip.substring(0, 10)}...`,
     submissionCount,
     limit: 3,
   });

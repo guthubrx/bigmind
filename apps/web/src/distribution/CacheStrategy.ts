@@ -75,6 +75,7 @@ export class MetadataCacheStrategy implements CacheStrategy {
  */
 export class StaleWhileRevalidateStrategy implements CacheStrategy {
   private revalidationCallback: (key: string) => Promise<unknown>;
+
   private pendingRevalidations = new Set<string>();
 
   constructor(revalidationCallback: (key: string) => Promise<unknown>) {

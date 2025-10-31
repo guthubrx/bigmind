@@ -46,12 +46,7 @@ export function Toast({ message, type, duration = 3000, onClose }: ToastProps) {
       <span className="toast__icon">{getIcon()}</span>
       <span className="toast__message">{message}</span>
       {onClose && type !== 'loading' && (
-        <button
-          type="button"
-          className="toast__close"
-          onClick={onClose}
-          aria-label="Fermer"
-        >
+        <button type="button" className="toast__close" onClick={onClose} aria-label="Fermer">
           ×
         </button>
       )}

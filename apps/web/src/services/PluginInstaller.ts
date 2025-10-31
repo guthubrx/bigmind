@@ -116,11 +116,7 @@ function createPluginFromCode(code: string, manifest: PluginManifest): Plugin {
     // For UMD format, we need to provide both 'exports' and 'module' in the scope
     // The UMD wrapper checks: typeof exports=="object"&&typeof module<"u"
     // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-    const moduleFactory = new Function(
-      'exports',
-      'module',
-      `${code}\n; return exports;`
-    );
+    const moduleFactory = new Function('exports', 'module', `${code}\n; return exports;`);
 
     const exports = {};
     const module = { exports };

@@ -123,9 +123,7 @@ export function PublishInstructionsModal({
               </div>
 
               {step.description && (
-                <p className="publish-instructions-modal__step-description">
-                  {step.description}
-                </p>
+                <p className="publish-instructions-modal__step-description">{step.description}</p>
               )}
 
               {step.commands && step.commands.length > 0 && (
@@ -190,11 +188,7 @@ export function PublishInstructionsModal({
           <p className="publish-instructions-modal__footer-note">
             Une fois votre Pull Request mergée, votre plugin sera disponible dans le marketplace !
           </p>
-          <button
-            type="button"
-            className="publish-instructions-modal__done-btn"
-            onClick={onClose}
-          >
+          <button type="button" className="publish-instructions-modal__done-btn" onClick={onClose}>
             Compris
           </button>
         </div>

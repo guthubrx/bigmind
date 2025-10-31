@@ -29,7 +29,9 @@ export interface PublicKeyInfo {
  */
 export class KeyManager {
   private static instance: KeyManager;
+
   private keys: Map<string, KeyPair> = new Map();
+
   private publicKeys: Map<string, PublicKeyInfo> = new Map();
 
   private constructor() {

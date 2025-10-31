@@ -38,9 +38,10 @@ export function applyOverlayToContent(content: AdaptedContent, overlay: OverlayD
  * Load overlay from localStorage for a specific file
  * Returns overlay data and tags if present
  */
-export function loadOverlayFromLocalStorage(
-  filename: string
-): { overlay: OverlayData | null; tags: any[] } {
+export function loadOverlayFromLocalStorage(filename: string): {
+  overlay: OverlayData | null;
+  tags: any[];
+} {
   try {
     const key = `bigmind_overlay_${filename}`;
     const overlay = loadObject<OverlayData | null>(key, null);

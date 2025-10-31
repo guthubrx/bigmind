@@ -75,10 +75,12 @@ export class Signer {
   /**
    * Sign a plugin package (file content)
    */
-  async signPackage(packageContent: Uint8Array | ArrayBuffer, keyId: string): Promise<SignatureResult> {
-    const content = packageContent instanceof ArrayBuffer
-      ? new Uint8Array(packageContent)
-      : packageContent;
+  async signPackage(
+    packageContent: Uint8Array | ArrayBuffer,
+    keyId: string
+  ): Promise<SignatureResult> {
+    const content =
+      packageContent instanceof ArrayBuffer ? new Uint8Array(packageContent) : packageContent;
 
     return this.sign(content, {
       keyId,
@@ -106,10 +108,7 @@ export class Signer {
   /**
    * Create a detached signature (signature in separate file)
    */
-  async createDetachedSignature(
-    content: string | Uint8Array,
-    keyId: string
-  ): Promise<string> {
+  async createDetachedSignature(content: string | Uint8Array, keyId: string): Promise<string> {
     const result = await this.sign(content, { keyId });
 
     // Return signature file content (JSON)

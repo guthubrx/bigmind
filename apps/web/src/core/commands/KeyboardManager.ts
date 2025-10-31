@@ -25,9 +25,13 @@ export interface ShortcutConfig {
 
 class KeyboardManager {
   private static instance: KeyboardManager;
+
   private platform: Platform;
+
   private shortcuts = new Map<string, string>(); // normalized shortcut -> commandId
+
   private enabled = true;
+
   private contextStack: CommandContext[] = [];
 
   private constructor() {
@@ -68,11 +72,7 @@ class KeyboardManager {
 
     // Don't intercept if typing in input/textarea
     const target = event.target as HTMLElement;
-    if (
-      target.tagName === 'INPUT' ||
-      target.tagName === 'TEXTAREA' ||
-      target.isContentEditable
-    ) {
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
       // Allow some common shortcuts even in inputs
       const allowedInInputs = ['Escape', 'F1', 'F2', 'F3'];
       if (!allowedInInputs.includes(event.key)) {
@@ -119,7 +119,9 @@ class KeyboardManager {
    */
   registerShortcut(commandId: string, shortcut: string | ShortcutConfig): void {
     const normalized =
-      typeof shortcut === 'string' ? this.parseShortcut(shortcut) : this.normalizeShortcut(shortcut);
+      typeof shortcut === 'string'
+        ? this.parseShortcut(shortcut)
+        : this.normalizeShortcut(shortcut);
 
     // Check for conflicts
     const existing = this.shortcuts.get(normalized);
@@ -137,7 +139,9 @@ class KeyboardManager {
    */
   unregisterShortcut(shortcut: string | ShortcutConfig): void {
     const normalized =
-      typeof shortcut === 'string' ? this.parseShortcut(shortcut) : this.normalizeShortcut(shortcut);
+      typeof shortcut === 'string'
+        ? this.parseShortcut(shortcut)
+        : this.normalizeShortcut(shortcut);
 
     this.shortcuts.delete(normalized);
   }
@@ -146,7 +150,7 @@ class KeyboardManager {
    * Parse shortcut string (e.g., "Cmd+K", "Ctrl+Shift+P")
    */
   private parseShortcut(shortcut: string): string {
-    const parts = shortcut.split('+').map((p) => p.trim());
+    const parts = shortcut.split('+').map(p => p.trim());
     const config: ShortcutConfig = { key: '' };
 
     for (const part of parts) {
@@ -181,7 +185,7 @@ class KeyboardManager {
     if (config.meta) parts.push('Meta');
 
     // Normalize key
-    let key = config.key;
+    let { key } = config;
     if (key.length === 1) {
       key = key.toUpperCase();
     }
@@ -251,9 +255,7 @@ class KeyboardManager {
 
     for (const command of commands) {
       if (command.shortcut) {
-        const shortcuts = Array.isArray(command.shortcut)
-          ? command.shortcut
-          : [command.shortcut];
+        const shortcuts = Array.isArray(command.shortcut) ? command.shortcut : [command.shortcut];
 
         for (const shortcut of shortcuts) {
           this.registerShortcut(command.id, shortcut);

@@ -65,7 +65,7 @@ export function PluginRatingsDisplay({ pluginId, refreshTrigger }: PluginRatings
           table: 'plugin_ratings',
           filter: `plugin_id=eq.${pluginId}`,
         },
-        (payload) => {
+        payload => {
           const newRating = payload.new as PluginRating;
           // Add new rating to the beginning of the list
           setRatings(prev => [newRating, ...prev]);
@@ -75,7 +75,9 @@ export function PluginRatingsDisplay({ pluginId, refreshTrigger }: PluginRatings
             return {
               ...prev,
               totalRatings: prev.totalRatings + 1,
-              averageRating: (prev.averageRating * prev.totalRatings + newRating.rating) / (prev.totalRatings + 1),
+              averageRating:
+                (prev.averageRating * prev.totalRatings + newRating.rating) /
+                (prev.totalRatings + 1),
             };
           });
         }

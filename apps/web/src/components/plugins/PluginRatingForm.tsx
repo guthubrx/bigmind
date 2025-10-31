@@ -94,7 +94,9 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
       {/* Compact Header */}
       <div className="plugin-rating-form__compact-header">
         <div>
-          <div className="plugin-rating-form__label" role="heading" aria-level={3}>Note</div>
+          <div className="plugin-rating-form__label" role="heading" aria-level={3}>
+            Note
+          </div>
           <div className="plugin-rating-form__stars">
             {[1, 2, 3, 4, 5].map(star => (
               <button
@@ -118,7 +120,9 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
       {/* Compact Fields Row */}
       <div className="plugin-rating-form__compact-row">
         <div className="plugin-rating-form__field plugin-rating-form__field--inline">
-          <label htmlFor="userName" className="plugin-rating-form__label">Votre nom</label>
+          <label htmlFor="userName" className="plugin-rating-form__label">
+            Votre nom
+          </label>
           <input
             type="text"
             id="userName"
@@ -131,7 +135,9 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
         </div>
 
         <div className="plugin-rating-form__field plugin-rating-form__field--inline">
-          <label htmlFor="email" className="plugin-rating-form__label">Email (optionnel)</label>
+          <label htmlFor="email" className="plugin-rating-form__label">
+            Email (optionnel)
+          </label>
           <input
             type="email"
             id="email"
@@ -146,7 +152,9 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
 
       {/* Optional Comment */}
       <div className="plugin-rating-form__field">
-        <label htmlFor="comment" className="plugin-rating-form__label">Votre avis (optionnel)</label>
+        <label htmlFor="comment" className="plugin-rating-form__label">
+          Votre avis (optionnel)
+        </label>
         <textarea
           id="comment"
           className="plugin-rating-form__textarea"

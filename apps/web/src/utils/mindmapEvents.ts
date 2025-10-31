@@ -138,10 +138,7 @@ export function emitViewportChanged(data: { x: number; y: number; zoom: number }
 /**
  * Emit a palette changed event
  */
-export function emitPaletteChanged(data: {
-  type: 'node' | 'tag';
-  paletteId: string;
-}): void {
+export function emitPaletteChanged(data: { type: 'node' | 'tag'; paletteId: string }): void {
   pluginSystem.hookSystem.doAction('palette.changed', data).catch(error => {
     console.error('[events] Error triggering palette.changed:', error);
   });

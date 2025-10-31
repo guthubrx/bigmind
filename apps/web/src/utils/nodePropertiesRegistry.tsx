@@ -67,8 +67,9 @@ export function unregisterNodePropertiesTab(tabId: string): void {
  * EN: Get all tabs sorted by position
  */
 export function getNodePropertiesTabs(): NodePropertiesTab[] {
-  return Array.from(nodePropertiesTabsRegistry.values())
-    .sort((a, b) => (a.position || 100) - (b.position || 100));
+  return Array.from(nodePropertiesTabsRegistry.values()).sort(
+    (a, b) => (a.position || 100) - (b.position || 100)
+  );
 }
 
 /**

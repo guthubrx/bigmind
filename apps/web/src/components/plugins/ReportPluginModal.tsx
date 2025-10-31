@@ -43,7 +43,7 @@ const CATEGORIES: { value: ReportCategory; label: string; description: string }[
   {
     value: 'copyright',
     label: 'Violation de copyright',
-    description: 'Le plugin viole des droits d\'auteur',
+    description: "Le plugin viole des droits d'auteur",
   },
   {
     value: 'other',
@@ -104,7 +104,7 @@ export function ReportPluginModal({
           onClose();
         }, 2000);
       } else {
-        setError(result.error || 'Erreur lors de l\'envoi du signalement');
+        setError(result.error || "Erreur lors de l'envoi du signalement");
       }
     } catch (err: any) {
       setError(err.message || 'Erreur réseau');
@@ -113,9 +113,7 @@ export function ReportPluginModal({
     }
   };
 
-  const isValidEmail = (email: string): boolean => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
+  const isValidEmail = (email: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   if (showSuccess) {
     return (
@@ -211,8 +209,7 @@ export function ReportPluginModal({
               placeholder="Pour être informé du traitement de votre signalement"
             />
             <div className="form-hint">
-              Votre email ne sera utilisé que pour vous informer du traitement de ce
-              signalement.
+              Votre email ne sera utilisé que pour vous informer du traitement de ce signalement.
             </div>
           </div>
 
@@ -244,8 +241,8 @@ export function ReportPluginModal({
 
         <div className="report-modal-footer">
           <small>
-            Les signalements abusifs peuvent entraîner des restrictions. Merci de
-            signaler uniquement les problèmes réels.
+            Les signalements abusifs peuvent entraîner des restrictions. Merci de signaler
+            uniquement les problèmes réels.
           </small>
         </div>
       </div>

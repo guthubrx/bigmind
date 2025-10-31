@@ -8,6 +8,7 @@ type PolitenessLevel = 'polite' | 'assertive';
 
 class ScreenReaderAnnouncer {
   private liveRegionPolite: HTMLElement | null = null;
+
   private liveRegionAssertive: HTMLElement | null = null;
 
   constructor() {
@@ -41,8 +42,7 @@ class ScreenReaderAnnouncer {
    * Announce a message to screen readers
    */
   announce(message: string, politeness: PolitenessLevel = 'polite') {
-    const region =
-      politeness === 'assertive' ? this.liveRegionAssertive : this.liveRegionPolite;
+    const region = politeness === 'assertive' ? this.liveRegionAssertive : this.liveRegionPolite;
 
     if (!region) {
       console.warn('[Announcer] Live region not initialized');

@@ -7,7 +7,9 @@ import type { Command } from './types';
 
 export class CommandRegistry {
   private static instance: CommandRegistry;
+
   private commands = new Map<string, Command>();
+
   private listeners = new Set<() => void>();
 
   private constructor() {}
@@ -61,14 +63,14 @@ export class CommandRegistry {
    * Get commands by category
    */
   getByCategory(category: string): Command[] {
-    return this.getAll().filter((cmd) => cmd.category === category);
+    return this.getAll().filter(cmd => cmd.category === category);
   }
 
   /**
    * Get commands by plugin
    */
   getByPlugin(pluginId: string): Command[] {
-    return this.getAll().filter((cmd) => cmd.pluginId === pluginId);
+    return this.getAll().filter(cmd => cmd.pluginId === pluginId);
   }
 
   /**
@@ -94,7 +96,7 @@ export class CommandRegistry {
    * Notify listeners of changes
    */
   private notifyListeners(): void {
-    this.listeners.forEach((listener) => {
+    this.listeners.forEach(listener => {
       try {
         listener();
       } catch (error) {

@@ -19,7 +19,7 @@ export function discoverPluginManifests(): LoadedManifest[] {
  */
 export function getManifestById(pluginId: string): PluginManifest | null {
   const manifests = getAllAvailableManifests();
-  const found = manifests.find((m) => m.manifest.id === pluginId);
+  const found = manifests.find(m => m.manifest.id === pluginId);
   return found ? found.manifest : null;
 }
 
@@ -28,7 +28,7 @@ export function getManifestById(pluginId: string): PluginManifest | null {
  */
 export function getCorePluginManifests(): LoadedManifest[] {
   const manifests = getAllAvailableManifests();
-  return manifests.filter((m) => m.manifest.source === 'core');
+  return manifests.filter(m => m.manifest.source === 'core');
 }
 
 /**
@@ -36,7 +36,7 @@ export function getCorePluginManifests(): LoadedManifest[] {
  */
 export function getCommunityPluginManifests(): LoadedManifest[] {
   const manifests = getAllAvailableManifests();
-  return manifests.filter((m) => m.manifest.source !== 'core');
+  return manifests.filter(m => m.manifest.source !== 'core');
 }
 
 /**
@@ -44,7 +44,7 @@ export function getCommunityPluginManifests(): LoadedManifest[] {
  */
 export function getFeaturedPluginManifests(): LoadedManifest[] {
   const manifests = getAllAvailableManifests();
-  return manifests.filter((m) => m.manifest.featured === true);
+  return manifests.filter(m => m.manifest.featured === true);
 }
 
 /**
@@ -52,7 +52,7 @@ export function getFeaturedPluginManifests(): LoadedManifest[] {
  */
 export function getPluginsByCategory(category: string): LoadedManifest[] {
   const manifests = getAllAvailableManifests();
-  return manifests.filter((m) => m.manifest.category === category);
+  return manifests.filter(m => m.manifest.category === category);
 }
 
 /**
@@ -62,14 +62,12 @@ export function searchPlugins(query: string): LoadedManifest[] {
   const manifests = getAllAvailableManifests();
   const lowerQuery = query.toLowerCase();
 
-  return manifests.filter((loaded) => {
-    const manifest = loaded.manifest;
+  return manifests.filter(loaded => {
+    const { manifest } = loaded;
     const matchesName = manifest.name.toLowerCase().includes(lowerQuery);
     const matchesDesc = manifest.description?.toLowerCase().includes(lowerQuery);
     const matchesId = manifest.id.toLowerCase().includes(lowerQuery);
-    const matchesTags = manifest.tags?.some((tag) =>
-      tag.toLowerCase().includes(lowerQuery)
-    );
+    const matchesTags = manifest.tags?.some(tag => tag.toLowerCase().includes(lowerQuery));
 
     return matchesName || matchesDesc || matchesId || matchesTags;
   });
@@ -80,9 +78,9 @@ export function searchPlugins(query: string): LoadedManifest[] {
  */
 export function getPluginStats() {
   const manifests = getAllAvailableManifests();
-  const core = manifests.filter((m) => m.manifest.source === 'core');
-  const community = manifests.filter((m) => m.manifest.source !== 'core');
-  const featured = manifests.filter((m) => m.manifest.featured === true);
+  const core = manifests.filter(m => m.manifest.source === 'core');
+  const community = manifests.filter(m => m.manifest.source !== 'core');
+  const featured = manifests.filter(m => m.manifest.featured === true);
 
   const categoryCounts = manifests.reduce(
     (acc, m) => {

@@ -5,7 +5,10 @@
 
 import React from 'react';
 import type { IPluginContext, PluginManifest } from '@cartae/plugin-system';
-import { registerSettingsSection, unregisterSettingsSection } from '../../../utils/settingsRegistry';
+import {
+  registerSettingsSection,
+  unregisterSettingsSection,
+} from '../../../utils/settingsRegistry';
 import {
   registerMapSettingsSection,
   unregisterMapSettingsSection,
@@ -39,7 +42,8 @@ function PaletteSettingsSection() {
         <div className="settings-field">
           <span className="settings-label">Palettes de couleurs</span>
           <div style={{ color: 'var(--fg-secondary)', fontSize: '14px' }}>
-            Aucune palette disponible. Activez le plugin &quot;Color Palettes Collection&quot; pour ajouter des palettes.
+            Aucune palette disponible. Activez le plugin &quot;Color Palettes Collection&quot; pour
+            ajouter des palettes.
           </div>
         </div>
       </>
@@ -94,9 +98,9 @@ function hexToHsl(hex: string): { h: number; s: number; l: number } {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   if (!result) return { h: 0, s: 0, l: 0 };
 
-  let r = parseInt(result[1], 16) / 255;
-  let g = parseInt(result[2], 16) / 255;
-  let b = parseInt(result[3], 16) / 255;
+  const r = parseInt(result[1], 16) / 255;
+  const g = parseInt(result[2], 16) / 255;
+  const b = parseInt(result[3], 16) / 255;
 
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
@@ -168,7 +172,13 @@ function groupColorsByHue(colors: string[]): string[] {
     return groupData[0].hex;
   });
 
-  console.log('[groupColorsByHue] Grouped', colors.length, 'colors into', representative.length, 'groups');
+  console.log(
+    '[groupColorsByHue] Grouped',
+    colors.length,
+    'colors into',
+    representative.length,
+    'groups'
+  );
   return representative;
 }
 
@@ -246,7 +256,8 @@ function PaletteMapSettingsSection({ activeFile }: PaletteMapSettingsSectionProp
       <div className="map-settings-section">
         <h4 className="map-settings-section-title">Palettes de couleurs</h4>
         <div style={{ color: 'var(--fg-secondary)', fontSize: '14px' }}>
-          Aucune palette disponible. Activez le plugin &quot;Color Palettes Collection&quot; dans les paramètres, ou ajoutez des couleurs à vos nœuds.
+          Aucune palette disponible. Activez le plugin &quot;Color Palettes Collection&quot; dans
+          les paramètres, ou ajoutez des couleurs à vos nœuds.
         </div>
       </div>
     );
@@ -333,13 +344,13 @@ Plus besoin de naviguer dans des menus complexes : définissez vos palettes par 
     'Palette par défaut pour tous les nouveaux nœuds',
     'Palette dédiée aux tags pour mieux les distinguer',
     'Configuration spécifique par carte mentale',
-    'Aperçu en temps réel des palettes disponibles'
+    'Aperçu en temps réel des palettes disponibles',
   ],
   useCases: [
     'Définir une identité visuelle cohérente pour tous vos projets',
     'Utiliser des couleurs différentes selon le type de carte',
-    'Adapter rapidement l\'ambiance d\'une présentation',
-    'Standardiser les couleurs au sein d\'une équipe'
+    "Adapter rapidement l'ambiance d'une présentation",
+    "Standardiser les couleurs au sein d'une équipe",
   ],
 
   // Features

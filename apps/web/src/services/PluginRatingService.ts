@@ -31,18 +31,14 @@ export class PluginRatingService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/vnd.github.v3+json',
+          Accept: 'application/vnd.github.v3+json',
           // Si vous avez un token GitHub, décommentez cette ligne:
           // 'Authorization': `token ${GITHUB_TOKEN}`,
         },
         body: JSON.stringify({
           title: `[Rating] ${pluginName} - ${rating}/5 ⭐`,
           body: this.formatIssueBody(submission),
-          labels: [
-            'plugin-rating',
-            `rating-${rating}`,
-            `plugin:${pluginId}`,
-          ],
+          labels: ['plugin-rating', `rating-${rating}`, `plugin:${pluginId}`],
         }),
       });
 

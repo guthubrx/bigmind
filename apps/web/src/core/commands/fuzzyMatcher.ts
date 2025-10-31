@@ -74,7 +74,7 @@ export function findMatches(query: string, target: string): Array<{ start: numbe
   const matches: Array<{ start: number; end: number }> = [];
 
   // Simple substring match
-  let index = targetLower.indexOf(queryLower);
+  const index = targetLower.indexOf(queryLower);
   if (index !== -1) {
     matches.push({ start: index, end: index + queryLower.length });
     return matches;
@@ -108,7 +108,7 @@ export function findMatches(query: string, target: string): Array<{ start: numbe
 export function fuzzySearch(commands: Command[], query: string): CommandMatch[] {
   if (!query.trim()) {
     // Return all commands with default score
-    return commands.map((command) => ({
+    return commands.map(command => ({
       command,
       score: 1,
       matches: [],

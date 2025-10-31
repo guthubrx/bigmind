@@ -72,9 +72,7 @@ export function getAllAvailableManifests(): LoadedManifest[] {
       if (manifest && manifest.id && manifest.name && manifest.version) {
         // Extract plugin path from manifest file path
         // e.g., '/src/plugins/core/tags-manager/manifest.json' -> 'plugins/core/tags-manager'
-        const pluginPath = path
-          .replace('/src/', '')
-          .replace('/manifest.json', '');
+        const pluginPath = path.replace('/src/', '').replace('/manifest.json', '');
 
         manifests.push({ manifest, pluginPath });
       }
@@ -127,9 +125,7 @@ export function validateManifest(manifest: PluginManifest): boolean {
   const requiredFields = ['id', 'name', 'version', 'author', 'main'];
 
   // Check all required fields using array methods instead of for...of
-  const missingField = requiredFields.find(
-    (field) => !manifest[field as keyof PluginManifest]
-  );
+  const missingField = requiredFields.find(field => !manifest[field as keyof PluginManifest]);
 
   if (missingField) {
     // console.error(`[ManifestLoader] Missing required field: ${missingField}`);
@@ -155,10 +151,7 @@ export function validateManifest(manifest: PluginManifest): boolean {
  * Merge manifest from JSON with TypeScript plugin module
  * This allows plugins to have manifest.json + index.ts
  */
-export function mergeManifestWithModule(
-  loadedManifest: LoadedManifest,
-  pluginModule: any
-): any {
+export function mergeManifestWithModule(loadedManifest: LoadedManifest, pluginModule: any): any {
   return {
     ...pluginModule,
     manifest: loadedManifest.manifest,

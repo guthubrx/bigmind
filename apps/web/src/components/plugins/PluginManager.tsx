@@ -437,7 +437,10 @@ export function PluginManager({
 
     if (pluginsToInstall.length === 0) return;
 
-    setToast({ message: `Installation de ${pluginsToInstall.length} plugin(s)...`, type: 'loading' });
+    setToast({
+      message: `Installation de ${pluginsToInstall.length} plugin(s)...`,
+      type: 'loading',
+    });
 
     for (const pluginId of pluginsToInstall) {
       try {
@@ -458,7 +461,10 @@ export function PluginManager({
 
     if (pluginsToActivate.length === 0) return;
 
-    setToast({ message: `Activation de ${pluginsToActivate.length} plugin(s)...`, type: 'loading' });
+    setToast({
+      message: `Activation de ${pluginsToActivate.length} plugin(s)...`,
+      type: 'loading',
+    });
 
     for (const pluginId of pluginsToActivate) {
       try {

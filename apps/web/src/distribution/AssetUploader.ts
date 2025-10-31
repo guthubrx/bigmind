@@ -23,6 +23,7 @@ export interface UploadResult {
  */
 export class AssetUploader {
   private cdnUrl: string;
+
   private apiKey?: string;
 
   constructor(cdnUrl: string, apiKey?: string) {
@@ -70,9 +71,7 @@ export class AssetUploader {
   async uploadBatch(
     files: Array<{ path: string; content: Uint8Array | Blob; options?: UploadOptions }>
   ): Promise<UploadResult[]> {
-    return Promise.all(
-      files.map(file => this.upload(file.path, file.content, file.options))
-    );
+    return Promise.all(files.map(file => this.upload(file.path, file.content, file.options)));
   }
 
   /**

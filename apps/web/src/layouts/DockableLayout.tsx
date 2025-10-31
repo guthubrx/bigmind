@@ -271,61 +271,64 @@ function DockableLayout() {
 
   // FR: Factory pour créer les composants des panneaux
   // EN: Factory to create panel components
-  const factory = useCallback((node: TabNode) => {
-    const component = node.getComponent();
+  const factory = useCallback(
+    (node: TabNode) => {
+      const component = node.getComponent();
 
-    switch (component) {
-      case 'files':
-        return (
-          <div className="panel-content">
-            <FileTabs />
-          </div>
-        );
-
-      case 'explorer':
-        return (
-          <div className="panel-content">
-            <NodeExplorer />
-          </div>
-        );
-
-      case 'canvas':
-        return (
-          <div className="panel-content canvas-panel">
-            <MindMapCanvas />
-          </div>
-        );
-
-      case 'properties':
-        return (
-          <div className="panel-content">
-            <NodeProperties />
-          </div>
-        );
-
-      case 'mapsettings':
-        return (
-          <div className="panel-content">
-            <MapSettings />
-          </div>
-        );
-
-      default: {
-        // FR: Vérifier si c'est un panneau du registre
-        // EN: Check if it's a panel from the registry
-        const panel = pluginPanels.find(p => p.id === component);
-        if (panel) {
-          const Component = panel.component;
+      switch (component) {
+        case 'files':
           return (
             <div className="panel-content">
-              <Component />
+              <FileTabs />
             </div>
           );
+
+        case 'explorer':
+          return (
+            <div className="panel-content">
+              <NodeExplorer />
+            </div>
+          );
+
+        case 'canvas':
+          return (
+            <div className="panel-content canvas-panel">
+              <MindMapCanvas />
+            </div>
+          );
+
+        case 'properties':
+          return (
+            <div className="panel-content">
+              <NodeProperties />
+            </div>
+          );
+
+        case 'mapsettings':
+          return (
+            <div className="panel-content">
+              <MapSettings />
+            </div>
+          );
+
+        default: {
+          // FR: Vérifier si c'est un panneau du registre
+          // EN: Check if it's a panel from the registry
+          const panel = pluginPanels.find(p => p.id === component);
+          if (panel) {
+            const Component = panel.component;
+            return (
+              <div className="panel-content">
+                <Component />
+              </div>
+            );
+          }
+          return <div className="panel-content">Unknown component: {component}</div>;
         }
-        return <div className="panel-content">Unknown component: {component}</div>;
       }
-    }
-  }, [pluginPanels]);
+    },
+    [pluginPanels]
+  );
 
   // FR: Rendu personnalisé du nom des onglets (avec badges)
   // EN: Custom tab name rendering (with badges)
@@ -621,40 +624,42 @@ function DockableLayout() {
             overflow: 'hidden',
           }}
         >
-          {allAvailableTabs.filter(tab => {
-            // FR: Filtrer les onglets qui ne sont pas déjà dans le tabset
-            // EN: Filter tabs that are not already in the tabset
-            const tabSetNode = model.getNodeById(addTabMenuState.tabSetId!);
-            if (!tabSetNode) return false;
-            const tabs = tabSetNode.getChildren();
-            const existingComponents = tabs.map((t: any) => t.getComponent());
-            return !existingComponents.includes(tab.component) && tab.component !== 'canvas';
-          }).map(tab => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => handleAddTab(addTabMenuState.tabSetId!, tab.component, tab.name)}
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: 'none',
-                background: 'transparent',
-                textAlign: 'left',
-                cursor: 'pointer',
-                fontSize: '13px',
-                color: 'var(--fg)',
-                transition: 'background 0.15s ease',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = 'var(--bg-secondary)';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = 'transparent';
-              }}
-            >
-              {tab.name}
-            </button>
-          ))}
+          {allAvailableTabs
+            .filter(tab => {
+              // FR: Filtrer les onglets qui ne sont pas déjà dans le tabset
+              // EN: Filter tabs that are not already in the tabset
+              const tabSetNode = model.getNodeById(addTabMenuState.tabSetId!);
+              if (!tabSetNode) return false;
+              const tabs = tabSetNode.getChildren();
+              const existingComponents = tabs.map((t: any) => t.getComponent());
+              return !existingComponents.includes(tab.component) && tab.component !== 'canvas';
+            })
+            .map(tab => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => handleAddTab(addTabMenuState.tabSetId!, tab.component, tab.name)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: 'none',
+                  background: 'transparent',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  color: 'var(--fg)',
+                  transition: 'background 0.15s ease',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'var(--bg-secondary)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                {tab.name}
+              </button>
+            ))}
         </div>
       )}
     </div>

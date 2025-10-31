@@ -25,12 +25,12 @@ export function SlotFillProvider({ children }: SlotFillProviderProps) {
   const [updateCounter, setUpdateCounter] = useState(0);
 
   const registerFill = useCallback((fill: Fill) => {
-    setFills((current) => {
+    setFills(current => {
       const newFills = new Map(current);
       const slotFills = newFills.get(fill.slot) || [];
 
       // Remove existing fill with same ID if it exists
-      const filtered = slotFills.filter((f) => f.id !== fill.id);
+      const filtered = slotFills.filter(f => f.id !== fill.id);
 
       // Add new fill and sort by order
       filtered.push(fill);
@@ -41,17 +41,17 @@ export function SlotFillProvider({ children }: SlotFillProviderProps) {
     });
 
     // Trigger re-render of slots
-    setUpdateCounter((c) => c + 1);
+    setUpdateCounter(c => c + 1);
   }, []);
 
   const unregisterFill = useCallback((fillId: string) => {
-    setFills((current) => {
+    setFills(current => {
       const newFills = new Map(current);
       let modified = false;
 
       // Remove fill from all slots
       for (const [slotName, slotFills] of newFills.entries()) {
-        const filtered = slotFills.filter((f) => f.id !== fillId);
+        const filtered = slotFills.filter(f => f.id !== fillId);
         if (filtered.length !== slotFills.length) {
           newFills.set(slotName, filtered);
           modified = true;
@@ -62,13 +62,11 @@ export function SlotFillProvider({ children }: SlotFillProviderProps) {
     });
 
     // Trigger re-render of slots
-    setUpdateCounter((c) => c + 1);
+    setUpdateCounter(c => c + 1);
   }, []);
 
   const getFills = useCallback(
-    (slotName: string): Fill[] => {
-      return fills.get(slotName) || [];
-    },
+    (slotName: string): Fill[] => fills.get(slotName) || [],
     [fills, updateCounter] // eslint-disable-line react-hooks/exhaustive-deps
   );
 

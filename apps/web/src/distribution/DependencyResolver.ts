@@ -39,6 +39,7 @@ export interface ResolverOptions {
  */
 export class DependencyResolver {
   private versionResolver: VersionResolver;
+
   private options: Required<ResolverOptions>;
 
   constructor(options: ResolverOptions = {}) {
@@ -63,7 +64,11 @@ export class DependencyResolver {
 
     // Add root plugin
     const rootDeps = this.extractDependencies(manifest);
-    graph.addNode(manifest.id, manifest.version, rootDeps.map(d => d.id));
+    graph.addNode(
+      manifest.id,
+      manifest.version,
+      rootDeps.map(d => d.id)
+    );
 
     // Resolve dependencies recursively
     await this.resolveDependencies(
@@ -151,7 +156,11 @@ export class DependencyResolver {
 
       // Add to graph
       const childDeps = this.extractDependencies(depManifest);
-      graph.addNode(dep.id, resolvedVersion, childDeps.map(d => d.id));
+      graph.addNode(
+        dep.id,
+        resolvedVersion,
+        childDeps.map(d => d.id)
+      );
 
       // Recurse
       await this.resolveDependencies(
@@ -215,9 +224,7 @@ export class DependencyResolver {
     }
 
     // Sort and pick latest
-    const sorted = filtered.sort((a, b) =>
-      this.versionResolver.compare(a, b)
-    );
+    const sorted = filtered.sort((a, b) => this.versionResolver.compare(a, b));
 
     return sorted[sorted.length - 1];
   }

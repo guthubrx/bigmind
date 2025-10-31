@@ -8,8 +8,11 @@ import { lightTheme, darkTheme } from './defaultThemes';
 
 export class ThemeManager {
   private static instance: ThemeManager;
+
   private currentTheme: Theme;
+
   private listeners = new Set<(theme: Theme) => void>();
+
   private systemThemeMediaQuery: MediaQueryList;
 
   private constructor() {
@@ -185,7 +188,7 @@ export class ThemeManager {
    */
   private notifyListeners(): void {
     const theme = this.getTheme();
-    this.listeners.forEach((listener) => {
+    this.listeners.forEach(listener => {
       try {
         listener(theme);
       } catch (error) {

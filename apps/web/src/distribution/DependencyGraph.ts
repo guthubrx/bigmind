@@ -20,6 +20,7 @@ export interface CycleInfo {
  */
 export class DependencyGraph {
   private nodes = new Map<string, GraphNode>();
+
   private edges = new Map<string, Set<string>>();
 
   /**
@@ -166,11 +167,7 @@ export class DependencyGraph {
   /**
    * DFS helper for topological sort
    */
-  private topologicalSortDFS(
-    nodeId: string,
-    visited: Set<string>,
-    stack: string[]
-  ): void {
+  private topologicalSortDFS(nodeId: string, visited: Set<string>, stack: string[]): void {
     visited.add(nodeId);
 
     const neighbors = this.edges.get(nodeId) || new Set();

@@ -71,7 +71,7 @@ function MapSettings() {
               min="8"
               max="72"
               value={activeFile.content?.defaultNodeStyle?.fontSize || 14}
-              onChange={(e) => {
+              onChange={e => {
                 updateDefaultNodeStyle({ fontSize: Number(e.target.value) });
               }}
               className="map-settings-input"
@@ -88,7 +88,7 @@ function MapSettings() {
               max="800"
               step="10"
               value={activeFile.content?.defaultNodeStyle?.width || 200}
-              onChange={(e) => {
+              onChange={e => {
                 updateDefaultNodeStyle({ width: Number(e.target.value) });
               }}
               className="map-settings-input"
@@ -101,7 +101,7 @@ function MapSettings() {
             <div className="map-settings-label">Police de caractères</div>
             <select
               value={activeFile.content?.defaultNodeStyle?.fontFamily || 'inherit'}
-              onChange={(e) => {
+              onChange={e => {
                 updateDefaultNodeStyle({ fontFamily: e.target.value });
               }}
               className="map-settings-select"

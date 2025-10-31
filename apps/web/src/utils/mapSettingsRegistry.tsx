@@ -46,7 +46,12 @@ export function onMapSettingsRegistryChange(listener: () => void): () => void {
  * EN: Register a MapSettings section (used by plugins)
  */
 export function registerMapSettingsSection(section: MapSettingsSection): void {
-  console.log('[MapSettingsRegistry] Registering section:', section.id, 'for plugin:', section.pluginId);
+  console.log(
+    '[MapSettingsRegistry] Registering section:',
+    section.id,
+    'for plugin:',
+    section.pluginId
+  );
   mapSettingsSectionsRegistry.set(section.id, section);
   console.log('[MapSettingsRegistry] Total sections:', mapSettingsSectionsRegistry.size);
   notifyChange();
@@ -67,8 +72,9 @@ export function unregisterMapSettingsSection(sectionId: string): void {
  * EN: Get all sections sorted by position
  */
 export function getMapSettingsSections(): MapSettingsSection[] {
-  return Array.from(mapSettingsSectionsRegistry.values())
-    .sort((a, b) => (a.position || 100) - (b.position || 100));
+  return Array.from(mapSettingsSectionsRegistry.values()).sort(
+    (a, b) => (a.position || 100) - (b.position || 100)
+  );
 }
 
 /**

@@ -65,12 +65,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
         case 'ArrowDown':
           e.preventDefault();
-          setSelectedIndex((prev) => Math.min(prev + 1, results.length - 1));
+          setSelectedIndex(prev => Math.min(prev + 1, results.length - 1));
           break;
 
         case 'ArrowUp':
           e.preventDefault();
-          setSelectedIndex((prev) => Math.max(prev - 1, 0));
+          setSelectedIndex(prev => Math.max(prev - 1, 0));
           break;
 
         case 'Enter':
@@ -83,9 +83,9 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         case 'Tab':
           e.preventDefault();
           if (e.shiftKey) {
-            setSelectedIndex((prev) => Math.max(prev - 1, 0));
+            setSelectedIndex(prev => Math.max(prev - 1, 0));
           } else {
-            setSelectedIndex((prev) => Math.min(prev + 1, results.length - 1));
+            setSelectedIndex(prev => Math.min(prev + 1, results.length - 1));
           }
           break;
       }
@@ -119,7 +119,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
   return (
     <div className="command-palette-overlay" onClick={onClose}>
-      <div className="command-palette" onClick={(e) => e.stopPropagation()}>
+      <div className="command-palette" onClick={e => e.stopPropagation()}>
         {/* Search input */}
         <div className="command-palette-input-container">
           <svg className="command-palette-search-icon" viewBox="0 0 16 16" fill="currentColor">
@@ -131,17 +131,13 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             className="command-palette-input"
             placeholder="Rechercher une commande..."
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={e => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             autoComplete="off"
             spellCheck={false}
           />
           {query && (
-            <button
-              className="command-palette-clear"
-              onClick={() => setQuery('')}
-              title="Effacer"
-            >
+            <button className="command-palette-clear" onClick={() => setQuery('')} title="Effacer">
               ✕
             </button>
           )}
@@ -247,9 +243,7 @@ function CommandItem({ result, isSelected, onClick, onMouseEnter }: CommandItemP
       <div className="command-palette-item-main">
         {command.icon && <span className="command-palette-item-icon">{command.icon}</span>}
         <div className="command-palette-item-text">
-          <div className="command-palette-item-title">
-            {highlightText(command.title, matches)}
-          </div>
+          <div className="command-palette-item-title">{highlightText(command.title, matches)}</div>
           {command.category && (
             <div className="command-palette-item-category">{command.category}</div>
           )}
@@ -271,7 +265,7 @@ export function useCommandPalette() {
     const handleKeydown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        setIsOpen((prev) => !prev);
+        setIsOpen(prev => !prev);
       }
     };
 
@@ -286,6 +280,6 @@ export function useCommandPalette() {
     isOpen,
     open: () => setIsOpen(true),
     close: () => setIsOpen(false),
-    toggle: () => setIsOpen((prev) => !prev),
+    toggle: () => setIsOpen(prev => !prev),
   };
 }

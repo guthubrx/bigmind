@@ -10,8 +10,7 @@ export const manifest: PluginManifest = {
   id: 'com.bigmind.theme-manager',
   name: 'Theme Manager',
   version: '1.0.0',
-  description:
-    "Gérez les thèmes d'interface Light et Dark pour personnaliser l'apparence globale",
+  description: "Gérez les thèmes d'interface Light et Dark pour personnaliser l'apparence globale",
   longDescription: `Adaptez BigMind à votre environnement de travail et à vos préférences visuelles. Theme Manager gère l'ensemble du système de thèmes de l'interface, appliquant automatiquement les variables CSS à tous les composants.
 
 **Un confort visuel optimal**

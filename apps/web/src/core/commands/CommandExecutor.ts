@@ -8,8 +8,10 @@ import type { Command, CommandContext, CommandResult } from './types';
 
 export class CommandExecutor {
   private static instance: CommandExecutor;
+
   private executionHistory: Array<{ commandId: string; timestamp: Date; result: CommandResult }> =
     [];
+
   private maxHistorySize = 100;
 
   private constructor() {}
@@ -24,7 +26,11 @@ export class CommandExecutor {
   /**
    * Execute a command by ID
    */
-  async execute(commandId: string, context?: CommandContext, ...args: any[]): Promise<CommandResult> {
+  async execute(
+    commandId: string,
+    context?: CommandContext,
+    ...args: any[]
+  ): Promise<CommandResult> {
     const command = commandRegistry.get(commandId);
 
     if (!command) {

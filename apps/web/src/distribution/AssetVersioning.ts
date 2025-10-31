@@ -24,6 +24,7 @@ export interface AssetInfo {
  */
 export class AssetVersioning {
   private cdnUrl: string;
+
   private manifest: AssetManifest;
 
   constructor(cdnUrl: string, version: string) {

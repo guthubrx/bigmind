@@ -47,7 +47,12 @@ export function onSettingsRegistryChange(listener: () => void): () => void {
  * EN: Register a settings section (used by plugins)
  */
 export function registerSettingsSection(section: SettingsSection): void {
-  console.log('[SettingsRegistry] Registering section:', section.id, 'for plugin:', section.pluginId);
+  console.log(
+    '[SettingsRegistry] Registering section:',
+    section.id,
+    'for plugin:',
+    section.pluginId
+  );
   settingsSectionsRegistry.set(section.id, section);
   console.log('[SettingsRegistry] Total sections:', settingsSectionsRegistry.size);
   notifyChange();

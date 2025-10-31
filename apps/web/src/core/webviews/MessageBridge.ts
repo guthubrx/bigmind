@@ -8,7 +8,9 @@ import { validateMessage, sanitizePayload } from './MessageValidator';
 
 export class MessageBridge {
   private port: MessagePort;
+
   private requestId = 0;
+
   private pendingRequests = new Map<
     number,
     {
@@ -17,6 +19,7 @@ export class MessageBridge {
       timeout: ReturnType<typeof setTimeout>;
     }
   >();
+
   private messageHandlers = new Map<string, (payload: any) => Promise<any>>();
 
   constructor(port: MessagePort) {

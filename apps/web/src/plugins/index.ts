@@ -43,10 +43,9 @@ export const getAllOfficialPlugins = () => [
 /**
  * Get all community plugins
  */
-export const getAllCommunityPlugins = () => {
+export const getAllCommunityPlugins = () =>
   // TODO: Implement auto-discovery
-  return [];
-};
+  [];
 
 /**
  * Get all plugins (core + official + community)

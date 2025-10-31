@@ -35,7 +35,7 @@ export function ExportRatingsButton({ pluginId, pluginName }: ExportRatingsButto
       document.body.removeChild(link);
     } catch (error) {
       console.error('[ExportRatingsButton] Error:', error);
-      alert('Erreur lors de l\'export');
+      alert("Erreur lors de l'export");
     } finally {
       setIsExporting(false);
     }

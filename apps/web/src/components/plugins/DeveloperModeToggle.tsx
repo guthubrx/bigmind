@@ -131,9 +131,7 @@ export function DeveloperModeToggle({ onChange }: DeveloperModeToggleProps) {
           style={{
             marginTop: '12px',
             padding: '12px',
-            backgroundColor: isDevEnv
-              ? 'var(--accent-color-10)'
-              : '#FEF3C7', // Jaune warning si prod
+            backgroundColor: isDevEnv ? 'var(--accent-color-10)' : '#FEF3C7', // Jaune warning si prod
             border: `1px solid ${isDevEnv ? 'var(--accent-color)' : '#FCD34D'}`,
             borderRadius: '4px',
             fontSize: '12px',
@@ -150,92 +148,90 @@ export function DeveloperModeToggle({ onChange }: DeveloperModeToggleProps) {
               </ul>
             </>
           ) : (
-            <>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                <AlertTriangle size={16} style={{ marginTop: '2px', flexShrink: 0 }} />
-                <div>
-                  <strong>⚠️ Application distribuée détectée</strong>
-                  <p style={{ margin: '8px 0' }}>
-                    Le mode développeur nécessite le code source. Pour développer des plugins :
-                  </p>
-                  <ol style={{ margin: '8px 0 8px 16px', paddingLeft: 0 }}>
-                    <li style={{ marginBottom: '6px' }}>
-                      <strong>Clonez le monorepo BigMind :</strong>
-                      <br />
-                      <code
-                        style={{
-                          display: 'block',
-                          marginTop: '4px',
-                          padding: '6px 8px',
-                          backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                          borderRadius: '3px',
-                          fontSize: '11px',
-                          fontFamily: 'monospace',
-                          wordBreak: 'break-all',
-                        }}
-                      >
-                        git clone https://github.com/guthubrx/bigmind.git
-                      </code>
-                    </li>
-                    <li style={{ marginBottom: '6px' }}>
-                      <strong>Installez les dépendances :</strong>
-                      <br />
-                      <code
-                        style={{
-                          display: 'block',
-                          marginTop: '4px',
-                          padding: '6px 8px',
-                          backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                          borderRadius: '3px',
-                          fontSize: '11px',
-                          fontFamily: 'monospace',
-                        }}
-                      >
-                        cd bigmind && pnpm install
-                      </code>
-                    </li>
-                    <li style={{ marginBottom: '6px' }}>
-                      <strong>Lancez en mode développement :</strong>
-                      <br />
-                      <code
-                        style={{
-                          display: 'block',
-                          marginTop: '4px',
-                          padding: '6px 8px',
-                          backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                          borderRadius: '3px',
-                          fontSize: '11px',
-                          fontFamily: 'monospace',
-                        }}
-                      >
-                        pnpm run dev:web
-                      </code>
-                    </li>
-                    <li>
-                      <strong>Activez le mode développeur</strong> dans l&apos;app qui tourne sur{' '}
-                      <code>localhost:5173</code>
-                    </li>
-                  </ol>
-                  <a
-                    href="https://github.com/guthubrx/bigmind#plugin-development"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      marginTop: '8px',
-                      color: 'var(--accent-color)',
-                      textDecoration: 'underline',
-                      fontSize: '11px',
-                    }}
-                  >
-                    📖 Guide complet de développement de plugins
-                    <ExternalLink size={12} />
-                  </a>
-                </div>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+              <AlertTriangle size={16} style={{ marginTop: '2px', flexShrink: 0 }} />
+              <div>
+                <strong>⚠️ Application distribuée détectée</strong>
+                <p style={{ margin: '8px 0' }}>
+                  Le mode développeur nécessite le code source. Pour développer des plugins :
+                </p>
+                <ol style={{ margin: '8px 0 8px 16px', paddingLeft: 0 }}>
+                  <li style={{ marginBottom: '6px' }}>
+                    <strong>Clonez le monorepo BigMind :</strong>
+                    <br />
+                    <code
+                      style={{
+                        display: 'block',
+                        marginTop: '4px',
+                        padding: '6px 8px',
+                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                        borderRadius: '3px',
+                        fontSize: '11px',
+                        fontFamily: 'monospace',
+                        wordBreak: 'break-all',
+                      }}
+                    >
+                      git clone https://github.com/guthubrx/bigmind.git
+                    </code>
+                  </li>
+                  <li style={{ marginBottom: '6px' }}>
+                    <strong>Installez les dépendances :</strong>
+                    <br />
+                    <code
+                      style={{
+                        display: 'block',
+                        marginTop: '4px',
+                        padding: '6px 8px',
+                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                        borderRadius: '3px',
+                        fontSize: '11px',
+                        fontFamily: 'monospace',
+                      }}
+                    >
+                      cd bigmind && pnpm install
+                    </code>
+                  </li>
+                  <li style={{ marginBottom: '6px' }}>
+                    <strong>Lancez en mode développement :</strong>
+                    <br />
+                    <code
+                      style={{
+                        display: 'block',
+                        marginTop: '4px',
+                        padding: '6px 8px',
+                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                        borderRadius: '3px',
+                        fontSize: '11px',
+                        fontFamily: 'monospace',
+                      }}
+                    >
+                      pnpm run dev:web
+                    </code>
+                  </li>
+                  <li>
+                    <strong>Activez le mode développeur</strong> dans l&apos;app qui tourne sur{' '}
+                    <code>localhost:5173</code>
+                  </li>
+                </ol>
+                <a
+                  href="https://github.com/guthubrx/bigmind#plugin-development"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    marginTop: '8px',
+                    color: 'var(--accent-color)',
+                    textDecoration: 'underline',
+                    fontSize: '11px',
+                  }}
+                >
+                  📖 Guide complet de développement de plugins
+                  <ExternalLink size={12} />
+                </a>
               </div>
-            </>
+            </div>
           )}
         </div>
       )}

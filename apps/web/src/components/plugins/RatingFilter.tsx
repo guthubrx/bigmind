@@ -21,7 +21,7 @@ export function RatingFilter({ selectedRating, onRatingChange }: RatingFilterPro
       </label>
       <select
         value={selectedRating ?? ''}
-        onChange={(e) => onRatingChange(e.target.value === '' ? null : Number(e.target.value))}
+        onChange={e => onRatingChange(e.target.value === '' ? null : Number(e.target.value))}
         className="rating-filter__select"
       >
         <option value="">Toutes les notes</option>

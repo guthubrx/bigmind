@@ -65,7 +65,7 @@ export function RatingReplyForm({ ratingId, pluginId, onSuccess }: RatingReplyFo
         setIsOpen(false);
         onSuccess?.();
       } else {
-        setMessage({ type: 'error', text: 'Erreur lors de l\'envoi' });
+        setMessage({ type: 'error', text: "Erreur lors de l'envoi" });
       }
     } catch (error) {
       console.error('[RatingReplyForm] Error:', error);
@@ -77,11 +77,7 @@ export function RatingReplyForm({ ratingId, pluginId, onSuccess }: RatingReplyFo
 
   if (!isOpen) {
     return (
-      <button
-        type="button"
-        className="rating-reply-form__toggle"
-        onClick={() => setIsOpen(true)}
-      >
+      <button type="button" className="rating-reply-form__toggle" onClick={() => setIsOpen(true)}>
         Répondre
       </button>
     );
@@ -99,7 +95,7 @@ export function RatingReplyForm({ ratingId, pluginId, onSuccess }: RatingReplyFo
           className="rating-reply-form__input"
           placeholder="Admin"
           value={authorName}
-          onChange={(e) => setAuthorName(e.target.value)}
+          onChange={e => setAuthorName(e.target.value)}
           disabled={isSubmitting}
         />
       </div>
@@ -114,7 +110,7 @@ export function RatingReplyForm({ ratingId, pluginId, onSuccess }: RatingReplyFo
           placeholder="Répondez à cet avis..."
           rows={2}
           value={replyText}
-          onChange={(e) => setReplyText(e.target.value)}
+          onChange={e => setReplyText(e.target.value)}
           disabled={isSubmitting}
         />
       </div>
@@ -126,7 +122,11 @@ export function RatingReplyForm({ ratingId, pluginId, onSuccess }: RatingReplyFo
       )}
 
       <div className="rating-reply-form__actions">
-        <button type="button" className="rating-reply-form__cancel" onClick={() => setIsOpen(false)}>
+        <button
+          type="button"
+          className="rating-reply-form__cancel"
+          onClick={() => setIsOpen(false)}
+        >
           Annuler
         </button>
         <button

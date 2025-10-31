@@ -21,6 +21,7 @@ export interface PurgeResult {
  */
 export class CacheInvalidator {
   private cdnUrl: string;
+
   private apiKey?: string;
 
   constructor(cdnUrl: string, apiKey?: string) {

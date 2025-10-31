@@ -91,21 +91,24 @@ export async function submitPluginRating(
     pluginId,
     userName,
     rating,
-    comment: comment.substring(0, 50) + '...',
+    comment: `${comment.substring(0, 50)}...`,
     is_approved: false,
   });
 
-  const { data, error } = await supabase.from('plugin_ratings').insert([
-    {
-      pluginId,
-      userName,
-      email: email || null,
-      rating,
-      comment: comment.trim(),
-      is_approved: false, // Explicitly set to false
-      created_at: new Date().toISOString(),
-    },
-  ]).select();
+  const { data, error } = await supabase
+    .from('plugin_ratings')
+    .insert([
+      {
+        pluginId,
+        userName,
+        email: email || null,
+        rating,
+        comment: comment.trim(),
+        is_approved: false, // Explicitly set to false
+        created_at: new Date().toISOString(),
+      },
+    ])
+    .select();
 
   if (error) {
     console.error('[Supabase] ❌ Error submitting rating:', error);
@@ -121,9 +124,7 @@ export async function submitPluginRating(
 /**
  * Calculate aggregate ratings
  */
-export async function getPluginRatingsAggregate(
-  pluginId: string
-): Promise<PluginRatingsAggregate> {
+export async function getPluginRatingsAggregate(pluginId: string): Promise<PluginRatingsAggregate> {
   const ratings = await getPluginRatings(pluginId);
 
   if (ratings.length === 0) {
@@ -220,9 +221,7 @@ export async function exportRatingsToCSV(pluginId: string): Promise<string> {
     `"${(r.comment || '').replace(/"/g, '""')}"`, // Escape quotes
   ]);
 
-  const csv = [headers, ...rows]
-    .map(row => row.join(','))
-    .join('\n');
+  const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
 
   return csv;
 }
@@ -327,10 +326,7 @@ export async function approveRating(ratingId: string): Promise<boolean> {
 export async function rejectRating(ratingId: string): Promise<boolean> {
   console.log('[Supabase] Rejecting rating:', ratingId);
 
-  const { error } = await supabase
-    .from('plugin_ratings')
-    .delete()
-    .eq('id', ratingId);
+  const { error } = await supabase.from('plugin_ratings').delete().eq('id', ratingId);
 
   if (error) {
     console.error('[Supabase] ❌ Error rejecting rating:', error);

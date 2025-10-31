@@ -13,10 +13,5 @@ export { Signer, createSigner, quickSign, quickSignManifest } from './Signer';
 export type { SignatureResult, SignOptions } from './Signer';
 
 // Verification
-export {
-  Verifier,
-  createVerifier,
-  quickVerify,
-  quickVerifyManifest,
-} from './Verifier';
+export { Verifier, createVerifier, quickVerify, quickVerifyManifest } from './Verifier';
 export type { VerificationResult, VerifyOptions } from './Verifier';

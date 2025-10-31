@@ -15,7 +15,9 @@ export interface TopRatedPluginsProps {
 }
 
 export function TopRatedPlugins({ allPlugins, onSelectPlugin }: TopRatedPluginsProps) {
-  const [topPlugins, setTopPlugins] = useState<(TopRatedPlugin & { manifest?: PluginManifest })[]>([]);
+  const [topPlugins, setTopPlugins] = useState<(TopRatedPlugin & { manifest?: PluginManifest })[]>(
+    []
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -63,14 +65,12 @@ export function TopRatedPlugins({ allPlugins, onSelectPlugin }: TopRatedPluginsP
             onClick={() => onSelectPlugin?.(plugin.pluginId)}
             role="button"
             tabIndex={0}
-            onKeyPress={(e) => e.key === 'Enter' && onSelectPlugin?.(plugin.pluginId)}
+            onKeyPress={e => e.key === 'Enter' && onSelectPlugin?.(plugin.pluginId)}
           >
             <div className="top-rated-plugins__badge">#{index + 1}</div>
 
             <div className="top-rated-plugins__content">
-              <div className="top-rated-plugins__icon">
-                {plugin.manifest?.icon || '🔌'}
-              </div>
+              <div className="top-rated-plugins__icon">{plugin.manifest?.icon || '🔌'}</div>
 
               <div className="top-rated-plugins__info">
                 <h4 className="top-rated-plugins__name">{plugin.manifest?.name}</h4>
@@ -79,9 +79,7 @@ export function TopRatedPlugins({ allPlugins, onSelectPlugin }: TopRatedPluginsP
                   <span className="top-rated-plugins__score">
                     {plugin.averageRating.toFixed(1)}
                   </span>
-                  <span className="top-rated-plugins__count">
-                    ({plugin.totalRatings})
-                  </span>
+                  <span className="top-rated-plugins__count">({plugin.totalRatings})</span>
                 </div>
               </div>
             </div>

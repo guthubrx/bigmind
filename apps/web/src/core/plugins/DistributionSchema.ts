@@ -11,10 +11,7 @@ import { z } from 'zod';
  */
 export const IntegritySchema = z.object({
   sig: z.string().optional().describe('Ed25519 or RSA signature (base64)'),
-  pubKeyId: z
-    .string()
-    .optional()
-    .describe('Public key ID (e.g., "dev:john@example.com")'),
+  pubKeyId: z.string().optional().describe('Public key ID (e.g., "dev:john@example.com")'),
   hash: z.string().optional().describe('SHA-256 hash of the package'),
   algorithm: z.enum(['ed25519', 'rsa']).optional().default('ed25519'),
 });
@@ -40,22 +37,12 @@ export const PluginDistributionSchema = z.object({
   integrity: IntegritySchema.optional(),
 
   // Supply Chain Security
-  sbom: z
-    .string()
-    .optional()
-    .describe('Path to SBOM file (CycloneDX/SPDX)'),
+  sbom: z.string().optional().describe('Path to SBOM file (CycloneDX/SPDX)'),
 
-  provenance: z
-    .string()
-    .url()
-    .optional()
-    .describe('SLSA provenance attestation URL'),
+  provenance: z.string().url().optional().describe('SLSA provenance attestation URL'),
 
   // Assets
-  assets: z
-    .array(z.string())
-    .optional()
-    .describe('Additional assets to distribute'),
+  assets: z.array(z.string()).optional().describe('Additional assets to distribute'),
 
   // Dependencies
   dependencies: z
@@ -63,17 +50,10 @@ export const PluginDistributionSchema = z.object({
     .optional()
     .describe('External dependencies with versions'),
 
-  peerDependencies: z
-    .record(z.string(), z.string())
-    .optional()
-    .describe('Peer dependencies'),
+  peerDependencies: z.record(z.string(), z.string()).optional().describe('Peer dependencies'),
 
   // Publishing metadata
-  publishedAt: z
-    .string()
-    .datetime()
-    .optional()
-    .describe('ISO date of publication'),
+  publishedAt: z.string().datetime().optional().describe('ISO date of publication'),
 
   publishedBy: z.string().optional().describe('Publisher identifier'),
 
@@ -86,10 +66,7 @@ export const PluginDistributionSchema = z.object({
   // License & Compliance
   licenseFile: z.string().optional().describe('Path to LICENSE file'),
 
-  notices: z
-    .string()
-    .optional()
-    .describe('Path to NOTICES file (third-party licenses)'),
+  notices: z.string().optional().describe('Path to NOTICES file (third-party licenses)'),
 });
 
 /**
@@ -99,11 +76,17 @@ export const PluginManifestSchema = z.object({
   // Core metadata (required)
   id: z
     .string()
-    .regex(/^[a-z0-9-_.]+$/, 'ID must contain only lowercase letters, numbers, hyphens, dots, and underscores'),
+    .regex(
+      /^[a-z0-9-_.]+$/,
+      'ID must contain only lowercase letters, numbers, hyphens, dots, and underscores'
+    ),
   name: z.string().min(1, 'Name is required'),
   version: z
     .string()
-    .regex(/^\d+\.\d+\.\d+(-[a-z0-9.]+)?$/, 'Version must be valid semver (e.g., "1.0.0" or "1.0.0-beta.1")'),
+    .regex(
+      /^\d+\.\d+\.\d+(-[a-z0-9.]+)?$/,
+      'Version must be valid semver (e.g., "1.0.0" or "1.0.0-beta.1")'
+    ),
   description: z.string().min(1, 'Description is required'),
   author: z.union([
     z.string(),
@@ -123,7 +106,10 @@ export const PluginManifestSchema = z.object({
   // Visual identity
   icon: z.string().optional(),
   logo: z.string().optional(),
-  color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
   banner: z.string().optional(),
 
   // Classification
@@ -149,9 +135,11 @@ export const PluginManifestSchema = z.object({
 /**
  * Validate distribution configuration
  */
-export function validateDistribution(
-  distribution: unknown
-): { success: boolean; data?: z.infer<typeof PluginDistributionSchema>; errors?: string[] } {
+export function validateDistribution(distribution: unknown): {
+  success: boolean;
+  data?: z.infer<typeof PluginDistributionSchema>;
+  errors?: string[];
+} {
   try {
     const result = PluginDistributionSchema.safeParse(distribution);
 
@@ -159,9 +147,7 @@ export function validateDistribution(
       return { success: true, data: result.data };
     }
 
-    const errors = result.error.errors.map(
-      (err) => `${err.path.join('.')}: ${err.message}`
-    );
+    const errors = result.error.errors.map(err => `${err.path.join('.')}: ${err.message}`);
     return { success: false, errors };
   } catch (error) {
     return {
@@ -174,9 +160,11 @@ export function validateDistribution(
 /**
  * Validate full manifest including distribution
  */
-export function validateManifestWithDistribution(
-  manifest: unknown
-): { success: boolean; data?: z.infer<typeof PluginManifestSchema>; errors?: string[] } {
+export function validateManifestWithDistribution(manifest: unknown): {
+  success: boolean;
+  data?: z.infer<typeof PluginManifestSchema>;
+  errors?: string[];
+} {
   try {
     const result = PluginManifestSchema.safeParse(manifest);
 
@@ -184,9 +172,7 @@ export function validateManifestWithDistribution(
       return { success: true, data: result.data };
     }
 
-    const errors = result.error.errors.map(
-      (err) => `${err.path.join('.')}: ${err.message}`
-    );
+    const errors = result.error.errors.map(err => `${err.path.join('.')}: ${err.message}`);
     return { success: false, errors };
   } catch (error) {
     return {

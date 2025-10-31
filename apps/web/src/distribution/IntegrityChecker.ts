@@ -67,7 +67,9 @@ export class IntegrityChecker {
           errors.push(`Hash mismatch: expected ${expectedHash}, got ${actualHash}`);
         }
       } catch (err) {
-        errors.push(`Hash verification failed: ${err instanceof Error ? err.message : String(err)}`);
+        errors.push(
+          `Hash verification failed: ${err instanceof Error ? err.message : String(err)}`
+        );
       }
     }
 
@@ -79,7 +81,9 @@ export class IntegrityChecker {
         // This is a simplified version
         signatureValid = true; // Placeholder
       } catch (err) {
-        errors.push(`Signature verification failed: ${err instanceof Error ? err.message : String(err)}`);
+        errors.push(
+          `Signature verification failed: ${err instanceof Error ? err.message : String(err)}`
+        );
       }
     }
 
@@ -117,10 +121,7 @@ export class IntegrityChecker {
   /**
    * Verify SRI (Subresource Integrity)
    */
-  async verifySRI(
-    content: Uint8Array | ArrayBuffer,
-    sriHash: string
-  ): Promise<boolean> {
+  async verifySRI(content: Uint8Array | ArrayBuffer, sriHash: string): Promise<boolean> {
     // Parse SRI format: "sha384-base64hash"
     const match = sriHash.match(/^sha(\d+)-(.+)$/);
     if (!match) {

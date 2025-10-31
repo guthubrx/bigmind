@@ -55,14 +55,14 @@ C'est comme avoir un traducteur expert qui non seulement maîtrise parfaitement 
     'Mapping intelligent Markers XMind ↔ Tags BigMind',
     'Préservation des thèmes et palettes de couleurs',
     'Calcul automatique des couleurs héritées',
-    'Stockage sidecar pour les fonctionnalités BigMind'
+    'Stockage sidecar pour les fonctionnalités BigMind',
   ],
   useCases: [
     'Migrer vos cartes XMind vers BigMind en conservant tout',
     'Collaborer avec des équipes utilisant XMind',
     'Utiliser BigMind comme éditeur avancé de fichiers XMind',
     'Créer des workflows hybrides BigMind/XMind',
-    'Archiver vos cartes dans un format standard ouvert'
+    'Archiver vos cartes dans un format standard ouvert',
   ],
 
   features: [

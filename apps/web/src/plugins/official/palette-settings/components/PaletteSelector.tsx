@@ -15,7 +15,12 @@ interface PaletteSelectorProps {
   'aria-label'?: string;
 }
 
-function PaletteSelector({ palettes, value, onChange, 'aria-label': ariaLabel }: PaletteSelectorProps) {
+function PaletteSelector({
+  palettes,
+  value,
+  onChange,
+  'aria-label': ariaLabel,
+}: PaletteSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -69,7 +74,7 @@ function PaletteSelector({ palettes, value, onChange, 'aria-label': ariaLabel }:
       >
         <div className="palette-selector-preview">
           <div className="palette-selector-colors">
-            {selectedPalette.colors.slice(0, 5).map((color) => (
+            {selectedPalette.colors.slice(0, 5).map(color => (
               <div
                 key={`${selectedPalette.id}-${color}`}
                 className="palette-selector-color-dot"
@@ -93,7 +98,7 @@ function PaletteSelector({ palettes, value, onChange, 'aria-label': ariaLabel }:
             >
               <div className="palette-selector-option-preview">
                 <div className="palette-selector-option-colors">
-                  {palette.colors.map((color) => (
+                  {palette.colors.map(color => (
                     <div
                       key={`${palette.id}-${color}`}
                       className="palette-selector-option-color"

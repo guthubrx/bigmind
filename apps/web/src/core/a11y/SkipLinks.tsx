@@ -65,12 +65,12 @@ export function SkipLinks({ links = DEFAULT_LINKS }: SkipLinksProps) {
 
   return (
     <div className="skip-links" aria-label="Liens de navigation rapide">
-      {links.map((link) => (
+      {links.map(link => (
         <a
           key={link.targetId}
           href={`#${link.targetId}`}
           className="skip-link"
-          onClick={(e) => handleClick(e, link.targetId)}
+          onClick={e => handleClick(e, link.targetId)}
         >
           {link.label}
         </a>

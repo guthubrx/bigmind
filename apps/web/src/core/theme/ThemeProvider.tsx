@@ -33,7 +33,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   useEffect(() => {
     // Subscribe to theme changes
-    const unsubscribe = themeManager.subscribe((newTheme) => {
+    const unsubscribe = themeManager.subscribe(newTheme => {
       setThemeState(newTheme);
     });
 

@@ -125,7 +125,7 @@ export class GitHubPluginRegistry {
     const url = new URL(plugin.downloadUrl);
     url.searchParams.set('_t', Date.now().toString());
     const response = await this.fetchWithRetry(url.toString(), 3);
-    return await response.blob();
+    return response.blob();
   }
 
   /**
@@ -175,7 +175,7 @@ export class GitHubPluginRegistry {
     const url = new URL(plugin.manifestUrl);
     url.searchParams.set('_t', Date.now().toString());
     const response = await this.fetchWithRetry(url.toString(), 3);
-    return await response.json();
+    return response.json();
   }
 
   /**
@@ -202,7 +202,7 @@ export class GitHubPluginRegistry {
       } catch (error) {
         if (i === retries - 1) throw error;
 
-        const delay = backoff * Math.pow(2, i); // Exponential backoff
+        const delay = backoff * 2 ** i; // Exponential backoff
         console.warn(`[GitHubPluginRegistry] Retry ${i + 1}/${retries} after ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }

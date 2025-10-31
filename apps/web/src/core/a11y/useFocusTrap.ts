@@ -42,13 +42,7 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
 export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(
   options: UseFocusTrapOptions = {}
 ) {
-  const {
-    enabled = true,
-    initialFocus,
-    returnFocus,
-    escapeDeactivates = true,
-    onEscape,
-  } = options;
+  const { enabled = true, initialFocus, returnFocus, escapeDeactivates = true, onEscape } = options;
 
   const containerRef = useRef<T>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -101,7 +95,6 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(
       if (!e.shiftKey && activeElement === lastElement) {
         e.preventDefault();
         firstElement.focus();
-        return;
       }
     };
 

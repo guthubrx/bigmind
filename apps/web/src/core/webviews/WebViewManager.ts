@@ -8,6 +8,7 @@ import type { WebViewInstance } from './types';
 
 export class WebViewManager {
   private static instance: WebViewManager;
+
   private webviews = new Map<string, WebViewInstance>();
 
   private constructor() {}
@@ -70,7 +71,7 @@ export class WebViewManager {
    * Get all webviews for a plugin
    */
   getByPlugin(pluginId: string): WebViewInstance[] {
-    return Array.from(this.webviews.values()).filter((wv) => wv.pluginId === pluginId);
+    return Array.from(this.webviews.values()).filter(wv => wv.pluginId === pluginId);
   }
 
   /**

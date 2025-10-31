@@ -47,7 +47,7 @@ export function RatingRepliesList({ ratingId, refreshTrigger }: RatingRepliesLis
           table: 'plugin_rating_replies',
           filter: `rating_id=eq.${ratingId}`,
         },
-        (payload) => {
+        payload => {
           const newReply = payload.new as RatingReply;
           // Add new reply to the end of the list
           setReplies(prev => [...prev, newReply]);
@@ -72,11 +72,13 @@ export function RatingRepliesList({ ratingId, refreshTrigger }: RatingRepliesLis
     <div className="rating-replies-list">
       <div className="rating-replies-list__header">
         <MessageCircle size={14} />
-        <span>{replies.length} réponse{replies.length > 1 ? 's' : ''}</span>
+        <span>
+          {replies.length} réponse{replies.length > 1 ? 's' : ''}
+        </span>
       </div>
 
       <div className="rating-replies-list__items">
-        {replies.map((reply) => (
+        {replies.map(reply => (
           <div key={reply.id} className="rating-replies-list__item">
             <div className="rating-replies-list__author">{reply.author_name}</div>
             <div className="rating-replies-list__date">

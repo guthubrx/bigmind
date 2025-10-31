@@ -26,7 +26,7 @@ export function OAuthCallbackHandler() {
 
       // eslint-disable-next-line no-console
       console.log('[OAuthCallbackHandler] OAuth callback detected, processing...');
-      console.log('[OAuthCallbackHandler] Code:', callback.code.substring(0, 10) + '...');
+      console.log('[OAuthCallbackHandler] Code:', `${callback.code.substring(0, 10)}...`);
       console.log('[OAuthCallbackHandler] State:', callback.state);
 
       const result = await gitHubAuthService.handleOAuthCallback(callback.code, callback.state);
@@ -56,7 +56,9 @@ export function OAuthCallbackHandler() {
         console.error('[OAuthCallbackHandler] OAuth failed:', result.error);
 
         // Redirect to developer settings with error
-        const returnUrl = '/settings?section=developer&oauth_error=' + encodeURIComponent(result.error || 'Unknown error');
+        const returnUrl = `/settings?section=developer&oauth_error=${encodeURIComponent(
+          result.error || 'Unknown error'
+        )}`;
         window.location.replace(returnUrl);
       }
     };

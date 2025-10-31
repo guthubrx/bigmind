@@ -53,7 +53,7 @@ export function validateManifest(manifest: unknown): ValidationResult {
   const schemaResult = validateManifestWithDistribution(manifest);
 
   if (!schemaResult.success) {
-    schemaResult.errors?.forEach((error) => {
+    schemaResult.errors?.forEach(error => {
       const [field, ...messageParts] = error.split(':');
       errors.push({
         field: field.trim(),
@@ -69,7 +69,7 @@ export function validateManifest(manifest: unknown): ValidationResult {
   if (hasDistribution(manifest) && m.distribution) {
     const distResult = validateDistribution(m.distribution);
     if (!distResult.success) {
-      distResult.errors?.forEach((error) => {
+      distResult.errors?.forEach(error => {
         const [field, ...messageParts] = error.split(':');
         errors.push({
           field: `distribution.${field.trim()}`,
@@ -93,7 +93,8 @@ export function validateManifest(manifest: unknown): ValidationResult {
     if (!dist.sbom) {
       warnings.push({
         field: 'distribution.sbom',
-        message: 'No SBOM (Software Bill of Materials) found. Recommended for supply chain security.',
+        message:
+          'No SBOM (Software Bill of Materials) found. Recommended for supply chain security.',
         severity: 'warning',
       });
     }
@@ -214,10 +215,7 @@ export function validateForPublication(manifest: unknown): ValidationResult {
 /**
  * Validate manifest compatibility with BigMind version
  */
-export function validateCompatibility(
-  manifest: PluginManifest,
-  bigmindVersion: string
-): boolean {
+export function validateCompatibility(manifest: PluginManifest, bigmindVersion: string): boolean {
   if (!manifest.bigmindVersion) {
     // No version constraint means compatible with all versions
     return true;
@@ -266,11 +264,11 @@ export function getValidationSummary(result: ValidationResult): string {
 export function formatValidationMessages(result: ValidationResult): string[] {
   const messages: string[] = [];
 
-  result.errors.forEach((error) => {
+  result.errors.forEach(error => {
     messages.push(`❌ [${error.field}] ${error.message}`);
   });
 
-  result.warnings.forEach((warning) => {
+  result.warnings.forEach(warning => {
     messages.push(`⚠️  [${warning.field}] ${warning.message}`);
   });
 
@@ -283,7 +281,7 @@ export function formatValidationMessages(result: ValidationResult): string[] {
 export function validateManifests(manifests: unknown[]): Map<string, ValidationResult> {
   const results = new Map<string, ValidationResult>();
 
-  manifests.forEach((manifest) => {
+  manifests.forEach(manifest => {
     if (manifest && typeof manifest === 'object' && 'id' in manifest) {
       const m = manifest as { id: string };
       results.set(m.id, validateManifest(manifest));

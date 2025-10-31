@@ -23,6 +23,7 @@ export interface ModernPanelContribution {
 
 class UnifiedUIManager {
   private static instance: UnifiedUIManager;
+
   private modernPanels = new Map<string, ModernPanelContribution>();
 
   private constructor() {}
@@ -60,7 +61,7 @@ class UnifiedUIManager {
     if (modern) return modern;
 
     // Check legacy
-    const legacy = legacyUIAdapter.getPanels().find((p) => p.id === id);
+    const legacy = legacyUIAdapter.getPanels().find(p => p.id === id);
     return legacy;
   }
 

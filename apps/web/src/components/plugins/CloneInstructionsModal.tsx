@@ -56,7 +56,9 @@ export function CloneInstructionsModal({
           mode: 'readwrite',
           startIn: 'documents',
         });
-        alert(`Dossier sélectionné: ${dirHandle.name}\nCréez maintenant le sous-dossier "${pluginName}"`);
+        alert(
+          `Dossier sélectionné: ${dirHandle.name}\nCréez maintenant le sous-dossier "${pluginName}"`
+        );
       }
     } catch (error) {
       // L'utilisateur a annulé ou le navigateur ne supporte pas
@@ -169,11 +171,7 @@ export function CloneInstructionsModal({
             💡 <strong>Astuce:</strong> Cliquez sur "Copier" pour chaque fichier, puis créez-les
             dans votre éditeur de code.
           </p>
-          <button
-            type="button"
-            className="clone-instructions-modal__done-btn"
-            onClick={onClose}
-          >
+          <button type="button" className="clone-instructions-modal__done-btn" onClick={onClose}>
             J'ai compris
           </button>
         </div>

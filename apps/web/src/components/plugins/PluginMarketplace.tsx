@@ -19,7 +19,6 @@ export function PluginMarketplace() {
   // Load all available manifests
   const manifests = getAllAvailableManifests();
 
-
   // State
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<PluginCategory>('all');
@@ -68,7 +67,6 @@ export function PluginMarketplace() {
     const community = filteredManifests.filter(
       m => m.manifest.source !== 'core' && !m.manifest.featured
     );
-
 
     return {
       corePlugins: core,

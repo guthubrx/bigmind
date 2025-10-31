@@ -25,7 +25,9 @@ export interface CacheOptions {
  */
 export class CacheManager {
   private cache: Map<string, CacheEntry<unknown>> = new Map();
+
   private strategy: CacheStrategy;
+
   private revalidating: Set<string> = new Set();
 
   constructor(strategy: CacheStrategy) {

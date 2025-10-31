@@ -53,10 +53,15 @@ interface UsageMetrics {
 
 class LegacyUIAdapter {
   private static instance: LegacyUIAdapter;
+
   private panels = new Map<string, LegacyPanelConfig>();
+
   private nodePropertiesTabs = new Map<string, LegacyNodePropertiesTab>();
+
   private settingsSections = new Map<string, LegacySettingsSection>();
+
   private mapSettingsSections = new Map<string, LegacySettingsSection>();
+
   private metrics: UsageMetrics = {
     registerPanel: 0,
     registerNodePropertiesTab: 0,
@@ -240,8 +245,7 @@ export const legacyUIAdapter = LegacyUIAdapter.getInstance();
  * Export legacy functions for compatibility
  * @deprecated These will be removed in v2.0.0
  */
-export const registerPanel = (config: LegacyPanelConfig) =>
-  legacyUIAdapter.registerPanel(config);
+export const registerPanel = (config: LegacyPanelConfig) => legacyUIAdapter.registerPanel(config);
 
 export const registerNodePropertiesTab = (config: LegacyNodePropertiesTab) =>
   legacyUIAdapter.registerNodePropertiesTab(config);

@@ -60,7 +60,9 @@ function NodeTagPanel({ nodeId }: NodeTagPanelProps) {
 
     // FR: Récupérer toutes les couleurs déjà utilisées (filtrer les undefined)
     // EN: Get all colors already in use (filter out undefined)
-    const usedColors = allTags.map(tag => tag.color).filter((color): color is string => Boolean(color));
+    const usedColors = allTags
+      .map(tag => tag.color)
+      .filter((color): color is string => Boolean(color));
 
     // FR: Obtenir la prochaine couleur la moins utilisée
     // EN: Get the next least-used color

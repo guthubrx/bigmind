@@ -169,7 +169,10 @@ export class GitHubAuthService {
     // Petit délai pour s'assurer que localStorage est persisté avant la redirection
     setTimeout(() => {
       // eslint-disable-next-line no-console
-      console.log('[GitHubAuth] Final state check before redirect:', localStorage.getItem(OAUTH_STATE_KEY));
+      console.log(
+        '[GitHubAuth] Final state check before redirect:',
+        localStorage.getItem(OAUTH_STATE_KEY)
+      );
       window.location.href = authUrl;
     }, 100);
   }
@@ -185,7 +188,10 @@ export class GitHubAuthService {
   ): Promise<{ success: boolean; user?: GitHubUser; error?: string }> {
     try {
       // eslint-disable-next-line no-console
-      console.log('[GitHubAuth] handleOAuthCallback called with code:', code.substring(0, 10) + '...');
+      console.log(
+        '[GitHubAuth] handleOAuthCallback called with code:',
+        `${code.substring(0, 10)}...`
+      );
 
       // Vérifier le state pour CSRF protection
       const savedState = localStorage.getItem(OAUTH_STATE_KEY);
@@ -203,8 +209,13 @@ export class GitHubAuthService {
       console.log('[GitHubAuth] Edge Function URL:', GITHUB_CONFIG.oauthCallbackUrl);
 
       // Vérifier que l'URL est configurée
-      if (!GITHUB_CONFIG.oauthCallbackUrl || GITHUB_CONFIG.oauthCallbackUrl.includes('your-project')) {
-        throw new Error('Edge Function URL not configured. Check VITE_SUPABASE_FUNCTIONS_URL in .env.local');
+      if (
+        !GITHUB_CONFIG.oauthCallbackUrl ||
+        GITHUB_CONFIG.oauthCallbackUrl.includes('your-project')
+      ) {
+        throw new Error(
+          'Edge Function URL not configured. Check VITE_SUPABASE_FUNCTIONS_URL in .env.local'
+        );
       }
 
       console.log('[GitHubAuth] Exchanging code for token via Edge Function...');

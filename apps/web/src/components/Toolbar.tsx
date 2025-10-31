@@ -41,7 +41,7 @@ function Toolbar() {
         await openFile(file);
       }
     } catch (error) {
-      console.warn('Erreur lors de l\'ouverture:', error);
+      console.warn("Erreur lors de l'ouverture:", error);
     }
   }, [openFileDialog, openFile]);
 
@@ -51,7 +51,7 @@ function Toolbar() {
     try {
       await exportActiveXMind();
     } catch (error) {
-      console.warn('Erreur lors de l\'export:', error);
+      console.warn("Erreur lors de l'export:", error);
     }
   }, [exportActiveXMind]);
 
@@ -222,6 +222,6 @@ function Toolbar() {
       </div>
     </div>
   );
-};
+}
 
 export default Toolbar;

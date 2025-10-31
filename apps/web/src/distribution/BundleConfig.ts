@@ -47,12 +47,12 @@ export const SHARED_EXTERNALS = [
  * Global names for UMD bundles
  */
 export const UMD_GLOBALS: Record<string, string> = {
-  'react': 'React',
+  react: 'React',
   'react-dom': 'ReactDOM',
   'react/jsx-runtime': 'jsxRuntime',
   '@cartae/plugin-sdk': 'PluginSDK',
-  'zustand': 'zustand',
-  'zod': 'Zod',
+  zustand: 'zustand',
+  zod: 'Zod',
 };
 
 /**
@@ -70,6 +70,7 @@ export const DEFAULT_LIMITS: BundleLimits = {
  */
 export class BundleConfig {
   private options: BundleOptions;
+
   private limits: BundleLimits;
 
   constructor(options: BundleOptions, limits: BundleLimits = DEFAULT_LIMITS) {
@@ -134,16 +135,12 @@ export class BundleConfig {
 
     // Check modules
     if (this.limits.maxModules && stats.modules > this.limits.maxModules) {
-      errors.push(
-        `Module count ${stats.modules} exceeds limit ${this.limits.maxModules}`
-      );
+      errors.push(`Module count ${stats.modules} exceeds limit ${this.limits.maxModules}`);
     }
 
     // Check chunks
     if (this.limits.maxChunks && stats.chunks > this.limits.maxChunks) {
-      errors.push(
-        `Chunk count ${stats.chunks} exceeds limit ${this.limits.maxChunks}`
-      );
+      errors.push(`Chunk count ${stats.chunks} exceeds limit ${this.limits.maxChunks}`);
     }
 
     return {
@@ -212,14 +209,14 @@ export class BundleConfig {
    */
   private formatBytes(bytes: number): string {
     if (bytes === 0) {
-return '0 B';
-}
+      return '0 B';
+    }
 
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   }
 
   /**
@@ -268,10 +265,7 @@ return '0 B';
 /**
  * Create bundle config
  */
-export function createBundleConfig(
-  options: BundleOptions,
-  limits?: BundleLimits
-): BundleConfig {
+export function createBundleConfig(options: BundleOptions, limits?: BundleLimits): BundleConfig {
   return new BundleConfig(options, limits);
 }
 

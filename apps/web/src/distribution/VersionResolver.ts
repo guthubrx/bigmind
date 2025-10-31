@@ -133,7 +133,13 @@ export class VersionResolver {
    */
   satisfies(version: string, range: string): boolean {
     // Handle exact version
-    if (!range.includes('^') && !range.includes('~') && !range.includes('>') && !range.includes('<') && !range.includes('*')) {
+    if (
+      !range.includes('^') &&
+      !range.includes('~') &&
+      !range.includes('>') &&
+      !range.includes('<') &&
+      !range.includes('*')
+    ) {
       return this.compare(version, range) === 0;
     }
 
@@ -293,9 +299,9 @@ export class VersionResolver {
       return null;
     }
 
-    return versions.reduce((latest, current) => {
-      return this.compare(current, latest) > 0 ? current : latest;
-    });
+    return versions.reduce((latest, current) =>
+      this.compare(current, latest) > 0 ? current : latest
+    );
   }
 
   /**

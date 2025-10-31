@@ -127,7 +127,9 @@ export class Verifier {
       signature = this.fromBase64(signatureResult.signature);
       publicKey = this.fromBase64(publicKeyInfo.publicKey);
     } catch (error) {
-      errors.push(`Invalid base64 encoding: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      errors.push(
+        `Invalid base64 encoding: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
       return {
         valid: false,
         publicKeyId: signatureResult.publicKeyId,
@@ -157,7 +159,9 @@ export class Verifier {
         warnings,
       };
     } catch (error) {
-      errors.push(`Verification error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      errors.push(
+        `Verification error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
       return {
         valid: false,
         publicKeyId: signatureResult.publicKeyId,
@@ -190,9 +194,8 @@ export class Verifier {
     signatureResult: SignatureResult,
     options?: VerifyOptions
   ): Promise<VerificationResult> {
-    const content = packageContent instanceof ArrayBuffer
-      ? new Uint8Array(packageContent)
-      : packageContent;
+    const content =
+      packageContent instanceof ArrayBuffer ? new Uint8Array(packageContent) : packageContent;
 
     return this.verify(content, signatureResult, options);
   }
@@ -235,12 +238,14 @@ export class Verifier {
   ): Promise<VerificationResult> {
     try {
       const signatureResult: SignatureResult = JSON.parse(signatureFileContent);
-      return this.verify(content, signatureResult, options);
+      return await this.verify(content, signatureResult, options);
     } catch (error) {
       return {
         valid: false,
         publicKeyId: '',
-        errors: [`Failed to parse signature file: ${error instanceof Error ? error.message : 'Unknown error'}`],
+        errors: [
+          `Failed to parse signature file: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        ],
         warnings: [],
       };
     }
@@ -256,16 +261,14 @@ export class Verifier {
       options?: VerifyOptions;
     }>
   ): Promise<VerificationResult[]> {
-    return Promise.all(
-      items.map((item) => this.verify(item.content, item.signature, item.options))
-    );
+    return Promise.all(items.map(item => this.verify(item.content, item.signature, item.options)));
   }
 
   /**
    * Check if all verifications passed
    */
   allValid(results: VerificationResult[]): boolean {
-    return results.every((result) => result.valid);
+    return results.every(result => result.valid);
   }
 
   /**
@@ -279,8 +282,8 @@ export class Verifier {
   } {
     return {
       total: results.length,
-      valid: results.filter((r) => r.valid).length,
-      invalid: results.filter((r) => !r.valid).length,
+      valid: results.filter(r => r.valid).length,
+      invalid: results.filter(r => !r.valid).length,
       warnings: results.reduce((sum, r) => sum + r.warnings.length, 0),
     };
   }
