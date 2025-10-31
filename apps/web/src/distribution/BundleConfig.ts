@@ -79,8 +79,8 @@ export class BundleConfig {
       minify: true,
       sourcemap: false,
       target: 'esnext',
-      format: 'es',
       ...options,
+      format: options.format || 'es',
     };
 
     this.limits = { ...DEFAULT_LIMITS, ...limits };
