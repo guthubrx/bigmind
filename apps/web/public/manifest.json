@@ -1,7 +1,7 @@
 {
-  "name": "BigMind - Cartographie Mentale",
-  "short_name": "BigMind",
-  "description": "Créez, organisez et partagez vos cartes mentales avec BigMind. Interface moderne et intuitive.",
+  "name": "Cartae - Cartographie Mentale",
+  "short_name": "Cartae",
+  "description": "Créez, organisez et partagez vos cartes mentales avec Cartae. Interface moderne et intuitive.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

@@ -1,6 +1,6 @@
 <svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- FR: Image de couverture BigMind pour les réseaux sociaux -->
-  <!-- EN: BigMind cover image for social media -->
+  <!-- FR: Image de couverture Cartae pour les réseaux sociaux -->
+  <!-- EN: Cartae cover image for social media -->
   <defs>
     <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
@@ -57,31 +57,31 @@
   <!-- FR: Texte principal -->
   <!-- EN: Main text -->
   <text x="600" y="200" font-family="Arial, sans-serif" font-size="120" font-weight="bold" fill="url(#textGradient)" text-anchor="middle">
-    BigMind
+    Cartae
   </text>
-  
+
   <!-- FR: Sous-titre -->
   <!-- EN: Subtitle -->
   <text x="600" y="280" font-family="Arial, sans-serif" font-size="48" fill="#e0e7ff" text-anchor="middle">
     Cartes mentales intelligentes
   </text>
-  
+
   <!-- FR: Description -->
   <!-- EN: Description -->
   <text x="600" y="350" font-family="Arial, sans-serif" font-size="32" fill="#c7d2fe" text-anchor="middle">
     Créez, organisez et partagez vos idées
   </text>
-  
+
   <!-- FR: Fonctionnalités -->
   <!-- EN: Features -->
   <text x="600" y="420" font-family="Arial, sans-serif" font-size="24" fill="#a5b4fc" text-anchor="middle">
     • Interface intuitive • Export multiple formats • Collaboration temps réel
   </text>
-  
+
   <!-- FR: URL -->
   <!-- EN: URL -->
   <text x="600" y="500" font-family="Arial, sans-serif" font-size="28" fill="#818cf8" text-anchor="middle">
-    bigmind.app
+    cartae.app
   </text>
   
   <!-- FR: Version -->
