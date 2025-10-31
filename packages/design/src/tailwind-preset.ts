@@ -81,7 +81,8 @@ export const bigmindPreset: Partial<Config> = {
   plugins: [
     // FR: Plugin pour les utilitaires personnalisés
     // EN: Plugin for custom utilities
-    function ({ addUtilities }: any) {
+    // eslint-disable-next-line func-names
+    function customUtilities({ addUtilities }: any) {
       const newUtilities = {
         // FR: Utilitaires pour les nœuds de mind map
         // EN: Utilities for mind map nodes
@@ -97,10 +98,14 @@ export const bigmindPreset: Partial<Config> = {
         // FR: Utilitaires pour les boutons
         // EN: Utilities for buttons
         '.btn-primary': {
-          '@apply bg-accent-500 text-white hover:bg-accent-600 active:bg-accent-700 disabled:bg-state-disabled disabled:text-foreground-tertiary': {},
+          // eslint-disable-next-line max-len
+          '@apply bg-accent-500 text-white hover:bg-accent-600 active:bg-accent-700 disabled:bg-state-disabled disabled:text-foreground-tertiary':
+            {},
         },
         '.btn-secondary': {
-          '@apply bg-background-secondary text-foreground border border-border hover:bg-state-hover active:bg-state-active': {},
+          // eslint-disable-next-line max-len
+          '@apply bg-background-secondary text-foreground border border-border hover:bg-state-hover active:bg-state-active':
+            {},
         },
         // FR: Utilitaires pour le canvas
         // EN: Utilities for canvas

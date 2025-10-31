@@ -10,7 +10,7 @@ export const colors = {
   // EN: Base colors (neutral)
   white: '#ffffff',
   black: '#000000',
-  
+
   // FR: Gris (du plus clair au plus foncé)
   // EN: Grays (from lightest to darkest)
   gray: {
@@ -26,7 +26,7 @@ export const colors = {
     900: '#171717',
     950: '#0a0a0a',
   },
-  
+
   // FR: Couleur d'accent unique (bleu moderne)
   // EN: Single accent color (modern blue)
   accent: {
@@ -42,14 +42,14 @@ export const colors = {
     900: '#1e3a8a',
     950: '#172554',
   },
-  
+
   // FR: Couleurs sémantiques (basées sur l'accent)
   // EN: Semantic colors (based on accent)
   semantic: {
     success: '#10b981', // FR: Vert / EN: Green
     warning: '#f59e0b', // FR: Orange / EN: Orange
-    error: '#ef4444',   // FR: Rouge / EN: Red
-    info: '#3b82f6',    // FR: Bleu (même que accent) / EN: Blue (same as accent)
+    error: '#ef4444', // FR: Rouge / EN: Red
+    info: '#3b82f6', // FR: Bleu (même que accent) / EN: Blue (same as accent)
   },
 } as const;
 

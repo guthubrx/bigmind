@@ -1,6 +1,6 @@
 /**
- * FR: Point d'entrée du package @bigmind/design
- * EN: Entry point for @bigmind/design package
+ * FR: Point d'entrée du package @cartae/design
+ * EN: Entry point for @cartae/design package
  */
 
 export * from './tokens';

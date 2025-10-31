@@ -46,6 +46,9 @@ module.exports = {
     'import/no-relative-packages': 'off',
     'import/no-useless-path-segments': 'off',
     'import/no-named-as-default': 'off',
+    // FR: Désactiver import/export (faux positifs avec resolver TypeScript)
+    // EN: Disable import/export (false positives with TypeScript resolver)
+    'import/export': 'off',
     // FR: Permettre les mutations de l'état Zustand
     // EN: Allow Zustand state mutations
     'no-param-reassign': ['error', { props: false }],
