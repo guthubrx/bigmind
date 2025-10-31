@@ -259,7 +259,13 @@
   display: flex;
   gap: 12px;
   justify-content: flex-end;
-  padding-top: 8px;
+  padding: 16px 24px;
+  margin: 0 -24px -24px;
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-color);
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 .btn {
