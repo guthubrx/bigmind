@@ -9,6 +9,7 @@
 import type { IPluginContext } from '../types/context';
 import type { Permission } from '../permissions/types';
 import { PermissionManager } from '../permissions/PermissionManager';
+import { debugLog } from '../utils/debug';
 
 /**
  * Plugin Sandbox
@@ -56,7 +57,7 @@ export class PluginSandbox {
         if (typeof value === 'function') {
           return (...args: any[]) => {
             // Log API call
-            console.log(`[Plugin ${this.pluginId}] ${namespace}.${String(prop)}()`);
+            debugLog(`[Plugin ${this.pluginId}] ${namespace}.${String(prop)}()`);
 
             // Call original with correct 'this' context
             return value.apply(target, args);

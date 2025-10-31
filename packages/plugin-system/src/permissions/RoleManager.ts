@@ -6,6 +6,7 @@
 /* eslint-disable no-console */
 
 import type { Permission } from './types';
+import { debugLog } from '../utils/debug';
 
 /**
  * Standard plugin roles
@@ -107,7 +108,7 @@ export class RoleManager {
     }
 
     this.roles.set(role.id, role);
-    console.log(`[RoleManager] Registered role: ${role.id}`);
+    debugLog(`[RoleManager] Registered role: ${role.id}`);
   }
 
   /**
@@ -119,7 +120,7 @@ export class RoleManager {
     }
 
     this.pluginRoles.set(pluginId, roleId);
-    console.log(`[RoleManager] Assigned role ${roleId} to plugin ${pluginId}`);
+    debugLog(`[RoleManager] Assigned role ${roleId} to plugin ${pluginId}`);
   }
 
   /**
@@ -191,7 +192,7 @@ export class RoleManager {
    */
   removePluginRole(pluginId: string): void {
     this.pluginRoles.delete(pluginId);
-    console.log(`[RoleManager] Removed role from plugin ${pluginId}`);
+    debugLog(`[RoleManager] Removed role from plugin ${pluginId}`);
   }
 
   /**

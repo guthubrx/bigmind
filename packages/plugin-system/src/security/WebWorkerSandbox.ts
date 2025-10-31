@@ -6,6 +6,7 @@
 /* eslint-disable no-console, @typescript-eslint/no-explicit-any, class-methods-use-this */
 
 import type { IPluginContext } from '../types/context';
+import { debugLog } from '../utils/debug';
 
 /**
  * Message types for Worker communication
@@ -65,7 +66,7 @@ export class WebWorkerSandbox {
     this.worker.onmessage = this.handleWorkerMessage.bind(this);
     this.worker.onerror = this.handleWorkerError.bind(this);
 
-    console.log(`[WebWorkerSandbox] Initialized worker for plugin: ${this.pluginId}`);
+    debugLog(`[WebWorkerSandbox] Initialized worker for plugin: ${this.pluginId}`);
 
     // Initialize worker with plugin context proxy
     this.sendMessage({
@@ -100,7 +101,7 @@ export class WebWorkerSandbox {
     if (this.worker) {
       this.worker.terminate();
       this.worker = null;
-      console.log(`[WebWorkerSandbox] Terminated worker for plugin: ${this.pluginId}`);
+      debugLog(`[WebWorkerSandbox] Terminated worker for plugin: ${this.pluginId}`);
     }
   }
 
@@ -256,6 +257,7 @@ export class WebWorkerSandbox {
 
         if (message.type === MessageType.INIT) {
           pluginId = message.args[0];
+          // Note: debugLog not available in worker context, using console.log
           console.log('[Worker] Initialized for plugin:', pluginId);
         }
         else if (message.type === MessageType.API_CALL) {
@@ -306,6 +308,7 @@ export class WebWorkerSandbox {
         throw new Error('Method ' + method + ' not found in plugin');
       };
 
+      // Note: debugLog not available in worker context, using console.log
       console.log('[Worker] Script loaded');
     `;
   }

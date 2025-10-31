@@ -6,6 +6,7 @@
 /* eslint-disable no-console, @typescript-eslint/no-explicit-any, max-classes-per-file, class-methods-use-this */
 
 import type { Permission } from '../permissions/types';
+import { debugLog } from '../utils/debug';
 
 /**
  * Audit event types
@@ -169,7 +170,7 @@ export class AuditLogger {
     // Encrypt if enabled (placeholder - implement actual encryption)
     if (this.encryptionEnabled) {
       // TODO: Implement encryption with AES-256 or libsodium
-      console.log('[AuditLogger] Encryption enabled (not yet implemented)');
+      debugLog('[AuditLogger] Encryption enabled (not yet implemented)');
     }
 
     await this.storage.save(fullEvent);
@@ -287,7 +288,7 @@ export class AuditLogger {
     const cutoffDate = Date.now() - this.retentionDays * 24 * 60 * 60 * 1000;
     const deleted = await this.storage.cleanup(cutoffDate);
     const msg = `[AuditLogger] Cleaned up ${deleted} old audit logs`;
-    console.log(`${msg} (older than ${this.retentionDays} days)`);
+    debugLog(`${msg} (older than ${this.retentionDays} days)`);
   }
 
   /**
@@ -328,7 +329,7 @@ export class AuditLogger {
     } else if (event.severity === AuditSeverity.WARNING) {
       console.warn(message, event);
     } else {
-      console.info(message);
+      debugLog(message);
     }
   }
 

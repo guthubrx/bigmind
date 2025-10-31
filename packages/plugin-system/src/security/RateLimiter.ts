@@ -5,6 +5,8 @@
 
 /* eslint-disable no-console, max-classes-per-file */
 
+import { debugLog } from '../utils/debug';
+
 /**
  * Rate limit configuration
  */
@@ -97,7 +99,7 @@ export class RateLimiterManager {
     this.customConfigs.set(pluginId, config);
     // Remove existing limiter to force recreation with new config
     this.limiters.delete(pluginId);
-    console.log(
+    debugLog(
       `[RateLimiter] Set custom limit for ${pluginId}: ${config.maxRequests}/${config.windowMs}ms`
     );
   }
@@ -146,7 +148,7 @@ export class RateLimiterManager {
     const limiter = this.limiters.get(pluginId);
     if (limiter) {
       limiter.reset();
-      console.log(`[RateLimiter] Reset rate limit for plugin: ${pluginId}`);
+      debugLog(`[RateLimiter] Reset rate limit for plugin: ${pluginId}`);
     }
   }
 

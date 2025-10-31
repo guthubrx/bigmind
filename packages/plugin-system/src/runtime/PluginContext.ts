@@ -8,6 +8,7 @@
 import type { IPluginContext, MenuItem, PanelOptions, RequestOptions } from '../types/context';
 import { HookSystem } from '../core/HookSystem';
 import { EventEmitter } from 'eventemitter3';
+import { debugLog } from '../utils/debug';
 
 /**
  * Plugin Context implementation
@@ -69,23 +70,23 @@ export class PluginContext implements IPluginContext {
       [],
     updateNode: (nodeId: string, updates: any): void => {
       // TODO: Call command to update node
-      console.log('[PluginContext] updateNode:', nodeId, updates);
+      debugLog('[PluginContext] updateNode:', nodeId, updates);
     },
 
     createNode: (parentId: string, data: any): any => {
       // TODO: Call command to create node
-      console.log('[PluginContext] createNode:', parentId, data);
+      debugLog('[PluginContext] createNode:', parentId, data);
       return {};
     },
 
     deleteNode: (nodeId: string): void => {
       // TODO: Call command to delete node
-      console.log('[PluginContext] deleteNode:', nodeId);
+      debugLog('[PluginContext] deleteNode:', nodeId);
     },
 
     findNodes: (predicate: (node: any) => boolean): any[] => {
       // TODO: Traverse tree and filter
-      console.log('[PluginContext] findNodes:', predicate);
+      debugLog('[PluginContext] findNodes:', predicate);
       return [];
     },
   };
@@ -130,13 +131,13 @@ export class PluginContext implements IPluginContext {
       _handler: (...args: any[]) => void | Promise<void>
     ): (() => void) => {
       // TODO: Register command in command registry
-      console.log('[PluginContext] registerCommand:', id);
-      return () => console.log('[PluginContext] unregister command:', id);
+      debugLog('[PluginContext] registerCommand:', id);
+      return () => debugLog('[PluginContext] unregister command:', id);
     },
 
     executeCommand: (id: string, ...args: any[]): Promise<void> => {
       // TODO: Execute command from command registry
-      console.log('[PluginContext] executeCommand:', id, args);
+      debugLog('[PluginContext] executeCommand:', id, args);
       return Promise.resolve();
     },
 
@@ -153,25 +154,25 @@ export class PluginContext implements IPluginContext {
       type: 'info' | 'success' | 'warning' | 'error' = 'info'
     ): void => {
       // TODO: Show notification in UI
-      console.log(`[PluginContext] Notification (${type}):`, message);
+      debugLog(`[PluginContext] Notification (${type}):`, message);
     },
 
     showConfirmDialog: async (message: string, options?: { title?: string }): Promise<boolean> => {
       // TODO: Show confirmation dialog
-      console.log('[PluginContext] Confirm dialog:', message, options);
+      debugLog('[PluginContext] Confirm dialog:', message, options);
       return true;
     },
 
     registerMenuItem: (location: string, item: MenuItem): (() => void) => {
       // TODO: Register menu item
-      console.log('[PluginContext] registerMenuItem:', location, item);
-      return () => console.log('[PluginContext] unregister menu item');
+      debugLog('[PluginContext] registerMenuItem:', location, item);
+      return () => debugLog('[PluginContext] unregister menu item');
     },
 
     registerPanel: (id: string, panel: PanelOptions): (() => void) => {
       // TODO: Register panel
-      console.log('[PluginContext] registerPanel:', id, panel);
-      return () => console.log('[PluginContext] unregister panel');
+      debugLog('[PluginContext] registerPanel:', id, panel);
+      return () => debugLog('[PluginContext] unregister panel');
     },
   };
 

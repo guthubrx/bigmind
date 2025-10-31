@@ -5,6 +5,8 @@
 
 /* eslint-disable no-console, class-methods-use-this */
 
+import { debugLog } from '../utils/debug';
+
 /**
  * CSP directive
  */
@@ -68,7 +70,7 @@ export class CSPManager {
   setPluginPolicy(pluginId: string, policy: Partial<CSPPolicy>): void {
     const merged = this.mergeWithDefault(policy);
     this.pluginPolicies.set(pluginId, merged);
-    console.log(`[CSPManager] Set custom CSP for plugin: ${pluginId}`);
+    debugLog(`[CSPManager] Set custom CSP for plugin: ${pluginId}`);
   }
 
   /**
@@ -144,7 +146,7 @@ export class CSPManager {
     const connectSrc = policy.directives['connect-src'] || [];
     policy.directives['connect-src'] = Array.from(new Set([...connectSrc, ...domains]));
     this.pluginPolicies.set(pluginId, policy);
-    console.log(`[CSPManager] Allowed network access for ${pluginId}:`, domains);
+    debugLog(`[CSPManager] Allowed network access for ${pluginId}:`, domains);
   }
 
   /**
@@ -155,7 +157,7 @@ export class CSPManager {
     const scriptSrc = policy.directives['script-src'] || [];
     policy.directives['script-src'] = Array.from(new Set([...scriptSrc, ...sources]));
     this.pluginPolicies.set(pluginId, policy);
-    console.log(`[CSPManager] Allowed script sources for ${pluginId}:`, sources);
+    debugLog(`[CSPManager] Allowed script sources for ${pluginId}:`, sources);
   }
 
   /**
@@ -191,7 +193,7 @@ export class CSPManager {
       'allow-scripts allow-same-origin allow-forms allow-modals allow-popups'
     );
 
-    console.log(`[CSPManager] Applied CSP to iframe for plugin: ${pluginId}`);
+    debugLog(`[CSPManager] Applied CSP to iframe for plugin: ${pluginId}`);
   }
 
   /**
@@ -245,6 +247,6 @@ export class CSPManager {
    */
   setDefaultPolicy(policy: CSPPolicy): void {
     this.defaultPolicy = policy;
-    console.log('[CSPManager] Updated default CSP policy');
+    debugLog('[CSPManager] Updated default CSP policy');
   }
 }

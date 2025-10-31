@@ -11,6 +11,7 @@ import { RoleManager } from './RoleManager';
 import { PolicyEngine, type Policy, type EvaluationContext } from './PolicyEngine';
 import { RateLimiterManager } from '../security/RateLimiter';
 import { AuditLogger, AuditEventType, AuditSeverity } from '../security/AuditLogger';
+import { debugLog } from '../utils/debug';
 
 /**
  * Permission constraints (ABAC)
@@ -141,9 +142,7 @@ export class EnhancedPermissionManager extends PermissionManager {
         this.rateLimiter.setPluginLimit(pluginId, constraints.rateLimit);
       }
 
-      console.log(
-        `[EnhancedPermissionManager] Granted ${permission} to ${pluginId} with constraints`
-      );
+      debugLog(`[EnhancedPermissionManager] Granted ${permission} to ${pluginId} with constraints`);
     }
 
     this.auditLogger.logPermissionRequested(pluginId, permission, true);
@@ -219,7 +218,7 @@ export class EnhancedPermissionManager extends PermissionManager {
    */
   registerPolicy(pluginId: string, policy: Policy): void {
     this.policyEngine.registerPolicy(pluginId, policy);
-    console.log(`[EnhancedPermissionManager] Registered policy for plugin: ${pluginId}`);
+    debugLog(`[EnhancedPermissionManager] Registered policy for plugin: ${pluginId}`);
   }
 
   /**
@@ -227,7 +226,7 @@ export class EnhancedPermissionManager extends PermissionManager {
    */
   assignRole(pluginId: string, roleId: string): void {
     this.roleManager.assignRole(pluginId, roleId);
-    console.log(`[EnhancedPermissionManager] Assigned role ${roleId} to ${pluginId}`);
+    debugLog(`[EnhancedPermissionManager] Assigned role ${roleId} to ${pluginId}`);
   }
 
   /**

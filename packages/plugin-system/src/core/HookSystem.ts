@@ -6,6 +6,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, no-console */
 
 import { EventEmitter } from 'eventemitter3';
+import { debugLog } from '../utils/debug';
 
 /**
  * Hook types
@@ -164,7 +165,7 @@ export class HookSystem extends EventEmitter {
       }
     });
 
-    console.log(`[HookSystem] Removed all hooks for plugin: ${pluginId}`);
+    debugLog(`[HookSystem] Removed all hooks for plugin: ${pluginId}`);
   }
 
   /**
@@ -211,14 +212,14 @@ export class HookSystem extends EventEmitter {
     }
 
     const logMsg = `[HookSystem] Registered ${type} hook: ${hookName}`;
-    console.log(`${logMsg} (plugin: ${pluginId}, priority: ${priority})`);
+    debugLog(`${logMsg} (plugin: ${pluginId}, priority: ${priority})`);
 
     // Return unregister function
     return () => {
       const idx = callbacks.indexOf(hookCallback);
       if (idx !== -1) {
         callbacks.splice(idx, 1);
-        console.log(`[HookSystem] Unregistered ${type} hook: ${hookName} (plugin: ${pluginId})`);
+        debugLog(`[HookSystem] Unregistered ${type} hook: ${hookName} (plugin: ${pluginId})`);
       }
     };
   }

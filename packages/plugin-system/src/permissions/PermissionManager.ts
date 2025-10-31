@@ -6,6 +6,7 @@
 /* eslint-disable no-console */
 
 import type { Permission } from './types';
+import { debugLog } from '../utils/debug';
 
 /**
  * Storage interface for persisting permissions
@@ -71,7 +72,7 @@ export class PermissionManager {
       this.granted.set(pluginId, new Set());
     }
     this.granted.get(pluginId)!.add(permission);
-    console.log(`[PermissionManager] Granted permission ${permission} to plugin ${pluginId}`);
+    debugLog(`[PermissionManager] Granted permission ${permission} to plugin ${pluginId}`);
   }
 
   /**
@@ -79,7 +80,7 @@ export class PermissionManager {
    */
   revoke(pluginId: string, permission: Permission): void {
     this.granted.get(pluginId)?.delete(permission);
-    console.log(`[PermissionManager] Revoked permission ${permission} from plugin ${pluginId}`);
+    debugLog(`[PermissionManager] Revoked permission ${permission} from plugin ${pluginId}`);
   }
 
   /**
@@ -87,7 +88,7 @@ export class PermissionManager {
    */
   revokeAll(pluginId: string): void {
     this.granted.delete(pluginId);
-    console.log(`[PermissionManager] Revoked all permissions from plugin ${pluginId}`);
+    debugLog(`[PermissionManager] Revoked all permissions from plugin ${pluginId}`);
   }
 
   /**
@@ -121,7 +122,7 @@ export class PermissionManager {
   ): Promise<{ approved: boolean }> {
     // For Phase 1, auto-approve (development mode)
     // In Phase 2, this will show a real UI dialog
-    console.log(
+    debugLog(
       `[PermissionManager] Auto-approving permissions for ${pluginId} (dev mode):`,
       permissions
     );
@@ -150,7 +151,7 @@ export class PermissionManager {
           }
           this.granted.set(pluginId, permSet);
         });
-        console.log(`[PermissionManager] Loaded permissions for ${this.granted.size} plugins`);
+        debugLog(`[PermissionManager] Loaded permissions for ${this.granted.size} plugins`);
       }
     } catch (error) {
       console.error('[PermissionManager] Failed to load permissions:', error);

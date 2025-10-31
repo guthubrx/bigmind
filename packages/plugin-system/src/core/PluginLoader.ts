@@ -6,6 +6,7 @@ import JSZip from 'jszip';
 import type { Plugin } from '../types/plugin';
 import type { PluginManifest } from '../types/manifest';
 import { validateManifest } from '../validation/manifestSchema';
+import { debugLog } from '../utils/debug';
 
 export interface PluginLoadOptions {
   marketplaceUrl?: string;
@@ -18,7 +19,9 @@ export interface PluginLoadOptions {
  */
 export class PluginLoader {
   private marketplaceUrl: string;
+
   private validateSecurity: boolean;
+
   private maxSize: number;
 
   constructor(options: PluginLoadOptions = {}) {
@@ -31,8 +34,7 @@ export class PluginLoader {
    * Download plugin from marketplace
    */
   async download(pluginId: string, version?: string): Promise<Plugin> {
-    // eslint-disable-next-line no-console
-    console.log(`[PluginLoader] Downloading ${pluginId}${version ? ` v${version}` : ''}...`);
+    debugLog(`[PluginLoader] Downloading ${pluginId}${version ? ` v${version}` : ''}...`);
 
     try {
       // 1. Fetch ZIP from marketplace
@@ -52,7 +54,7 @@ export class PluginLoader {
       if (zipBlob.size > this.maxSize) {
         throw new Error(
           `Plugin too large: ${(zipBlob.size / 1024 / 1024).toFixed(2)}MB ` +
-          `(max ${(this.maxSize / 1024 / 1024).toFixed(0)}MB)`
+            `(max ${(this.maxSize / 1024 / 1024).toFixed(0)}MB)`
         );
       }
 
@@ -94,8 +96,7 @@ export class PluginLoader {
       const plugin = new PluginClass();
       plugin.manifest = manifest;
 
-      // eslint-disable-next-line no-console
-      console.log(`[PluginLoader] Successfully loaded ${pluginId} v${manifest.version}`);
+      debugLog(`[PluginLoader] Successfully loaded ${pluginId} v${manifest.version}`);
 
       return plugin;
     } catch (error) {
@@ -109,8 +110,7 @@ export class PluginLoader {
    * Load plugin from local file (for development/testing)
    */
   async loadFromFile(file: File): Promise<Plugin> {
-    // eslint-disable-next-line no-console
-    console.log(`[PluginLoader] Loading plugin from file: ${file.name}`);
+    debugLog(`[PluginLoader] Loading plugin from file: ${file.name}`);
 
     const zip = await JSZip.loadAsync(file);
 
@@ -160,12 +160,10 @@ export class PluginLoader {
       'filesystem:write',
       'filesystem:delete',
       'network:unrestricted',
-      'system:exec'
+      'system:exec',
     ];
 
-    const dangerous = manifest.permissions?.filter(p =>
-      dangerousPermissions.includes(p)
-    );
+    const dangerous = manifest.permissions?.filter(p => dangerousPermissions.includes(p));
 
     if (dangerous && dangerous.length > 0) {
       // eslint-disable-next-line no-console
@@ -216,7 +214,7 @@ export class PluginLoader {
     if (totalSize > this.maxSize) {
       throw new Error(
         `Plugin package too large: ${(totalSize / 1024 / 1024).toFixed(2)}MB ` +
-        `(max ${(this.maxSize / 1024 / 1024).toFixed(0)}MB)`
+          `(max ${(this.maxSize / 1024 / 1024).toFixed(0)}MB)`
       );
     }
 
@@ -247,9 +245,7 @@ export class PluginLoader {
     } catch (error) {
       // Option 2: Fallback to eval in isolated scope (less secure, for legacy support)
       // eslint-disable-next-line no-console
-      console.warn(
-        `[PluginLoader] Dynamic import failed for ${pluginId}, using fallback loader`
-      );
+      console.warn(`[PluginLoader] Dynamic import failed for ${pluginId}, using fallback loader`);
 
       try {
         // Create isolated scope

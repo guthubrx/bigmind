@@ -7,6 +7,7 @@
 /* eslint-disable no-console, @typescript-eslint/no-explicit-any, class-methods-use-this */
 
 import type { Permission } from './types';
+import { debugLog } from '../utils/debug';
 
 /**
  * Policy effect
@@ -104,7 +105,7 @@ export class PolicyEngine {
    */
   registerPolicy(pluginId: string, policy: Policy): void {
     this.policies.set(pluginId, policy);
-    console.log(`[PolicyEngine] Registered policy for plugin: ${pluginId}`);
+    debugLog(`[PolicyEngine] Registered policy for plugin: ${pluginId}`);
   }
 
   /**
@@ -397,7 +398,7 @@ export class PolicyEngine {
    */
   removePolicy(pluginId: string): void {
     this.policies.delete(pluginId);
-    console.log(`[PolicyEngine] Removed policy for plugin: ${pluginId}`);
+    debugLog(`[PolicyEngine] Removed policy for plugin: ${pluginId}`);
   }
 
   /**

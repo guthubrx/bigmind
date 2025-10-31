@@ -15,6 +15,7 @@ import { PluginContext } from '../runtime/PluginContext';
 import { validateManifest } from '../validation/manifestSchema';
 import { HookSystem } from './HookSystem';
 import { EventEmitter } from 'eventemitter3';
+import { debugLog } from '../utils/debug';
 
 /**
  * Central registry for managing plugin lifecycle
@@ -79,17 +80,14 @@ export class PluginRegistry extends EventEmitter {
     this.plugins.set(manifest.id, info);
     this.emit('plugin:registered', manifest.id, manifest);
 
-    console.log(`[PluginRegistry] Registered plugin: ${manifest.id} v${manifest.version}`);
+    debugLog(`[PluginRegistry] Registered plugin: ${manifest.id} v${manifest.version}`);
 
     // Auto-activate if enabled in manifest or by default
     if ((manifest.autoActivate ?? autoActivate) && autoActivate) {
       try {
         await this.activate(manifest.id);
       } catch (error) {
-        console.warn(
-          `[PluginRegistry] Failed to auto-activate plugin ${manifest.id}:`,
-          error
-        );
+        console.warn(`[PluginRegistry] Failed to auto-activate plugin ${manifest.id}:`, error);
         // Don't throw - plugin is still registered, just not active
       }
     }
@@ -133,7 +131,7 @@ export class PluginRegistry extends EventEmitter {
       info.activatedAt = Date.now();
 
       this.emit('plugin:activated', pluginId);
-      console.log(`[PluginRegistry] Activated plugin: ${pluginId}`);
+      debugLog(`[PluginRegistry] Activated plugin: ${pluginId}`);
     } catch (error) {
       info.state = PluginState.ERROR;
       info.error = error as Error;
@@ -173,7 +171,7 @@ export class PluginRegistry extends EventEmitter {
       info.activatedAt = null;
 
       this.emit('plugin:deactivated', pluginId);
-      console.log(`[PluginRegistry] Deactivated plugin: ${pluginId}`);
+      debugLog(`[PluginRegistry] Deactivated plugin: ${pluginId}`);
     } catch (error) {
       console.error(`[PluginRegistry] Error deactivating plugin ${pluginId}:`, error);
       throw error;
@@ -202,7 +200,7 @@ export class PluginRegistry extends EventEmitter {
     this.permissionManager.revokeAll(pluginId);
 
     this.emit('plugin:unregistered', pluginId);
-    console.log(`[PluginRegistry] Unregistered plugin: ${pluginId}`);
+    debugLog(`[PluginRegistry] Unregistered plugin: ${pluginId}`);
   }
 
   /**
