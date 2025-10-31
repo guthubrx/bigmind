@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { useTagStore } from '../hooks/useTagStore';
+import { useShallow } from 'zustand/react/shallow';
 import { X } from 'lucide-react';
 import './MindMapNodeTags.css';
 
@@ -14,19 +15,13 @@ interface MindMapNodeTagsProps {
 }
 
 function MindMapNodeTags({ nodeId, onRemoveTag }: MindMapNodeTagsProps) {
-  // FR: Sélecteur optimisé qui évite Object.values et filtre directement
-  // EN: Optimized selector that avoids Object.values and filters directly
+  // FR: Sélecteur optimisé avec useShallow pour comparaison structurelle
+  // EN: Optimized selector with useShallow for structural comparison
   const tags = useTagStore(
-    state => {
+    useShallow(state => {
       const nodeTagIds = state.getNodeTags(nodeId);
       return nodeTagIds.map(tagId => state.tags[tagId]).filter(Boolean);
-    },
-    (a, b) => {
-      // FR: Comparaison structurelle pour éviter re-renders inutiles
-      // EN: Structural comparison to avoid unnecessary re-renders
-      if (a.length !== b.length) return false;
-      return a.every((tag, i) => tag.id === b[i]?.id);
-    }
+    })
   );
 
   const handleTagDragStart = (e: React.DragEvent, tagId: string) => {
