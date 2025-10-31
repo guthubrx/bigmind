@@ -34,7 +34,7 @@ export function PluginDetailModal({
   const [ratingsRefresh, setRatingsRefresh] = useState(0);
   const [ratingAggregate, setRatingAggregate] = useState<PluginRatingsAggregate | null>(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
-  const [quickRatingHover, setQuickRatingHover] = useState(0);
+  const [quickRatingHover, setQuickRatingHover] = useState(0); // Support for half stars: 0.5, 1, 1.5, 2, etc.
 
   // Fetch rating aggregate from Supabase
   useEffect(() => {
@@ -49,8 +49,8 @@ export function PluginDetailModal({
     fetchRating();
   }, [manifest.id, ratingsRefresh]);
 
-  // FR: Gestion de la notation rapide
-  // EN: Handle quick rating
+  // FR: Gestion de la notation rapide (avec support demi-étoiles)
+  // EN: Handle quick rating (with half-star support)
   const handleQuickRating = async (rating: number) => {
     try {
       const success = await submitQuickRating(manifest.id, rating);
@@ -60,6 +60,31 @@ export function PluginDetailModal({
     } catch (error) {
       console.error('[PluginDetailModal] Error submitting quick rating:', error);
     }
+  };
+
+  // FR: Gestion du hover avec demi-étoiles
+  // EN: Handle hover with half-stars
+  const handleStarHover = (star: number, event: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const width = rect.width;
+    const isLeftHalf = x < width / 2;
+
+    // If hovering left half, show half star (star - 0.5)
+    // If hovering right half, show full star
+    setQuickRatingHover(isLeftHalf ? star - 0.5 : star);
+  };
+
+  // FR: Gestion du clic avec demi-étoiles
+  // EN: Handle click with half-stars
+  const handleStarClick = (star: number, event: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const width = rect.width;
+    const isLeftHalf = x < width / 2;
+
+    const rating = isLeftHalf ? star - 0.5 : star;
+    handleQuickRating(rating);
   };
 
   const getBadges = (): BadgeType[] => {
@@ -163,19 +188,32 @@ export function PluginDetailModal({
             <div className="plugin-detail-modal__quick-stars">
               {[1, 2, 3, 4, 5].map(star => {
                 const isFilled = star <= quickRatingHover;
+                const isHalfFilled = star - 0.5 <= quickRatingHover && quickRatingHover < star;
+
                 return (
                   <button
                     key={star}
                     type="button"
                     className={`plugin-detail-modal__quick-star ${
-                      isFilled ? 'plugin-detail-modal__quick-star--filled' : ''
+                      isFilled
+                        ? 'plugin-detail-modal__quick-star--filled'
+                        : isHalfFilled
+                          ? 'plugin-detail-modal__quick-star--half'
+                          : ''
                     }`}
-                    onMouseEnter={() => setQuickRatingHover(star)}
+                    onMouseMove={e => handleStarHover(star, e)}
                     onMouseLeave={() => setQuickRatingHover(0)}
-                    onClick={() => handleQuickRating(star)}
+                    onClick={e => handleStarClick(star, e)}
                     aria-label={`${star} étoiles`}
                   >
-                    <Star size={20} fill={isFilled ? 'currentColor' : 'none'} />
+                    {isHalfFilled ? (
+                      <div className="star-half-container">
+                        <Star size={20} fill="currentColor" className="star-half-filled" />
+                        <Star size={20} fill="none" className="star-half-empty" />
+                      </div>
+                    ) : (
+                      <Star size={20} fill={isFilled ? 'currentColor' : 'none'} />
+                    )}
                   </button>
                 );
               })}

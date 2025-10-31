@@ -227,6 +227,34 @@
   transform: scale(1.1);
 }
 
+.plugin-detail-modal__quick-star--half {
+  color: #fbbf24;
+  transform: scale(1.1);
+}
+
+/* FR: Container pour afficher une demi-étoile */
+/* EN: Container to display half-star */
+.star-half-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.star-half-filled {
+  position: absolute;
+  clip-path: inset(0 50% 0 0);
+  color: #fbbf24;
+}
+
+.star-half-empty {
+  position: absolute;
+  clip-path: inset(0 0 0 50%);
+  color: #fbbf24;
+}
+
 .plugin-detail-modal__toggle-review {
   background: transparent;
   border: none;

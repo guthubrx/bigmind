@@ -62,6 +62,33 @@
   color: #fbbf24;
 }
 
+.plugin-rating-form__star--half {
+  color: #fbbf24;
+}
+
+/* FR: Container pour afficher une demi-étoile */
+/* EN: Container to display half-star */
+.plugin-rating-form .star-half-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.plugin-rating-form .star-half-filled {
+  position: absolute;
+  clip-path: inset(0 50% 0 0);
+  color: #fbbf24;
+}
+
+.plugin-rating-form .star-half-empty {
+  position: absolute;
+  clip-path: inset(0 0 0 50%);
+  color: #fbbf24;
+}
+
 .plugin-rating-form__rating-text {
   font-size: 14px;
   font-weight: 600;

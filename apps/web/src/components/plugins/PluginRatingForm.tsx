@@ -24,8 +24,8 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
   const [hasSubmittedQuickRating, setHasSubmittedQuickRating] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // FR: Soumission rapide de la note au clic sur une étoile
-  // EN: Quick rating submission on star click
+  // FR: Soumission rapide de la note au clic sur une étoile (avec demi-étoiles)
+  // EN: Quick rating submission on star click (with half-stars)
   const handleQuickRating = async (newRating: number) => {
     setRating(newRating);
     setHasSubmittedQuickRating(false);
@@ -33,7 +33,12 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
 
     // Submit quick rating immediately
     try {
-      const success = await submitQuickRating(pluginId, newRating, userName || undefined, email || undefined);
+      const success = await submitQuickRating(
+        pluginId,
+        newRating,
+        userName || undefined,
+        email || undefined
+      );
 
       if (success) {
         setHasSubmittedQuickRating(true);
@@ -49,6 +54,29 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
       console.error('[PluginRatingForm] Error submitting quick rating:', error);
       setMessage({ type: 'error', text: 'Erreur de connexion' });
     }
+  };
+
+  // FR: Gestion du hover avec demi-étoiles
+  // EN: Handle hover with half-stars
+  const handleStarHover = (star: number, event: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const width = rect.width;
+    const isLeftHalf = x < width / 2;
+
+    setHoverRating(isLeftHalf ? star - 0.5 : star);
+  };
+
+  // FR: Gestion du clic avec demi-étoiles
+  // EN: Handle click with half-stars
+  const handleStarClick = (star: number, event: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const width = rect.width;
+    const isLeftHalf = x < width / 2;
+
+    const newRating = isLeftHalf ? star - 0.5 : star;
+    handleQuickRating(newRating);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -185,19 +213,32 @@ export function PluginRatingForm({ pluginId, onSuccess }: PluginRatingFormProps)
             {[1, 2, 3, 4, 5].map(star => {
               const currentRating = hoverRating || rating;
               const isFilled = star <= currentRating;
+              const isHalfFilled = star - 0.5 <= currentRating && currentRating < star;
+
               return (
                 <button
                   key={star}
                   type="button"
                   className={`plugin-rating-form__star ${
-                    isFilled ? 'plugin-rating-form__star--filled' : ''
+                    isFilled
+                      ? 'plugin-rating-form__star--filled'
+                      : isHalfFilled
+                        ? 'plugin-rating-form__star--half'
+                        : ''
                   }`}
-                  onMouseEnter={() => setHoverRating(star)}
+                  onMouseMove={e => handleStarHover(star, e)}
                   onMouseLeave={() => setHoverRating(0)}
-                  onClick={() => handleQuickRating(star)}
+                  onClick={e => handleStarClick(star, e)}
                   aria-label={`${star} étoiles`}
                 >
-                  <Star size={20} fill={isFilled ? 'currentColor' : 'none'} />
+                  {isHalfFilled ? (
+                    <div className="star-half-container">
+                      <Star size={20} fill="currentColor" className="star-half-filled" />
+                      <Star size={20} fill="none" className="star-half-empty" />
+                    </div>
+                  ) : (
+                    <Star size={20} fill={isFilled ? 'currentColor' : 'none'} />
+                  )}
                 </button>
               );
             })}
