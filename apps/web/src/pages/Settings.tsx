@@ -18,6 +18,7 @@ import {
   AuditDashboard,
   PolicyEditor,
   PluginDetailPage,
+  PluginRepositorySettings,
 } from '../components/plugins';
 // EventMonitorPanel removed - now available as community plugin
 import { GitHubLoginButton } from '../components/plugins/GitHubLoginButton';
@@ -57,7 +58,7 @@ function SettingsPage() {
   const setShortcut = useShortcuts(s => s.setShortcut);
   const resetShortcuts = useShortcuts(s => s.resetDefaults);
   const [searchParams] = useSearchParams();
-  const [section, setSection] = useState<'appearance' | 'shortcuts' | 'plugins' | 'admin'>(
+  const [section, setSection] = useState<'appearance' | 'shortcuts' | 'plugins' | 'sources' | 'admin'>(
     'appearance'
   );
   const platform = usePlatform();
@@ -87,6 +88,7 @@ function SettingsPage() {
       sectionParam === 'plugins' ||
       sectionParam === 'appearance' ||
       sectionParam === 'shortcuts' ||
+      sectionParam === 'sources' ||
       sectionParam === 'admin'
     ) {
       setSection(sectionParam);
@@ -280,6 +282,13 @@ function SettingsPage() {
                   onClick={() => setSection('plugins')}
                 >
                   🔌 Plugins
+                </button>
+                <button
+                  type="button"
+                  className={`btn settings-nav-btn ${section === 'sources' ? 'active' : ''}`}
+                  onClick={() => setSection('sources')}
+                >
+                  📦 Sources de Plugins
                 </button>
                 <button
                   type="button"
@@ -831,6 +840,13 @@ function SettingsPage() {
                     </div>
                   );
                 })()}
+
+              {/* Sources de Plugins Section */}
+              {section === 'sources' && (
+                <div className="settings-section">
+                  <PluginRepositorySettings />
+                </div>
+              )}
 
               {/* Administration Section */}
               {section === 'admin' && (

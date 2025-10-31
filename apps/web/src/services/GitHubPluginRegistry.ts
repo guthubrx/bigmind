@@ -3,6 +3,8 @@
  * Fetches plugin metadata and downloads from GitHub
  */
 
+import { pluginRepositoryManager } from './PluginRepositoryManager';
+
 export interface PluginRegistryEntry {
   id: string;
   name: string;
@@ -23,6 +25,10 @@ export interface PluginRegistryEntry {
   reviewCount: number;
   featured: boolean;
   lastUpdated: string;
+  // Repository metadata
+  repositoryId: string;
+  repositoryUrl: string;
+  repositoryName: string;
 }
 
 export interface PluginRatings {
@@ -39,17 +45,14 @@ export interface PluginRatings {
 interface RegistryResponse {
   version: string;
   lastUpdated: string;
-  plugins: PluginRegistryEntry[];
+  plugins: Omit<PluginRegistryEntry, 'repositoryId' | 'repositoryUrl' | 'repositoryName'>[];
 }
 
-const REGISTRY_URL =
-  'https://raw.githubusercontent.com/guthubrx/bigmind-plugins/main/registry.json';
-
-const CACHE_KEY = 'bigmind-plugin-registry-cache';
+const CACHE_KEY = 'cartae-plugin-registry-cache';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 interface CacheEntry {
-  data: RegistryResponse;
+  data: PluginRegistryEntry[];
   timestamp: number;
 }
 
@@ -57,14 +60,14 @@ export class GitHubPluginRegistry {
   private cache: CacheEntry | null = null;
 
   /**
-   * Fetch the plugin registry from GitHub
+   * Fetch the plugin registry from multiple repositories
    * Uses cache if fresh (< 5min)
    */
   async fetchRegistry(): Promise<PluginRegistryEntry[]> {
     // Check cache
     if (this.cache && Date.now() - this.cache.timestamp < CACHE_TTL) {
       console.log('[GitHubPluginRegistry] Using cached registry');
-      return this.cache.data.plugins;
+      return this.cache.data;
     }
 
     // Check localStorage cache
@@ -75,38 +78,83 @@ export class GitHubPluginRegistry {
         if (Date.now() - cacheEntry.timestamp < CACHE_TTL) {
           console.log('[GitHubPluginRegistry] Using localStorage cached registry');
           this.cache = cacheEntry;
-          return cacheEntry.data.plugins;
+          return cacheEntry.data;
         }
       }
     } catch (error) {
       console.warn('[GitHubPluginRegistry] Failed to read cache:', error);
     }
 
-    // Fetch from GitHub
-    console.log('[GitHubPluginRegistry] Fetching registry from GitHub...');
-    try {
-      const response = await this.fetchWithRetry(REGISTRY_URL, 3);
-      const data: RegistryResponse = await response.json();
+    // Fetch from all enabled repositories
+    console.log('[GitHubPluginRegistry] Fetching registry from multiple repositories...');
 
-      // Update cache
-      const cacheEntry: CacheEntry = {
-        data,
-        timestamp: Date.now(),
-      };
-      this.cache = cacheEntry;
-      localStorage.setItem(CACHE_KEY, JSON.stringify(cacheEntry));
+    const enabledRepos = pluginRepositoryManager.getEnabledRepositories();
+    const allPlugins: PluginRegistryEntry[] = [];
 
-      console.log(`[GitHubPluginRegistry] Fetched ${data.plugins.length} plugins`);
-      return data.plugins;
-    } catch (error) {
-      console.error('[GitHubPluginRegistry] Failed to fetch registry:', error);
-      // Return cached data even if expired, better than nothing
-      if (this.cache) {
-        console.warn('[GitHubPluginRegistry] Using expired cache as fallback');
-        return this.cache.data.plugins;
+    for (const repo of enabledRepos) {
+      try {
+        const response = await this.fetchWithRetry(repo.url, 3);
+        const data: RegistryResponse = await response.json();
+
+        // Add repository metadata to each plugin
+        const pluginsWithRepoInfo = data.plugins.map(plugin => ({
+          ...plugin,
+          repositoryId: repo.id,
+          repositoryUrl: repo.url,
+          repositoryName: repo.name,
+        }));
+
+        allPlugins.push(...pluginsWithRepoInfo);
+        console.log(
+          `[GitHubPluginRegistry] Fetched ${data.plugins.length} plugins from ${repo.name}`
+        );
+      } catch (error) {
+        console.error(`[GitHubPluginRegistry] Failed to fetch from ${repo.name}:`, error);
+        // Continue with other repositories
       }
-      throw error;
     }
+
+    // Deduplicate plugins (if same plugin in multiple repos, take the most recent)
+    const deduplicatedPlugins = this.deduplicatePlugins(allPlugins);
+
+    // Update cache
+    const cacheEntry: CacheEntry = {
+      data: deduplicatedPlugins,
+      timestamp: Date.now(),
+    };
+    this.cache = cacheEntry;
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheEntry));
+
+    console.log(
+      `[GitHubPluginRegistry] Total plugins after deduplication: ${deduplicatedPlugins.length}`
+    );
+    return deduplicatedPlugins;
+  }
+
+  /**
+   * Deduplicate plugins based on ID
+   * If same plugin exists in multiple repos, keep the most recent one
+   */
+  private deduplicatePlugins(plugins: PluginRegistryEntry[]): PluginRegistryEntry[] {
+    const pluginMap = new Map<string, PluginRegistryEntry>();
+
+    for (const plugin of plugins) {
+      const existingPlugin = pluginMap.get(plugin.id);
+
+      if (!existingPlugin) {
+        pluginMap.set(plugin.id, plugin);
+      } else {
+        // Keep the one with the most recent lastUpdated date
+        const existingDate = new Date(existingPlugin.lastUpdated).getTime();
+        const newDate = new Date(plugin.lastUpdated).getTime();
+
+        if (newDate > existingDate) {
+          pluginMap.set(plugin.id, plugin);
+        }
+      }
+    }
+
+    return Array.from(pluginMap.values());
   }
 
   /**

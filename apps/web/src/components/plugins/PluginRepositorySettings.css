@@ -1,0 +1,459 @@
+/* Plugin Repository Settings */
+
+.plugin-repository-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Header */
+.plugin-repository-settings__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.plugin-repository-settings__title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--fg-primary);
+  margin: 0 0 8px 0;
+}
+
+.plugin-repository-settings__description {
+  font-size: 14px;
+  color: var(--fg-secondary);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.plugin-repository-settings__add-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.plugin-repository-settings__add-btn:hover {
+  background: var(--accent-color-hover);
+  transform: translateY(-1px);
+}
+
+/* Message */
+.plugin-repository-settings__message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.plugin-repository-settings__message--success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.plugin-repository-settings__message--error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+/* Form */
+.plugin-repository-settings__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.plugin-repository-settings__form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.plugin-repository-settings__form-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--fg-primary);
+  margin: 0;
+}
+
+.plugin-repository-settings__form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.plugin-repository-settings__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.plugin-repository-settings__input,
+.plugin-repository-settings__textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-primary);
+  color: var(--fg-primary);
+  font-family: inherit;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.plugin-repository-settings__input:focus,
+.plugin-repository-settings__textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.plugin-repository-settings__input:disabled,
+.plugin-repository-settings__textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.plugin-repository-settings__textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.plugin-repository-settings__hint {
+  font-size: 12px;
+  color: var(--fg-tertiary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.plugin-repository-settings__form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.plugin-repository-settings__cancel-btn,
+.plugin-repository-settings__submit-btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.plugin-repository-settings__cancel-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--fg-secondary);
+}
+
+.plugin-repository-settings__cancel-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--fg-tertiary);
+}
+
+.plugin-repository-settings__submit-btn {
+  background: var(--accent-color);
+  border: none;
+  color: white;
+}
+
+.plugin-repository-settings__submit-btn:hover:not(:disabled) {
+  background: var(--accent-color-hover);
+  transform: translateY(-1px);
+}
+
+.plugin-repository-settings__cancel-btn:disabled,
+.plugin-repository-settings__submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Repository List */
+.plugin-repository-settings__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.plugin-repository-settings__item {
+  padding: 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.plugin-repository-settings__item:hover {
+  border-color: var(--accent-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.plugin-repository-settings__item--disabled {
+  opacity: 0.6;
+  background: var(--bg-tertiary);
+}
+
+.plugin-repository-settings__item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.plugin-repository-settings__item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.plugin-repository-settings__item-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--fg-primary);
+  margin-bottom: 6px;
+}
+
+.plugin-repository-settings__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: var(--accent-color-10);
+  color: var(--accent-color);
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.plugin-repository-settings__item-description {
+  font-size: 13px;
+  color: var(--fg-secondary);
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+
+.plugin-repository-settings__item-url {
+  display: block;
+  font-size: 12px;
+  color: var(--accent-color);
+  text-decoration: none;
+  word-break: break-all;
+  margin-bottom: 4px;
+}
+
+.plugin-repository-settings__item-url:hover {
+  text-decoration: underline;
+}
+
+.plugin-repository-settings__item-date {
+  font-size: 11px;
+  color: var(--fg-tertiary);
+  margin: 0;
+}
+
+.plugin-repository-settings__item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.plugin-repository-settings__toggle-btn,
+.plugin-repository-settings__remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.plugin-repository-settings__toggle-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--fg-tertiary);
+}
+
+.plugin-repository-settings__toggle-btn--enabled {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+  color: #065f46;
+}
+
+.plugin-repository-settings__toggle-btn:hover {
+  transform: scale(1.05);
+}
+
+.plugin-repository-settings__remove-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--fg-secondary);
+}
+
+.plugin-repository-settings__remove-btn:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+/* Empty State */
+.plugin-repository-settings__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background: var(--bg-secondary);
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  color: var(--fg-tertiary);
+}
+
+.plugin-repository-settings__empty svg {
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.plugin-repository-settings__empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Divider */
+.plugin-repository-settings__divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 32px 0 24px 0;
+}
+
+.plugin-repository-settings__divider::before,
+.plugin-repository-settings__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-color);
+}
+
+.plugin-repository-settings__divider span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Direct Installation Section */
+.plugin-repository-settings__direct-install {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.plugin-repository-settings__direct-install-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.plugin-repository-settings__section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--fg-primary);
+  margin: 0 0 6px 0;
+}
+
+.plugin-repository-settings__section-description {
+  font-size: 13px;
+  color: var(--fg-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.plugin-repository-settings__install-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.plugin-repository-settings__install-btn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .plugin-repository-settings__header {
+    flex-direction: column;
+  }
+
+  .plugin-repository-settings__add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .plugin-repository-settings__item-header {
+    flex-direction: column;
+  }
+
+  .plugin-repository-settings__item-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .plugin-repository-settings__direct-install-header {
+    flex-direction: column;
+  }
+
+  .plugin-repository-settings__install-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

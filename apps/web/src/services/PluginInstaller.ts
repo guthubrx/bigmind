@@ -274,3 +274,81 @@ export async function loadInstalledPlugin(pluginId: string): Promise<Plugin | nu
 
   return await createPluginFromCode(data.code, data.manifest);
 }
+
+/**
+ * Install a plugin directly from GitHub URL
+ * @param githubUrl - GitHub repository URL (e.g., https://github.com/user/repo)
+ * @param branch - Branch name (default: 'main')
+ */
+export async function installPluginFromGitHub(githubUrl: string, branch: string = 'main'): Promise<Plugin> {
+  console.log(`[PluginInstaller] Installing plugin from GitHub: ${githubUrl}`);
+
+  try {
+    // Parse GitHub URL
+    const url = new URL(githubUrl);
+    if (url.hostname !== 'github.com') {
+      throw new Error('Invalid GitHub URL. Must be a github.com URL');
+    }
+
+    // Extract user and repo from path
+    const pathParts = url.pathname.split('/').filter(Boolean);
+    if (pathParts.length < 2) {
+      throw new Error('Invalid GitHub URL. Expected format: https://github.com/user/repo');
+    }
+
+    const [user, repo] = pathParts;
+
+    // Construct raw URLs
+    const manifestUrl = `https://raw.githubusercontent.com/${user}/${repo}/${branch}/manifest.json`;
+    const pluginJsUrl = `https://raw.githubusercontent.com/${user}/${repo}/${branch}/plugin.js`;
+
+    console.log(`[PluginInstaller] Fetching manifest from: ${manifestUrl}`);
+
+    // Download manifest
+    const manifestResponse = await fetch(manifestUrl);
+    if (!manifestResponse.ok) {
+      throw new Error(`Failed to fetch manifest: ${manifestResponse.status} ${manifestResponse.statusText}`);
+    }
+    const manifest = await manifestResponse.json() as PluginManifest;
+
+    console.log(`[PluginInstaller] Downloaded manifest for: ${manifest.name}`);
+
+    // Check if already installed
+    const existing = await getPluginFromDB(manifest.id);
+    if (existing) {
+      throw new Error(`Plugin ${manifest.id} is already installed. Uninstall it first.`);
+    }
+
+    console.log(`[PluginInstaller] Fetching plugin code from: ${pluginJsUrl}`);
+
+    // Download plugin code
+    const codeResponse = await fetch(pluginJsUrl);
+    if (!codeResponse.ok) {
+      throw new Error(`Failed to fetch plugin code: ${codeResponse.status} ${codeResponse.statusText}`);
+    }
+    const code = await codeResponse.text();
+
+    console.log(`[PluginInstaller] Downloaded plugin code: ${code.length} bytes`);
+
+    // Save to IndexedDB
+    const pluginData: InstalledPluginData = {
+      id: manifest.id,
+      manifest,
+      code,
+      installedAt: new Date().toISOString(),
+      version: manifest.version,
+    };
+
+    await savePluginToDB(pluginData);
+    console.log('[PluginInstaller] Saved plugin to IndexedDB');
+
+    // Create plugin object
+    const plugin = await createPluginFromCode(code, manifest);
+    console.log(`[PluginInstaller] Successfully installed from GitHub: ${manifest.id}`);
+
+    return plugin;
+  } catch (error) {
+    console.error('[PluginInstaller] Failed to install plugin from GitHub:', error);
+    throw error;
+  }
+}

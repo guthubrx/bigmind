@@ -53,6 +53,7 @@ export function PluginManager({
   const [screenSize, setScreenSize] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
     core: false,
+    featured: false,
     optional: false,
   });
   const [toast, setToast] = useState<{
@@ -221,14 +222,17 @@ export function PluginManager({
     [unifiedPlugins, searchQuery, statusFilter, categoryFilter]
   );
 
-  // Organize plugins into sections: CORE, puis OFFICIAL/COMMUNITY
-  const { corePlugins, optionalPlugins } = useMemo(() => {
+  // Organize plugins into sections: CORE, FEATURED, puis OPTIONAL
+  const { corePlugins, featuredPlugins, optionalPlugins } = useMemo(() => {
     const core: typeof filteredPlugins = [];
+    const featured: typeof filteredPlugins = [];
     const optional: typeof filteredPlugins = [];
 
     filteredPlugins.forEach(item => {
       if (item.manifest.source === 'core') {
         core.push(item);
+      } else if (item.manifest.featured) {
+        featured.push(item);
       } else {
         optional.push(item);
       }
@@ -236,6 +240,7 @@ export function PluginManager({
 
     return {
       corePlugins: core,
+      featuredPlugins: featured,
       optionalPlugins: optional,
     };
   }, [filteredPlugins]);
@@ -581,7 +586,9 @@ export function PluginManager({
     };
 
     return (
-      <section className="plugin-manager__section">
+      <section
+        className={`plugin-manager__section ${sectionId === 'featured' ? 'plugin-manager__section--featured' : ''}`}
+      >
         <div
           className="plugin-manager__section-header"
           onClick={toggleSection}
@@ -740,6 +747,13 @@ export function PluginManager({
         'Plugins Core',
         'Plugins essentiels et non-désactivables',
         corePlugins
+      )}
+
+      {renderSection(
+        'featured',
+        'En Vedette',
+        'Plugins recommandés',
+        featuredPlugins
       )}
 
       {renderSection(

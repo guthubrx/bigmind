@@ -34,3 +34,6 @@ export type { PluginFiltersProps, PluginStatus, PluginCategory } from './PluginF
 export { GitHubLoginButton } from './GitHubLoginButton';
 export { DeveloperModeToggle, useDeveloperMode } from './DeveloperModeToggle';
 export type { DeveloperModeToggleProps } from './DeveloperModeToggle';
+
+// Repository management
+export { PluginRepositorySettings } from './PluginRepositorySettings';

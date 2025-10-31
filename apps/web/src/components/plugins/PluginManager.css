@@ -28,6 +28,26 @@
   margin-bottom: 48px;
 }
 
+/* Featured Section - Limited to 1-2 rows with visual separation */
+.plugin-manager__section--featured {
+  margin-bottom: 64px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.plugin-manager__section--featured .plugin-manager__grid {
+  max-height: calc(2 * (280px + 20px)); /* 2 rows: card height + gap */
+  overflow: hidden;
+}
+
+.plugin-manager__section--featured .plugin-manager__section-title {
+  color: #f59e0b;
+}
+
+.plugin-manager__section--featured .plugin-manager__section-header {
+  border-bottom-color: #f59e0b;
+}
+
 .plugin-manager__section-header {
   margin-bottom: 24px;
   padding-bottom: 16px;
