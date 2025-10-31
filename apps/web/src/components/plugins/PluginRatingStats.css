@@ -1,0 +1,55 @@
+/**
+ * Plugin Rating Stats Styles
+ */
+
+.plugin-rating-stats {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--fg-secondary);
+}
+
+.plugin-rating-stats__star {
+  color: #f59e0b;
+  font-size: 1.1em;
+}
+
+.plugin-rating-stats__text {
+  font-weight: 500;
+  font-size: 0.95em;
+}
+
+/* Size variants */
+.plugin-rating-stats--small {
+  font-size: 12px;
+}
+
+.plugin-rating-stats--medium {
+  font-size: 14px;
+}
+
+.plugin-rating-stats--large {
+  font-size: 16px;
+}
+
+/* Stat card variant */
+.plugin-rating-stats--stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--accent-color);
+}
+
+.plugin-rating-stats__stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--fg-primary);
+  line-height: 1.2;
+}
+
+.plugin-rating-stats__stat-label {
+  font-size: 12px;
+  color: var(--fg-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

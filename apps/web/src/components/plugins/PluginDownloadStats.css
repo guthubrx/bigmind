@@ -1,0 +1,56 @@
+/**
+ * Plugin Download Stats Styles
+ */
+
+.plugin-download-stats {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--fg-secondary);
+}
+
+.plugin-download-stats svg {
+  flex-shrink: 0;
+}
+
+.plugin-download-stats__value {
+  font-weight: 500;
+}
+
+.plugin-download-stats__label {
+  font-size: 0.9em;
+}
+
+/* Size variants */
+.plugin-download-stats--small {
+  font-size: 12px;
+}
+
+.plugin-download-stats--medium {
+  font-size: 14px;
+}
+
+.plugin-download-stats--large {
+  font-size: 16px;
+}
+
+/* Stat card variant */
+.plugin-download-stats--stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.plugin-download-stats__stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--fg-primary);
+  line-height: 1.2;
+}
+
+.plugin-download-stats__stat-label {
+  font-size: 12px;
+  color: var(--fg-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

@@ -7,7 +7,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import type { PluginManifest } from '@cartae/plugin-system';
 import { PluginBadges } from './PluginBadges';
 import {
-  Download,
   Settings,
   ChevronDown,
   Trash2,
@@ -17,13 +16,10 @@ import {
   Code,
   AlertTriangle,
 } from 'lucide-react';
-import { StarRating } from './StarRating';
-import {
-  getPluginRatingsAggregate,
-  type PluginRatingsAggregate,
-} from '../../services/supabaseClient';
 import { ReportPluginModal } from './ReportPluginModal';
 import { getPendingReportCount } from '../../services/PluginReportService';
+import { PluginDownloadStats } from './PluginDownloadStats';
+import { PluginRatingStats } from './PluginRatingStats';
 import './PluginCard.css';
 
 export interface PluginCardProps {
@@ -67,24 +63,10 @@ export function PluginCard({
   onToggleSelection,
 }: PluginCardProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [ratingAggregate, setRatingAggregate] = useState<PluginRatingsAggregate | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [pendingReportsCount, setPendingReportsCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Fetch rating aggregate from Supabase
-  useEffect(() => {
-    const fetchRating = async () => {
-      try {
-        const aggregate = await getPluginRatingsAggregate(manifest.id);
-        setRatingAggregate(aggregate);
-      } catch (error) {
-        console.error('[PluginCard] Error fetching rating:', error);
-      }
-    };
-    fetchRating();
-  }, [manifest.id]);
 
   // Fetch pending report count
   useEffect(() => {
@@ -186,6 +168,9 @@ export function PluginCard({
       } ${isSelected ? 'plugin-card--selected' : ''}`}
       style={{ '--plugin-color': manifest.color || '#6B7280' } as React.CSSProperties}
       onClick={handleCardClick}
+      onKeyDown={e => e.key === 'Enter' && handleCardClick(e as any)}
+      role="button"
+      tabIndex={0}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -196,6 +181,7 @@ export function PluginCard({
             isSelected ? 'plugin-card__selection-circle--selected' : ''
           }`}
           onClick={handleSelectionCircleClick}
+          onKeyDown={e => e.key === 'Enter' && handleSelectionCircleClick(e as any)}
           role="checkbox"
           aria-checked={isSelected}
           tabIndex={0}
@@ -338,24 +324,17 @@ export function PluginCard({
             state={undefined}
             featured={false}
           />
+          <PluginRatingStats
+            pluginId={manifest.id}
+            size="small"
+          />
         </div>
         <div className="plugin-card__footer-right">
-          {manifest.downloads !== undefined && (
-            <span className="plugin-card__downloads">
-              <Download size={12} />
-              {manifest.downloads >= 1000
-                ? `${(manifest.downloads / 1000).toFixed(1)}k`
-                : manifest.downloads}
-            </span>
-          )}
-          {ratingAggregate && ratingAggregate.totalRatings > 0 && (
-            <StarRating
-              rating={ratingAggregate.averageRating}
-              reviewCount={ratingAggregate.totalRatings}
-              size="small"
-              showCount
-            />
-          )}
+          <PluginDownloadStats
+            pluginId={manifest.id}
+            size="small"
+            className="plugin-card__downloads"
+          />
         </div>
       </div>
 

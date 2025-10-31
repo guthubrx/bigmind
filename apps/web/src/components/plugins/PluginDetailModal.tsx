@@ -3,17 +3,15 @@
  * Displays comprehensive plugin information in a modal
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { PluginManifest } from '@cartae/plugin-system';
 import { PluginBadge, type BadgeType } from './PluginBadge';
-import { X, Check, Star, Download, Calendar, Tag, ExternalLink, Github } from 'lucide-react';
+import { X, Check, Star, Calendar, Tag, ExternalLink, Github } from 'lucide-react';
 import { PluginRatingForm } from './PluginRatingForm';
 import { PluginRatingsDisplay } from './PluginRatingsDisplay';
-import {
-  getPluginRatingsAggregate,
-  type PluginRatingsAggregate,
-  submitQuickRating,
-} from '../../services/supabaseClient';
+import { PluginDownloadStats } from './PluginDownloadStats';
+import { PluginRatingStats } from './PluginRatingStats';
+import { submitQuickRating } from '../../services/supabaseClient';
 import './PluginDetailModal.css';
 
 export interface PluginDetailModalProps {
@@ -32,22 +30,8 @@ export function PluginDetailModal({
   onToggle,
 }: PluginDetailModalProps) {
   const [ratingsRefresh, setRatingsRefresh] = useState(0);
-  const [ratingAggregate, setRatingAggregate] = useState<PluginRatingsAggregate | null>(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [quickRatingHover, setQuickRatingHover] = useState(0); // Support for half stars: 0.5, 1, 1.5, 2, etc.
-
-  // Fetch rating aggregate from Supabase
-  useEffect(() => {
-    const fetchRating = async () => {
-      try {
-        const aggregate = await getPluginRatingsAggregate(manifest.id);
-        setRatingAggregate(aggregate);
-      } catch (error) {
-        console.error('[PluginDetailModal] Error fetching rating:', error);
-      }
-    };
-    fetchRating();
-  }, [manifest.id, ratingsRefresh]);
 
   // FR: Gestion de la notation rapide (avec support demi-étoiles)
   // EN: Handle quick rating (with half-star support)
@@ -101,8 +85,21 @@ export function PluginDetailModal({
   const logoUrl = manifest.logo || manifest.icon;
 
   return (
-    <div className="plugin-detail-modal-overlay" onClick={onClose}>
-      <div className="plugin-detail-modal" onClick={e => e.stopPropagation()}>
+    <div
+      className="plugin-detail-modal-overlay"
+      onClick={onClose}
+      onKeyDown={e => e.key === 'Escape' && onClose()}
+      role="button"
+      tabIndex={0}
+      aria-label="Fermer la modal"
+    >
+      <div
+        className="plugin-detail-modal"
+        onClick={e => e.stopPropagation()}
+        onKeyDown={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+      >
         {/* Header */}
         <div
           className="plugin-detail-modal__header"
@@ -146,24 +143,17 @@ export function PluginDetailModal({
               </div>
 
               <div className="plugin-detail-modal__meta-stats">
-                {ratingAggregate && ratingAggregate.totalRatings > 0 && (
-                  <span className="plugin-detail-modal__meta-rating">
-                    <Star size={14} fill="currentColor" />
-                    {ratingAggregate.averageRating.toFixed(1)}/5
-                    <span className="plugin-detail-modal__meta-reviews">
-                      ({ratingAggregate.totalRatings} avis)
-                    </span>
-                  </span>
-                )}
-                {manifest.downloads !== undefined && (
-                  <span className="plugin-detail-modal__meta-downloads">
-                    <Download size={14} />
-                    {manifest.downloads >= 1000
-                      ? `${(manifest.downloads / 1000).toFixed(1)}k`
-                      : manifest.downloads}{' '}
-                    téléchargements
-                  </span>
-                )}
+                <PluginRatingStats
+                  pluginId={manifest.id}
+                  size="medium"
+                  className="plugin-detail-modal__meta-rating"
+                />
+                <PluginDownloadStats
+                  pluginId={manifest.id}
+                  size="medium"
+                  showLabel
+                  className="plugin-detail-modal__meta-downloads"
+                />
                 {manifest.repositoryName && manifest.repositoryUrl && (
                   <a
                     href={manifest.repositoryUrl.replace(/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/.*/, 'https://github.com/$1/$2')}
@@ -202,17 +192,18 @@ export function PluginDetailModal({
                 const isFilled = star <= quickRatingHover;
                 const isHalfFilled = star - 0.5 <= quickRatingHover && quickRatingHover < star;
 
+                let starClassName = '';
+                if (isFilled) {
+                  starClassName = 'plugin-detail-modal__quick-star--filled';
+                } else if (isHalfFilled) {
+                  starClassName = 'plugin-detail-modal__quick-star--half';
+                }
+
                 return (
                   <button
                     key={star}
                     type="button"
-                    className={`plugin-detail-modal__quick-star ${
-                      isFilled
-                        ? 'plugin-detail-modal__quick-star--filled'
-                        : isHalfFilled
-                          ? 'plugin-detail-modal__quick-star--half'
-                          : ''
-                    }`}
+                    className={`plugin-detail-modal__quick-star ${starClassName}`}
                     onMouseMove={e => handleStarHover(star, e)}
                     onMouseLeave={() => setQuickRatingHover(0)}
                     onClick={e => handleStarClick(star, e)}
@@ -326,31 +317,17 @@ export function PluginDetailModal({
           {/* Stats */}
           <section className="plugin-detail-modal__section">
             <div className="plugin-detail-modal__stats">
-              {manifest.downloads !== undefined && (
-                <div className="plugin-detail-modal__stat">
-                  <Download size={20} />
-                  <div>
-                    <div className="plugin-detail-modal__stat-value">
-                      {manifest.downloads >= 1000
-                        ? `${(manifest.downloads / 1000).toFixed(1)}k`
-                        : manifest.downloads}
-                    </div>
-                    <div className="plugin-detail-modal__stat-label">Téléchargements</div>
-                  </div>
-                </div>
-              )}
+              <PluginDownloadStats
+                pluginId={manifest.id}
+                size="large"
+                variant="stat-card"
+              />
 
-              {manifest.rating !== undefined && (
-                <div className="plugin-detail-modal__stat">
-                  <Star size={20} fill="currentColor" />
-                  <div>
-                    <div className="plugin-detail-modal__stat-value">
-                      {manifest.rating.toFixed(1)}/5
-                    </div>
-                    <div className="plugin-detail-modal__stat-label">Note moyenne</div>
-                  </div>
-                </div>
-              )}
+              <PluginRatingStats
+                pluginId={manifest.id}
+                size="large"
+                variant="stat-card"
+              />
 
               {manifest.changelog && manifest.changelog.length > 0 && (
                 <div className="plugin-detail-modal__stat">
