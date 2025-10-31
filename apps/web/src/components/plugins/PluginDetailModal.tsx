@@ -9,7 +9,6 @@ import { PluginBadge, type BadgeType } from './PluginBadge';
 import { X, Check, Star, Download, Calendar, Tag, ExternalLink } from 'lucide-react';
 import { PluginRatingForm } from './PluginRatingForm';
 import { PluginRatingsDisplay } from './PluginRatingsDisplay';
-import { ExportRatingsButton } from './ExportRatingsButton';
 import {
   getPluginRatingsAggregate,
   type PluginRatingsAggregate,
@@ -329,20 +328,10 @@ export function PluginDetailModal({
 
           {/* Ratings & Reviews - Separated section */}
           <section className="plugin-detail-modal__section">
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '16px',
-              }}
-            >
-              <h3 className="plugin-detail-modal__section-title">
-                <Star size={20} />
-                Avis et notations
-              </h3>
-              <ExportRatingsButton pluginId={manifest.id} pluginName={manifest.name} />
-            </div>
+            <h3 className="plugin-detail-modal__section-title">
+              <Star size={20} />
+              Avis et notations
+            </h3>
             <PluginRatingsDisplay pluginId={manifest.id} refreshTrigger={ratingsRefresh} />
           </section>
 
