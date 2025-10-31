@@ -609,3 +609,21 @@
   color: var(--fg-tertiary);
   font-size: 12px;
 }
+
+.plugin-detail-modal__meta-repository {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent-color);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.plugin-detail-modal__meta-repository:hover {
+  color: var(--accent-color-hover);
+  text-decoration: underline;
+}
+
+.plugin-detail-modal__meta-repository svg {
+  flex-shrink: 0;
+}

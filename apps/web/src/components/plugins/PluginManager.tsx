@@ -155,8 +155,8 @@ export function PluginManager({
     // Add remote plugins that are not yet installed
     remotePlugins.forEach(entry => {
       if (!installed.has(entry.id)) {
-        // Convert PluginRegistryEntry to PluginManifest
-        const manifest: PluginManifest = {
+        // Convert PluginRegistryEntry to PluginManifest with repository metadata
+        const manifest: PluginManifest & { repositoryId?: string; repositoryUrl?: string; repositoryName?: string } = {
           id: entry.id,
           name: entry.name,
           version: entry.version,
@@ -171,6 +171,9 @@ export function PluginManager({
           downloads: entry.downloads,
           rating: entry.rating,
           reviewCount: entry.reviewCount,
+          repositoryId: entry.repositoryId,
+          repositoryUrl: entry.repositoryUrl,
+          repositoryName: entry.repositoryName,
         };
 
         unified.push({
@@ -222,7 +225,22 @@ export function PluginManager({
     [unifiedPlugins, searchQuery, statusFilter, categoryFilter]
   );
 
-  // Organize plugins into sections: CORE, FEATURED, puis OPTIONAL
+  // Helper function to check if plugin is from Cartae repository
+  const isCartaePlugin = (item: typeof filteredPlugins[0]): boolean => {
+    const manifest = item.manifest as PluginManifest & { repositoryId?: string; repositoryUrl?: string; repositoryName?: string };
+
+    // Check if repositoryId or repositoryName contains 'cartae'
+    if (manifest.repositoryId?.toLowerCase().includes('cartae')) return true;
+    if (manifest.repositoryName?.toLowerCase().includes('cartae')) return true;
+    if (manifest.repositoryUrl?.toLowerCase().includes('cartae')) return true;
+
+    // Also check if it's from guthubrx organization (Cartae's GitHub org)
+    if (manifest.repositoryUrl?.toLowerCase().includes('guthubrx')) return true;
+
+    return false;
+  };
+
+  // Organize plugins into sections: CORE, FEATURED (Cartae only), puis OPTIONAL
   const { corePlugins, featuredPlugins, optionalPlugins } = useMemo(() => {
     const core: typeof filteredPlugins = [];
     const featured: typeof filteredPlugins = [];
@@ -231,7 +249,8 @@ export function PluginManager({
     filteredPlugins.forEach(item => {
       if (item.manifest.source === 'core') {
         core.push(item);
-      } else if (item.manifest.featured) {
+      } else if (item.manifest.featured && isCartaePlugin(item)) {
+        // Only show featured plugins from Cartae repositories
         featured.push(item);
       } else {
         optional.push(item);

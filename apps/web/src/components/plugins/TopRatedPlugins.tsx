@@ -6,6 +6,7 @@
 import React, { useEffect, useState } from 'react';
 import { Star, TrendingUp } from 'lucide-react';
 import { getTopRatedPlugins, type TopRatedPlugin } from '../../services/supabaseClient';
+import { gitHubPluginRegistry } from '../../services/GitHubPluginRegistry';
 import type { PluginManifest } from '@cartae/plugin-system';
 import './TopRatedPlugins.css';
 
@@ -24,13 +25,33 @@ export function TopRatedPlugins({ allPlugins, onSelectPlugin }: TopRatedPluginsP
     const fetchTopPlugins = async () => {
       setIsLoading(true);
       try {
-        const top = await getTopRatedPlugins(3);
+        // Fetch registry to get repository metadata
+        const registry = await gitHubPluginRegistry.fetchRegistry();
+
+        // Helper function to check if plugin is from Cartae
+        const isCartaePlugin = (pluginId: string): boolean => {
+          const entry = registry.find(e => e.id === pluginId);
+          if (!entry) return false;
+
+          // Check if from Cartae/guthubrx repositories
+          return (
+            entry.repositoryId?.toLowerCase().includes('cartae') ||
+            entry.repositoryName?.toLowerCase().includes('cartae') ||
+            entry.repositoryUrl?.toLowerCase().includes('cartae') ||
+            entry.repositoryUrl?.toLowerCase().includes('guthubrx')
+          );
+        };
+
+        const top = await getTopRatedPlugins(10); // Fetch more to filter
         const withManifests = top
+          .filter(tp => isCartaePlugin(tp.pluginId)) // Only Cartae plugins
           .map(tp => ({
             ...tp,
             manifest: allPlugins.find(p => p.id === tp.pluginId),
           }))
-          .filter(tp => tp.manifest); // Only include found plugins
+          .filter(tp => tp.manifest) // Only include found plugins
+          .slice(0, 3); // Keep top 3 after filtering
+
         setTopPlugins(withManifests);
       } catch (error) {
         console.error('[TopRatedPlugins] Error:', error);

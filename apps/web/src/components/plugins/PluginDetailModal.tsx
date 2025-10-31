@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import type { PluginManifest } from '@cartae/plugin-system';
 import { PluginBadge, type BadgeType } from './PluginBadge';
-import { X, Check, Star, Download, Calendar, Tag, ExternalLink } from 'lucide-react';
+import { X, Check, Star, Download, Calendar, Tag, ExternalLink, Github } from 'lucide-react';
 import { PluginRatingForm } from './PluginRatingForm';
 import { PluginRatingsDisplay } from './PluginRatingsDisplay';
 import {
@@ -17,7 +17,7 @@ import {
 import './PluginDetailModal.css';
 
 export interface PluginDetailModalProps {
-  manifest: PluginManifest;
+  manifest: PluginManifest & { repositoryId?: string; repositoryUrl?: string; repositoryName?: string };
   isActive: boolean;
   canDisable?: boolean;
   onClose: () => void;
@@ -163,6 +163,18 @@ export function PluginDetailModal({
                       : manifest.downloads}{' '}
                     téléchargements
                   </span>
+                )}
+                {manifest.repositoryName && manifest.repositoryUrl && (
+                  <a
+                    href={manifest.repositoryUrl.replace(/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/.*/, 'https://github.com/$1/$2')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="plugin-detail-modal__meta-repository"
+                    title="Voir le repository GitHub"
+                  >
+                    <Github size={14} />
+                    {manifest.repositoryName}
+                  </a>
                 )}
               </div>
             </div>
