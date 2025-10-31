@@ -1,6 +1,6 @@
 /**
- * FR: Barre de menu de BigMind
- * EN: BigMind menu bar
+ * FR: Barre de menu de Cartae
+ * EN: Cartae menu bar
  */
 
 import React, { useState } from 'react';

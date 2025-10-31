@@ -1,6 +1,6 @@
 /**
- * FR: Layout principal de BigMind avec framesets
- * EN: Main BigMind layout with framesets
+ * FR: Layout principal de Cartae avec framesets
+ * EN: Main Cartae layout with framesets
  */
 
 import React from 'react';
