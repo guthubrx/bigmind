@@ -184,7 +184,7 @@ function MenuBar() {
       style={{ justifyContent: 'flex-start' }}
       onMouseLeave={handleMenuLeave}
     >
-      <img src="/logo-48.png" alt="Cartae" className="menu-logo" />
+      <img src="/logo-64.png" alt="Cartae" className="menu-logo" />
       {menuItems.map(menu => (
         <div
           key={menu.id}

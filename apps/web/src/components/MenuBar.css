@@ -16,8 +16,8 @@
   }
 
   .menu-logo {
-    width: 24px;
-    height: 24px;
+    height: 40px;
+    width: auto;
     margin: 0 12px 0 4px;
     flex-shrink: 0;
     object-fit: contain;
