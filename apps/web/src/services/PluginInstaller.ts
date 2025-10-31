@@ -107,43 +107,75 @@ export async function getAllInstalledPlugins(): Promise<InstalledPluginData[]> {
 /**
  * Load plugin code dynamically and create Plugin object
  */
-function createPluginFromCode(code: string, manifest: PluginManifest): Plugin {
+async function createPluginFromCode(code: string, manifest: PluginManifest): Promise<Plugin> {
   try {
-    // Note: This is a simplified version using Function constructor
-    // In production, you should use proper module loading with dynamic import()
-    // or a secure sandboxed environment for executing plugin code
+    // FR: Essayer d'abord le dynamic import avec blob URL (pour ESM)
+    // EN: Try dynamic import with blob URL first (for ESM)
+    try {
+      const blob = new Blob([code], { type: 'application/javascript' });
+      const url = URL.createObjectURL(blob);
 
-    // For UMD format, we need to provide both 'exports' and 'module' in the scope
-    // The UMD wrapper checks: typeof exports=="object"&&typeof module<"u"
-    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-    const moduleFactory = new Function('exports', 'module', `${code}\n; return exports;`);
+      try {
+        const pluginModule = await import(/* @vite-ignore */ url);
+        URL.revokeObjectURL(url);
 
-    const exports = {};
-    const module = { exports };
-    const pluginModule = moduleFactory(exports, module);
+        // Support both formats:
+        // 1. Default export: export default { activate, deactivate }
+        // 2. Named exports: export { activate, deactivate }
+        const pluginInstance = pluginModule.default || pluginModule;
 
-    // Support both formats:
-    // 1. Direct exports: exports.activate = function() { ... }
-    // 2. Default export with methods: export default { activate() { ... } }
-    let pluginInstance = pluginModule;
+        if (typeof pluginInstance.activate !== 'function') {
+          throw new Error('Plugin must export an activate function');
+        }
 
-    // If there's a default export, use it
-    if (pluginModule.default) {
-      pluginInstance = pluginModule.default;
+        return {
+          manifest,
+          activate: pluginInstance.activate.bind(pluginInstance),
+          deactivate: pluginInstance.deactivate
+            ? pluginInstance.deactivate.bind(pluginInstance)
+            : async () => {},
+        };
+      } catch (importError) {
+        URL.revokeObjectURL(url);
+        throw importError;
+      }
+    } catch (esmError) {
+      // FR: Si ESM échoue, essayer le format UMD/CommonJS
+      // EN: If ESM fails, try UMD/CommonJS format
+      console.warn(
+        '[PluginInstaller] ESM import failed, trying UMD/CommonJS:',
+        esmError instanceof Error ? esmError.message : 'Unknown error'
+      );
+
+      // For UMD format, we need to provide both 'exports' and 'module' in the scope
+      // The UMD wrapper checks: typeof exports=="object"&&typeof module<"u"
+      // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+      const moduleFactory = new Function('exports', 'module', `${code}\n; return exports;`);
+
+      const exports = {};
+      const module = { exports };
+      const pluginModule = moduleFactory(exports, module);
+
+      let pluginInstance = pluginModule;
+
+      // If there's a default export, use it
+      if (pluginModule.default) {
+        pluginInstance = pluginModule.default;
+      }
+
+      // Validate that activate exists (either as function or method)
+      if (typeof pluginInstance.activate !== 'function') {
+        throw new Error('Plugin must export an activate function');
+      }
+
+      return {
+        manifest,
+        activate: pluginInstance.activate.bind(pluginInstance),
+        deactivate: pluginInstance.deactivate
+          ? pluginInstance.deactivate.bind(pluginInstance)
+          : async () => {},
+      };
     }
-
-    // Validate that activate exists (either as function or method)
-    if (typeof pluginInstance.activate !== 'function') {
-      throw new Error('Plugin must export an activate function');
-    }
-
-    return {
-      manifest,
-      activate: pluginInstance.activate.bind(pluginInstance),
-      deactivate: pluginInstance.deactivate
-        ? pluginInstance.deactivate.bind(pluginInstance)
-        : async () => {},
-    };
   } catch (error) {
     console.error('[PluginInstaller] Failed to create plugin from code:', error);
     throw new Error(
@@ -165,7 +197,7 @@ export async function installPlugin(pluginId: string): Promise<Plugin> {
     if (existing) {
       // eslint-disable-next-line no-console
       console.log('[PluginInstaller] Plugin already installed, loading from cache');
-      return createPluginFromCode(existing.code, existing.manifest);
+      return await createPluginFromCode(existing.code, existing.manifest);
     }
 
     // Download manifest
@@ -193,7 +225,7 @@ export async function installPlugin(pluginId: string): Promise<Plugin> {
     console.log('[PluginInstaller] Saved plugin to IndexedDB');
 
     // Create plugin object
-    const plugin = createPluginFromCode(code, manifest as PluginManifest);
+    const plugin = await createPluginFromCode(code, manifest as PluginManifest);
     // eslint-disable-next-line no-console
     console.log(`[PluginInstaller] Successfully installed: ${pluginId}`);
 
@@ -240,5 +272,5 @@ export async function loadInstalledPlugin(pluginId: string): Promise<Plugin | nu
     return null;
   }
 
-  return createPluginFromCode(data.code, data.manifest);
+  return await createPluginFromCode(data.code, data.manifest);
 }
