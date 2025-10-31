@@ -246,6 +246,18 @@
   margin-bottom: 6px;
 }
 
+.plugin-repository-settings__avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.plugin-repository-settings__avatar-fallback--hidden {
+  display: none;
+}
+
 .plugin-repository-settings__badge {
   display: inline-flex;
   align-items: center;

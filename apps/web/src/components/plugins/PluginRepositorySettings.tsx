@@ -141,6 +141,27 @@ export function PluginRepositorySettings() {
     }
   };
 
+  // Extract GitHub username/org from repository URL
+  const getGitHubAvatar = (repoUrl: string): string | null => {
+    try {
+      // Match raw.githubusercontent.com URLs
+      const rawMatch = repoUrl.match(/raw\.githubusercontent\.com\/([^/]+)/);
+      if (rawMatch && rawMatch[1]) {
+        return `https://github.com/${rawMatch[1]}.png?size=40`;
+      }
+
+      // Match github.com URLs
+      const githubMatch = repoUrl.match(/github\.com\/([^/]+)/);
+      if (githubMatch && githubMatch[1]) {
+        return `https://github.com/${githubMatch[1]}.png?size=40`;
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
   return (
     <div className="plugin-repository-settings">
       <div className="plugin-repository-settings__header">
@@ -266,7 +287,18 @@ export function PluginRepositorySettings() {
             <div className="plugin-repository-settings__item-header">
               <div className="plugin-repository-settings__item-info">
                 <div className="plugin-repository-settings__item-title">
-                  <Github size={18} />
+                  {getGitHubAvatar(repo.url) ? (
+                    <img
+                      src={getGitHubAvatar(repo.url)!}
+                      alt={`${repo.name} avatar`}
+                      className="plugin-repository-settings__avatar"
+                      onError={e => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                        (e.target as HTMLImageElement).nextElementSibling?.classList.remove('plugin-repository-settings__avatar-fallback--hidden');
+                      }}
+                    />
+                  ) : null}
+                  <Github size={18} className={getGitHubAvatar(repo.url) ? 'plugin-repository-settings__avatar-fallback--hidden' : ''} />
                   {repo.name}
                   {repo.isDefault && (
                     <span className="plugin-repository-settings__badge">Par défaut</span>
