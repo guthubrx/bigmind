@@ -75,11 +75,11 @@ export class BundleConfig {
 
   constructor(options: BundleOptions, limits: BundleLimits = DEFAULT_LIMITS) {
     this.options = {
-      format: 'es',
       external: [...SHARED_EXTERNALS],
       minify: true,
       sourcemap: false,
       target: 'esnext',
+      format: 'es',
       ...options,
     };
 

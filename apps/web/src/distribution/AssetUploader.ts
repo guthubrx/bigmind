@@ -79,7 +79,7 @@ export class AssetUploader {
    */
   private async calculateHash(content: Uint8Array | Blob): Promise<string> {
     // Note: Blob support is browser-only
-    const buffer = content instanceof Blob ? await content.arrayBuffer() : content.buffer;
+    const buffer = content instanceof Blob ? await content.arrayBuffer() : content;
     const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -89,7 +89,7 @@ export class AssetUploader {
    * Calculate SRI (Subresource Integrity) hash
    */
   private async calculateSRI(content: Uint8Array | Blob): Promise<string> {
-    const buffer = content instanceof Blob ? await content.arrayBuffer() : content.buffer;
+    const buffer = content instanceof Blob ? await content.arrayBuffer() : content;
     const hashBuffer = await crypto.subtle.digest('SHA-384', buffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const base64 = btoa(String.fromCharCode(...hashArray));

@@ -180,9 +180,9 @@ export class DependencyResolver {
   private extractDependencies(manifest: PluginManifest): Array<{ id: string; version: string }> {
     const deps: Array<{ id: string; version: string }> = [];
 
-    if (manifest.dependencies) {
-      for (const [id, version] of Object.entries(manifest.dependencies)) {
-        deps.push({ id, version });
+    if (manifest.distribution?.dependencies) {
+      for (const [id, ver] of Object.entries(manifest.distribution.dependencies)) {
+        deps.push({ id, version: ver as string });
       }
     }
 

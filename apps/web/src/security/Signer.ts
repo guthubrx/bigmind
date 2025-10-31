@@ -119,7 +119,7 @@ export class Signer {
    * Hash content using SHA-256
    */
   private async hashContent(content: Uint8Array): Promise<string> {
-    const hashBuffer = await crypto.subtle.digest('SHA-256', content);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', content as BufferSource);
     const hashArray = new Uint8Array(hashBuffer);
     return this.toBase64(hashArray);
   }
