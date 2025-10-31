@@ -194,6 +194,21 @@
   margin-bottom: 0;
 }
 
+/* FR: Section compacte pour le formulaire "Donnez votre avis" */
+/* EN: Compact section for "Give your review" form */
+.plugin-detail-modal__section--compact {
+  background: var(--bg-secondary);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 24px;
+}
+
+.plugin-detail-modal__section--compact .plugin-detail-modal__section-title {
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
 .plugin-detail-modal__section-title {
   display: flex;
   align-items: center;

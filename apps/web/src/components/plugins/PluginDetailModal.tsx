@@ -157,6 +157,18 @@ export function PluginDetailModal({
             </section>
           )}
 
+          {/* Rating Form - Moved to top */}
+          <section className="plugin-detail-modal__section plugin-detail-modal__section--compact">
+            <h3 className="plugin-detail-modal__section-title">
+              <Star size={20} />
+              Donnez votre avis
+            </h3>
+            <PluginRatingForm
+              pluginId={manifest.id}
+              onSuccess={() => setRatingsRefresh(prev => prev + 1)}
+            />
+          </section>
+
           {/* Benefits */}
           {manifest.benefits && manifest.benefits.length > 0 && (
             <section className="plugin-detail-modal__section">
@@ -263,7 +275,7 @@ export function PluginDetailModal({
             </div>
           </section>
 
-          {/* Ratings & Reviews */}
+          {/* Ratings & Reviews - Separated section */}
           <section className="plugin-detail-modal__section">
             <div
               style={{
@@ -280,18 +292,6 @@ export function PluginDetailModal({
               <ExportRatingsButton pluginId={manifest.id} pluginName={manifest.name} />
             </div>
             <PluginRatingsDisplay pluginId={manifest.id} refreshTrigger={ratingsRefresh} />
-          </section>
-
-          {/* Rating Form */}
-          <section className="plugin-detail-modal__section">
-            <h3 className="plugin-detail-modal__section-title">
-              <Star size={20} />
-              Donnez votre avis
-            </h3>
-            <PluginRatingForm
-              pluginId={manifest.id}
-              onSuccess={() => setRatingsRefresh(prev => prev + 1)}
-            />
           </section>
 
           {/* Links */}
