@@ -14,7 +14,7 @@ import { nodeStyleRegistry } from '../../../utils/nodeStyleRegistry';
 import type { NodeStyleContext } from '../../../utils/nodeStyleRegistry';
 
 export const manifest: PluginManifest = {
-  id: 'com.cartae.xmind.compatibility',
+  id: 'com.cartae.xmind-compatibility',
   name: 'XMind Compatibility',
   version: '1.0.0',
   description: 'Compatibilité bidirectionnelle totale avec XMind - sans perte de données',
@@ -478,7 +478,7 @@ export async function activate(context: IPluginContext): Promise<void> {
 
   // Register style computer with high priority (runs first)
   unregisterStyleComputer = nodeStyleRegistry.register(
-    'com.cartae.xmind.compatibility',
+    'com.cartae.xmind-compatibility',
     (nodeData, styleContext) =>
       getNodeStyleFromTheme(nodeData, styleContext, compatData?.theme, palette),
     0 // Priority 0 = runs first, can be overridden by user or other plugins
