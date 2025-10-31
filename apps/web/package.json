@@ -14,6 +14,7 @@
   "dependencies": {
     "@cartae/core": "workspace:*",
     "@cartae/design": "workspace:*",
+    "@cartae/plugin-marketplace": "workspace:*",
     "@cartae/plugin-system": "workspace:*",
     "@cartae/ui": "workspace:*",
     "@bytemd/plugin-breaks": "^1.22.0",

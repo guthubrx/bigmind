@@ -112,10 +112,11 @@ export function useDragAndDrop({
 
       // FR: Sauvegarder les positions originales de tous les nœuds draggés
       // EN: Save original positions of all dragged nodes
-      if (!activeFile?.content?.nodes) return;
+      if (!activeFile || !activeFile.content || !activeFile.content.nodes) return;
+      const { content } = activeFile;
       const positions: Record<string, { x: number; y: number }> = {};
       nodesToDrag.forEach(nodeId => {
-        const n = activeFile.content.nodes[nodeId];
+        const n = content.nodes[nodeId];
         if (n) {
           positions[nodeId] = { x: n.x || 0, y: n.y || 0 };
         }
@@ -124,7 +125,7 @@ export function useDragAndDrop({
 
       // FR: Calculer les descendants du nœud qu'on glisse pour l'effet de transparence
       // EN: Calculate descendants of dragged node for transparency effect
-      const descendants = getAllDescendants(node.id, activeFile.content.nodes);
+      const descendants = getAllDescendants(node.id, content.nodes);
       setDraggedDescendants(descendants);
       // console.log('👥 Dragged node descendants:', descendants);
 
@@ -142,7 +143,7 @@ export function useDragAndDrop({
       setGhostNode(ghost);
       // console.log('👻 Ghost node created:', ghost.id);
     },
-    [activeFile?.content?.nodes, selectedNodeIds]
+    [activeFile, selectedNodeIds]
   );
 
   // FR: Gérer le drag des nœuds pour afficher l'indicateur visuel
@@ -150,6 +151,13 @@ export function useDragAndDrop({
   const onNodeDrag = useCallback(
     (event: React.MouseEvent, node: Node) => {
       // console.log('🖱️ onNodeDrag triggered for node:', node.id, 'mode:', dragMode);
+
+      // FR: Guard pour vérifier que le fichier actif existe
+      // EN: Guard to check that active file exists
+      if (!activeFile || !activeFile.content || !activeFile.content.nodes) {
+        return;
+      }
+      const { content } = activeFile;
 
       // FR: Utiliser React Flow pour trouver la position de la souris
       // EN: Use React Flow to find mouse position
@@ -228,8 +236,7 @@ export function useDragAndDrop({
 
       // FR: Valider que la cible est valide (pas de cycle)
       // EN: Validate that target is valid (no cycle)
-      const isValid =
-        activeFile && canReparentNode(node.id, targetNode.id, activeFile.content.nodes);
+      const isValid = canReparentNode(node.id, targetNode.id, content.nodes);
       setDragTarget(targetNode.id);
       setIsValidTarget(isValid || false);
 
@@ -242,52 +249,50 @@ export function useDragAndDrop({
 
       // FR: Déterminer si c'est un sibling et la position de drop
       // EN: Determine if it's a sibling and the drop position
-      if (activeFile) {
-        const draggedNode = activeFile.content.nodes[node.id];
-        const targetMindNode = activeFile.content.nodes[targetNode.id];
+      const draggedNode = content.nodes[node.id];
+      const targetMindNode = content.nodes[targetNode.id];
 
-        // FR: Calculer les trois zones du nœud cible
-        // EN: Calculate the three zones of the target node
-        const targetNodeY = targetNode.position.y;
-        const nodeHeight = 50; // FR: Hauteur approximative / EN: Approximate height
-        const topZoneEnd = targetNodeY + nodeHeight * 0.25; // FR: 25% supérieur / EN: Top 25%
-        const bottomZoneStart = targetNodeY + nodeHeight * 0.75; // FR: 25% inférieur / EN: Bottom 25%
+      // FR: Calculer les trois zones du nœud cible
+      // EN: Calculate the three zones of the target node
+      const targetNodeY = targetNode.position.y;
+      const nodeHeight = 50; // FR: Hauteur approximative / EN: Approximate height
+      const topZoneEnd = targetNodeY + nodeHeight * 0.25; // FR: 25% supérieur / EN: Top 25%
+      const bottomZoneStart = targetNodeY + nodeHeight * 0.75; // FR: 25% inférieur / EN: Bottom 25%
 
-        if (
-          draggedNode &&
-          targetMindNode &&
-          draggedNode.parentId === targetMindNode.parentId &&
-          draggedNode.parentId !== null
-        ) {
-          // FR: C'est un sibling potentiel - vérifier dans quelle zone on est
-          // EN: It's a potential sibling - check which zone we're in
+      if (
+        draggedNode &&
+        targetMindNode &&
+        draggedNode.parentId === targetMindNode.parentId &&
+        draggedNode.parentId !== null
+      ) {
+        // FR: C'est un sibling potentiel - vérifier dans quelle zone on est
+        // EN: It's a potential sibling - check which zone we're in
 
-          if (position.y < topZoneEnd) {
-            // FR: Zone haute (25% supérieur) - réordonnancement avant
-            // EN: Top zone (top 25%) - reorder before
-            setIsSiblingReorder(true);
-            setDropPosition('before');
-            // console.log('📍 Drop position: BEFORE (top zone - sibling reorder)');
-          } else if (position.y > bottomZoneStart) {
-            // FR: Zone basse (25% inférieur) - réordonnancement après
-            // EN: Bottom zone (bottom 25%) - reorder after
-            setIsSiblingReorder(true);
-            setDropPosition('after');
-            // console.log('📍 Drop position: AFTER (bottom zone - sibling reorder)');
-          } else {
-            // FR: Zone centrale (50% au milieu) - reparenting (devient enfant)
-            // EN: Center zone (middle 50%) - reparenting (becomes child)
-            setIsSiblingReorder(false);
-            setDropPosition('center');
-            // console.log('📍 Drop position: CENTER (middle zone - reparenting sibling as child)');
-          }
+        if (position.y < topZoneEnd) {
+          // FR: Zone haute (25% supérieur) - réordonnancement avant
+          // EN: Top zone (top 25%) - reorder before
+          setIsSiblingReorder(true);
+          setDropPosition('before');
+          // console.log('📍 Drop position: BEFORE (top zone - sibling reorder)');
+        } else if (position.y > bottomZoneStart) {
+          // FR: Zone basse (25% inférieur) - réordonnancement après
+          // EN: Bottom zone (bottom 25%) - reorder after
+          setIsSiblingReorder(true);
+          setDropPosition('after');
+          // console.log('📍 Drop position: AFTER (bottom zone - sibling reorder)');
         } else {
-          // FR: Pas un sibling - reparenting normal
-          // EN: Not a sibling - normal reparenting
+          // FR: Zone centrale (50% au milieu) - reparenting (devient enfant)
+          // EN: Center zone (middle 50%) - reparenting (becomes child)
           setIsSiblingReorder(false);
           setDropPosition('center');
-          // console.log('📍 Drop position: CENTER (reparenting)');
+          // console.log('📍 Drop position: CENTER (middle zone - reparenting sibling as child)');
         }
+      } else {
+        // FR: Pas un sibling - reparenting normal
+        // EN: Not a sibling - normal reparenting
+        setIsSiblingReorder(false);
+        setDropPosition('center');
+        // console.log('📍 Drop position: CENTER (reparenting)');
       }
     },
     [dragMode, dragTolerance, instanceRef, activeFile, draggedDescendants]

@@ -109,16 +109,20 @@ function MindMapCanvas() {
   // EN: Convert active file nodes to ReactFlow nodes
   const convertToReactFlowNodes = useCallback((): Node[] => {
     // console.warn('convertToReactFlowNodes called');
-    if (!activeFile?.content?.nodes) {
+    if (!activeFile || !activeFile.content || !activeFile.content.nodes) {
       // console.warn('No nodes in activeFile.content');
       return [];
     }
+
+    // FR: Variable locale pour éviter les erreurs TypeScript "possibly undefined"
+    // EN: Local variable to avoid TypeScript "possibly undefined" errors
+    const { content } = activeFile;
 
     const nodes: Node[] = [];
 
     // FR: Le parser XMind crée rootNode, pas nodes.root
     // EN: XMind parser creates rootNode, not nodes.root
-    const rootNode = activeFile.content.rootNode || activeFile.content.nodes?.root;
+    const rootNode = content.rootNode || content.nodes?.root;
 
     if (!rootNode) {
       // console.warn('No root node');
@@ -138,8 +142,8 @@ function MindMapCanvas() {
     // FR: Calculer la largeur effective avec hiérarchie : fichier > global
     // EN: Calculate effective width with hierarchy: file > global
     const getEffectiveNodeWidth = (): number => {
-      if (activeFile?.content?.defaultNodeStyle?.width) {
-        return activeFile.content.defaultNodeStyle.width;
+      if (content.defaultNodeStyle?.width) {
+        return content.defaultNodeStyle.width;
       }
       return defaultNodeWidth || 200;
     };
@@ -190,7 +194,7 @@ function MindMapCanvas() {
       }
       let total = 0;
       node.children.forEach((childId: string, idx: number) => {
-        const childNode = activeFile.content.nodes[childId];
+        const childNode = content.nodes[childId];
         if (childNode) {
           total += computeSubtreeHeights(childNode);
           if (idx < node.children.length - 1) total += SIBLING_GAP;
@@ -231,7 +235,7 @@ function MindMapCanvas() {
       // EN: Compute styles via plugins (synchronous)
       const computedStyle = nodeStyleRegistry.compute(nodeData, {
         nodeId: node.id,
-        nodes: activeFile.content?.nodes || {},
+        nodes: content.nodes || {},
         rootId: rootNode.id,
         level,
         isPrimary: level === 0,
@@ -268,7 +272,7 @@ function MindMapCanvas() {
         let base = parentCenterY - ch / 2;
         if (base < bandStart) base = bandStart;
         if (base + ch > bandEnd) base = Math.max(bandStart, bandEnd - ch);
-        const childNode = activeFile.content.nodes[onlyId];
+        const childNode = content.nodes[onlyId];
         // FR: Déterminer la direction pour l'enfant
         // EN: Determine direction for child
         let childDirection: number;
@@ -285,7 +289,7 @@ function MindMapCanvas() {
         const leftIds: string[] = [];
 
         childIds.forEach((id, idx) => {
-          const childNode = activeFile.content.nodes[id];
+          const childNode = content.nodes[id];
           const xmindPos = (childNode as any)?.xmindPosition;
 
           // FR: Si position XMind disponible, utiliser x pour déterminer le côté
@@ -326,7 +330,7 @@ function MindMapCanvas() {
             2;
         rightIds.forEach(childId => {
           const ch = subtreeHeightById[childId] || LINE_HEIGHT + NODE_VPAD;
-          positionSubtree(activeFile.content.nodes[childId], level + 1, +1, offsetRight);
+          positionSubtree(content.nodes[childId], level + 1, +1, offsetRight);
           offsetRight += ch + SIBLING_GAP;
         });
 
@@ -344,7 +348,7 @@ function MindMapCanvas() {
             2;
         leftIdsReversed.forEach(childId => {
           const ch = subtreeHeightById[childId] || LINE_HEIGHT + NODE_VPAD;
-          positionSubtree(activeFile.content.nodes[childId], level + 1, -1, offsetLeft);
+          positionSubtree(content.nodes[childId], level + 1, -1, offsetLeft);
           offsetLeft += ch + SIBLING_GAP;
         });
       } else if (childIds.length > 1) {
@@ -353,7 +357,7 @@ function MindMapCanvas() {
         let currentY = baseY;
         childIds.forEach((childId: string) => {
           const ch = subtreeHeightById[childId] || LINE_HEIGHT + NODE_VPAD;
-          positionSubtree(activeFile.content.nodes[childId], level + 1, direction, currentY);
+          positionSubtree(content.nodes[childId], level + 1, direction, currentY);
           currentY += ch + SIBLING_GAP;
         });
       } else {
@@ -364,7 +368,7 @@ function MindMapCanvas() {
         const parentCenterY =
           nodeCenterY + (nodeOwnHeightById[node.id] || LINE_HEIGHT + NODE_VPAD) / 2;
         const start = parentCenterY - ch / 2;
-        positionSubtree(activeFile.content.nodes[onlyId], level + 1, direction, start);
+        positionSubtree(content.nodes[onlyId], level + 1, direction, start);
       }
     };
 
@@ -387,7 +391,7 @@ function MindMapCanvas() {
 
       if (node.children && node.children.length > 0) {
         node.children.forEach((childId: string) => {
-          const childNode = activeFile.content.nodes[childId];
+          const childNode = content.nodes[childId];
           if (childNode) {
             fixParentIds(childNode, node.id);
           }
@@ -406,16 +410,20 @@ function MindMapCanvas() {
   // EN: Convert connections to ReactFlow edges
   const convertToReactFlowEdges = useCallback((): Edge[] => {
     // console.warn('convertToReactFlowEdges called');
-    if (!activeFile?.content?.nodes) {
+    if (!activeFile || !activeFile.content || !activeFile.content.nodes) {
       // console.warn('No nodes for edges');
       return [];
     }
+
+    // FR: Variable locale pour éviter les erreurs TypeScript "possibly undefined"
+    // EN: Local variable to avoid TypeScript "possibly undefined" errors
+    const { content } = activeFile;
 
     const edges: Edge[] = [];
 
     // FR: Le parser XMind crée rootNode, pas nodes.root
     // EN: XMind parser creates rootNode, not nodes.root
-    const rootNode = activeFile.content.rootNode || activeFile.content.nodes?.root;
+    const rootNode = content.rootNode || content.nodes?.root;
 
     if (!rootNode) return edges;
 
@@ -438,7 +446,7 @@ function MindMapCanvas() {
         const leftIds: string[] = [];
 
         childIds.forEach((id, idx) => {
-          const childNode = activeFile.content.nodes[id];
+          const childNode = content.nodes[id];
           const xmindPos = (childNode as any)?.xmindPosition;
 
           // FR: Si position XMind disponible, utiliser x pour déterminer le côté
@@ -459,7 +467,7 @@ function MindMapCanvas() {
         });
 
         rightIds.forEach(childId => {
-          const childNode = activeFile.content.nodes[childId];
+          const childNode = content.nodes[childId];
           const childColor = childNode?.style?.backgroundColor || '#dc2626';
 
           edges.push({
@@ -479,7 +487,7 @@ function MindMapCanvas() {
         // EN: Reverse order to match XMind (bottom to top in array)
         const leftIdsReversed = [...leftIds].reverse();
         leftIdsReversed.forEach(childId => {
-          const childNode = activeFile.content.nodes[childId];
+          const childNode = content.nodes[childId];
           const childColor = childNode?.style?.backgroundColor || '#dc2626';
 
           edges.push({
@@ -510,7 +518,7 @@ function MindMapCanvas() {
             style: { stroke: edgeColor, strokeWidth: 2 },
             data: { isSelected: false, parentId: node.id, childId },
           });
-          const childNode = activeFile.content.nodes[childId];
+          const childNode = content.nodes[childId];
           if (childNode) createConnections(childNode, level + 1, direction, branchColor);
         });
       }
@@ -766,7 +774,7 @@ function MindMapCanvas() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (shouldIgnoreKeyboardEvent(e)) return;
-      if (!activeFile?.content?.nodes) return;
+      if (!activeFile || !activeFile.content || !activeFile.content.nodes) return;
       const { key } = e;
       // toggle follow
       if (key.toLowerCase() === (getShortcut('view.follow') || 'F').toLowerCase()) {
@@ -776,7 +784,6 @@ function MindMapCanvas() {
         return;
       }
       if (key === 'Enter') {
-        if (!activeFile?.content?.nodes) return;
         const currentId: string =
           selectedNodeId || activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
         if (!currentId) return;
@@ -787,7 +794,6 @@ function MindMapCanvas() {
       }
       if (key === ' ') {
         // Espace: toggle collapse/expand of current node descendants
-        if (!activeFile?.content?.nodes) return;
         const rootIdSpace: string =
           activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
         const currentIdSpace: string = selectedNodeId || rootIdSpace;
@@ -1007,7 +1013,7 @@ function MindMapCanvas() {
     const handler = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return;
       if (shouldIgnoreKeyboardEvent(e)) return;
-      if (!activeFile?.content?.nodes) return;
+      if (!activeFile || !activeFile.content || !activeFile.content.nodes) return;
       const parentId: string =
         selectedNodeId || activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
       if (!parentId) return;
@@ -1025,7 +1031,7 @@ function MindMapCanvas() {
     const handler = (e: KeyboardEvent) => {
       if (e.key !== 'Backspace' && e.key !== 'Delete') return;
       if (shouldIgnoreKeyboardEvent(e)) return;
-      if (!activeFile?.content?.nodes) return;
+      if (!activeFile || !activeFile.content || !activeFile.content.nodes) return;
       const currentId: string | undefined =
         selectedNodeId || activeFile.content.rootNode?.id || activeFile.content.nodes?.root?.id;
       if (!currentId) return;

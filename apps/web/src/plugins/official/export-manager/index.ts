@@ -126,9 +126,13 @@ export async function activate(context: IPluginContext): Promise<void> {
   context.commands.registerCommand('export.xmind', async () => {
     const active = useOpenFiles.getState().getActiveFile();
 
-    if (!active || !active.content) {
+    if (!active || !active.content || !active.content.rootNode) {
       throw new Error('Aucun fichier actif à exporter');
     }
+
+    // FR: Variable locale pour éviter les erreurs TypeScript "possibly undefined"
+    // EN: Local variable to avoid TypeScript "possibly undefined" errors
+    const { content } = active;
 
     // Emit start event
     await context.hooks.doAction('export.started', {
@@ -141,7 +145,7 @@ export async function activate(context: IPluginContext): Promise<void> {
 
       // Build topic tree recursively
       const buildTopic = (id: string): any => {
-        const n = active.content.nodes[id];
+        const n = content.nodes[id];
         if (!n) return null;
         return {
           id: n.id,
@@ -156,7 +160,7 @@ export async function activate(context: IPluginContext): Promise<void> {
       };
 
       // Create content.json
-      const json = [{ class: 'sheet', rootTopic: buildTopic(active.content.rootNode.id) }];
+      const json = [{ class: 'sheet', rootTopic: buildTopic(content.rootNode!.id) }];
       zip.file('content.json', JSON.stringify(json, null, 2));
 
       // Create bigmind.json sidecar
