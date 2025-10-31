@@ -146,7 +146,7 @@ export class PermissionManager {
           } else if (Array.isArray(permissions)) {
             permSet = new Set(permissions);
           } else {
-            console.warn(`[PermissionManager] Invalid permission format for ${pluginId}, skipping`);
+            debugLog(`[PermissionManager] Invalid permission format for ${pluginId}, skipping`);
             return;
           }
           this.granted.set(pluginId, permSet);

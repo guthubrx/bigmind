@@ -65,7 +65,7 @@ describe('ManifestLoader', () => {
 
     it('should load xmind-compatibility manifest', () => {
       const manifests = getAllAvailableManifests();
-      const xmindCompat = manifests.find(m => m.manifest.id === 'com.xmind.compatibility');
+      const xmindCompat = manifests.find(m => m.manifest.id === 'com.cartae.xmind.compatibility');
 
       expect(xmindCompat).toBeDefined();
       expect(xmindCompat?.manifest.name).toBe('XMind Compatibility');

@@ -1,5 +1,5 @@
 {
-  "id": "com.xmind.compatibility",
+  "id": "com.cartae.xmind.compatibility",
   "name": "XMind Compatibility",
   "version": "1.0.0",
   "description": "Compatibilité bidirectionnelle totale avec XMind - sans perte de données",
@@ -13,13 +13,7 @@
   "logo": "/assets/plugin-logos/xmind-compatibility.svg",
   "color": "#FF6B35",
   "category": "integration",
-  "tags": [
-    "xmind",
-    "compatibility",
-    "interoperability",
-    "sync",
-    "professional"
-  ],
+  "tags": ["xmind", "compatibility", "interoperability", "sync", "professional"],
   "source": "core",
   "pricing": "free",
   "featured": true,
@@ -98,26 +92,14 @@
     }
   ],
   "hooks": {
-    "listens": [
-      "file.loaded",
-      "file.beforeSave"
-    ],
-    "emits": [
-      "xmind.parsed",
-      "xmind.serialized"
-    ]
+    "listens": ["file.loaded", "file.beforeSave"],
+    "emits": ["xmind.parsed", "xmind.serialized"]
   },
   "uiContributions": {
-    "commands": [
-      "xmind.parse",
-      "xmind.serialize",
-      "xmind.getTheme"
-    ],
+    "commands": ["xmind.parse", "xmind.serialize", "xmind.getTheme"],
     "menus": [],
     "panels": [],
     "settings": true
   },
-  "permissions": [
-    "storage"
-  ]
+  "permissions": ["storage"]
 }
