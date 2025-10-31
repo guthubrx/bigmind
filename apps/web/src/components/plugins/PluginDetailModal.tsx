@@ -13,6 +13,7 @@ import { ExportRatingsButton } from './ExportRatingsButton';
 import {
   getPluginRatingsAggregate,
   type PluginRatingsAggregate,
+  submitQuickRating,
 } from '../../services/supabaseClient';
 import './PluginDetailModal.css';
 
@@ -33,6 +34,8 @@ export function PluginDetailModal({
 }: PluginDetailModalProps) {
   const [ratingsRefresh, setRatingsRefresh] = useState(0);
   const [ratingAggregate, setRatingAggregate] = useState<PluginRatingsAggregate | null>(null);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [quickRatingHover, setQuickRatingHover] = useState(0);
 
   // Fetch rating aggregate from Supabase
   useEffect(() => {
@@ -46,6 +49,19 @@ export function PluginDetailModal({
     };
     fetchRating();
   }, [manifest.id, ratingsRefresh]);
+
+  // FR: Gestion de la notation rapide
+  // EN: Handle quick rating
+  const handleQuickRating = async (rating: number) => {
+    try {
+      const success = await submitQuickRating(manifest.id, rating);
+      if (success) {
+        setRatingsRefresh(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error('[PluginDetailModal] Error submitting quick rating:', error);
+    }
+  };
 
   const getBadges = (): BadgeType[] => {
     const badges: BadgeType[] = [];
@@ -141,6 +157,51 @@ export function PluginDetailModal({
           )}
         </div>
 
+        {/* Rating Bar - Notez le plugin */}
+        <div className="plugin-detail-modal__rating-bar">
+          <div className="plugin-detail-modal__rating-bar-left">
+            <span className="plugin-detail-modal__rating-bar-label">Notez le plugin</span>
+            <div className="plugin-detail-modal__quick-stars">
+              {[1, 2, 3, 4, 5].map(star => (
+                <button
+                  key={star}
+                  type="button"
+                  className={`plugin-detail-modal__quick-star ${
+                    quickRatingHover >= star ? 'plugin-detail-modal__quick-star--filled' : ''
+                  }`}
+                  onMouseEnter={() => setQuickRatingHover(star)}
+                  onMouseLeave={() => setQuickRatingHover(0)}
+                  onClick={() => handleQuickRating(star)}
+                  aria-label={`${star} étoiles`}
+                >
+                  <Star size={20} fill={quickRatingHover >= star ? 'currentColor' : 'none'} />
+                </button>
+              ))}
+            </div>
+          </div>
+          <button
+            type="button"
+            className="plugin-detail-modal__toggle-review"
+            onClick={() => setShowReviewForm(!showReviewForm)}
+          >
+            Donnez votre avis
+            <span className={`chevron ${showReviewForm ? 'chevron--up' : ''}`}>▼</span>
+          </button>
+        </div>
+
+        {/* Review Form - Collapsible */}
+        {showReviewForm && (
+          <div className="plugin-detail-modal__review-form-container">
+            <PluginRatingForm
+              pluginId={manifest.id}
+              onSuccess={() => {
+                setRatingsRefresh(prev => prev + 1);
+                setShowReviewForm(false);
+              }}
+            />
+          </div>
+        )}
+
         {/* Body */}
         <div className="plugin-detail-modal__body">
           {/* Description */}
@@ -156,18 +217,6 @@ export function PluginDetailModal({
               />
             </section>
           )}
-
-          {/* Rating Form - Moved to top */}
-          <section className="plugin-detail-modal__section plugin-detail-modal__section--compact">
-            <h3 className="plugin-detail-modal__section-title">
-              <Star size={20} />
-              Donnez votre avis
-            </h3>
-            <PluginRatingForm
-              pluginId={manifest.id}
-              onSuccess={() => setRatingsRefresh(prev => prev + 1)}
-            />
-          </section>
 
           {/* Benefits */}
           {manifest.benefits && manifest.benefits.length > 0 && (

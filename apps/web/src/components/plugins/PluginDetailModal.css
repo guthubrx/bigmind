@@ -179,6 +179,107 @@
   border-color: #EF4444;
 }
 
+/* FR: Barre de notation rapide - "Notez le plugin" */
+/* EN: Quick rating bar - "Rate the plugin" */
+.plugin-detail-modal__rating-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  gap: 16px;
+}
+
+.plugin-detail-modal__rating-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.plugin-detail-modal__rating-bar-label {
+  font-weight: 500;
+  color: var(--fg-primary);
+  font-size: 0.9rem;
+}
+
+.plugin-detail-modal__quick-stars {
+  display: flex;
+  gap: 4px;
+}
+
+.plugin-detail-modal__quick-star {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #d1d5db;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.plugin-detail-modal__quick-star:hover,
+.plugin-detail-modal__quick-star--filled {
+  color: #fbbf24;
+  transform: scale(1.1);
+}
+
+.plugin-detail-modal__toggle-review {
+  background: transparent;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  color: var(--fg-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  border-radius: 6px;
+}
+
+.plugin-detail-modal__toggle-review:hover {
+  background: var(--bg-hover);
+  color: var(--fg-primary);
+}
+
+.plugin-detail-modal__toggle-review .chevron {
+  font-size: 0.7rem;
+  transition: transform 0.3s ease;
+}
+
+.plugin-detail-modal__toggle-review .chevron--up {
+  transform: rotate(180deg);
+}
+
+/* FR: Container du formulaire d'avis déroulant */
+/* EN: Review form dropdown container */
+.plugin-detail-modal__review-form-container {
+  padding: 24px 32px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+}
+
 /* Body */
 .plugin-detail-modal__body {
   flex: 1;
