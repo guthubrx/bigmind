@@ -439,3 +439,105 @@ export async function signOut(): Promise<boolean> {
 
   return true;
 }
+
+/**
+ * Plugin Download Stats Interface
+ */
+export interface PluginDownloadStats {
+  pluginId: string;
+  total_downloads: number;
+  unique_users: number;
+  unique_ips: number;
+  last_download: string;
+}
+
+/**
+ * Record a plugin download/installation
+ */
+export async function recordPluginDownload(
+  pluginId: string,
+  ipAddress?: string,
+  userAgent?: string
+): Promise<boolean> {
+  try {
+    // Get current user if authenticated
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id || null;
+
+    const { error } = await supabase.rpc('record_plugin_download', {
+      p_plugin_id: pluginId,
+      p_user_id: userId,
+      p_ip_address: ipAddress || null,
+      p_user_agent: userAgent || navigator.userAgent || null,
+    });
+
+    if (error) {
+      console.error('[Supabase] Error recording download:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('[Supabase] Error in recordPluginDownload:', error);
+    return false;
+  }
+}
+
+/**
+ * Get download stats for a specific plugin
+ */
+export async function getPluginDownloadStats(pluginId: string): Promise<PluginDownloadStats | null> {
+  try {
+    const { data, error } = await supabase
+      .from('plugin_download_stats')
+      .select('*')
+      .eq('pluginId', pluginId)
+      .single();
+
+    if (error) {
+      // No downloads yet is not an error
+      if (error.code === 'PGRST116') {
+        return {
+          pluginId,
+          total_downloads: 0,
+          unique_users: 0,
+          unique_ips: 0,
+          last_download: new Date().toISOString(),
+        };
+      }
+      console.error('[Supabase] Error getting download stats:', error);
+      return null;
+    }
+
+    return data as PluginDownloadStats;
+  } catch (error) {
+    console.error('[Supabase] Error in getPluginDownloadStats:', error);
+    return null;
+  }
+}
+
+/**
+ * Get download stats for all plugins
+ */
+export async function getAllPluginDownloadStats(): Promise<Map<string, number>> {
+  try {
+    const { data, error } = await supabase
+      .from('plugin_download_stats')
+      .select('pluginId, total_downloads');
+
+    if (error) {
+      console.error('[Supabase] Error getting all download stats:', error);
+      return new Map();
+    }
+
+    const statsMap = new Map<string, number>();
+    data?.forEach((stat: { pluginId: string; total_downloads: number }) => {
+      statsMap.set(stat.pluginId, stat.total_downloads);
+    });
+
+    return statsMap;
+  } catch (error) {
+    console.error('[Supabase] Error in getAllPluginDownloadStats:', error);
+    return new Map();
+  }
+}

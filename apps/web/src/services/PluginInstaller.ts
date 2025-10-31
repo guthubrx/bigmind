@@ -4,6 +4,7 @@
  */
 
 import { gitHubPluginRegistry } from './GitHubPluginRegistry';
+import { recordPluginDownload } from './supabaseClient';
 import type { Plugin, PluginManifest } from '@cartae/plugin-system';
 
 // IndexedDB configuration
@@ -224,6 +225,9 @@ export async function installPlugin(pluginId: string): Promise<Plugin> {
     // eslint-disable-next-line no-console
     console.log('[PluginInstaller] Saved plugin to IndexedDB');
 
+    // Record download in Supabase
+    await recordPluginDownload(pluginId);
+
     // Create plugin object
     const plugin = await createPluginFromCode(code, manifest as PluginManifest);
     // eslint-disable-next-line no-console
@@ -341,6 +345,9 @@ export async function installPluginFromGitHub(githubUrl: string, branch: string 
 
     await savePluginToDB(pluginData);
     console.log('[PluginInstaller] Saved plugin to IndexedDB');
+
+    // Record download in Supabase
+    await recordPluginDownload(manifest.id);
 
     // Create plugin object
     const plugin = await createPluginFromCode(code, manifest);
