@@ -64,6 +64,7 @@ export async function getPluginRatings(pluginId: string): Promise<PluginRating[]
     .order('created_at', { ascending: false });
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('[Supabase] Error fetching ratings:', error);
     return [];
   }
@@ -86,20 +87,14 @@ export async function submitQuickRating(
 ): Promise<boolean> {
   // Validation
   if (!pluginId || rating < 1 || rating > 5) {
+    // eslint-disable-next-line no-console
     console.error('[Supabase] Invalid quick rating data');
     return false;
   }
 
   const finalUserName = userName?.trim() || 'Utilisateur anonyme';
 
-  console.log('[Supabase] Submitting quick rating:', {
-    pluginId,
-    rating,
-    userName: finalUserName,
-    is_approved: false,
-  });
-
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('plugin_ratings')
     .insert([
       {
@@ -115,11 +110,11 @@ export async function submitQuickRating(
     .select();
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('[Supabase] ❌ Error submitting quick rating:', error);
     return false;
   }
 
-  console.log('[Supabase] ✅ Quick rating submitted successfully:', data);
   return true;
 }
 
@@ -136,19 +131,12 @@ export async function submitPluginRating(
 ): Promise<boolean> {
   // Validation
   if (!pluginId || !userName || rating < 1 || rating > 5 || !comment.trim()) {
+    // eslint-disable-next-line no-console
     console.error('[Supabase] Invalid rating data');
     return false;
   }
 
-  console.log('[Supabase] Submitting rating:', {
-    pluginId,
-    userName,
-    rating,
-    comment: `${comment.substring(0, 50)}...`,
-    is_approved: false,
-  });
-
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('plugin_ratings')
     .insert([
       {
@@ -164,13 +152,11 @@ export async function submitPluginRating(
     .select();
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('[Supabase] ❌ Error submitting rating:', error);
-    console.error('[Supabase] Error code:', error.code);
-    console.error('[Supabase] Error message:', error.message);
     return false;
   }
 
-  console.log('[Supabase] ✅ Rating submitted successfully:', data);
   return true;
 }
 
@@ -230,6 +216,7 @@ export async function getTopRatedPlugins(limit: number = 3): Promise<TopRatedPlu
     .order('created_at', { ascending: false });
 
   if (error || !data) {
+    // eslint-disable-next-line no-console
     console.error('[Supabase] Error fetching top plugins:', error);
     return [];
   }
@@ -290,6 +277,7 @@ export async function getRatingReplies(ratingId: string): Promise<RatingReply[]>
     .order('created_at', { ascending: true });
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('[Supabase] Error fetching replies:', error);
     return [];
   }
@@ -306,6 +294,7 @@ export async function submitRatingReply(
   replyText: string
 ): Promise<boolean> {
   if (!ratingId || !authorName.trim() || !replyText.trim()) {
+    // eslint-disable-next-line no-console
     console.error('[Supabase] Invalid reply data');
     return false;
   }
@@ -320,6 +309,7 @@ export async function submitRatingReply(
   ]);
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('[Supabase] Error submitting reply:', error);
     return false;
   }
@@ -331,8 +321,6 @@ export async function submitRatingReply(
  * Admin: Get unapproved ratings (in moderation queue)
  */
 export async function getUnapprovedRatings(): Promise<PluginRating[]> {
-  console.log('[Supabase] Fetching unapproved ratings...');
-
   const { data, error } = await supabase
     .from('plugin_ratings')
     .select('*')
@@ -340,13 +328,11 @@ export async function getUnapprovedRatings(): Promise<PluginRating[]> {
     .order('created_at', { ascending: false });
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('[Supabase] ❌ Error fetching unapproved ratings:', error);
-    console.error('[Supabase] Error code:', error.code);
-    console.error('[Supabase] Error message:', error.message);
     return [];
   }
 
-  console.log('[Supabase] ✅ Got unapproved ratings:', data);
   return data || [];
 }
 
@@ -354,22 +340,17 @@ export async function getUnapprovedRatings(): Promise<PluginRating[]> {
  * Admin: Approve a rating
  */
 export async function approveRating(ratingId: string): Promise<boolean> {
-  console.log('[Supabase] Approving rating:', ratingId);
-
   const { error } = await supabase
     .from('plugin_ratings')
     .update({ is_approved: true })
     .eq('id', ratingId);
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('[Supabase] ❌ Error approving rating:', error);
-    console.error('[Supabase] Error code:', error.code);
-    console.error('[Supabase] Error message:', error.message);
-    console.error('[Supabase] Error details:', error.details);
     return false;
   }
 
-  console.log('[Supabase] ✅ Rating approved successfully');
   return true;
 }
 
@@ -377,19 +358,14 @@ export async function approveRating(ratingId: string): Promise<boolean> {
  * Admin: Reject (delete) a rating
  */
 export async function rejectRating(ratingId: string): Promise<boolean> {
-  console.log('[Supabase] Rejecting rating:', ratingId);
-
   const { error } = await supabase.from('plugin_ratings').delete().eq('id', ratingId);
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('[Supabase] ❌ Error rejecting rating:', error);
-    console.error('[Supabase] Error code:', error.code);
-    console.error('[Supabase] Error message:', error.message);
-    console.error('[Supabase] Error details:', error.details);
     return false;
   }
 
-  console.log('[Supabase] ✅ Rating rejected successfully');
   return true;
 }
 
@@ -419,6 +395,7 @@ export async function getCurrentUser() {
   const { data, error } = await supabase.auth.getUser();
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('[Supabase] Error getting current user:', error);
     return null;
   }
@@ -433,6 +410,7 @@ export async function signOut(): Promise<boolean> {
   const { error } = await supabase.auth.signOut();
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('[Supabase] Error signing out:', error);
     return false;
   }
@@ -472,12 +450,14 @@ export async function recordPluginDownload(
     });
 
     if (error) {
+      // eslint-disable-next-line no-console
       console.error('[Supabase] Error recording download:', error);
       return false;
     }
 
     return true;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('[Supabase] Error in recordPluginDownload:', error);
     return false;
   }
@@ -495,6 +475,7 @@ export async function getPluginDownloadStats(
     });
 
     if (error) {
+      // eslint-disable-next-line no-console
       console.error('[Supabase] Error getting download stats:', error);
       // Return zero stats if no data
       return {
@@ -519,6 +500,7 @@ export async function getPluginDownloadStats(
 
     return data[0] as PluginDownloadStats;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('[Supabase] Error in getPluginDownloadStats:', error);
     return {
       pluginId,
@@ -538,6 +520,7 @@ export async function getAllPluginDownloadStats(): Promise<Map<string, number>> 
     const { data, error } = await supabase.rpc('get_all_plugin_download_stats');
 
     if (error) {
+      // eslint-disable-next-line no-console
       console.error('[Supabase] Error getting all download stats:', error);
       return new Map();
     }
@@ -551,6 +534,7 @@ export async function getAllPluginDownloadStats(): Promise<Map<string, number>> 
 
     return statsMap;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('[Supabase] Error in getAllPluginDownloadStats:', error);
     return new Map();
   }
